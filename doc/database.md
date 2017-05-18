@@ -39,14 +39,17 @@ attributes, so that we can put a price on that reference, amongst other things.
 
 Both product and product references are necessary and work together.
 
-On the fron, we display a list of products, but when we buy something, we always
-know the exact reference of the product we are buying.
+The product reference is used to hold the price (for instance),
+while the product is useful to manipulate a product in general, with all its attributes at once.
+
+On the front, we display a list of products (not product references), but when we buy something, we always
+want to know the exact reference of the product we are buying.
 
 
 Otherwise specified, foreign keys "on update" and "on set" are set to CASCADE.
 
 
-All tables name use singular form (not plural).
+All table names use singular form (not plural).
 
 
 
