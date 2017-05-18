@@ -478,11 +478,9 @@ Currency
 
 A currency available to the ekom system (back or front).
 
-find rate: http://www.xe.com/currencyconverter/
 
 - iso_code: iso code 4217
 - symbol: the symbol representing the currency (for instance $)
-- exchange_rate: decimal(20,6)
 
 
 Currency_lang
@@ -496,8 +494,10 @@ Currency_shop
 -------------
 
 You can activate/de-activate a currency per shop.
+find rate: http://www.xe.com/currencyconverter/
 
 - active: tinyint(0|1)=0
+- exchange_rate: decimal(20,6), exchange rate based on the shop's currency (shop.currency_id).
 
 
 
