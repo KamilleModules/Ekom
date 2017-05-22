@@ -69,6 +69,13 @@ class EkomHooks
             ],
         ];
     }
+
+
+    protected static function Core_configureLawsUtil(\Kamille\Utils\Laws\LawsUtil $util)
+    {
+        $util->addShortCodeProvider(\Module\Ekom\ShortCodeProvider\EkomShortCodeProvider::create());
+    }
+
 }
 
 

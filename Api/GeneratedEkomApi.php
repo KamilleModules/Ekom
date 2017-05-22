@@ -4,6 +4,9 @@
 namespace Module\Ekom\Api;
 
 use Module\Ekom\Api\Object\BackofficeUser;
+use Module\Ekom\Api\Object\Category;
+use Module\Ekom\Api\Object\CategoryHasProductCard;
+use Module\Ekom\Api\Object\CategoryLang;
 use Module\Ekom\Api\Object\Currency;
 use Module\Ekom\Api\Object\Lang;
 use Module\Ekom\Api\Object\Product;
@@ -18,10 +21,11 @@ use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductLang;
 use Module\Ekom\Api\Object\Shop;
 use Module\Ekom\Api\Object\ShopConfiguration;
+use Module\Ekom\Api\Object\ShopHasCategory;
 use Module\Ekom\Api\Object\ShopHasCurrency;
-use Module\Ekom\Api\Object\ShopHasProductCard;
 use Module\Ekom\Api\Object\ShopHasLang;
 use Module\Ekom\Api\Object\ShopHasProduct;
+use Module\Ekom\Api\Object\ShopHasProductCard;
 use Module\Ekom\Api\Object\ShopHasProductLang;
 use Module\Ekom\Api\Object\ShopHasStore;
 use Module\Ekom\Api\Object\Store;
@@ -43,145 +47,197 @@ use XiaoApi\Api\XiaoApi;
  */
 class GeneratedEkomApi extends XiaoApi
 {
-        /**
+    
+    /**
      * @return BackofficeUser
      */
     public function backofficeUser()
     {
         return $this->getObject('backofficeUser');
-    }    /**
+    }
+    /**
+     * @return Category
+     */
+    public function category()
+    {
+        return $this->getObject('category');
+    }
+    /**
+     * @return CategoryHasProductCard
+     */
+    public function categoryHasProductCard()
+    {
+        return $this->getObject('categoryHasProductCard');
+    }
+    /**
+     * @return CategoryLang
+     */
+    public function categoryLang()
+    {
+        return $this->getObject('categoryLang');
+    }
+    /**
      * @return Currency
      */
     public function currency()
     {
         return $this->getObject('currency');
-    }    /**
+    }
+    /**
      * @return Lang
      */
     public function lang()
     {
         return $this->getObject('lang');
-    }    /**
+    }
+    /**
      * @return Product
      */
     public function product()
     {
         return $this->getObject('product');
-    }    /**
+    }
+    /**
      * @return ProductAttribute
      */
     public function productAttribute()
     {
         return $this->getObject('productAttribute');
-    }    /**
+    }
+    /**
      * @return ProductAttributeLang
      */
     public function productAttributeLang()
     {
         return $this->getObject('productAttributeLang');
-    }    /**
+    }
+    /**
      * @return ProductAttributeValue
      */
     public function productAttributeValue()
     {
         return $this->getObject('productAttributeValue');
-    }    /**
+    }
+    /**
      * @return ProductAttributeValueLang
      */
     public function productAttributeValueLang()
     {
         return $this->getObject('productAttributeValueLang');
-    }    /**
+    }
+    /**
      * @return ProductCard
      */
     public function productCard()
     {
         return $this->getObject('productCard');
-    }    /**
+    }
+    /**
      * @return ProductCardHasProduct
      */
     public function productCardHasProduct()
     {
         return $this->getObject('productCardHasProduct');
-    }    /**
+    }
+    /**
      * @return ProductCardLang
      */
     public function productCardLang()
     {
         return $this->getObject('productCardLang');
-    }    /**
+    }
+    /**
      * @return ProductHasProductAttribute
      */
     public function productHasProductAttribute()
     {
         return $this->getObject('productHasProductAttribute');
-    }    /**
+    }
+    /**
      * @return ProductLang
      */
     public function productLang()
     {
         return $this->getObject('productLang');
-    }    /**
+    }
+    /**
      * @return Shop
      */
     public function shop()
     {
         return $this->getObject('shop');
-    }    /**
+    }
+    /**
      * @return ShopConfiguration
      */
     public function shopConfiguration()
     {
         return $this->getObject('shopConfiguration');
-    }    /**
+    }
+    /**
+     * @return ShopHasCategory
+     */
+    public function shopHasCategory()
+    {
+        return $this->getObject('shopHasCategory');
+    }
+    /**
      * @return ShopHasCurrency
      */
     public function shopHasCurrency()
     {
         return $this->getObject('shopHasCurrency');
-    }    /**
-     * @return ShopHasProductCard
-     */
-    public function shopHasProductCard()
-    {
-        return $this->getObject('shopHasProductCard');
-    }    /**
+    }
+    /**
      * @return ShopHasLang
      */
     public function shopHasLang()
     {
         return $this->getObject('shopHasLang');
-    }    /**
+    }
+    /**
      * @return ShopHasProduct
      */
     public function shopHasProduct()
     {
         return $this->getObject('shopHasProduct');
-    }    /**
+    }
+    /**
+     * @return ShopHasProductCard
+     */
+    public function shopHasProductCard()
+    {
+        return $this->getObject('shopHasProductCard');
+    }
+    /**
      * @return ShopHasProductLang
      */
     public function shopHasProductLang()
     {
         return $this->getObject('shopHasProductLang');
-    }    /**
+    }
+    /**
      * @return ShopHasStore
      */
     public function shopHasStore()
     {
         return $this->getObject('shopHasStore');
-    }    /**
+    }
+    /**
      * @return Store
      */
     public function store()
     {
         return $this->getObject('store');
-    }    /**
+    }
+    /**
      * @return StoreHasProduct
      */
     public function storeHasProduct()
     {
         return $this->getObject('storeHasProduct');
-    }    /**
+    }
+    /**
      * @return Timezone
      */
     public function timezone()

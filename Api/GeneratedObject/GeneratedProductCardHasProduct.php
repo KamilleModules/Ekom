@@ -19,7 +19,7 @@ class GeneratedProductCardHasProduct extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_product_card_has_ek_product";
+        $this->table = "kamille.ek_product_card_has_product";
     }
 
 
