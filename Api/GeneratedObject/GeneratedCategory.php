@@ -19,7 +19,7 @@ class GeneratedCategory extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_category";
+        $this->table = "ek_category";
     }
 
 
@@ -31,6 +31,7 @@ class GeneratedCategory extends TableCrudObject
         $ret = array_replace([
 			'name' => '',
 			'category_id' => null,
+			'shop_id' => 0,
 		], $data);
 
 

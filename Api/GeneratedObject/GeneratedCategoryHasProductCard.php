@@ -19,7 +19,7 @@ class GeneratedCategoryHasProductCard extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_category_has_product_card";
+        $this->table = "ek_category_has_product_card";
     }
 
 

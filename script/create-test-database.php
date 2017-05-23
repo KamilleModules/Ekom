@@ -1,7 +1,6 @@
 <?php
 
 
-
 use Core\Services\A;
 use Module\Ekom\Api\EkomApi;
 
@@ -28,9 +27,11 @@ $api->productAttributeLang()->deleteAll();
 $api->productAttributeValueLang()->deleteAll();
 $api->productHasProductAttribute()->deleteAll();
 $api->shopHasProduct()->deleteAll();
-$api->shopHasProductLang()->deleteAll();
 $api->shopHasProductCard()->deleteAll();
+$api->shopHasProductCardLang()->deleteAll();
+$api->shopHasProductLang()->deleteAll();
 $api->categoryLang()->deleteAll();
+$api->categoryHasProductCard()->deleteAll();
 
 // no deps
 $api->timezone()->deleteAll();
@@ -1015,56 +1016,109 @@ foreach ($products as $product) {
 }
 
 
-
-
-
 //--------------------------------------------
 // category
 //--------------------------------------------
 $categoryEquipement = $api->category()->create([
     "name" => "equipement",
     "category_id" => null,
+    "shop_id" => $shopEurope,
 ]);
 $categoryFormation = $api->category()->create([
     "name" => "formation",
     "category_id" => null,
+    "shop_id" => $shopEurope,
 ]);
 $categoryMateriel = $api->category()->create([
     "name" => "materiel",
     "category_id" => $categoryEquipement,
+    "shop_id" => $shopEurope,
 ]);
 $categoryDiscipline = $api->category()->create([
     "name" => "discipline",
     "category_id" => $categoryMateriel,
+    "shop_id" => $shopEurope,
 ]);
 $categoryUtilisation = $api->category()->create([
     "name" => "utilisation",
     "category_id" => $categoryMateriel,
+    "shop_id" => $shopEurope,
 ]);
 $categoryEquilibre = $api->category()->create([
     "name" => "equilibre",
     "category_id" => $categoryUtilisation,
+    "shop_id" => $shopEurope,
 ]);
 $categoryPilates = $api->category()->create([
     "name" => "pilates",
     "category_id" => $categoryDiscipline,
+    "shop_id" => $shopEurope,
 ]);
 
 $categoryCrossTraining = $api->category()->create([
     "name" => "crossTraining",
     "category_id" => $categoryDiscipline,
+    "shop_id" => $shopEurope,
 ]);
 
-$categories = [
-    $categoryEquipement,
-    $categoryFormation,
-    $categoryMateriel,
-    $categoryDiscipline,
-    $categoryUtilisation,
-    $categoryEquilibre,
-    $categoryPilates,
-    $categoryCrossTraining,
-];
+
+$categoryUsFormation = $api->category()->create([
+    "name" => "formation",
+    "category_id" => null,
+    "shop_id" => $shopUsa,
+]);
+
+
+//--------------------------------------------
+// category has product card
+//--------------------------------------------
+$api->categoryHasProductCard()->create([
+    "category_id" => $categoryPilates,
+    "product_card_id" => $cardTapis,
+]);
+$api->categoryHasProductCard()->create([
+    "category_id" => $categoryPilates,
+    "product_card_id" => $cardSocks,
+]);
+$api->categoryHasProductCard()->create([
+    "category_id" => $categoryPilates,
+    "product_card_id" => $cardPilatesRing,
+]);
+$api->categoryHasProductCard()->create([
+    "category_id" => $categoryPilates,
+    "product_card_id" => $cardKettleBell,
+]);
+$api->categoryHasProductCard()->create([
+    "category_id" => $categoryPilates,
+    "product_card_id" => $cardGravity,
+]);
+$api->categoryHasProductCard()->create([
+    "category_id" => $categoryPilates,
+    "product_card_id" => $cardCagePower,
+]);
+$api->categoryHasProductCard()->create([
+    "category_id" => $categoryPilates,
+    "product_card_id" => $cardBlocPrioception,
+]);
+$api->categoryHasProductCard()->create([
+    "category_id" => $categoryPilates,
+    "product_card_id" => $cardBallonPaille,
+]);
+$api->categoryHasProductCard()->create([
+    "category_id" => $categoryPilates,
+    "product_card_id" => $cardBalanceBoard,
+]);
+$api->categoryHasProductCard()->create([
+    "category_id" => $categoryPilates,
+    "product_card_id" => $cardBallon,
+]);
+
+
+$api->categoryHasProductCard()->create([
+    "category_id" => $categoryUsFormation,
+    "product_card_id" => $cardTapis,
+]);
+
 
 //--------------------------------------------
 // category lang
@@ -1073,24 +1127,28 @@ $lorem = "Pellentesque ultricies neque mauris, ac faucibus erat lobortis eu. Ali
 $api->categoryLang()->create([
     "label" => "équipement",
     "description" => $lorem,
+    "slug" => "equipement",
     "category_id" => $categoryEquipement,
     "lang_id" => $langFrench,
 ]);
 $api->categoryLang()->create([
     "label" => "formation",
     "description" => $lorem,
+    "slug" => "formation",
     "category_id" => $categoryFormation,
     "lang_id" => $langFrench,
 ]);
 $api->categoryLang()->create([
     "label" => "discipline",
     "description" => $lorem,
+    "slug" => "discipline",
     "category_id" => $categoryDiscipline,
     "lang_id" => $langFrench,
 ]);
 $api->categoryLang()->create([
     "label" => "pilates",
     "description" => $lorem,
+    "slug" => "pilates",
     "category_id" => $categoryPilates,
     "lang_id" => $langFrench,
 ]);
@@ -1098,24 +1156,28 @@ $api->categoryLang()->create([
 $api->categoryLang()->create([
     "label" => "cross-training",
     "description" => $lorem,
+    "slug" => "cross-training",
     "category_id" => $categoryCrossTraining,
     "lang_id" => $langFrench,
 ]);
 $api->categoryLang()->create([
     "label" => "matériel",
     "description" => $lorem,
+    "slug" => "materiel",
     "category_id" => $categoryMateriel,
     "lang_id" => $langFrench,
 ]);
 $api->categoryLang()->create([
     "label" => "utilisation",
     "description" => $lorem,
+    "slug" => "utilisation",
     "category_id" => $categoryUtilisation,
     "lang_id" => $langFrench,
 ]);
 $api->categoryLang()->create([
     "label" => "équilibre",
     "description" => $lorem,
+    "slug" => "equilibre",
     "category_id" => $categoryEquilibre,
     "lang_id" => $langFrench,
 ]);
@@ -1125,24 +1187,28 @@ $api->categoryLang()->create([
 $api->categoryLang()->create([
     "label" => "equipment",
     "description" => $lorem,
+    "slug" => "equipement",
     "category_id" => $categoryEquipement,
     "lang_id" => $langEnglish,
 ]);
 $api->categoryLang()->create([
     "label" => "course",
     "description" => $lorem,
+    "slug" => "course",
     "category_id" => $categoryFormation,
     "lang_id" => $langEnglish,
 ]);
 $api->categoryLang()->create([
     "label" => "discipline",
     "description" => $lorem,
+    "slug" => "discipline",
     "category_id" => $categoryDiscipline,
     "lang_id" => $langEnglish,
 ]);
 $api->categoryLang()->create([
     "label" => "pilates",
     "description" => $lorem,
+    "slug" => "pilates",
     "category_id" => $categoryPilates,
     "lang_id" => $langEnglish,
 ]);
@@ -1150,6 +1216,7 @@ $api->categoryLang()->create([
 $api->categoryLang()->create([
     "label" => "cross-training",
     "description" => $lorem,
+    "slug" => "cross-training",
     "category_id" => $categoryCrossTraining,
     "lang_id" => $langEnglish,
 ]);
@@ -1157,153 +1224,32 @@ $api->categoryLang()->create([
 $api->categoryLang()->create([
     "label" => "supplies",
     "description" => $lorem,
+    "slug" => "supplies",
     "category_id" => $categoryMateriel,
     "lang_id" => $langEnglish,
 ]);
 $api->categoryLang()->create([
     "label" => "usage",
     "description" => $lorem,
+    "slug" => "usage",
     "category_id" => $categoryUtilisation,
     "lang_id" => $langEnglish,
 ]);
 $api->categoryLang()->create([
     "label" => "balance",
     "description" => $lorem,
+    "slug" => "balance",
     "category_id" => $categoryEquilibre,
     "lang_id" => $langEnglish,
 ]);
 
 
-
-
-//--------------------------------------------
-// shop has product card
-//--------------------------------------------
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopEurope,
-    "product_card_id" => $cardTapis,
-    "product_id" => $productTapisBleu,
-    "category_id" => $categoryPilates,
-]);
-
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopEurope,
-    "product_card_id" => $cardSocks,
-    "product_id" => $productSocksBlackMedium,
-    "category_id" => $categoryPilates,
-]);
-
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopEurope,
-    "product_card_id" => $cardGravity,
-    "product_id" => $productGravity,
-    "category_id" => $categoryPilates,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopEurope,
-    "product_card_id" => $cardCagePower,
-    "product_id" => $productCagePower,
-    "category_id" => $categoryCrossTraining,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopEurope,
-    "product_card_id" => $cardBlocPrioception,
-    "product_id" => $productBlocProprioception,
-    "category_id" => $categoryPilates,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopEurope,
-    "product_card_id" => $cardBalanceBoard,
-    "product_id" => $productBalanceBoard,
-    "category_id" => $categoryEquilibre,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopEurope,
-    "product_card_id" => $cardKettleBell,
-    "product_id" => $productKettleBell_6,
-    "category_id" => $categoryCrossTraining,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopEurope,
-    "product_card_id" => $cardBallon,
-    "product_id" => $productBallonGris55cm,
-    "category_id" => $categoryPilates,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopEurope,
-    "product_card_id" => $cardBallonPaille,
-    "product_id" => null,
-    "category_id" => $categoryPilates,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopEurope,
-    "product_card_id" => $cardPilatesRing,
-    "product_id" => $productPilatesRingBlue,
-    "category_id" => $categoryPilates,
-]);
-
-
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopUsa,
-    "product_card_id" => $cardTapis,
-    "product_id" => $productTapisBleu,
-    "category_id" => $categoryPilates,
-]);
-
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopUsa,
-    "product_card_id" => $cardSocks,
-    "product_id" => $productSocksBlackMedium,
-    "category_id" => $categoryPilates,
-]);
-
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopUsa,
-    "product_card_id" => $cardGravity,
-    "product_id" => $productGravity,
-    "category_id" => $categoryPilates,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopUsa,
-    "product_card_id" => $cardCagePower,
-    "product_id" => $productCagePower,
-    "category_id" => $categoryCrossTraining,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopUsa,
-    "product_card_id" => $cardBlocPrioception,
-    "product_id" => $productBlocProprioception,
-    "category_id" => $categoryPilates,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopUsa,
-    "product_card_id" => $cardBalanceBoard,
-    "product_id" => null,
-    "category_id" => $categoryEquilibre,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopUsa,
-    "product_card_id" => $cardKettleBell,
-    "product_id" => $productKettleBell_4,
-    "category_id" => $categoryCrossTraining,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopUsa,
-    "product_card_id" => $cardBallon,
-    "product_id" => $productBallonGris75cm,
-    "category_id" => $categoryPilates,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopUsa,
-    "product_card_id" => $cardBallonPaille,
-    "product_id" => $productBallonPaille,
-    "category_id" => $categoryPilates,
-]);
-$api->shopHasProductCard()->create([
-    "shop_id" => $shopUsa,
-    "product_card_id" => $cardPilatesRing,
-    "product_id" => $productPilatesRingBlue,
-    "category_id" => $categoryPilates,
+$api->categoryLang()->create([
+    "label" => "course",
+    "description" => $lorem,
+    "slug" => "course",
+    "category_id" => $categoryUsFormation,
+    "lang_id" => $langEnglish,
 ]);
 
 
@@ -1375,6 +1321,139 @@ foreach ($products as $product) {
         "lang_id" => $langEnglish,
     ]);
 }
+
+
+//--------------------------------------------
+// shop has product card
+//--------------------------------------------
+$api->shopHasProductCard()->create([
+    "shop_id" => $shopEurope,
+    "product_card_id" => $cardBallon,
+    "product_id" => $productBallonGris55cm,
+    "active" => 1,
+]);
+$api->shopHasProductCard()->create([
+    "shop_id" => $shopEurope,
+    "product_card_id" => $cardBalanceBoard,
+    "product_id" => $productBalanceBoard,
+    "active" => 1,
+]);
+$api->shopHasProductCard()->create([
+    "shop_id" => $shopEurope,
+    "product_card_id" => $cardBallonPaille,
+    "product_id" => $productBallonPaille,
+    "active" => 1,
+]);
+$api->shopHasProductCard()->create([
+    "shop_id" => $shopEurope,
+    "product_card_id" => $cardBlocPrioception,
+    "product_id" => $productBlocProprioception,
+    "active" => 1,
+]);
+$api->shopHasProductCard()->create([
+    "shop_id" => $shopEurope,
+    "product_card_id" => $cardCagePower,
+    "product_id" => $productCagePower,
+    "active" => 1,
+]);
+$api->shopHasProductCard()->create([
+    "shop_id" => $shopEurope,
+    "product_card_id" => $cardGravity,
+    "product_id" => $productGravity,
+    "active" => 1,
+]);
+$api->shopHasProductCard()->create([
+    "shop_id" => $shopEurope,
+    "product_card_id" => $cardKettleBell,
+    "product_id" => $productKettleBell_6,
+    "active" => 1,
+]);
+$api->shopHasProductCard()->create([
+    "shop_id" => $shopEurope,
+    "product_card_id" => $cardPilatesRing,
+    "product_id" => $productPilatesRingBlack,
+    "active" => 1,
+]);
+$api->shopHasProductCard()->create([
+    "shop_id" => $shopEurope,
+    "product_card_id" => $cardSocks,
+    "product_id" => $productSocksBlackMedium,
+    "active" => 0,
+]);
+$api->shopHasProductCard()->create([
+    "shop_id" => $shopEurope,
+    "product_card_id" => $cardTapis,
+    "product_id" => $productTapisBleu,
+    "active" => 1,
+]);
+
+// usa
+$api->shopHasProductCard()->create([
+    "shop_id" => $shopUsa,
+    "product_card_id" => $cardSocks,
+    "product_id" => $productSocksBlackSmall,
+    "active" => 1,
+]);
+$api->shopHasProductCard()->create([
+    "shop_id" => $shopUsa,
+    "product_card_id" => $cardKettleBell,
+    "product_id" => $productKettleBell_4,
+    "active" => 1,
+]);
+
+
+//--------------------------------------------
+// shop has product card lang
+//--------------------------------------------
+$card2Slug = [
+    $cardKettleBell => "the-kettle-bell",
+    $cardBlocPrioception => "the-bloc-prioception",
+];
+foreach ($cards as $card) {
+
+    $slug = (array_key_exists($card, $card2Slug)) ? $card2Slug[$card] : "";
+
+    $api->shopHasProductCardLang()->create([
+        "shop_id" => $shopEurope,
+        "product_card_id" => $card,
+        "lang_id" => $langFrench,
+        "label" => "",
+        "slug" => $slug,
+        "description" => "",
+    ]);
+
+    $api->shopHasProductCardLang()->create([
+        "shop_id" => $shopEurope,
+        "product_card_id" => $card,
+        "lang_id" => $langEnglish,
+        "label" => "",
+        "slug" => "",
+        "description" => "",
+    ]);
+}
+
+
+$api->shopHasProductCardLang()->create([
+    "shop_id" => $shopUsa,
+    "product_card_id" => $cardSocks,
+    "lang_id" => $langEnglish,
+    "label" => "",
+    "slug" => "",
+    "description" => "",
+]);
+
+$api->shopHasProductCardLang()->create([
+    "shop_id" => $shopUsa,
+    "product_card_id" => $cardKettleBell,
+    "lang_id" => $langEnglish,
+    "label" => "",
+    "slug" => "",
+    "description" => "",
+]);
+
+
+
+
 
 
 

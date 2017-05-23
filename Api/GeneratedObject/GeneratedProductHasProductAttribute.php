@@ -19,7 +19,7 @@ class GeneratedProductHasProductAttribute extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_product_has_product_attribute";
+        $this->table = "ek_product_has_product_attribute";
     }
 
 

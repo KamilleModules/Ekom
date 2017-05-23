@@ -19,7 +19,7 @@ class GeneratedStore extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_store";
+        $this->table = "ek_store";
     }
 
 

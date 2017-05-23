@@ -19,7 +19,7 @@ class GeneratedTimezone extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_timezone";
+        $this->table = "ek_timezone";
     }
 
 

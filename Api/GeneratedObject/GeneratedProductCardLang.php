@@ -19,7 +19,7 @@ class GeneratedProductCardLang extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_product_card_lang";
+        $this->table = "ek_product_card_lang";
     }
 
 

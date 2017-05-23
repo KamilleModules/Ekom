@@ -7,6 +7,7 @@ namespace Module\Ekom\Api\Layer;
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 class CategoryLayer
@@ -37,8 +38,19 @@ class CategoryLayer
         if (null !== $cardId) {
 
             $tree = $this->getCategoryTreeByProductCardId($cardId);
-            az("rr");
+            $tree = array_reverse($tree);
 
+            // convert tree to breadcrumb "model"
+            $bc = [];
+            foreach ($tree as $item) {
+                $label = $item['label'];
+                $bc[] = [
+                    "link" => E::link("Ekom_category", ['slug' => $item['slug']]),
+                    "title" => "Go to " . $label,
+                    "label" => $label,
+                ];
+            }
+            return $bc;
         } else {
 
             return [
@@ -67,13 +79,11 @@ class CategoryLayer
         /**
          * Get the category of the card for this shop
          */
-
-        $result = A::cache()->get("CategoryLayer.getCategoryTreeByProductCardId", function () use ($cardId) {
+        return A::cache()->get("CategoryLayer.getCategoryTreeByProductCardId", function () use ($cardId) {
             $api = EkomApi::inst();
             $shopId = ApplicationRegistry::get('ekom.front.shop_id');
             $langId = ApplicationRegistry::get('ekom.front.lang_id');
-            $categoryId = $api->shopHasProductCard()->readColumn("category_id", [
-                ["shop_id", "=", $shopId],
+            $categoryId = $api->categoryHasProductCard()->readColumn("category_id", [
                 ["product_card_id", "=", (int)$cardId],
             ]);
 
@@ -85,10 +95,11 @@ class CategoryLayer
 c.id,
 c.name,
 c.category_id,
-l.label
+l.label,
+l.slug
 from ek_category c 
 inner join ek_category_lang l on l.category_id=c.id
-where c.id=$categoryId and l.lang_id=$langId        
+where c.id=$categoryId and c.shop_id=$shopId and l.lang_id=$langId        
         "))) {
                 $categoryId = $parentRow['category_id'];
                 $treeRows[] = $parentRow;
@@ -101,11 +112,6 @@ where c.id=$categoryId and l.lang_id=$langId
         }, [
             'ek_category.*',
         ]);
-
-
-        az($result);
-
-
     }
 
 

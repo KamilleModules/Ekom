@@ -19,7 +19,7 @@ class GeneratedShopHasProductLang extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_shop_has_product_lang";
+        $this->table = "ek_shop_has_product_lang";
     }
 
 

@@ -19,7 +19,7 @@ class GeneratedCategoryLang extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_category_lang";
+        $this->table = "ek_category_lang";
     }
 
 
@@ -31,6 +31,7 @@ class GeneratedCategoryLang extends TableCrudObject
         $ret = array_replace([
 			'label' => '',
 			'description' => '',
+			'slug' => '',
 			'category_id' => 0,
 			'lang_id' => 0,
 		], $data);

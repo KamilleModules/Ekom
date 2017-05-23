@@ -19,7 +19,7 @@ class GeneratedShopHasProductCard extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_shop_has_product_card";
+        $this->table = "ek_shop_has_product_card";
     }
 
 
@@ -32,7 +32,7 @@ class GeneratedShopHasProductCard extends TableCrudObject
 			'shop_id' => 0,
 			'product_card_id' => 0,
 			'product_id' => null,
-			'category_id' => 0,
+			'active' => 0,
 		], $data);
 
 

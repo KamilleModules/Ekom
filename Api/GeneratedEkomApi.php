@@ -5,6 +5,7 @@ namespace Module\Ekom\Api;
 
 use Module\Ekom\Api\Object\BackofficeUser;
 use Module\Ekom\Api\Object\Category;
+use Module\Ekom\Api\Object\CategoryHasProductCard;
 use Module\Ekom\Api\Object\CategoryLang;
 use Module\Ekom\Api\Object\Currency;
 use Module\Ekom\Api\Object\Lang;
@@ -23,6 +24,7 @@ use Module\Ekom\Api\Object\ShopHasCurrency;
 use Module\Ekom\Api\Object\ShopHasLang;
 use Module\Ekom\Api\Object\ShopHasProduct;
 use Module\Ekom\Api\Object\ShopHasProductCard;
+use Module\Ekom\Api\Object\ShopHasProductCardLang;
 use Module\Ekom\Api\Object\ShopHasProductLang;
 use Module\Ekom\Api\Object\ShopHasStore;
 use Module\Ekom\Api\Object\Store;
@@ -58,6 +60,13 @@ class GeneratedEkomApi extends XiaoApi
     public function category()
     {
         return $this->getObject('category');
+    }
+    /**
+     * @return CategoryHasProductCard
+     */
+    public function categoryHasProductCard()
+    {
+        return $this->getObject('categoryHasProductCard');
     }
     /**
      * @return CategoryLang
@@ -184,6 +193,13 @@ class GeneratedEkomApi extends XiaoApi
     public function shopHasProductCard()
     {
         return $this->getObject('shopHasProductCard');
+    }
+    /**
+     * @return ShopHasProductCardLang
+     */
+    public function shopHasProductCardLang()
+    {
+        return $this->getObject('shopHasProductCardLang');
     }
     /**
      * @return ShopHasProductLang

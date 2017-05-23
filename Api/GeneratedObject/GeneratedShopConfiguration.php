@@ -19,7 +19,7 @@ class GeneratedShopConfiguration extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_shop_configuration";
+        $this->table = "ek_shop_configuration";
     }
 
 

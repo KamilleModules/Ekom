@@ -19,7 +19,7 @@ class GeneratedBackofficeUser extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_backoffice_user";
+        $this->table = "ek_backoffice_user";
     }
 
 

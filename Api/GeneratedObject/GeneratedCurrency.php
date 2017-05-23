@@ -19,7 +19,7 @@ class GeneratedCurrency extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_currency";
+        $this->table = "ek_currency";
     }
 
 

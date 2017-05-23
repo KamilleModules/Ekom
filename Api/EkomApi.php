@@ -107,6 +107,7 @@ class EkomApi extends GeneratedEkomApi
         SessionTool::destroyPartial("ekom");
     }
 
+
     //--------------------------------------------
     //
     //--------------------------------------------
