@@ -67,27 +67,21 @@ class CategoryLayer
         /**
          * Get the category of the card for this shop
          */
-        $shopId = ApplicationRegistry::get('ekom.front.shop_id');
-        $langId = ApplicationRegistry::get('ekom.front.lang_id');
 
-        $result = A::cache()->get("", function(){}, [
-            'ek_category.*',
-            'ek_category.*',
-        ]);
-
-
-
-        $api = EkomApi::inst();
-        $categoryId = $api->shopHasProductCard()->readColumn("category_id", [
-            ["shop_id", "=", $shopId],
-            ["product_card_id", "=", (int)$cardId],
-        ]);
+        $result = A::cache()->get("CategoryLayer.getCategoryTreeByProductCardId", function () use ($cardId) {
+            $api = EkomApi::inst();
+            $shopId = ApplicationRegistry::get('ekom.front.shop_id');
+            $langId = ApplicationRegistry::get('ekom.front.lang_id');
+            $categoryId = $api->shopHasProductCard()->readColumn("category_id", [
+                ["shop_id", "=", $shopId],
+                ["product_card_id", "=", (int)$cardId],
+            ]);
 
 
-        $treeRows = [];
+            $treeRows = [];
 
 
-        while (false !== ($parentRow = QuickPdo::fetch("select
+            while (false !== ($parentRow = QuickPdo::fetch("select
 c.id,
 c.name,
 c.category_id,
@@ -96,15 +90,20 @@ from ek_category c
 inner join ek_category_lang l on l.category_id=c.id
 where c.id=$categoryId and l.lang_id=$langId        
         "))) {
-            $categoryId = $parentRow['category_id'];
-            $treeRows[] = $parentRow;
-            if (null === $parentRow['category_id']) {
-                break;
+                $categoryId = $parentRow['category_id'];
+                $treeRows[] = $parentRow;
+                if (null === $parentRow['category_id']) {
+                    break;
+                }
             }
-        }
 
-        az($treeRows);
+            return $treeRows;
+        }, [
+            'ek_category.*',
+        ]);
 
+
+        az($result);
 
 
     }
