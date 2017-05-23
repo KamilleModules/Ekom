@@ -32,6 +32,7 @@ class GeneratedProduct extends TableCrudObject
 			'reference' => '',
 			'weight' => '',
 			'price' => '',
+			'product_card_id' => 0,
 		], $data);
 
 

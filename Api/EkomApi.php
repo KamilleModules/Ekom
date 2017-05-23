@@ -7,7 +7,7 @@ use Bat\SessionTool;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
 use Kamille\Services\XLog;
-use Module\Ekom\Api\Layer\BreadCrumbsLayer;
+use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 
@@ -29,33 +29,34 @@ class EkomApi extends GeneratedEkomApi
 
     /**
      * Should be called by every ekom web controller that displays a page.
-     * It creates the basic variables available through the (kamille) ApplicationRegistry:
      *
-     * - ekom.shop_id
-     * - ekom.lang_id
-     * - ekom.currency_id
+     * It creates the following variables in session if they don't already exist.
      *
-     * It will also create the following variables in the $_SESSION:
+     * - ekom.front
+     * ----- lang_id
+     * ----- currency_id
      *
-     * - ekom
-     * ----- $host
-     * --------- shop_id
-     * --------- lang_id
-     * --------- currency_id
-     * --------- timezone: the name of the timezone
+     * Those variables are then passed to the ApplicationRegistry as:
+     *
+     * - ekom.front.lang_id
+     * - ekom.front.currency_id
+     *
+     * So that they become available in the process code.
+     *
+     * Further more, one more variable is added to the ApplicationRegistry:
+     *
+     * - ekom.front.shop_id
+     *
+     * And finally the default timezone is set (sorry other modules).
      *
      *
-     * and use them for subsequent calls.
-     * To clean these "cache" variables, use the cleanInitCache method.
+     * The host is used as the trigger to retrieve those information (at least the first time)
+     * from the database (or an equivalent cache).
      *
-     * (might be useful if you make changes in the backoffice and want to see your changes in the front)
-     *
-     *
-     * The host is identified using the shop table.
      * If the host cannot be recognized (for instance because there is no corresponding entry in the shop table),
-     * then the lang is initialized to "eng", the currency to "USD", and the shop_id to 0.
-     * That's the signal that something went wrong for other tools.
-     * Also, a message is sent to the log.
+     * then in the ApplicationRegistry, the variables won't exist, and the timezone won't be set.
+     *
+     * If that happens, an error message is also sent to the log.
      *
      *
      *
@@ -65,41 +66,40 @@ class EkomApi extends GeneratedEkomApi
 
         SessionTool::start();
 
+
         $host = Z::request()->host();
-az($shopRow = $this->shopLayer()->getShopInfoByHost($host));
+        if (false !== ($shopRow = $this->shopLayer()->getShopInfoByHost($host))) {
+            $shopId = $shopRow['shop_id'];
+            $langId = $shopRow['lang_id'];
+            $currencyId = $shopRow['currency_id'];
+            $timezone = $shopRow['timezone'];
 
-        if (array_key_exists("ekom", $_SESSION) && array_key_exists($host, $_SESSION['ekom'])) {
-            $fromSession = true;
-            $sess = $_SESSION['ekom'];
-            $shopId = $sess['id'];
-            $langId = $sess['lang_id'];
-            $currencyId = $sess['currency_id'];
-        } else {
-            $fromSession = false;
-            $shopId = 0;
-            $langId = "eng";
-            $currencyId = "USD";
-            if (false !== ($shopRow = $this->shopLayer()->getShopInfoByHost($host))
-            ) {
-                $shopId = $shopRow['id'];
-                $langId = $shopRow['lang_id'];
-                $currencyId = $shopRow['currency_id'];
+
+            if (!array_key_exists("ekom.front", $_SESSION)) {
+                $_SESSION['ekom.front'] = [
+                    'lang_id' => $langId,
+                    'currency_id' => $currencyId,
+                ];
             } else {
-                XLog::error("[Ekom module] - EkomApi: No shop found with host $host");
+                if (
+                    array_key_exists('lang_id', $_SESSION['ekom.front']) &&
+                    array_key_exists('currency_id', $_SESSION['ekom.front'])
+                ) {
+                    $langId = $_SESSION['ekom.front']['lang_id'];
+                    $currencyId = $_SESSION['ekom.front']['currency_id'];
+                } else {
+                    XLog::error("[Ekom module] - EkomApi: lang_id or currency_id not found in \$_SESSION[ekom.front]");
+                }
             }
-            $_SESSION['ekom'] = [
-                $host => [
-                    "shop_id" => $shopId,
-                    "lang_id" => $langId,
-                    "currency_id" => $currencyId,
-                ],
-            ];
-        }
-        ApplicationRegistry::set("ekom.shop_id", $shopId);
-        ApplicationRegistry::set("ekom.lang_id", $langId);
-        ApplicationRegistry::set("ekom.currency_id", $currencyId);
-        ApplicationRegistry::set("ekom.fromSession", $fromSession); // used for personal debugging, don't rely on it
 
+            date_default_timezone_set($timezone);
+            ApplicationRegistry::set("ekom.front.shop_id", $shopId);
+            ApplicationRegistry::set("ekom.front.lang_id", $langId);
+            ApplicationRegistry::set("ekom.front.currency_id", $currencyId);
+
+        } else {
+            XLog::error("[Ekom module] - EkomApi: No shop found with host $host");
+        }
     }
 
     public function cleanInitCache()
@@ -112,11 +112,11 @@ az($shopRow = $this->shopLayer()->getShopInfoByHost($host));
     //--------------------------------------------
 
     /**
-     * @return BreadCrumbsLayer
+     * @return CategoryLayer
      */
-    public function breadCrumbsLayer()
+    public function categoryLayer()
     {
-        return $this->getLayer('breadCrumbsLayer');
+        return $this->getLayer('categoryLayer');
     }
 
     /**

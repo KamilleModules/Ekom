@@ -5,7 +5,6 @@ namespace Module\Ekom\Api;
 
 use Module\Ekom\Api\Object\BackofficeUser;
 use Module\Ekom\Api\Object\Category;
-use Module\Ekom\Api\Object\CategoryHasProductCard;
 use Module\Ekom\Api\Object\CategoryLang;
 use Module\Ekom\Api\Object\Currency;
 use Module\Ekom\Api\Object\Lang;
@@ -15,13 +14,11 @@ use Module\Ekom\Api\Object\ProductAttributeLang;
 use Module\Ekom\Api\Object\ProductAttributeValue;
 use Module\Ekom\Api\Object\ProductAttributeValueLang;
 use Module\Ekom\Api\Object\ProductCard;
-use Module\Ekom\Api\Object\ProductCardHasProduct;
 use Module\Ekom\Api\Object\ProductCardLang;
 use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductLang;
 use Module\Ekom\Api\Object\Shop;
 use Module\Ekom\Api\Object\ShopConfiguration;
-use Module\Ekom\Api\Object\ShopHasCategory;
 use Module\Ekom\Api\Object\ShopHasCurrency;
 use Module\Ekom\Api\Object\ShopHasLang;
 use Module\Ekom\Api\Object\ShopHasProduct;
@@ -61,13 +58,6 @@ class GeneratedEkomApi extends XiaoApi
     public function category()
     {
         return $this->getObject('category');
-    }
-    /**
-     * @return CategoryHasProductCard
-     */
-    public function categoryHasProductCard()
-    {
-        return $this->getObject('categoryHasProductCard');
     }
     /**
      * @return CategoryLang
@@ -133,13 +123,6 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('productCard');
     }
     /**
-     * @return ProductCardHasProduct
-     */
-    public function productCardHasProduct()
-    {
-        return $this->getObject('productCardHasProduct');
-    }
-    /**
      * @return ProductCardLang
      */
     public function productCardLang()
@@ -173,13 +156,6 @@ class GeneratedEkomApi extends XiaoApi
     public function shopConfiguration()
     {
         return $this->getObject('shopConfiguration');
-    }
-    /**
-     * @return ShopHasCategory
-     */
-    public function shopHasCategory()
-    {
-        return $this->getObject('shopHasCategory');
     }
     /**
      * @return ShopHasCurrency

@@ -32,6 +32,7 @@ class GeneratedShopHasProductCard extends TableCrudObject
 			'shop_id' => 0,
 			'product_card_id' => 0,
 			'product_id' => null,
+			'category_id' => 0,
 		], $data);
 
 

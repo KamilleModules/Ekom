@@ -18,7 +18,7 @@ class EkomShortCodeProvider extends ShortCodeProvider
 
     public function getBreadCrumbs()
     {
-        return EkomApi::inst()->breadCrumbsLayer()->getBreadCrumbs();
+        return EkomApi::inst()->categoryLayer()->getBreadCrumbs();
     }
 
 
