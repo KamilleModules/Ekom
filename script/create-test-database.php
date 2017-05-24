@@ -1300,24 +1300,24 @@ foreach ($products as $product) {
         "label" => $label,
         "description" => "",
         "slug" => $slug,
-        "shop_has_product_shop_id" => $shopEurope,
-        "shop_has_product_product_id" => $product,
+        "shop_id" => $shopEurope,
+        "product_id" => $product,
         "lang_id" => $langFrench,
     ]);
     $api->shopHasProductLang()->create([
         "label" => "",
         "description" => "",
         "slug" => "",
-        "shop_has_product_shop_id" => $shopEurope,
-        "shop_has_product_product_id" => $product,
+        "shop_id" => $shopEurope,
+        "product_id" => $product,
         "lang_id" => $langEnglish,
     ]);
     $api->shopHasProductLang()->create([
         "label" => "",
         "description" => "",
         "slug" => "",
-        "shop_has_product_shop_id" => $shopUsa,
-        "shop_has_product_product_id" => $product,
+        "shop_id" => $shopUsa,
+        "product_id" => $product,
         "lang_id" => $langEnglish,
     ]);
 }

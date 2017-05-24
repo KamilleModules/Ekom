@@ -18,6 +18,19 @@ use Module\Ekom\Api\Layer\ShopLayer;
  */
 class EkomApi extends GeneratedEkomApi
 {
+
+    private $initialized;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->initialized = false;
+    }
+
+
+
+
+
     //--------------------------------------------
     //
     //--------------------------------------------
@@ -63,42 +76,45 @@ class EkomApi extends GeneratedEkomApi
      */
     public function initWebPage()
     {
+        if (false === $this->initialized) {
+            $this->initialized = true;
 
-        SessionTool::start();
-
-
-        $host = Z::request()->host();
-        if (false !== ($shopRow = $this->shopLayer()->getShopInfoByHost($host))) {
-            $shopId = $shopRow['shop_id'];
-            $langId = $shopRow['lang_id'];
-            $currencyId = $shopRow['currency_id'];
-            $timezone = $shopRow['timezone'];
+            SessionTool::start();
 
 
-            if (!array_key_exists("ekom.front", $_SESSION)) {
-                $_SESSION['ekom.front'] = [
-                    'lang_id' => $langId,
-                    'currency_id' => $currencyId,
-                ];
-            } else {
-                if (
-                    array_key_exists('lang_id', $_SESSION['ekom.front']) &&
-                    array_key_exists('currency_id', $_SESSION['ekom.front'])
-                ) {
-                    $langId = $_SESSION['ekom.front']['lang_id'];
-                    $currencyId = $_SESSION['ekom.front']['currency_id'];
+            $host = Z::request()->host();
+            if (false !== ($shopRow = $this->shopLayer()->getShopInfoByHost($host))) {
+                $shopId = $shopRow['shop_id'];
+                $langId = $shopRow['lang_id'];
+                $currencyId = $shopRow['currency_id'];
+                $timezone = $shopRow['timezone'];
+
+
+                if (!array_key_exists("ekom.front", $_SESSION)) {
+                    $_SESSION['ekom.front'] = [
+                        'lang_id' => $langId,
+                        'currency_id' => $currencyId,
+                    ];
                 } else {
-                    XLog::error("[Ekom module] - EkomApi: lang_id or currency_id not found in \$_SESSION[ekom.front]");
+                    if (
+                        array_key_exists('lang_id', $_SESSION['ekom.front']) &&
+                        array_key_exists('currency_id', $_SESSION['ekom.front'])
+                    ) {
+                        $langId = $_SESSION['ekom.front']['lang_id'];
+                        $currencyId = $_SESSION['ekom.front']['currency_id'];
+                    } else {
+                        XLog::error("[Ekom module] - EkomApi: lang_id or currency_id not found in \$_SESSION[ekom.front]");
+                    }
                 }
+
+                date_default_timezone_set($timezone);
+                ApplicationRegistry::set("ekom.front.shop_id", $shopId);
+                ApplicationRegistry::set("ekom.front.lang_id", $langId);
+                ApplicationRegistry::set("ekom.front.currency_id", $currencyId);
+
+            } else {
+                XLog::error("[Ekom module] - EkomApi: No shop found with host $host");
             }
-
-            date_default_timezone_set($timezone);
-            ApplicationRegistry::set("ekom.front.shop_id", $shopId);
-            ApplicationRegistry::set("ekom.front.lang_id", $langId);
-            ApplicationRegistry::set("ekom.front.currency_id", $currencyId);
-
-        } else {
-            XLog::error("[Ekom module] - EkomApi: No shop found with host $host");
         }
     }
 
@@ -107,6 +123,34 @@ class EkomApi extends GeneratedEkomApi
         SessionTool::destroyPartial("ekom");
     }
 
+
+    /**
+     *
+     * @param $type
+     * type can be one of:
+     *
+     * - productBox
+     *      the images for a product, combined with the images of the container product card.
+     *
+     *
+     * @param mixed $id , help finding the images.
+     *      Depends on the type.
+     *      If type is:
+     *          - productBox,
+     *                  then the id is an array containing the following:
+     *                      - 0: product_id
+     *                      - 1: product_card_id
+     *
+     *
+     *
+     *
+     *
+     *
+     */
+    public function getImages($type, $id)
+    {
+
+    }
 
     //--------------------------------------------
     //

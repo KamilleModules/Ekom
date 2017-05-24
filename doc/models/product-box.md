@@ -4,6 +4,56 @@ ProductBox model
 
 
 
+
+This model can take multiple forms:
+
+- the normal form represents the box model as expected
+- an error form represents the box model when something wrong happened (for instance,
+        the product card wasn't found)
+        
+
+The benefit of using one hybrid model over a controller dispatching multiple models,
+beside the semantic discussion, is that we can cache the result of the model
+in its relevant form.
+
+In other words, we can cache more with this technique.
+
+
+Now, for the sake of the semantic discussion:
+
+we basically ask a template to do multiple things at once, or to be multi-states (depends
+how you see it), which is arguably a bad thing (because do just one thing but do it well is a good thing, right?).
+However, what we are asking is really to display simple error messages, nothing fancy,
+and arguably, an error message belongs to the widget it's attached to, not ANOTHER view.
+
+You make your own opinion on it, I choose that it's okay to pass such hybrid models 
+as long as the other forms are just error messages.
+
+Now if you think about this, and if you agree with my point of view, then
+we might improve on that and say that this is a pattern.
+
+
+
+
+
+The error form looks like this:
+
+- errorCode: a code indicating the type of error, the code can be a string like "unavailable", or anything else 
+- ?errorTitle: an error title 
+- ?errorMessage: an error message
+ 
+If the errorCode key exists in the model, then it means that the model
+is in the error form; otherwise it's in the normal form.
+
+ 
+(We could re-use those error keys whenever any widget is in erroneous mode? just suggesting the idea here) 
+
+
+
+
+
+The normal form is presented below:        
+
 Php example
 ----------------
 ```php

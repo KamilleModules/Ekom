@@ -79,7 +79,7 @@ class CategoryLayer
         /**
          * Get the category of the card for this shop
          */
-        return A::cache()->get("CategoryLayer.getCategoryTreeByProductCardId", function () use ($cardId) {
+        return A::cache()->get("CategoryLayer.getCategoryTreeByProductCardId.$cardId", function () use ($cardId) {
             $api = EkomApi::inst();
             $shopId = ApplicationRegistry::get('ekom.front.shop_id');
             $langId = ApplicationRegistry::get('ekom.front.lang_id');
