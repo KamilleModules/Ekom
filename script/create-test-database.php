@@ -443,49 +443,49 @@ $api->productCardLang()->create([
     "label" => "Chaussettes",
     "description" => "$lorem",
     "slug" => "socks",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardSocks,
     "lang_id" => $langFrench,
 ]);
 $api->productCardLang()->create([
     "label" => "Gravity",
     "description" => "$lorem",
     "slug" => "gravity",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardGravity,
     "lang_id" => $langFrench,
 ]);
 $api->productCardLang()->create([
     "label" => "Cage Power",
     "description" => "$lorem",
     "slug" => "cage-power",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardCagePower,
     "lang_id" => $langFrench,
 ]);
 $api->productCardLang()->create([
     "label" => "Tapis",
     "description" => "$lorem",
     "slug" => "tapis",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardTapis,
     "lang_id" => $langFrench,
 ]);
 $api->productCardLang()->create([
     "label" => "Balance Board",
     "description" => "$lorem",
     "slug" => "balance-board",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardBalanceBoard,
     "lang_id" => $langFrench,
 ]);
 $api->productCardLang()->create([
     "label" => "Bloc Prioception",
     "description" => "$lorem",
     "slug" => "bloc-prioception",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardBlocPrioception,
     "lang_id" => $langFrench,
 ]);
 $api->productCardLang()->create([
     "label" => "Ballon",
     "description" => "$lorem",
     "slug" => "ballon",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardBallon,
     "lang_id" => $langFrench,
 ]);
 
@@ -515,49 +515,49 @@ $api->productCardLang()->create([
     "label" => "Socks",
     "description" => "$lorem",
     "slug" => "socks",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardSocks,
     "lang_id" => $langEnglish,
 ]);
 $api->productCardLang()->create([
     "label" => "Gravity",
     "description" => "$lorem",
     "slug" => "gravity",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardGravity,
     "lang_id" => $langEnglish,
 ]);
 $api->productCardLang()->create([
     "label" => "Cage Power",
     "description" => "$lorem",
     "slug" => "cage-power",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardCagePower,
     "lang_id" => $langEnglish,
 ]);
 $api->productCardLang()->create([
     "label" => "Tapis",
     "description" => "$lorem",
     "slug" => "tapis",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardTapis,
     "lang_id" => $langEnglish,
 ]);
 $api->productCardLang()->create([
     "label" => "Balance Board",
     "description" => "$lorem",
     "slug" => "balance-board",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardBalanceBoard,
     "lang_id" => $langEnglish,
 ]);
 $api->productCardLang()->create([
     "label" => "Prioception Bloc",
     "description" => "$lorem",
     "slug" => "bloc-prioception",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardBlocPrioception,
     "lang_id" => $langEnglish,
 ]);
 $api->productCardLang()->create([
     "label" => "Balloon",
     "description" => "$lorem",
     "slug" => "ballon",
-    "product_card_id" => $cardKettleBell,
+    "product_card_id" => $cardBallon,
     "lang_id" => $langEnglish,
 ]);
 

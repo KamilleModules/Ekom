@@ -4,10 +4,12 @@
 namespace Module\Ekom\Api;
 
 use Bat\SessionTool;
+use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\Layer\CategoryLayer;
+use Module\Ekom\Api\Layer\ImageLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 
@@ -124,33 +126,6 @@ class EkomApi extends GeneratedEkomApi
     }
 
 
-    /**
-     *
-     * @param $type
-     * type can be one of:
-     *
-     * - productBox
-     *      the images for a product, combined with the images of the container product card.
-     *
-     *
-     * @param mixed $id , help finding the images.
-     *      Depends on the type.
-     *      If type is:
-     *          - productBox,
-     *                  then the id is an array containing the following:
-     *                      - 0: product_id
-     *                      - 1: product_card_id
-     *
-     *
-     *
-     *
-     *
-     *
-     */
-    public function getImages($type, $id)
-    {
-
-    }
 
     //--------------------------------------------
     //
@@ -179,4 +154,14 @@ class EkomApi extends GeneratedEkomApi
     {
         return $this->getLayer('shopLayer');
     }
+
+    /**
+     * @return ImageLayer
+     */
+    public function imageLayer()
+    {
+        return $this->getLayer('imageLayer');
+    }
+
+
 }
