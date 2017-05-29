@@ -81,8 +81,8 @@ class CategoryLayer
          */
         return A::cache()->get("Module.Ekom.Api.Layer.CategoryLayer.getCategoryTreeByProductCardId.$cardId", function () use ($cardId) {
             $api = EkomApi::inst();
-            $shopId = ApplicationRegistry::get('ekom.front.shop_id');
-            $langId = ApplicationRegistry::get('ekom.front.lang_id');
+            $shopId = ApplicationRegistry::get('ekom.shop_id');
+            $langId = ApplicationRegistry::get('ekom.lang_id');
             $categoryId = $api->categoryHasProductCard()->readColumn("category_id", [
                 ["product_card_id", "=", (int)$cardId],
             ]);
@@ -111,6 +111,7 @@ where c.id=$categoryId and c.shop_id=$shopId and l.lang_id=$langId
             return $treeRows;
         }, [
             'ek_category.*',
+            'ek_category_lang.*',
         ]);
     }
 

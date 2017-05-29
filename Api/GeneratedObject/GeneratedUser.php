@@ -19,7 +19,7 @@ class GeneratedUser extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_user";
+        $this->table = "ek_user";
     }
 
 
@@ -29,16 +29,14 @@ class GeneratedUser extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
-			'user_group_id' => 0,
+			'shop_id' => 0,
 			'email' => '',
 			'pass' => '',
-			'base_shop_id' => 0,
 			'date_creation' => '',
-			'active' => 0,
-			'main_address_id' => 0,
 			'mobile' => '',
 			'phone' => '',
-			'pro' => 0,
+			'newsletter' => 0,
+			'active' => 0,
 		], $data);
 
 

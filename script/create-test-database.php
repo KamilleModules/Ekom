@@ -32,6 +32,10 @@ $api->shopHasProductCardLang()->deleteAll();
 $api->shopHasProductLang()->deleteAll();
 $api->categoryLang()->deleteAll();
 $api->categoryHasProductCard()->deleteAll();
+$api->taxLang()->deleteAll();
+$api->productCardHasTaxGroup()->deleteAll();
+$api->taxGroupHasTax()->deleteAll();
+$api->taxGroup()->deleteAll();
 
 // no deps
 $api->timezone()->deleteAll();
@@ -43,6 +47,7 @@ $api->productAttributeValue()->deleteAll();
 $api->product()->deleteAll();
 $api->productCard()->deleteAll();
 $api->category()->deleteAll();
+$api->tax()->deleteAll();
 
 
 //--------------------------------------------
@@ -69,13 +74,13 @@ $langEnglish = $api->lang()->create([
 $api->backofficeUser()->create([
     "email" => 'ling@me.com',
     "pass" => 'pass',
-    "lang_id" => $langFrench,
+    "lang_iso" => "fra",
 ]);
 
 $api->backofficeUser()->create([
     "email" => 'anne@me.com',
     "pass" => 'pass',
-    "lang_id" => $langEnglish,
+    "lang_iso" => "eng",
 ]);
 
 
@@ -121,6 +126,10 @@ $shopUsa = $api->shop()->create([
     "timezone_id" => $api->timezone()->readColumn('id', [['name', '=', 'America/Los_Angeles']]),
 ]);
 
+$shops = [
+    $shopEurope,
+    $shopUsa,
+];
 
 //--------------------------------------------
 // shop has lang
@@ -145,15 +154,21 @@ $api->shopHasLang()->create([
 $api->shopHasCurrency()->create([
     "shop_id" => $shopEurope,
     "currency_id" => $currencyEuro,
+    "exchange_rate" => "1",
+    "active" => "1",
 ]);
 $api->shopHasCurrency()->create([
     "shop_id" => $shopEurope,
     "currency_id" => $currencyDollar,
+    "exchange_rate" => "1.11998",
+    "active" => "0",
 ]);
 
 $api->shopHasCurrency()->create([
     "shop_id" => $shopUsa,
     "currency_id" => $currencyDollar,
+    "exchange_rate" => "1",
+    "active" => "1",
 ]);
 
 
@@ -997,15 +1012,24 @@ $api->productHasProductAttribute()->create([
 $accidentallyMissingProducts = [
     $productPilatesRingBlack,
 ];
+$quantity0Products = [
+    $productKettleBell_8,
+];
 foreach ($products as $product) {
 
     if (in_array($product, $accidentallyMissingProducts, true)) {
         continue; // testing the unknown keyword synopsis
     }
+
+    if (in_array($product, $quantity0Products, true)) {
+        $quantity = 0;
+    } else {
+        $quantity = rand(50, 100);
+    }
     $api->storeHasProduct()->create([
         "store_id" => $storeAvertin,
         "product_id" => $product,
-        "quantity" => rand(50, 100),
+        "quantity" => $quantity,
     ]);
 
     $api->storeHasProduct()->create([
@@ -1452,8 +1476,102 @@ $api->shopHasProductCardLang()->create([
 ]);
 
 
+//--------------------------------------------
+// tax
+//--------------------------------------------
+$tax20 = $api->tax()->create([
+    'amount' => "20",
+]);
+
+$tax10 = $api->tax()->create([
+    'amount' => "10",
+]);
 
 
+//--------------------------------------------
+// tax lang
+//--------------------------------------------
+$api->taxLang()->create([
+    'tax_id' => $tax20,
+    'lang_id' => $langFrench,
+    'label' => "tva 20%",
+]);
+
+$api->taxLang()->create([
+    'tax_id' => $tax20,
+    'lang_id' => $langEnglish,
+    'label' => "vat 20%",
+]);
+
+
+$api->taxLang()->create([
+    'tax_id' => $tax10,
+    'lang_id' => $langFrench,
+    'label' => "taxe exemple 10%",
+]);
+
+$api->taxLang()->create([
+    'tax_id' => $tax10,
+    'lang_id' => $langEnglish,
+    'label' => "example tax 10%",
+]);
+
+
+//--------------------------------------------
+// tax group
+//--------------------------------------------
+$taxGroupFrance = $api->taxGroup()->create([
+    'label' => "france tva",
+    'condition' => "",
+    'shop_id' => $shopEurope,
+]);
+
+
+//--------------------------------------------
+// tax group has tax
+//--------------------------------------------
+$api->taxGroupHasTax()->create([
+    "tax_group_id" => $taxGroupFrance,
+    "tax_id" => $tax20,
+    "order" => 0,
+    "mode" => "",
+]);
+
+$api->taxGroupHasTax()->create([
+    "tax_group_id" => $taxGroupFrance,
+    "tax_id" => $tax10,
+    "order" => 1,
+    "mode" => "",
+]);
+
+
+//--------------------------------------------
+// product card has tax group
+//--------------------------------------------
+foreach ($cards as $card) {
+    $api->productCardHasTaxGroup()->create([
+        "shop_id" => $shopEurope,
+        "product_card_id" => $card,
+        "tax_group_id" => $taxGroupFrance,
+    ]);
+}
+
+
+//--------------------------------------------
+// users
+//--------------------------------------------
+foreach ($shops as $shop) {
+    $api->user()->create([
+        'shop_id' => $shop,
+        'email' => "lingtalfi@gmail.com",
+        'pass' => "me",
+        'date_creation' => "2017-05-28 09:49:44",
+        'mobile' => "0612457865",
+        'phone' => "0247609841",
+        'newsletter' => "1",
+        'active' => "1",
+    ]);
+}
 
 
 

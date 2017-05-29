@@ -31,6 +31,8 @@ class GeneratedShopHasCurrency extends TableCrudObject
         $ret = array_replace([
 			'shop_id' => 0,
 			'currency_id' => 0,
+			'exchange_rate' => '',
+			'active' => 0,
 		], $data);
 
 

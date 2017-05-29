@@ -32,19 +32,13 @@ class GeneratedShop extends TableCrudObject
 			'label' => '',
 			'host' => '',
 			'lang_id' => null,
-			'currency_id' => null,
-			'timezone_id' => null,
+			'currency_id' => 0,
+			'timezone_id' => 0,
 		], $data);
 
 
         if (0 === (int)$ret["lang_id"]) {
             $ret["lang_id"] = null;
-        }
-        if (0 === (int)$ret["currency_id"]) {
-            $ret["currency_id"] = null;
-        }
-        if (0 === (int)$ret["timezone_id"]) {
-            $ret["timezone_id"] = null;
         }
 
         return $ret;

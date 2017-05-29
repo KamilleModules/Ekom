@@ -31,13 +31,10 @@ class GeneratedBackofficeUser extends TableCrudObject
         $ret = array_replace([
 			'email' => '',
 			'pass' => '',
-			'lang_id' => null,
+			'lang_iso' => '',
 		], $data);
 
 
-        if (0 === (int)$ret["lang_id"]) {
-            $ret["lang_id"] = null;
-        }
 
         return $ret;
     }

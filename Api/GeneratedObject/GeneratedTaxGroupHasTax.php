@@ -13,13 +13,13 @@ use XiaoApi\Object\TableCrudObject;
  *
  * You are supposed to extend this object.
  */
-class GeneratedTax extends TableCrudObject
+class GeneratedTaxGroupHasTax extends TableCrudObject
 {
 
     public function __construct()
     {
         parent::__construct();
-        $this->table = "ek_tax";
+        $this->table = "ek_tax_group_has_tax";
     }
 
 
@@ -29,7 +29,10 @@ class GeneratedTax extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
-			'amount' => '',
+			'tax_group_id' => 0,
+			'tax_id' => 0,
+			'order' => 0,
+			'mode' => '',
 		], $data);
 
 

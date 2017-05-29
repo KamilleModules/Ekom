@@ -8,6 +8,11 @@ class EkomHooks
 {
 
 
+    protected static function Ekom_adaptContextualConfig(array &$conf){
+
+    }
+
+
     protected static function NullosAdmin_layout_sideBarMenuModel(array &$sideBarMenuModel)
     {
         $sideBarMenuModel['sections'][] = [

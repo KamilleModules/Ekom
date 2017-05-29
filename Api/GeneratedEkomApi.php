@@ -15,6 +15,7 @@ use Module\Ekom\Api\Object\ProductAttributeLang;
 use Module\Ekom\Api\Object\ProductAttributeValue;
 use Module\Ekom\Api\Object\ProductAttributeValueLang;
 use Module\Ekom\Api\Object\ProductCard;
+use Module\Ekom\Api\Object\ProductCardHasTaxGroup;
 use Module\Ekom\Api\Object\ProductCardLang;
 use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductLang;
@@ -29,7 +30,12 @@ use Module\Ekom\Api\Object\ShopHasProductLang;
 use Module\Ekom\Api\Object\ShopHasStore;
 use Module\Ekom\Api\Object\Store;
 use Module\Ekom\Api\Object\StoreHasProduct;
+use Module\Ekom\Api\Object\Tax;
+use Module\Ekom\Api\Object\TaxGroup;
+use Module\Ekom\Api\Object\TaxGroupHasTax;
+use Module\Ekom\Api\Object\TaxLang;
 use Module\Ekom\Api\Object\Timezone;
+use Module\Ekom\Api\Object\User;
 
 use XiaoApi\Api\XiaoApi;
 
@@ -132,6 +138,13 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('productCard');
     }
     /**
+     * @return ProductCardHasTaxGroup
+     */
+    public function productCardHasTaxGroup()
+    {
+        return $this->getObject('productCardHasTaxGroup');
+    }
+    /**
      * @return ProductCardLang
      */
     public function productCardLang()
@@ -230,10 +243,45 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('storeHasProduct');
     }
     /**
+     * @return Tax
+     */
+    public function tax()
+    {
+        return $this->getObject('tax');
+    }
+    /**
+     * @return TaxGroup
+     */
+    public function taxGroup()
+    {
+        return $this->getObject('taxGroup');
+    }
+    /**
+     * @return TaxGroupHasTax
+     */
+    public function taxGroupHasTax()
+    {
+        return $this->getObject('taxGroupHasTax');
+    }
+    /**
+     * @return TaxLang
+     */
+    public function taxLang()
+    {
+        return $this->getObject('taxLang');
+    }
+    /**
      * @return Timezone
      */
     public function timezone()
     {
         return $this->getObject('timezone');
+    }
+    /**
+     * @return User
+     */
+    public function user()
+    {
+        return $this->getObject('user');
     }
 }

@@ -19,7 +19,7 @@ class GeneratedTaxLang extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_tax_lang";
+        $this->table = "ek_tax_lang";
     }
 
 
@@ -29,8 +29,9 @@ class GeneratedTaxLang extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
-			'label' => '',
+			'tax_id' => 0,
 			'lang_id' => 0,
+			'label' => '',
 		], $data);
 
 

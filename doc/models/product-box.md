@@ -1,6 +1,6 @@
 ProductBox model
 ===============
-2017-05-23
+2017-05-23 --> 2017-05-26
 
 
 
@@ -54,82 +54,72 @@ is in the error form; otherwise it's in the normal form.
 
 The normal form is presented below:        
 
-Php example
-----------------
-```php
+```txt
+
+- images: array of 
+                $fileName => \[
+                    thumb => $uriImageThumb, 
+                    small => $uriImageSmall, 
+                    medium => $uriImageMedium, 
+                    large => $uriImageLarge, 
+                ]
+- defaultImage: $fileName of the default image (key of the images array)
+- label: string
+- ref: string
+- description: string
+- stockType: string representing info about the stock, possible values are:
+                - stockAvailable: the stock is available
+                - outOfStock: the stock is not available, because quantity is 0
+                
+                The template should use this value to format the stockText (using
+                different colors for instance).
+                
+- stockText: string, the text to display
+- price: string, the formatted price
+- discount_type:
+- discount_amount:
+- discount_price:
+- attributes: array of $attrName => $attrInfo.
+                
+                Should be used to display an attribute selector subwidget.
+                
+                The attribute selector might look as a stack of attribute lines,
+                each lines containing the possible attribute values in form of clickable/grayed out buttons.
+                Something like this for instance:
+                
+                 * ---------------
+                 * Color:
+                 *      red    <green>    blue
+                 * Size:
+                 *      4   6   <8>   10
+                 * ---------------                
+                
+                
+                The $attrInfo is an array with the following structure:
+                - label: string, the label of the attribute
+                - values: array of $attrValueInfo, each of which being an array with 
+                                        the following structure:
+                                        - value: string, the value of the attribute
+                                        - selected: 0|1, whether this attribute value is the one selected
+                                        - active: 0|1, if 0, it means the product has been de-activated by the shop owner (ek_shop_has_product.active), 
+                                                        and the user shouldn't be able to select this value 
+                                        - quantity: number, the quantity of products if that value was chosen
+                                        - existence: 0|1, whether or not the product for this attribute value does exist.
+                                                         Read Module\Ekom\Utils\AttributeSelectorHelper's source code top comment for more info.
+                                        - productUri: string, the uri to the corresponding product.
+                                        - getProductInfoAjaxUri: string, the uri to the ajax service to call to get information
+                                                                about the product
+                                        - product_id: string, the product id
+                                                                
+                                                                        
+                                                                    
 
 
 
-        $uri = "/theme/" . ApplicationParameters::get("theme");
-        $names = [
-            "balance-board.jpg",
-            "balance-board-logo.jpg",
-            "balance-board-demo.jpg",
-            "balance-board-arriere.jpg",
-            "balance-board.jpg",
-            "balance-board-logo.jpg",
-            "balance-board-demo.jpg",
-            "balance-board-arriere.jpg",
-        ];
+// extensions
 
+- rating_amount:
+- rating_nbVotes:
+- video_sources:
 
-        /**
-         * The keys of the images are fileNames (like "balance-board.jpg" for instance)
-         */
-        $images = [];
-        foreach ($names as $fileName) {
-            $images[$fileName] = [
-                'thumb' => $uri . "/img/products/balance-board/thumb/$fileName",
-                'small' => $uri . "/img/products/balance-board/small/$fileName",
-                'large' => $uri . "/img/products/balance-board/large/$fileName",
-            ];
-        }
-
-        $boxConf = [
-            "images" => $images,
-            "defaultImage" => "balance-board.jpg",
-            "label" => "Balance Board",
-            "ref" => "1436",
-            "description" => "Plateau de freeman en bois idéal pour travailler les muscles stabilisateurs, l'équilibre et la coordination. Ultra résistant grâce à son bois robuste, le plateau dispose d'une surface antidérapante.",
-            /**
-             * Is used by the widget to assign visual cues (for instance success color) to the stockText
-             * List of available types will be defined later.
-             */
-            "stockType" => "stockAvailable",
-            "stockText" => "En stock",
-            "price" => "12.69 €", // note that price includes currency (and relevant formatting)
-            // if type is null, the price is not discounted,
-            // otherwise, the discount_ data help displaying the right discounted price
-            "discount_type" => null,
-            "discount_amount" => "0",
-            "discount_price" => "0",
-            "attributes" => [
-                'weight' => [
-                    "label" => "poids",
-                    "values" => [
-                        ["0.5 kg", ""],
-                        ["1 kg", "selected"],
-                        ["2 kg", ""],
-                        ["3 kg", "disabled"],
-                        ["4 kg", "outOfStock"],
-                        ["5 kg", ""],
-                    ],
-                ],
-            ],
-            //--------------------------------------------
-            // EXTENSION: SPECIFIC TO SOME PLUGINS
-            // consider using namespace_varName notation
-            //--------------------------------------------
-            // rating
-            "rating_amount" => "80", // percent
-            "rating_nbVotes" => "6",
-            // video
-            "video_sources" => [
-                "/video/Larz Rocking Leaderfit Paris 2017 Step V2.mp4" => "video/mp4",
-            ],
-        ];
-
-        return $boxConf;
 ```
-
-
