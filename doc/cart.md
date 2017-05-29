@@ -172,15 +172,14 @@ Then, the file might contain a serialized array with the following structure (or
 
 ```txt
 - items:
------ 0:
---------- quantity: 5
---------- id: 650
---------- shop_id: 2
------ 1:
---------- quantity: 1
---------- id: 12
---------- shop_id: 2
------ ...
+----- $shopId:
+--------- 0:
+------------- quantity: 5
+------------- id: 650
+--------- 1:
+------------- quantity: 1
+------------- id: 12
+--------- ...
 ```
 
 So now we can easily/quickly access and store info of a connected user's cart.
@@ -290,7 +289,27 @@ Couple of other options:
                     and I just don't feel like making an ajax request every time just to get
                     the f... info out of the cart.
                 
-So, php session it is.        
+So, php session it is.     
+   
+   
+What about the session data structure?
+
+I suggest: same as the customSystem, but changing the key of items to ekom.cart (since
+sessions can be shared with multiple modules):
+
+   
+```txt
+- ekom.cart:
+----- $shopId:
+--------- 0:
+------------- quantity: 5
+------------- id: 650
+--------- 1:
+------------- quantity: 1
+------------- id: 12
+--------- ...
+```   
+   
 
 
 
@@ -371,7 +390,7 @@ encapsulating in ekom methods to abstract the hybrid storage problem:
 - EkomApi::inst()->cartLayer()->getCartModel() // use getItems info to return a computed cart model
         
 
-
+Also, we will have methods in the js ekomApi, see the ekom js api documentation for more info.
 
 
 

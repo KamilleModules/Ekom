@@ -360,13 +360,24 @@ and product_id in (" . implode(', ', $productIds) . ")
                             $priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $price, $taxDetails);
 
 
+                            $unformattedPrice = $price;
+                            $unformattedPriceWithTax = $priceWithTax;
+
+
                             $price = E::price($price);
                             $priceWithTax = E::price($priceWithTax);
 
-                            $displayPrice = (true === E::conf("displayPriceWithTax")) ? $priceWithTax : $price;
+                            if (true === E::conf("displayPriceWithTax")) {
+                                $displayPrice = $priceWithTax;
+                                $displayPriceUnformatted = $unformattedPriceWithTax;
+                            } else {
+                                $displayPrice = $price;
+                                $displayPriceUnformatted = $unformattedPrice;
+                            }
 
 
                             $boxConf = [
+                                "product_id" => (int)$productId,
                                 "images" => $images,
                                 "defaultImage" => $defaultImage,
                                 "label" => $label,
@@ -379,8 +390,11 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 "stockType" => $stockType,
                                 "stockText" => $stockText,
                                 "displayPrice" => $displayPrice, // the price chosen by the ekom module for display
-                                "price" => $price, // formatted price
+                                "displayPriceUnformatted" => (float)$displayPriceUnformatted,
+                                "priceWithoutTax" => $price, // formatted price
+                                "priceWithoutTaxUnformatted" => $unformattedPrice,
                                 "priceWithTax" => $priceWithTax, // formatted price
+                                "priceWithTaxUnformatted" => $unformattedPriceWithTax,
                                 "taxDetails" => $taxDetails, // see TaxLayer.applyTaxesToPrice for more details
                                 // if type is null, the price is not discounted,
                                 // otherwise, the discount_ data help displaying the right discounted price
@@ -465,6 +479,12 @@ and product_id in (" . implode(', ', $productIds) . ")
     public function getProductBoxModelByProductId($productId, $shopId = null, $langId = null)
     {
         EkomApi::inst()->initWebContext();
+
+        $productId = (int)$productId;
+        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+
+
         return A::cache()->get("Module.Ekom.Api.Layer.getProductBoxModelByProductId.$shopId.$langId.$productId", function () use ($productId, $shopId, $langId) {
             $productId = (int)$productId;
             try {

@@ -1560,18 +1560,18 @@ foreach ($cards as $card) {
 //--------------------------------------------
 // users
 //--------------------------------------------
-foreach ($shops as $shop) {
-    $api->user()->create([
-        'shop_id' => $shop,
-        'email' => "lingtalfi@gmail.com",
-        'pass' => "me",
-        'date_creation' => "2017-05-28 09:49:44",
-        'mobile' => "0612457865",
-        'phone' => "0247609841",
-        'newsletter' => "1",
-        'active' => "1",
-    ]);
-}
+//foreach ($shops as $shop) {
+//    $api->user()->create([
+//        'shop_id' => $shop,
+//        'email' => "lingtalfi@gmail.com",
+//        'pass' => "me",
+//        'date_creation' => "2017-05-28 09:49:44",
+//        'mobile' => "0612457865",
+//        'phone' => "0247609841",
+//        'newsletter' => "1",
+//        'active' => "1",
+//    ]);
+//}
 
 
 

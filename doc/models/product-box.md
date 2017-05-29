@@ -55,7 +55,7 @@ is in the error form; otherwise it's in the normal form.
 The normal form is presented below:        
 
 ```txt
-
+- product_id: the product id 
 - images: array of 
                 $fileName => \[
                     thumb => $uriImageThumb, 
@@ -75,8 +75,22 @@ The normal form is presented below:
                 different colors for instance).
                 
 - stockText: string, the text to display
-- price: string, the formatted price
-- discount_type:
+- displayPrice: string, the price to display, based on ekom preferences/rules
+- displayPriceUnformatted: float, the price to display but unformatted (it might be used for further computations,
+                        it has been added to the model but shouldn't be used by the templates)
+- priceWithoutTax: string, the formatted price without taxes
+- priceWithoutTaxUnformatted: string, the unformatted price without taxes (not intended to be displayed)
+- priceWithTax: string, the formatted price with taxes
+- priceWithTaxUnformatted: string, the unformatted price with taxes (not intended to be displayed)
+- taxDetails: array of items, each item having the following structure:
+    - amount: the percentage applied for that node (which in case of merged taxed is the sum of all taxes)
+    - labels: an array of labels of taxes used for that node
+    - ids: an array of ids of taxes used for that node
+    - groupLabel: the label (bo label) of the tax group
+    - priceBefore: the price before entering the node
+    - priceAfter: the price after exiting the node
+
+- discount_type: null|string
 - discount_amount:
 - discount_price:
 - attributes: array of $attrName => $attrInfo.

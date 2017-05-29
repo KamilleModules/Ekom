@@ -61,6 +61,7 @@ class AttributeSelectorHelper
         //--------------------------------------------
         $allAttr = [];
         $attr2Info = [];
+        $attrName2Id = [];
         $attrName2Label = [];
         $p = null;
         foreach ($items as $item) {
@@ -70,6 +71,7 @@ class AttributeSelectorHelper
                 $allAttr[$at['name']][] = $at['value'];
                 $sAttr .= $at['value'];
                 $attrName2Label[$at['name']] = $at['name_label'];
+                $attrName2Id[$at['name']] = $at['attribute_id'];
             }
             if ((int)$item['product_id'] === $productId) {
                 $p = $item;
@@ -146,6 +148,13 @@ class AttributeSelectorHelper
                 $ret[$name] = [
                     "label" => $attrName2Label[$name],
                     "values" => $theValues,
+                    /**
+                     * Note: the attribute_id value is an extension of the original productBox model.
+                     * It was added as a "courtesy" for cart methods (some cart methods want to
+                     * access the attribute_id and using the productLayer methods is
+                     * handy for them...)
+                     */
+                    "attribute_id" => $attrName2Id[$name],
                 ];
             }
 

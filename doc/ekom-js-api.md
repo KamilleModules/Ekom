@@ -56,56 +56,50 @@ The methods
 Ekom js api is mostly based on the event listener principles: 
 there are some events, and you can listen to them.
 
-The widget authors use their common sense to implement their part (whether they should trigger an event or
+he widget authors use their common sense to implement their part (whether they should trigger an event or
 listen to an event...). 
 
 
-The following events are available:
+Here are the ekomJsApi methods:
 
-- addToCartAfter: the addToCart button has been clicked, and the new cart info is available via ekomApi.getCartInfo
-- getCartInfo: returns an array containing the cart info:
-    - totalQuantity: sum of items.quantity
-    - items: array of items, each item being an array with the following elements:
-            - product_id: int, the id of the product
-            - label: str, the label of the product
-            - ref: str
-            - uri: the uri of the product 
-            - delete_uri: the uri to call to delete the product  
-            - update_qty_uri: the uri to call to update the quantity of the product, you must append the equal symbol followed by the new quantity to that uri,
-                                    so, the full uri looks like this: $update_qty_uri=2.
-                                    If the quantity is zero, then it will have the same effect as to delete the product
-                                    
-            - uri_card: the uri of the product card 
-            - quantity: int
-            - product_card_id: int, the id of the product cart
-            - attributes: array of attribute, each attribute is an array containing:
-                    - attribute_id:
-                    - label: the (translated) name of the attribute
-                    - value: the value of the attribute
-            - discount_price: null|float, if not null the discount price  
-            - price: float, the original price
-            - image: str, the main image uri
-    - total_without_tax: float: the total without taxes applied
-    - total_with_tax: float: the total with taxes applied
+
+
+// events
+- on ( eventName, cb ): adds the cb listener to event eventName,
+            the args passed to cb are defined on a per-eventName basis.
+            Use the trigger method to then trigger that event manually.
+            See the events section to see all the available eventNames.
+            
+- trigger ( eventName, ?args...): triggers an event 
+
+
+ 
+// cart
+- cart.addItem: (qty, product_id), adds an item to the cart
+- cart.getInfo: returns a cartInfo model (see the models section for more info)
+
     
 
 
 
+
+Events
+==============
 To subscribe to an event, we can use the **on** method of the ekomApi, like this:
 
+
+
 ```js
-ekomApi.on("addToCart", function(){
+ekomApi.on("cart.updated", function(){
     // my code
 });
 
 ```
 
 
+Below is the list of available events with the arguments passed to them:
+
+- cart.updated ( cartInfo )
 
 
 
-
-
-        
-        
-        

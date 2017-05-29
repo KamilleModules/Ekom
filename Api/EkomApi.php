@@ -10,6 +10,7 @@ use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
 use Kamille\Services\XLog;
+use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\Api\Layer\ConditionLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
@@ -291,6 +292,14 @@ and h.lang_id=$langId
     public function conditionLayer()
     {
         return $this->getLayer('conditionLayer');
+    }
+
+    /**
+     * @return CartLayer
+     */
+    public function cartLayer()
+    {
+        return $this->getLayer('cartLayer');
     }
 
 

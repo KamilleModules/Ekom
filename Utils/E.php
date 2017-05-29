@@ -25,6 +25,11 @@ class E
         return ApplicationLinkGenerator::getUri($routeId, $params);
     }
 
+    public static function passEncrypt($pass)
+    {
+        return password_hash($pass, PASSWORD_DEFAULT);
+    }
+
 
     /**
      * Send a front office mail
