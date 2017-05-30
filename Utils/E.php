@@ -32,6 +32,27 @@ class E
 
 
     /**
+     * Sometimes, price get multiplied by a rate (for instance tax rate),
+     * and all the sudden it starts having more than 2 decimals,
+     * which makes it un-intuitive to work with.
+     *
+     * I like all prices to have 2 decimals max, no exception.
+     *
+     * This method helps you do that.
+     * It rounds to the closest 2 decimals number,
+     * so:
+     * - 19.366 is rounded to 19.37
+     * - 19.364 is rounded to 19.36
+     * - 19.365 is rounded to 19.36
+     *
+     *
+     */
+    public static function trimPrice($price)
+    {
+        return (float)round($price, 2, \PHP_ROUND_HALF_DOWN);
+    }
+
+    /**
      * Send a front office mail
      */
     public static function sendMail($type, array $params)
@@ -99,6 +120,7 @@ class E
         $moneyFormatArgs = self::conf("moneyFormatArgs");
         return self::formatPrice($number, $moneyFormatArgs);
     }
+
 
     public static function conf($key, $default = null)
     {

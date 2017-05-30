@@ -360,8 +360,8 @@ and product_id in (" . implode(', ', $productIds) . ")
                             $priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $price, $taxDetails);
 
 
-                            $unformattedPrice = $price;
-                            $unformattedPriceWithTax = $priceWithTax;
+                            $unformattedPrice = E::trimPrice($price);
+                            $unformattedPriceWithTax = E::trimPrice($priceWithTax);
 
 
                             $price = E::price($price);
@@ -390,7 +390,7 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 "stockType" => $stockType,
                                 "stockText" => $stockText,
                                 "displayPrice" => $displayPrice, // the price chosen by the ekom module for display
-                                "displayPriceUnformatted" => (float)$displayPriceUnformatted,
+                                "displayPriceUnformatted" => $displayPriceUnformatted,
                                 "priceWithoutTax" => $price, // formatted price
                                 "priceWithoutTaxUnformatted" => $unformattedPrice,
                                 "priceWithTax" => $priceWithTax, // formatted price

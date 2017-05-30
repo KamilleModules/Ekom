@@ -75,7 +75,7 @@ Here are the ekomJsApi methods:
 
  
 // cart
-- cart.addItem: (qty, product_id), adds an item to the cart
+- cart.addItem: (product_id, qty), adds an item to the cart
 - cart.getInfo: returns a cartInfo model (see the models section for more info)
 
     

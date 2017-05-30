@@ -8,6 +8,7 @@ CartInfo
     - totalQuantity: sum of items.quantity
     - items: array of items, each item being an array with the following elements:
             - product_id: int, the id of the product
+            - quantity: int, how many of this product we have in the cart
             - label: str, the label of the product
             - ref: str
             - uri: the uri of the product 

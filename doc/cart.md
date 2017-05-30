@@ -161,7 +161,7 @@ but the hashed version (h/a/s/h/e/d), since we don't want to  end up with a dire
 
 So for instance, for user #1566, we will store/get her cart info in the following file:
 
-- app/data/Ekom/carts/1/5/6/6.php
+- app/data/Ekom/carts/1/5/6/6-$shopId.php
 
 Where $shopId is replaced by the current shop_id (for instance 1, or 4, ...)
 
@@ -172,14 +172,13 @@ Then, the file might contain a serialized array with the following structure (or
 
 ```txt
 - items:
------ $shopId:
---------- 0:
-------------- quantity: 5
-------------- id: 650
---------- 1:
-------------- quantity: 1
-------------- id: 12
---------- ...
+----- 0:
+--------- quantity: 5
+--------- id: 650
+----- 1:
+--------- quantity: 1
+--------- id: 12
+----- ...
 ```
 
 So now we can easily/quickly access and store info of a connected user's cart.
@@ -398,6 +397,34 @@ Also, we will have methods in the js ekomApi, see the ekom js api documentation 
 
 
 
+
+
+
+What if the user shops as anonymous, then reconnects?
+===============================================
+
+What if the user had a cart stored in the system, then disconnects and forget about it.
+
+Then, a few days later, she browses the website again as anonymous, and add items to her cart.
+
+Then she reconnects.
+
+What should be in the cart?
+
+- only the products that she has just put into her cart?
+- the products that she has just put into her cart, plus the old products that she had before?
+
+
+To me, the first solution seems more simple/appealing.
+In terms of metaphor, the user went to the shop and filled a cart, then went out of the store.
+One of our employee kept the cart for her in case she returned, but then as she returned, she took
+ANOTHER cart and starts adding new items in it.
+
+She knew that our employee was here for her (or she forgot), but she decided to go with a new cart,
+and so our employee, being polite, doesn't disturb her during her shopping session, and silently 
+gives the old cart to our recycling team.
+
+This process feels smooth for the user, and is simple to understand for the developer, isn't it?
 
 
 
