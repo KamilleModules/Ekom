@@ -31,10 +31,60 @@ class CartLayer
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $_SESSION['ekom.cart'][$shopId][] = [
-            "quantity" => $qty,
-            "id" => $productId,
-        ];
+        $productId = (int)$productId;
+        $alreadyExists = false;
+        foreach ($_SESSION['ekom.cart'][$shopId] as $k => $item) {
+            if ((int)$item['id'] === $productId) {
+                $_SESSION['ekom.cart'][$shopId][$k]['quantity'] += $qty;
+                $alreadyExists = true;
+                break;
+            }
+        }
+
+        if (false === $alreadyExists) {
+            $_SESSION['ekom.cart'][$shopId][] = [
+                "quantity" => $qty,
+                "id" => $productId,
+            ];
+        }
+        $this->writeToLocalStore();
+    }
+
+    public function removeItem($productId)
+    {
+        $this->initSessionCart();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+        $productId = (int)$productId;
+        foreach ($_SESSION['ekom.cart'][$shopId] as $k => $item) {
+            if ((int)$item['id'] === $productId) {
+                unset($_SESSION['ekom.cart'][$shopId][$k]);
+                break;
+            }
+        }
+
+        $this->writeToLocalStore();
+    }
+
+    public function updateItemQuantity($productId, $newQty)
+    {
+        $this->initSessionCart();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+        $productId = (int)$productId;
+        $alreadyExists = false;
+        foreach ($_SESSION['ekom.cart'][$shopId] as $k => $item) {
+            if ((int)$item['id'] === $productId) {
+                $_SESSION['ekom.cart'][$shopId][$k]['quantity'] = $newQty;
+                $alreadyExists = true;
+                break;
+            }
+        }
+
+        if (false === $alreadyExists) {
+            $_SESSION['ekom.cart'][$shopId][] = [
+                "quantity" => $newQty,
+                "id" => $productId,
+            ];
+        }
         $this->writeToLocalStore();
     }
 

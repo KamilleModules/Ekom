@@ -60,7 +60,7 @@ he widget authors use their common sense to implement their part (whether they s
 listen to an event...). 
 
 
-Here are the ekomJsApi methods:
+Here are the ekomJsApi public methods:
 
 
 
@@ -75,8 +75,22 @@ Here are the ekomJsApi methods:
 
  
 // cart
-- cart.addItem: (product_id, qty), adds an item to the cart
-- cart.getInfo: returns a cartInfo model (see the models section for more info)
+- cart.removeItem: (product_id ), remove an item from the cart
+- cart.addItem: (product_id, qty), add an item to the cart
+- cart.updateItemQuantity: (product_id, newQty), update the quantity of an item.
+                            If the item is not in the cart, it will be added.
+
+// utils
+- debounce: https://davidwalsh.name/javascript-debounce-function
+
+ 
+Here are the ekomJsApi private methods:
+
+- request( type, action, data, success )
+    - type: gscp|html|json, ekom use almost exclusively gscp (/service/Ekom/gscp/api)
+    - action: the action parameter to pass as $_GET\[action]
+    - data: an array of data to pass via $_POST
+    - success: callback executed on successful return
 
     
 
@@ -99,7 +113,8 @@ ekomApi.on("cart.updated", function(){
 
 Below is the list of available events with the arguments passed to them:
 
-- cart.updated ( cartInfo )
+- cart.updated ( cartInfo )                         // fires when item is added, removed
+- cart.itemAdded ( cartInfo, product_id, qty )      // fires when item is added
 
 
 
