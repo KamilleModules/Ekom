@@ -32,6 +32,7 @@ class GeneratedShopHasProductLang extends TableCrudObject
 			'label' => '',
 			'description' => '',
 			'slug' => '',
+			'out_of_stock_text' => '',
 			'shop_id' => 0,
 			'product_id' => 0,
 			'lang_id' => 0,

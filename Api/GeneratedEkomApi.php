@@ -5,9 +5,12 @@ namespace Module\Ekom\Api;
 
 use Module\Ekom\Api\Object\BackofficeUser;
 use Module\Ekom\Api\Object\Category;
+use Module\Ekom\Api\Object\CategoryHasDiscount;
 use Module\Ekom\Api\Object\CategoryHasProductCard;
 use Module\Ekom\Api\Object\CategoryLang;
 use Module\Ekom\Api\Object\Currency;
+use Module\Ekom\Api\Object\Discount;
+use Module\Ekom\Api\Object\DiscountLang;
 use Module\Ekom\Api\Object\Lang;
 use Module\Ekom\Api\Object\Product;
 use Module\Ekom\Api\Object\ProductAttribute;
@@ -15,8 +18,10 @@ use Module\Ekom\Api\Object\ProductAttributeLang;
 use Module\Ekom\Api\Object\ProductAttributeValue;
 use Module\Ekom\Api\Object\ProductAttributeValueLang;
 use Module\Ekom\Api\Object\ProductCard;
+use Module\Ekom\Api\Object\ProductCardHasDiscount;
 use Module\Ekom\Api\Object\ProductCardHasTaxGroup;
 use Module\Ekom\Api\Object\ProductCardLang;
+use Module\Ekom\Api\Object\ProductHasDiscount;
 use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductLang;
 use Module\Ekom\Api\Object\Shop;
@@ -27,15 +32,14 @@ use Module\Ekom\Api\Object\ShopHasProduct;
 use Module\Ekom\Api\Object\ShopHasProductCard;
 use Module\Ekom\Api\Object\ShopHasProductCardLang;
 use Module\Ekom\Api\Object\ShopHasProductLang;
-use Module\Ekom\Api\Object\ShopHasStore;
-use Module\Ekom\Api\Object\Store;
-use Module\Ekom\Api\Object\StoreHasProduct;
 use Module\Ekom\Api\Object\Tax;
 use Module\Ekom\Api\Object\TaxGroup;
 use Module\Ekom\Api\Object\TaxGroupHasTax;
 use Module\Ekom\Api\Object\TaxLang;
 use Module\Ekom\Api\Object\Timezone;
 use Module\Ekom\Api\Object\User;
+use Module\Ekom\Api\Object\UserGroup;
+use Module\Ekom\Api\Object\UserHasUserGroup;
 
 use XiaoApi\Api\XiaoApi;
 
@@ -68,6 +72,13 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('category');
     }
     /**
+     * @return CategoryHasDiscount
+     */
+    public function categoryHasDiscount()
+    {
+        return $this->getObject('categoryHasDiscount');
+    }
+    /**
      * @return CategoryHasProductCard
      */
     public function categoryHasProductCard()
@@ -87,6 +98,20 @@ class GeneratedEkomApi extends XiaoApi
     public function currency()
     {
         return $this->getObject('currency');
+    }
+    /**
+     * @return Discount
+     */
+    public function discount()
+    {
+        return $this->getObject('discount');
+    }
+    /**
+     * @return DiscountLang
+     */
+    public function discountLang()
+    {
+        return $this->getObject('discountLang');
     }
     /**
      * @return Lang
@@ -138,6 +163,13 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('productCard');
     }
     /**
+     * @return ProductCardHasDiscount
+     */
+    public function productCardHasDiscount()
+    {
+        return $this->getObject('productCardHasDiscount');
+    }
+    /**
      * @return ProductCardHasTaxGroup
      */
     public function productCardHasTaxGroup()
@@ -150,6 +182,13 @@ class GeneratedEkomApi extends XiaoApi
     public function productCardLang()
     {
         return $this->getObject('productCardLang');
+    }
+    /**
+     * @return ProductHasDiscount
+     */
+    public function productHasDiscount()
+    {
+        return $this->getObject('productHasDiscount');
     }
     /**
      * @return ProductHasProductAttribute
@@ -222,27 +261,6 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('shopHasProductLang');
     }
     /**
-     * @return ShopHasStore
-     */
-    public function shopHasStore()
-    {
-        return $this->getObject('shopHasStore');
-    }
-    /**
-     * @return Store
-     */
-    public function store()
-    {
-        return $this->getObject('store');
-    }
-    /**
-     * @return StoreHasProduct
-     */
-    public function storeHasProduct()
-    {
-        return $this->getObject('storeHasProduct');
-    }
-    /**
      * @return Tax
      */
     public function tax()
@@ -283,5 +301,19 @@ class GeneratedEkomApi extends XiaoApi
     public function user()
     {
         return $this->getObject('user');
+    }
+    /**
+     * @return UserGroup
+     */
+    public function userGroup()
+    {
+        return $this->getObject('userGroup');
+    }
+    /**
+     * @return UserHasUserGroup
+     */
+    public function userHasUserGroup()
+    {
+        return $this->getObject('userHasUserGroup');
     }
 }

@@ -22,7 +22,6 @@ $api = EkomApi::inst();
 $api->shop()->deleteAll();
 $api->shopHasLang()->deleteAll();
 $api->shopHasCurrency()->deleteAll();
-$api->shopHasStore()->deleteAll();
 $api->backofficeUser()->deleteAll();
 $api->productAttributeLang()->deleteAll();
 $api->productAttributeValueLang()->deleteAll();
@@ -38,18 +37,24 @@ $api->productCardHasTaxGroup()->deleteAll();
 $api->taxGroupHasTax()->deleteAll();
 $api->taxGroup()->deleteAll();
 $api->user()->deleteAll();
+$api->productHasDiscount()->deleteAll();
+$api->productCardHasDiscount()->deleteAll();
+$api->categoryHasDiscount()->deleteAll();
+$api->discountLang()->deleteAll();
+$api->discount()->deleteAll();
+$api->userHasUserGroup()->deleteAll();
 
 // no deps
 $api->timezone()->deleteAll();
 $api->currency()->deleteAll();
 $api->lang()->deleteAll();
-$api->store()->deleteAll();
 $api->productAttribute()->deleteAll();
 $api->productAttributeValue()->deleteAll();
 $api->product()->deleteAll();
 $api->productCard()->deleteAll();
 $api->category()->deleteAll();
 $api->tax()->deleteAll();
+$api->userGroup()->deleteAll();
 
 
 //--------------------------------------------
@@ -171,31 +176,6 @@ $api->shopHasCurrency()->create([
     "currency_id" => $currencyDollar,
     "exchange_rate" => "1",
     "active" => "1",
-]);
-
-
-//--------------------------------------------
-// store
-//--------------------------------------------
-$storeAvertin = $api->store()->create([
-    "label" => "Store Saint-Avertin",
-]);
-$storeMiami = $api->store()->create([
-    "label" => "Store Miami",
-]);
-
-
-//--------------------------------------------
-// store
-//--------------------------------------------
-$api->shopHasStore()->create([
-    "shop_id" => $shopEurope,
-    "store_id" => $storeAvertin,
-]);
-
-$api->shopHasStore()->create([
-    "shop_id" => $shopUsa,
-    "store_id" => $storeMiami,
 ]);
 
 
@@ -1009,40 +989,6 @@ $api->productHasProductAttribute()->create([
 
 
 //--------------------------------------------
-// store has product
-//--------------------------------------------
-$accidentallyMissingProducts = [
-    $productPilatesRingBlack,
-];
-$quantity0Products = [
-    $productKettleBell_8,
-];
-foreach ($products as $product) {
-
-    if (in_array($product, $accidentallyMissingProducts, true)) {
-        continue; // testing the unknown keyword synopsis
-    }
-
-    if (in_array($product, $quantity0Products, true)) {
-        $quantity = 0;
-    } else {
-        $quantity = rand(50, 100);
-    }
-    $api->storeHasProduct()->create([
-        "store_id" => $storeAvertin,
-        "product_id" => $product,
-        "quantity" => $quantity,
-    ]);
-
-    $api->storeHasProduct()->create([
-        "store_id" => $storeMiami,
-        "product_id" => $product,
-        "quantity" => rand(50, 100),
-    ]);
-}
-
-
-//--------------------------------------------
 // category
 //--------------------------------------------
 $categoryEquipement = $api->category()->create([
@@ -1288,24 +1234,45 @@ $inactive = [
 $pricesEurope = [
     $productBallonPaille => 5,
 ];
+$quantity0Products = [
+    $productKettleBell_8,
+];
 foreach ($products as $product) {
 
+    if (in_array($product, $quantity0Products, true)) {
+        $quantity = 0;
+    } else {
+        $quantity = rand(50, 100);
+    }
+
     $active = (in_array($product, $inactive, true)) ? 0 : 1;
-    $price = (array_key_exists($product, $pricesEurope)) ? $pricesEurope[$product] : null;
+    if (array_key_exists($product, $pricesEurope)) {
+        $price = $pricesEurope[$product];
+        $wholesalePrice = $price - ($price / 2);
+    } else {
+        $price = null;
+        $wholesalePrice = 2;
+    }
+
 
     $api->shopHasProduct()->create([
         "shop_id" => $shopEurope,
         "product_id" => $product,
         "price" => $price,
+        "wholesale_price" => $wholesalePrice,
+        "quantity" => $quantity,
         "active" => $active,
     ]);
     $api->shopHasProduct()->create([
         "shop_id" => $shopUsa,
         "product_id" => $product,
         "price" => null,
+        "wholesale_price" => $wholesalePrice,
+        "quantity" => $quantity,
         "active" => $active,
     ]);
 }
+
 
 
 //--------------------------------------------
@@ -1317,6 +1284,7 @@ $slugs = [
 $labels = [
     $productBallonGris55cm => "Le super ballon gris 55 cm",
 ];
+
 foreach ($products as $product) {
 
     $slug = (array_key_exists($product, $slugs)) ? $slugs[$product] : "";
@@ -1326,6 +1294,7 @@ foreach ($products as $product) {
         "label" => $label,
         "description" => "",
         "slug" => $slug,
+        "out_of_stock_text" => "Disponible sous 2 à 3 semaines",
         "shop_id" => $shopEurope,
         "product_id" => $product,
         "lang_id" => $langFrench,
@@ -1334,6 +1303,7 @@ foreach ($products as $product) {
         "label" => "",
         "description" => "",
         "slug" => "",
+        "out_of_stock_text" => "Available within 2 weeks",
         "shop_id" => $shopEurope,
         "product_id" => $product,
         "lang_id" => $langEnglish,
@@ -1342,6 +1312,7 @@ foreach ($products as $product) {
         "label" => "",
         "description" => "",
         "slug" => "",
+        "out_of_stock_text" => "Sold out!",
         "shop_id" => $shopUsa,
         "product_id" => $product,
         "lang_id" => $langEnglish,
@@ -1559,11 +1530,24 @@ foreach ($cards as $card) {
 }
 
 
+
+//--------------------------------------------
+// user group
+//--------------------------------------------
+$userGroupB2B = $api->userGroup()->create([
+    "name" => "b2b",
+]);
+
+$userGroupB2C = $api->userGroup()->create([
+    "name" => "b2c",
+]);
+
+
 //--------------------------------------------
 // users
 //--------------------------------------------
 foreach ($shops as $shop) {
-    $api->user()->create([
+    $userLing = $api->user()->create([
         'shop_id' => $shop,
         'email' => "lingtalfi@gmail.com",
         'pass' => E::passEncrypt("poupou"),
@@ -1573,6 +1557,14 @@ foreach ($shops as $shop) {
         'newsletter' => "1",
         'active' => "1",
     ]);
+
+
+    $api->userHasUserGroup()->create([
+        "user_id" => $userLing,
+        "user_group_id" => $userGroupB2B,
+    ]);
+
+
 }
 
 

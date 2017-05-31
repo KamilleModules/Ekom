@@ -105,9 +105,6 @@ and s.product_card_id=$cardId and sl.lang_id=$langId
 
             $api = EkomApi::inst();
 
-            $storeIds = $api->shopHasStore()->readValues("store_id", ["where" => [
-                ["shop_id", "=", $shopId],
-            ]]);
 
             $productRows = QuickPdo::fetchAll("
 select 
@@ -116,9 +113,11 @@ p.reference,
 p.weight,
 p.price as default_price,
 s.price,
+s.quantity,
 s.active,
 l.label,
 l.description,
+l.out_of_stock_text,
 ll.label as default_label,
 ll.description as default_description,
 l.slug
@@ -136,32 +135,8 @@ and s.shop_id=$shopId
 and p.product_card_id=$cardId
         ");
 
-            $productIds = [];
-            foreach ($productRows as $row) {
-                $productIds[] = $row['product_id'];
-            }
 
 
-            // get quantities
-            $product2quantity = $api->storeHasProduct()->readKeyValues("product_id", "quantity", [
-                "where" => [
-                    "store_id in (" . implode(", ", $storeIds) . ")",
-                    "and product_id in (" . implode(", ", $productIds) . ")",
-                ],
-            ]);
-
-
-            // add quantities to rows
-            foreach ($productRows as $k => $row) {
-                $pid = $row['product_id'];
-                if (array_key_exists($pid, $product2quantity)) {
-                    $productRows[$k]['quantity'] = $product2quantity[$pid];
-                } else {
-                    XLog::error("[Ekom module] - ProductLayer: quantity not found for product with id $pid in shop $shopId");
-                    // note that when cache is on, this error won't be triggered
-                    $productRows[$k]['quantity'] = "error";
-                }
-            }
 
             return $productRows;
         }, [
@@ -343,7 +318,7 @@ and product_id in (" . implode(', ', $productIds) . ")
                             $stockText = "in stock";
                             if (0 === (int)$p['quantity']) {
                                 $stockType = "outOfStock";
-                                $stockText = "out of stock";
+                                $stockText = $p['out_of_stock_text'];
                             }
 
 
