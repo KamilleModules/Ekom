@@ -69,20 +69,50 @@ class CategoryLayer
     }
 
 
+    /**
+     * This method return the id of the product's card categories and parent categories.
+     */
+    public function getCategoryIdTreeByProductId($productId, $shopId = null, $langId = null)
+    {
+        $api = EkomApi::inst();
+        $api->initWebContext();
+        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+
+
+        return A::cache()->get("Module.Ekom.Api.Layer.CategoryLayer.getCategoryIdTreeByProductId.$shopId.$langId.$productId", function () use ($api, $shopId, $langId, $productId) {
+
+            $ret = [];
+            $cardId = EkomApi::inst()->product()->readColumn("product_card_id", [
+                ["id", "=", $productId],
+            ]);
+            $rows = $this->getCategoryTreeByProductCardId($cardId);
+            foreach ($rows as $row) {
+                $ret[] = $row['id'];
+            }
+            return $ret;
+        }, [
+            'ek_product.*',
+            // getCategoryTreeByProductCardId
+            'ek_category.*',
+            'ek_category_lang.*',
+        ]);
+    }
+
     //--------------------------------------------
     //
     //--------------------------------------------
-    private function getCategoryTreeByProductCardId($cardId) // might be promoted to public someday
+    private function getCategoryTreeByProductCardId($cardId, $shopId = null, $langId = null) // might be promoted to public someday
     {
-
+        $api = EkomApi::inst();
+        $api->initWebContext();
+        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
 
         /**
          * Get the category of the card for this shop
          */
-        return A::cache()->get("Module.Ekom.Api.Layer.CategoryLayer.getCategoryTreeByProductCardId.$cardId", function () use ($cardId) {
-            $api = EkomApi::inst();
-            $shopId = ApplicationRegistry::get('ekom.shop_id');
-            $langId = ApplicationRegistry::get('ekom.lang_id');
+        return A::cache()->get("Module.Ekom.Api.Layer.CategoryLayer.getCategoryTreeByProductCardId.$shopId.$langId.$cardId", function () use ($api, $shopId, $langId, $cardId) {
             $categoryId = $api->categoryHasProductCard()->readColumn("category_id", [
                 ["product_card_id", "=", (int)$cardId],
             ]);

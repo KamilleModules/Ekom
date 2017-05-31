@@ -75,13 +75,18 @@ The normal form is presented below:
                 different colors for instance).
                 
 - stockText: string, the text to display
-- displayPrice: string, the price to display, based on ekom preferences/rules
-- displayPriceUnformatted: float, the price to display but unformatted (it might be used for further computations,
-                        it has been added to the model but shouldn't be used by the templates)
-- priceWithoutTax: string, the formatted price without taxes
-- priceWithoutTaxUnformatted: string, the unformatted price without taxes (not intended to be displayed)
-- priceWithTax: string, the formatted price with taxes
-- priceWithTaxUnformatted: string, the unformatted price with taxes (not intended to be displayed)
+- hasDiscount: bool, whether or not this product has a discount.
+      
+- priceWithoutTax: string, the formatted price without taxes, without discount
+- priceWithTax: string, the formatted price with taxes, without discount
+- priceWithoutTaxDiscount: string, the formatted price without taxes, with discount
+- priceWithTaxDiscount: string, the formatted price with taxes, with discount
+
+
+- displayPrice: string, the price to display, either the priceWithoutTax or the priceWithTax, based on ekom preferences/rules                        
+- displayPriceDiscount: string, the discounted price to display (either the priceWithoutTaxDiscount or the priceWithTaxDiscount), based on ekom preferences/rules
+
+
 - taxDetails: array of items, each item having the following structure:
     - amount: the percentage applied for that node (which in case of merged taxed is the sum of all taxes)
     - labels: an array of labels of taxes used for that node
@@ -90,8 +95,8 @@ The normal form is presented below:
     - priceBefore: the price before entering the node
     - priceAfter: the price after exiting the node
 
-- discount_type: null|string
-- discount_amount:
+- discount_type: null|string, the discount procedure type, or null if there is no discount
+- discount_operand: string, the discount procedure operand
 - discount_price:
 - attributes: array of $attrName => $attrInfo.
                 
@@ -137,3 +142,126 @@ The normal form is presented below:
 - video_sources:
 
 ```
+
+
+
+
+What's the fuss about the prices, why so many prices?
+==========================================
+
+You might be frightened by all the variation of price and discount related entries in this model.
+You might even wonder if that's really necessary.
+
+In this section, I explain the original vision, so that you can use it and see if it works for you.
+
+
+The main idea is to give all info to the template author and let them decide exactly what they want to display.
+That's because a price can be displayed in various way, each variation being legitimate.
+
+Plus, we (the ekom system) give template authors our recommendation about how the price should be displayed (based
+on ekom configuration), but we always provide all the tools for the template authors to override this logic,
+this explains partially why we have so many keys.
+ 
+ 
+ 
+withTax/withoutTax
+--------------------
+Then you have the withTax/withoutTax criteria.
+
+On a product box, a price without discount is often displayed with taxes or without taxes, depending
+on the shop business mode (b2b and b2c seem to be the major modes).
+
+
+displayPrice
+--------------------
+
+In ekom, we let the user decide how price should be displayed on the product box with an option (see the ekom doc 
+for more info).
+
+Therefore, depending on the configuration, the price to display might be either the price with tax or the price without tax.
+
+To save the template author from choosing (because the less business choices a template author has the better) 
+which price to display, we provide the displayPrice, which is either the priceWithTax or the priceWithoutTax, 
+depending on ekom config.
+
+
+discount
+-------------
+
+So far we've talked about the following price types already:
+
+- priceWithTax
+- priceWithoutTax
+- displayPrice
+
+...and their unformatted equivalent.
+
+
+Then throw the discount into the mix.
+Before we do so, let's talk a bit about how a discount price is displayed on a product box.
+
+Some nomenclature might help.
+
+A price with discount always has the discount word in it (in ekom).
+    
+A price with discount can be displayed with two more bits of information:
+the badge and the old price:
+
+- discountPrice - oldPrice - badge
+    
+Template authors decide exactly what they want to display
+(for instance, a template author will display only the discountPrice and the badge, 
+while another template author will display all three elements).
+    
+    
+    
+In ekom, we decided that the oldPrice was the price without discount, so, one of:
+    
+- priceWithTax
+- priceWithoutTax
+- displayPrice    
+    
+And to differentiate the discount price from those price, we add the discount suffix to our price types,
+this gives us those new price types:
+
+- priceWithTaxDiscount
+- priceWithoutTaxDiscount
+- displayPriceDiscount
+
+
+So, if you can follow this logic, if a template wants to display a price with this format:
+
+- discountPrice - oldPrice - badge
+    
+Then she can use the following price types for instance:
+    
+- displayPriceDiscount - displayPrice - badge
+    
+    
+Badge
+----------
+I forgot to talk about the badge.
+The badge is often expressed as a percentage or an amount.
+
+The keys controlling the badge are the following:
+
+- discount_type
+- discount_operand
+- discount_price
+
+The type (discount_type) should be used as a trigger (by template authors) to know what type of badge 
+to display (a percentage, an amount, or something else).
+
+
+
+ 
+    
+hasDiscount
+--------------
+Knowing whether or not the product has a discount is the first bit of information template authors will need,
+and so we decided to provide it as a variable: hasDiscount.
+
+Note that this is the only bit of logic that we provide to templates.
+All other bits are dumb by nature.
+
+

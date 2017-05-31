@@ -13,10 +13,12 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\Api\Layer\ConditionLayer;
+use Module\Ekom\Api\Layer\DiscountLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
+use Module\Ekom\Api\Layer\UserLayer;
 use QuickPdo\QuickPdo;
 
 
@@ -300,6 +302,22 @@ and h.lang_id=$langId
     public function cartLayer()
     {
         return $this->getLayer('cartLayer');
+    }
+
+    /**
+     * @return DiscountLayer
+     */
+    public function discountLayer()
+    {
+        return $this->getLayer('discountLayer');
+    }
+
+    /**
+     * @return UserLayer
+     */
+    public function userLayer()
+    {
+        return $this->getLayer('userLayer');
     }
 
 

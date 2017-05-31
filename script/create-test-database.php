@@ -1274,7 +1274,6 @@ foreach ($products as $product) {
 }
 
 
-
 //--------------------------------------------
 // shop has product lang
 //--------------------------------------------
@@ -1530,16 +1529,17 @@ foreach ($cards as $card) {
 }
 
 
-
 //--------------------------------------------
 // user group
 //--------------------------------------------
 $userGroupB2B = $api->userGroup()->create([
     "name" => "b2b",
+    "shop_id" => $shopEurope,
 ]);
 
 $userGroupB2C = $api->userGroup()->create([
     "name" => "b2c",
+    "shop_id" => $shopEurope,
 ]);
 
 
@@ -1566,6 +1566,123 @@ foreach ($shops as $shop) {
 
 
 }
+
+
+//--------------------------------------------
+// discounts
+//--------------------------------------------
+$discount50Destockage = $api->discount()->create([
+    "user_group_id" => null,
+    "currency_id" => null,
+    "date_start" => null,
+    "date_end" => null,
+    "procedure_type" => "percent",
+    "procedure_operand" => "50",
+    "target" => "priceWithoutTax",
+    "shop_id" => $shopEurope,
+]);
+
+$discountMinusHalfEuro = $api->discount()->create([
+    "user_group_id" => null,
+    "currency_id" => null,
+    "date_start" => null,
+    "date_end" => null,
+    "procedure_type" => "amount",
+    "procedure_operand" => "0.50",
+    "target" => "priceWithoutTax",
+    "shop_id" => $shopEurope,
+]);
+
+$discountMinus2Euros = $api->discount()->create([
+    "user_group_id" => null,
+    "currency_id" => null,
+    "date_start" => null,
+    "date_end" => null,
+    "procedure_type" => "amount",
+    "procedure_operand" => "2",
+    "target" => "priceWithoutTax",
+    "shop_id" => $shopEurope,
+]);
+
+$discountMinus10Percent = $api->discount()->create([
+    "user_group_id" => null,
+    "currency_id" => null,
+    "date_start" => null,
+    "date_end" => null,
+    "procedure_type" => "percent",
+    "procedure_operand" => "10",
+    "target" => "priceWithoutTax",
+    "shop_id" => $shopEurope,
+]);
+
+
+//--------------------------------------------
+// discounts lang
+//--------------------------------------------
+$api->discountLang()->create([
+    "discount_id" => $discount50Destockage,
+    "lang_id" => $langFrench,
+    "label" => "Déstockage 50%",
+]);
+
+
+$api->discountLang()->create([
+    "discount_id" => $discountMinusHalfEuro,
+    "lang_id" => $langFrench,
+    "label" => "remise charitable",
+]);
+
+$api->discountLang()->create([
+    "discount_id" => $discountMinus2Euros,
+    "lang_id" => $langFrench,
+    "label" => "-2 euros",
+]);
+
+$api->discountLang()->create([
+    "discount_id" => $discountMinus10Percent,
+    "lang_id" => $langFrench,
+    "label" => "-10%",
+]);
+
+
+//--------------------------------------------
+// product has discount
+//--------------------------------------------
+$api->productHasDiscount()->create([
+    "product_id" => $productKettleBell_4,
+    "discount_id" => $discount50Destockage,
+    "order_phase" => 0,
+    "active" => 1,
+]);
+
+$api->productHasDiscount()->create([
+    "product_id" => $productKettleBell_4,
+    "discount_id" => $discountMinusHalfEuro,
+    "order_phase" => 1,
+    "active" => 1,
+]);
+
+//--------------------------------------------
+// product card has discount
+//--------------------------------------------
+$api->productCardHasDiscount()->create([
+    "product_card_id" => $cardKettleBell,
+    "discount_id" => $discountMinus2Euros,
+    "order_phase" => 0,
+    "active" => 1,
+]);
+
+
+//--------------------------------------------
+// category has discount
+//--------------------------------------------
+$api->categoryHasDiscount()->create([
+    "category_id" => $categoryPilates,
+    "discount_id" => $discountMinus10Percent,
+    "order_phase" => 0,
+    "active" => 1,
+]);
+
 
 
 

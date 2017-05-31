@@ -136,8 +136,6 @@ and p.product_card_id=$cardId
         ");
 
 
-
-
             return $productRows;
         }, [
             "ek_product.*",
@@ -204,7 +202,6 @@ and product_id in (" . implode(', ', $productIds) . ")
                     $productsInfo[$k]['attributes'] = ["error"];
                 }
             }
-
             return $productsInfo;
 
         }, [
@@ -221,20 +218,20 @@ and product_id in (" . implode(', ', $productIds) . ")
      *                              if not null, it means that you want to display the productBox for a specific product.
      * @return false|mixed
      */
-    public function getProductBoxModelByCardId($cardId, $shopId = null, $langId = null, $productId = null)
+    public function getProductBoxModelByCardId($cardId, $shopId = null, $langId = null, $productId = null, $includeUnformatted = false)
     {
 
         $cardId = (int)$cardId;
         $productId = (int)$productId;
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+        $iIncludeUnformatted = (int)$includeUnformatted;
+        $api = EkomApi::inst();
 
-
-        return A::cache()->get("Module.Ekom.Api.Layer.getProductBoxModelByCardId.$shopId.$langId.$cardId.$productId", function () use ($cardId, $shopId, $langId, $productId) {
+        $model = A::cache()->get("Module.Ekom.Api.Layer.getProductBoxModelByCardId.$shopId.$langId.$cardId.$productId", function () use ($cardId, $shopId, $langId, $productId, $api) {
             $model = [];
 
             try {
-                $api = EkomApi::inst();
 
                 if (false !== ($row = $this->getProductCardInfoByCardId($cardId, $shopId, $langId))) {
 
@@ -277,6 +274,7 @@ and product_id in (" . implode(', ', $productIds) . ")
                                     $defaultImage = $s;
                                 }
                             }
+
 
                             /**
                              * Selected product
@@ -322,9 +320,9 @@ and product_id in (" . implode(', ', $productIds) . ")
                             }
 
 
-                            $price = $p['price'];
-                            if (null === $price) {
-                                $price = $p['default_price'];
+                            $priceWithoutTax = $p['price'];
+                            if (null === $priceWithoutTax) {
+                                $priceWithoutTax = $p['default_price'];
                             }
 
 
@@ -332,22 +330,17 @@ and product_id in (" . implode(', ', $productIds) . ")
                             $taxLayer = $api->taxLayer();
                             $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
                             $taxDetails = [];
-                            $priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $price, $taxDetails);
+                            $priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $priceWithoutTax, $taxDetails);
 
 
-                            $unformattedPrice = E::trimPrice($price);
-                            $unformattedPriceWithTax = E::trimPrice($priceWithTax);
+                            $formattedPriceWithoutTax = E::price($priceWithoutTax);
+                            $formattedPriceWithTax = E::price($priceWithTax);
 
-
-                            $price = E::price($price);
-                            $priceWithTax = E::price($priceWithTax);
 
                             if (true === E::conf("displayPriceWithTax")) {
-                                $displayPrice = $priceWithTax;
-                                $displayPriceUnformatted = $unformattedPriceWithTax;
+                                $displayPrice = $formattedPriceWithTax;
                             } else {
-                                $displayPrice = $price;
-                                $displayPriceUnformatted = $unformattedPrice;
+                                $displayPrice = $formattedPriceWithoutTax;
                             }
 
 
@@ -364,12 +357,12 @@ and product_id in (" . implode(', ', $productIds) . ")
                                  */
                                 "stockType" => $stockType,
                                 "stockText" => $stockText,
+
+                                "priceWithoutTax" => $formattedPriceWithoutTax,
+                                "priceWithTax" => $formattedPriceWithTax,
                                 "displayPrice" => $displayPrice, // the price chosen by the ekom module for display
-                                "displayPriceUnformatted" => $displayPriceUnformatted,
-                                "priceWithoutTax" => $price, // formatted price
-                                "priceWithoutTaxUnformatted" => $unformattedPrice,
-                                "priceWithTax" => $priceWithTax, // formatted price
-                                "priceWithTaxUnformatted" => $unformattedPriceWithTax,
+
+
                                 "taxDetails" => $taxDetails, // see TaxLayer.applyTaxesToPrice for more details
                                 // if type is null, the price is not discounted,
                                 // otherwise, the discount_ data help displaying the right discounted price
@@ -390,9 +383,24 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 ],
                             ];
 
+
+                            //--------------------------------------------
+                            // adding un-formatted versions for discount computation
+                            //--------------------------------------------
+                            $unformattedPriceWithoutTax = E::trimPrice($priceWithoutTax);
+                            $unformattedPriceWithTax = E::trimPrice($priceWithTax);
+
+                            if (true === E::conf("displayPriceWithTax")) {
+                                $displayPriceUnformatted = $unformattedPriceWithTax;
+                            } else {
+                                $displayPriceUnformatted = $unformattedPriceWithoutTax;
+                            }
+                            $boxConf["displayPriceUnformatted"] = $displayPriceUnformatted;
+                            $boxConf["priceWithoutTaxUnformatted"] = $unformattedPriceWithoutTax;
+                            $boxConf["priceWithTaxUnformatted"] = $unformattedPriceWithTax;
+
+
                             $model = $boxConf;
-
-
                         } else {
                             $model['errorCode'] = "emptyProductCard";
                             $model['errorTitle'] = "Empty product card";
@@ -449,18 +457,64 @@ and product_id in (" . implode(', ', $productIds) . ")
             "ek_lang.delete",
             "ek_product_card.delete",
         ]);
+
+
+        //--------------------------------------------
+        // NOW APPLYING DISCOUNT DYNAMICALLY (so that it's always synced with app rules)
+        //--------------------------------------------
+        if (array_key_exists('product_id', $model)) { // if model is not in error form
+            $discounts = $api->discountLayer()->getDiscountsByProductId($model['product_id'], $shopId, $langId);
+            a($discounts);
+            $priceTypes = [
+                "priceWithTax" => $model['priceWithTaxUnformatted'],
+                "priceWithoutTax" => $model['priceWithoutTaxUnformatted'],
+            ];
+            $atLeastOneDiscountApplied = false;
+            $api->discountLayer()->applyDiscountsToPrice($discounts, $priceTypes, $atLeastOneDiscountApplied);
+            if (true === $atLeastOneDiscountApplied) {
+
+
+                $unfPriceWithoutTaxDiscount = $priceTypes['priceWithoutTax'];
+                $unfPriceWithTaxDiscount = $priceTypes['priceWithTax'];
+
+                $model['priceWithoutTaxDiscount'] = $priceTypes['priceWithoutTax'];
+                $model['priceWithTaxDiscount'] = $priceTypes['priceWithTax'];
+                if ($model['displayPrice'] === $model['priceWithoutTax']) {
+                    $model['displayPriceDiscount'] = $priceTypes['priceWithoutTaxDiscount'];
+                } else {
+                    $model['displayPriceDiscount'] = $priceTypes['priceWithTaxDiscount'];
+                }
+            } else {
+                $model['priceWithoutTaxDiscount'] = $model['priceWithoutTax'];
+                $model['priceWithTaxDiscount'] = $model['priceWithTax'];
+                $model['displayPriceDiscount'] = $model['displayPrice'];
+            }
+            a($priceTypes);
+
+        }
+
+
+        az($model);
+        if (false === $includeUnformatted) {
+            unset($model["displayPriceUnformatted"]);
+            unset($model["priceWithoutTaxUnformatted"]);
+            unset($model["priceWithTaxUnformatted"]);
+        }
+
+        return $model;
     }
 
-    public function getProductBoxModelByProductId($productId, $shopId = null, $langId = null)
+    public function getProductBoxModelByProductId($productId, $shopId = null, $langId = null, $includeUnformatted = false)
     {
         EkomApi::inst()->initWebContext();
 
         $productId = (int)$productId;
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+        $iIncludeUnformatted = (int)$includeUnformatted;
 
 
-        return A::cache()->get("Module.Ekom.Api.Layer.getProductBoxModelByProductId.$shopId.$langId.$productId", function () use ($productId, $shopId, $langId) {
+        return A::cache()->get("Module.Ekom.Api.Layer.getProductBoxModelByProductId.$shopId.$langId.$productId.$iIncludeUnformatted", function () use ($productId, $shopId, $langId, $includeUnformatted) {
             $productId = (int)$productId;
             try {
 
@@ -468,7 +522,7 @@ and product_id in (" . implode(', ', $productIds) . ")
                     ["id", "=", $productId],
                 ]);
                 if (false !== $cardId) {
-                    return $this->getProductBoxModelByCardId($cardId, $shopId, $langId, $productId);
+                    return $this->getProductBoxModelByCardId($cardId, $shopId, $langId, $productId, $includeUnformatted);
                 }
                 $model['errorCode'] = "SqlRequestFailed";
                 $model['errorTitle'] = "sqlRequestFailed";

@@ -171,7 +171,7 @@ class CartLayer
         return A::cache()->get("Module.Ekom.Api.Layer.CartLayer.getCartItemInfo.$shopId.$langId.$pId", function () use ($pId, $shopId, $langId) {
 
 
-            $b = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($pId, $shopId, $langId);
+            $b = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($pId, $shopId, $langId, true);
             if (array_key_exists('errorCode', $b)) {
                 XLog::error("[Ekom module] - CartLayer.getCartItemInfo: product not found or request failed with product id: $pId");
                 return $b;
