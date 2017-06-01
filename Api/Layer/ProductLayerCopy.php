@@ -14,7 +14,141 @@ use Module\Ekom\Utils\AttributeSelectorHelper;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
-class ProductLayer
+
+/**
+ * - product_id: the product id
+ * - images: array of
+ * $fileName => \[
+ * thumb => $uriImageThumb,
+ * small => $uriImageSmall,
+ * medium => $uriImageMedium,
+ * large => $uriImageLarge,
+ * ]
+ * - defaultImage: $fileName of the default image (key of the images array)
+ * - label: string
+ * - ref: string
+ * - description: string
+ * - stockType: string representing info about the stock, possible values are:
+ * - stockAvailable: the stock is available
+ * - outOfStock: the stock is not available, because quantity is 0
+ *
+ * The template should use this value to format the stockText (using
+ * different colors for instance).
+ *
+ * - stockText: string, the text to display
+ * - hasDiscount: bool, whether or not this product has a discount.
+ *
+ *
+ * // shall be removed, too much options?
+ * - priceWithoutTax: string, the formatted price without taxes, without discount
+ * - priceWithTax: string, the formatted price with taxes, without discount
+ * - priceWithoutTaxDiscount: string, the formatted price without taxes, with discount
+ * - priceWithTaxDiscount: string, the formatted price with taxes, with discount
+ *
+ *
+ * - displayPrice: string, the price to display, either the priceWithoutTax or the priceWithTax, based on ekom preferences/rules
+ * - displayPriceDiscount: string, the discounted price to display (either the priceWithoutTaxDiscount or the priceWithTaxDiscount), based on ekom preferences/rules
+ * -
+ *
+ * - compoundBadgeType: percent|amount
+ * - compoundBadgeValue: number for percentage, or formatted price if amount
+ *
+ * - badgeDetails: array of badgeDetail, each badgeDetail is an array with the following structure:
+ * - type: amount|percent
+ * - value: number if percent, or formatted negative price otherwise
+ * - label: string, the discount label
+ *
+ *
+ *
+ * - taxDetails: array of items, each item having the following structure:
+ * - amount: the percentage applied for that node (which in case of merged taxed is the sum of all taxes)
+ * - labels: an array of labels of taxes used for that node
+ * - ids: an array of ids of taxes used for that node
+ * - groupLabel: the label (bo label) of the tax group
+ * - priceBefore: the price before entering the node
+ * - priceAfter: the price after exiting the node
+ *
+ *
+ *
+ * - discount_type: null|string, the discount procedure type, or null if there is no discount.
+ * Possible values are:
+ * - percent
+ * - amount
+ * - hybrid (if multiple discounts of different types were applied to this product)
+ *
+ * All the discount_* values depend (are scoped by) the shop.displayPriceWithTax configuration value.
+ *
+ * Note: if multiple discounts of the same type are applied to a product,
+ * then the discount_type value is defined.
+ *
+ *
+ *
+ *
+ *
+ * Templates can use this info to know what type of badge to display.
+ *
+ * - discount_saving: the formatted amount of saving (for instance 8.00€).
+ * Template can use this info to display things such as: you saved: $discount_saving
+ * Note: this is always in currency unit (not in percent).
+ *
+ * - discount_saving_percent: the percent number of saving (without the % symbol).
+ *
+ *
+ * - attributes: array of $attrName => $attrInfo.
+ *
+ * Should be used to display an attribute selector subwidget.
+ *
+ * The attribute selector might look as a stack of attribute lines,
+ * each lines containing the possible attribute values in form of clickable/grayed out buttons.
+ * Something like this for instance:
+ * ---------------
+ * Color:
+ *      red    <green>    blue
+ * Size:
+ *      4   6   <8>   10
+ * ---------------
+ *
+ *
+ * The $attrInfo is an array with the following structure:
+ * - label: string, the label of the attribute
+ * - values: array of $attrValueInfo, each of which being an array with
+ * the following structure:
+ * - value: string, the value of the attribute
+ * - selected: 0|1, whether this attribute value is the one selected
+ * - active: 0|1, if 0, it means the product has been de-activated by the shop owner (ek_shop_has_product.active),
+ * and the user shouldn't be able to select this value
+ * - quantity: number, the quantity of products if that value was chosen
+ * - existence: 0|1, whether or not the product for this attribute value does exist.
+ * Read Module\Ekom\Utils\AttributeSelectorHelper's source code top comment for more info.
+ * - productUri: string, the uri to the corresponding product.
+ * - getProductInfoAjaxUri: string, the uri to the ajax service to call to get information
+ * about the product
+ * - product_id: string, the product id
+ *
+ *
+ *
+ *
+ * - discountDetails: an array explaining the discount details.
+ * It contains the following entries:
+ * - ?priceWithTax: array of discountDetail
+ * - ?priceWithoutTax: array of discountDetail
+ * A discountDetail is an array with the following keys:
+ * - discount_id: the discount id
+ * - procedure_type: amount|percent|?
+ * - procedure_operand: the procedure operand, see DiscountLayer and latest $date-database.md for more info
+ * - label: the label of the discount
+ * - level: product|card|category
+ *
+ *
+ *
+ *
+ * // extensions
+ *
+ * - rating_amount:
+ * - rating_nbVotes:
+ * - video_sources:
+ */
+class ProductLayerCopy
 {
 
 
@@ -360,7 +494,6 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 "stockType" => $stockType,
                                 "stockText" => $stockText,
 
-
                                 "priceWithoutTax" => $formattedPriceWithoutTax,
                                 "priceWithTax" => $formattedPriceWithTax,
                                 "displayPrice" => $displayPrice, // the price chosen by the ekom module for display
@@ -483,64 +616,21 @@ and product_id in (" . implode(', ', $productIds) . ")
         if (array_key_exists('product_id', $model)) { // if model is not in error form
             $layerDiscount = $api->discountLayer();
             $discounts = $layerDiscount->getDiscountsByProductId($model['product_id'], $shopId, $langId);
-
-
             $discountDetails = $discounts;
 
 
             // first apply all discounts that apply on priceWithoutTax
             $priceWithoutTax = $model['priceWithoutTaxUnformatted'];
             $priceWithTax = $model['priceWithTaxUnformatted'];
-
             $originalPriceWithTax = $priceWithTax;
             $originalPriceWithoutTax = $priceWithoutTax;
-
-
-            $taxGroupPercentage = ($priceWithTax - $priceWithoutTax) * 100 / $priceWithoutTax;
-            $taxGroupPercentageBackward = 0;
-
-            $badgesHt = [];
-            $badgesTtc = [];
-
-
-            $atLeastOneDiscountApplied = false;
-            $lastPriceWithTax = $priceWithTax;
-            foreach ($discounts as $d) {
-                $t = false;
-
-                if ('priceWithoutTax' === $d['target']) {
-                    $priceWithoutTax = $layerDiscount->applyDiscountToPrice($d, $priceWithoutTax, $t);
-                    $operand = $d['procedure_operand'];
-                    $badgesHt[] = [$d['procedure_type'], $operand, $d['label']];
-
-                    $priceWithTax = $priceWithoutTax + $priceWithoutTax * $taxGroupPercentage / 100;
-                    if ('amount' === $d['procedure_type']) {
-                        $operand = $priceWithTax - $lastPriceWithTax;
-                    }
-                    $badgesTtc[] = [$d['procedure_type'], $operand, $d['label']];
-                    $lastPriceWithTax = $priceWithTax;
-
-                } else {
-                    $priceWithTax = $layerDiscount->applyDiscountToPrice($d, $priceWithTax, $t);
-
-
-                }
-
-
-                if (true === $t) {
-                    $atLeastOneDiscountApplied = true;
-                }
-            }
-
-
-            az($discounts);
 
 
             $discount_type = null;
             $discount_saving = 0;
             $discount_saving_percent = 0;
-            $atLeastOneDiscountApplied = false;
             if (array_key_exists("priceWithoutTax", $discounts)) {
+                $atLeastOneDiscountApplied = false;
                 $di = $discounts['priceWithoutTax'];
                 foreach ($di as $k => $d) {
                     $t = false;
@@ -588,7 +678,6 @@ and product_id in (" . implode(', ', $productIds) . ")
                     if (false === $t) {
                         unset($discountDetails["priceWithTax"][$k]);
                     } else {
-                        $atLeastOneDiscountApplied = true;
                         if (null === $discount_type2) {
                             $discount_type2 = $d['procedure_type'];
                         } else {
@@ -616,13 +705,6 @@ and product_id in (" . implode(', ', $productIds) . ")
             $model['discount_saving_percent'] = (true === $bPriceWithTax) ? $discount_saving_percent2 : $discount_saving_percent;
 
             $model['discountDetails'] = $discountDetails;
-
-
-            //--------------------------------------------
-            //
-            //--------------------------------------------
-            $model['hasDiscount'] = $atLeastOneDiscountApplied;
-            $model['compoundBadgePercent'] = 0;
 
             if (false === $includeUnformatted) {
                 unset($model["displayPriceUnformatted"]);

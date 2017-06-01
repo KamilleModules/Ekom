@@ -75,18 +75,16 @@ The normal form is presented below:
                 different colors for instance).
                 
 - stockText: string, the text to display
-- hasDiscount: bool, whether or not this product has a discount.
-      
-- priceWithoutTax: string, the formatted price without taxes, without discount
-- priceWithTax: string, the formatted price with taxes, without discount
-- priceWithoutTaxDiscount: string, the formatted price without taxes, with discount
-- priceWithTaxDiscount: string, the formatted price with taxes, with discount
-
-
+  
+- ?priceWithoutTax: string, the formatted price without taxes, without discount
+- ?priceWithTax: string, the formatted price with taxes, without discount
 - displayPrice: string, the price to display, either the priceWithoutTax or the priceWithTax, based on ekom preferences/rules                        
-- displayPriceDiscount: string, the discounted price to display (either the priceWithoutTaxDiscount or the priceWithTaxDiscount), based on ekom preferences/rules
-
-
+      
+- ?priceWithoutTaxDiscount: string, the formatted price without taxes, with discount
+- ?priceWithTaxDiscount: string, the formatted price with taxes, with discount
+- displayPriceDiscount: string, the discounted price to display (either the priceWithoutTaxDiscount or the priceWithTaxDiscount), based on ekom preferences/rules      
+      
+      
 - taxDetails: array of items, each item having the following structure:
     - amount: the percentage applied for that node (which in case of merged taxed is the sum of all taxes)
     - labels: an array of labels of taxes used for that node
@@ -94,23 +92,7 @@ The normal form is presented below:
     - groupLabel: the label (bo label) of the tax group
     - priceBefore: the price before entering the node
     - priceAfter: the price after exiting the node
-
-- discount_type: null|string, the discount procedure type, or null if there is no discount.
-                        Possible values are: 
-                        - percent
-                        - amount
-                        - hybrid (if multiple discounts of different types were applied to this product)
-                        
-                   Note: if multiple discounts of the same type are applied to a product,
-                   then the discount_type value is defined.
-                   
-                   Templates can use this info to know what type of badge to display.     
-                        
-- discount_saving: the formatted amount of saving (for instance 8.00€).
-                    Template can use this info to display things such as: you saved: $discount_saving
-                    Note: this is always in currency unit (not in percent).
-- discount_saving_percent: the percent number of saving (without the % symbol).
-                    
+    
 - attributes: array of $attrName => $attrInfo.
                 
                 Should be used to display an attribute selector subwidget.
@@ -143,7 +125,61 @@ The normal form is presented below:
                                                                 about the product
                                         - product_id: string, the product id
                                                                 
-                                                                        
+                                                     
+                                                         
+    
+// extensions
+
+- rating_amount:
+- rating_nbVotes:
+- video_sources:
+
+    
+    
+    
+    
+
+
+- hasDiscount: bool, whether or not this product has a discount.
+- compoundBadgePercent: value
+- compoundBadgeFixedAmount: negative formatted price
+            
+
+- badgeDetails: array of badgeDetail, each badgeDetail is an array with the following structure:
+    - type: amount|percent
+    - value: number if percent, or formatted negative price otherwise
+    - label: string, the discount label
+
+
+
+
+
+
+- discount_type: null|string, the discount procedure type, or null if there is no discount.
+                        Possible values are: 
+                        - percent
+                        - amount
+                        - hybrid (if multiple discounts of different types were applied to this product)
+                        
+                   All the discount_* values depend (are scoped by) the shop.displayPriceWithTax configuration value.     
+                        
+                   Note: if multiple discounts of the same type are applied to a product,
+                   then the discount_type value is defined.
+                   
+                   
+                   
+                   
+                   
+                   Templates can use this info to know what type of badge to display.     
+                        
+- discount_saving: the formatted amount of saving (for instance 8.00€).
+                    Template can use this info to display things such as: you saved: $discount_saving
+                    Note: this is always in currency unit (not in percent).
+                    
+- discount_saving_percent: the percent number of saving (without the % symbol).
+    
+                    
+                   
                                                                     
 
 - discountDetails: an array explaining the discount details.
@@ -160,11 +196,6 @@ The normal form is presented below:
            
            
 
-// extensions
-
-- rating_amount:
-- rating_nbVotes:
-- video_sources:
 
 ```
 

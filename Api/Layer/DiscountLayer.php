@@ -93,8 +93,7 @@ class DiscountLayer
     }
 
     /**
-     * Return the discounts to potentially (if the condition matches) apply to a given product, organized by target,
-     * and ordered by ascending order_phase within each target.
+     * Return the discounts to potentially (if the condition matches) apply to a given product, ordered by ascending order_phase.
      *
      * Note that there can only be one discount per order_phase (by design).
      * See latest $date-database.md document for more info.
@@ -113,58 +112,6 @@ class DiscountLayer
      * - label:
      * - order_phase:
      * - level: product|card|category
-     *
-     *
-     *
-     * Why order by target rather than order_phase?
-     * ===============================================
-     * I tried order_phase first, and it was an epic failure.
-     *
-     * That's because, at the product level, a product price must first be computed without tax,
-     * THEN YOU MUST APPLY THE TAXES (on the computed priceWithout tax),
-     * THEN ONLY you should apply the discounts on priceWithTax.
-     * (unless if you know how to calculate taxes backward but that would still be a much more complex solution,
-     * you don't want to do that...)
-     *
-     *
-     *
-     * In other words, if you have 3 discounts:
-     *
-     * -2€ on price without tax
-     * -5€ on price with tax
-     * -48€ on price without tax
-     *
-     * The only technique (I found) that work is:
-     *
-     * - first organize the discounts per type:
-     *
-     *
-     * - priceWithoutTax
-     * ----- -2€
-     * ----- -48€
-     * - priceWithTax
-     * ----- -5€
-     *
-     * Then take your product and apply all priceWithoutTax discounts.
-     * So for instance if your product costs 100€ (without tax),
-     * and the tax is 20%, so it costs 120€ with taxes, then applying the discounts, like this:
-     *
-     * price without tax:               100€
-     *               discount -2€: -->  98€
-     *               discount -48€: --> 50€
-     *
-     * Then apply the taxes.
-     *              taxes: 20%:     --> 60€     (50 + 20x50/100)
-     *
-     * Then apply the discounts for priceWithTax
-     *
-     *              discount -5€   --> 55€
-     *
-     *
-     *
-     * So that's why it's organized by target.
-     * Hope this helps.
-     *
      *
      */
     public function getDiscountsByProductId($productId, $shopId = null, $langId = null)
@@ -288,16 +235,12 @@ and l.lang_id=$langId
 //                'category' => $discountsCategory,
 //            ]);
 
-            $tmp = [];
-            $this->mergeIfNotExist($tmp, $discountsProduct, 'product');
-            $this->mergeIfNotExist($tmp, $discountsCard, 'card');
-            $this->mergeIfNotExist($tmp, $discountsCategory, 'category');
-            ksort($tmp);
-
             $ret = [];
-            foreach ($tmp as $d) {
-                $ret[$d['target']][] = $d;
-            }
+            $this->mergeIfNotExist($ret, $discountsProduct, 'product');
+            $this->mergeIfNotExist($ret, $discountsCard, 'card');
+            $this->mergeIfNotExist($ret, $discountsCategory, 'category');
+            ksort($ret);
+
             return $ret;
 
         }, [
