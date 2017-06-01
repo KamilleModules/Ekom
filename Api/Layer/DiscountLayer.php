@@ -16,27 +16,91 @@ class DiscountLayer
 
 
     /**
-     * Apply discounts in the given order, and return the new price.
+     * Apply discount to price and return the discounted price.
      *
-     *
-     * @param $price
-     * @param array $discounts , the array returned by the getDiscountsByProductId method.
-     *
-     * @return float
+     * Reminder, this method should be called dynamically and should not be cached (unless you know
+     * exactly what you are doing: we have user connexion state, dates, maybe other things...)
      */
-    public function applyDiscountsToPrice(array $discounts, array &$priceTypes, &$atLeastOneDiscountApplied)
+    public function applyDiscountToPrice(array $discount, $price, &$atLeastOneDiscountApplied = false)
     {
-        foreach ($discounts as $discount) {
-            $this->applyDiscountToPrice($discount, $priceTypes, $atLeastOneDiscountApplied);
+        // todo: check hybrid system (in filesystem), only if use case appears
+        //--------------------------------------------
+        // ELIMINATE BY FILTERS
+        //--------------------------------------------
+        // user group
+        if (null !== $discount['user_group_id']) {
+            if (true === SessionUser::isConnected()) {
+                $userId = SessionUser::getValue('id');
+                $userGroupIds = EkomApi::inst()->userLayer()->getUserGroupIds($userId);
+
+                if (false === in_array($discount['user_group_id'], $userGroupIds)) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
         }
+
+
+        // currency
+        if (null !== $discount['currency_id']) {
+            EkomApi::inst()->initWebContext();
+            $currencyId = ApplicationRegistry::get("ekom.currency_id");
+            if ((string)$currencyId !== (string)$discount['currency_id']) {
+                return false;
+            }
+        }
+
+        // date
+        if (null !== $discount['date_start'] || null !== $discount['date_end']) {
+            $dateStart = $discount['date_start'];
+            $dateEnd = $discount['date_end'];
+            $curDate = date("Y-m-d H:i:s");
+            if (null !== $dateStart && null !== $dateEnd) {
+                if ($curDate < $dateStart || $curDate > $dateEnd) {
+                    return false;
+                }
+            } else if (null !== $dateStart) {
+                if ($curDate < $dateStart) {
+                    return false;
+                }
+            } else {
+                if ($curDate > $dateEnd) {
+                    return false;
+                }
+            }
+        }
+
+
+        //--------------------------------------------
+        // APPLY PROCEDURE ON TARGET
+        //--------------------------------------------
+        $operand = $discount['procedure_operand'];
+        switch ($discount['procedure_type']) {
+            case 'amount':
+                $price -= $operand;
+                $atLeastOneDiscountApplied = true;
+                break;
+            case 'percent':
+                $atLeastOneDiscountApplied = true;
+                $price -= ($operand * $price) / 100;
+                break;
+            default:
+                XLog::error("[Ekom module] - DiscountLayer: unknown procedure type: " . $discount['procedure_type']);
+                break;
+        }
+        return $price;
     }
 
     /**
-     * Return the discounts to apply to a given product, ordered by ascending order_phase.
+     * Return the discounts to potentially (if the condition matches) apply to a given product, organized by target,
+     * and ordered by ascending order_phase within each target.
+     *
      * Note that there can only be one discount per order_phase (by design).
+     * See latest $date-database.md document for more info.
      *
      *
-     * Each entry contains the following structure (see latest database.md for more information):
+     * Each entry contains the following structure (see latest $date-database.md for more information):
      *
      * - discount_id: id of the discount
      * - user_group_id: null
@@ -50,6 +114,56 @@ class DiscountLayer
      * - order_phase:
      * - level: product|card|category
      *
+     *
+     *
+     * Why order by target rather than order_phase?
+     * ===============================================
+     * I tried order_phase first, and it was an epic failure.
+     *
+     * That's because, at the product level, a product price must first be computed without tax,
+     * THEN YOU MUST APPLY THE TAXES (on the computed priceWithout tax),
+     * THEN ONLY you should apply the discounts on priceWithTax.
+     * (unless if you know how to calculate taxes backward but that would still be a much more complex solution,
+     * you don't want to do that...)
+     *
+     *
+     *
+     * In other words, if you have 3 discounts:
+     *
+     * -2€ on price without tax
+     * -5€ on price with tax
+     * -48€ on price without tax
+     *
+     * The only technique (I found) that work is:
+     *
+     * - first organize the discounts per type:
+     *
+     *
+     * - priceWithoutTax
+     * ----- -2€
+     * ----- -48€
+     * - priceWithTax
+     * ----- -5€
+     *
+     * Then take your product and apply all priceWithoutTax discounts.
+     * So for instance if your product costs 100€ (without tax),
+     * and the tax is 20%, so it costs 120€ with taxes, then applying the discounts, like this:
+     *
+     * price without tax:               100€
+     *               discount -2€: -->  98€
+     *               discount -48€: --> 50€
+     *
+     * Then apply the taxes.
+     *              taxes: 20%:     --> 60€     (50 + 20x50/100)
+     *
+     * Then apply the discounts for priceWithTax
+     *
+     *              discount -5€   --> 55€
+     *
+     *
+     *
+     * So that's why it's organized by target.
+     * Hope this helps.
      *
      *
      */
@@ -174,14 +288,17 @@ and l.lang_id=$langId
 //                'category' => $discountsCategory,
 //            ]);
 
-            $ret = [];
-            $this->mergeIfNotExist($ret, $discountsProduct, 'product');
-            $this->mergeIfNotExist($ret, $discountsCard, 'card');
-            $this->mergeIfNotExist($ret, $discountsCategory, 'category');
-            ksort($ret);
-            $ret = array_merge($ret);
-            return $ret;
+            $tmp = [];
+            $this->mergeIfNotExist($tmp, $discountsProduct, 'product');
+            $this->mergeIfNotExist($tmp, $discountsCard, 'card');
+            $this->mergeIfNotExist($tmp, $discountsCategory, 'category');
+            ksort($tmp);
 
+            $ret = [];
+            foreach ($tmp as $d) {
+                $ret[$d['target']][] = $d;
+            }
+            return $ret;
 
         }, [
             "ek_product.delete.$productId",
@@ -210,84 +327,5 @@ and l.lang_id=$langId
             }
         }
     }
-
-    /**
-     * Reminder, this method should be called dynamically and should not be cached (unless you know
-     * exactly what you are doing: we have user connexion state, dates, maybe other things...)
-     */
-    private function applyDiscountToPrice(array $discount, array &$priceTypes, &$atLeastOneDiscountApplied = false)
-    {
-        // todo: check hybrid system (in filesystem), only if use case appears
-        //--------------------------------------------
-        // ELIMINATE BY FILTERS
-        //--------------------------------------------
-        // user group
-        if (null !== $discount['user_group_id']) {
-            if (true === SessionUser::isConnected()) {
-                $userId = SessionUser::getValue('id');
-                $userGroupIds = EkomApi::inst()->userLayer()->getUserGroupIds($userId);
-
-                if (false === in_array($discount['user_group_id'], $userGroupIds)) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
-
-
-        // currency
-        if (null !== $discount['currency_id']) {
-            EkomApi::inst()->initWebContext();
-            $currencyId = ApplicationRegistry::get("ekom.currency_id");
-            if ((string)$currencyId !== (string)$discount['currency_id']) {
-                return false;
-            }
-        }
-
-        // date
-        if (null !== $discount['date_start'] || null !== $discount['date_end']) {
-            $dateStart = $discount['date_start'];
-            $dateEnd = $discount['date_end'];
-            $curDate = date("Y-m-d H:i:s");
-            if (null !== $dateStart && null !== $dateEnd) {
-                if ($curDate < $dateStart || $curDate > $dateEnd) {
-                    return false;
-                }
-            } else if (null !== $dateStart) {
-                if ($curDate < $dateStart) {
-                    return false;
-                }
-            } else {
-                if ($curDate > $dateEnd) {
-                    return false;
-                }
-            }
-        }
-
-
-        //--------------------------------------------
-        // APPLY PROCEDURE ON TARGET
-        //--------------------------------------------
-        // (if the target is given)
-        $target = $discount['target'];
-        if (array_key_exists($target, $priceTypes)) {
-            $operand = $discount['procedure_operand'];
-            switch ($discount['procedure_type']) {
-                case 'amount':
-                    $priceTypes[$target] -= $operand;
-                    $atLeastOneDiscountApplied = true;
-                    break;
-                case 'percent':
-                    $atLeastOneDiscountApplied = true;
-                    $priceTypes[$target] -= ($operand * $priceTypes[$target]) / 100;
-                    break;
-                default:
-                    XLog::error("[Ekom module] - DiscountLayer: unknown procedure type: " . $discount['procedure_type']);
-                    break;
-            }
-        }
-    }
-
 
 }

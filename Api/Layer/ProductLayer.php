@@ -226,9 +226,11 @@ and product_id in (" . implode(', ', $productIds) . ")
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
         $iIncludeUnformatted = (int)$includeUnformatted;
+        $bPriceWithTax = E::conf("displayPriceWithTax");
+        $iPriceWithTax = (int)$bPriceWithTax;
         $api = EkomApi::inst();
 
-        $model = A::cache()->get("Module.Ekom.Api.Layer.getProductBoxModelByCardId.$shopId.$langId.$cardId.$productId", function () use ($cardId, $shopId, $langId, $productId, $api) {
+        $model = A::cache()->get("Module.Ekom.Api.Layer.getProductBoxModelByCardId.$shopId.$langId.$cardId.$productId.$iPriceWithTax", function () use ($cardId, $shopId, $langId, $productId, $api, $bPriceWithTax) {
             $model = [];
 
             try {
@@ -337,7 +339,7 @@ and product_id in (" . implode(', ', $productIds) . ")
                             $formattedPriceWithTax = E::price($priceWithTax);
 
 
-                            if (true === E::conf("displayPriceWithTax")) {
+                            if (true === $bPriceWithTax) {
                                 $displayPrice = $formattedPriceWithTax;
                             } else {
                                 $displayPrice = $formattedPriceWithoutTax;
@@ -381,6 +383,10 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 "video_sources" => [
                                     "/video/Larz Rocking Leaderfit Paris 2017 Step V2.mp4" => "video/mp4",
                                 ],
+                                //--------------------------------------------
+                                // PRIVATE, are removed before the result is returned
+                                //--------------------------------------------
+                                "_taxes" => $taxes,
                             ];
 
 
@@ -390,7 +396,7 @@ and product_id in (" . implode(', ', $productIds) . ")
                             $unformattedPriceWithoutTax = E::trimPrice($priceWithoutTax);
                             $unformattedPriceWithTax = E::trimPrice($priceWithTax);
 
-                            if (true === E::conf("displayPriceWithTax")) {
+                            if (true === $bPriceWithTax) {
                                 $displayPriceUnformatted = $unformattedPriceWithTax;
                             } else {
                                 $displayPriceUnformatted = $unformattedPriceWithoutTax;
@@ -459,46 +465,113 @@ and product_id in (" . implode(', ', $productIds) . ")
         ]);
 
 
+        $discountDetails = [];
+
         //--------------------------------------------
         // NOW APPLYING DISCOUNT DYNAMICALLY (so that it's always synced with app rules)
         //--------------------------------------------
+        /**
+         * Actually, todo: we can cache it for one day using:
+         *
+         * - the user group Ids
+         * - the currency
+         * - today's date
+         *
+         * However, if the discount date ends in the middle of the day,
+         * we need another helper external system to clean the cache in time.
+         *
+         * - suggestion: try to see how well/fast it works without cache first
+         *
+         *
+         */
         if (array_key_exists('product_id', $model)) { // if model is not in error form
-            $discounts = $api->discountLayer()->getDiscountsByProductId($model['product_id'], $shopId, $langId);
+            $layerDiscount = $api->discountLayer();
+            $discounts = $layerDiscount->getDiscountsByProductId($model['product_id'], $shopId, $langId);
+            $discountDetails = $discounts;
             a($discounts);
-            $priceTypes = [
-                "priceWithTax" => $model['priceWithTaxUnformatted'],
-                "priceWithoutTax" => $model['priceWithoutTaxUnformatted'],
-            ];
-            $atLeastOneDiscountApplied = false;
-            $api->discountLayer()->applyDiscountsToPrice($discounts, $priceTypes, $atLeastOneDiscountApplied);
-            if (true === $atLeastOneDiscountApplied) {
 
 
-                $unfPriceWithoutTaxDiscount = $priceTypes['priceWithoutTax'];
-                $unfPriceWithTaxDiscount = $priceTypes['priceWithTax'];
+            // first apply all discounts that apply on priceWithoutTax
+            $priceWithoutTax = $model['priceWithoutTaxUnformatted'];
+            $priceWithTax = $model['priceWithTaxUnformatted'];
 
-                $model['priceWithoutTaxDiscount'] = $priceTypes['priceWithoutTax'];
-                $model['priceWithTaxDiscount'] = $priceTypes['priceWithTax'];
-                if ($model['displayPrice'] === $model['priceWithoutTax']) {
-                    $model['displayPriceDiscount'] = $priceTypes['priceWithoutTaxDiscount'];
-                } else {
-                    $model['displayPriceDiscount'] = $priceTypes['priceWithTaxDiscount'];
+
+            $discount_type = null;
+            $discount_saving = 0;
+            $discount_saving_percent = 0;
+            if (array_key_exists("priceWithoutTax", $discounts)) {
+                $atLeastOneDiscountApplied = false;
+                $di = $discounts['priceWithoutTax'];
+                foreach ($di as $k => $d) {
+                    $t = false;
+                    $priceWithoutTax = $layerDiscount->applyDiscountToPrice($d, $priceWithoutTax, $t);
+                    if (true === $t) {
+                        $atLeastOneDiscountApplied = true;
+
+                        if (null === $discount_type) {
+                            $discount_type = $d['procedure_type'];
+                        } else {
+                            if ($discount_type !== $d['procedure_type']) {
+                                $discount_type = "hybrid";
+                            }
+                        }
+                    } else {
+                        unset($discountDetails["priceWithoutTax"][$k]);
+                    }
                 }
-            } else {
-                $model['priceWithoutTaxDiscount'] = $model['priceWithoutTax'];
-                $model['priceWithTaxDiscount'] = $model['priceWithTax'];
-                $model['displayPriceDiscount'] = $model['displayPrice'];
+                if (true === $atLeastOneDiscountApplied) {
+                    // get taxes
+                    $taxLayer = $api->taxLayer();
+                    $taxes = $model['_taxes'];
+                    $taxDetails = [];
+                    $priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $priceWithoutTax, $taxDetails);
+                    $model['taxDetails'] = $taxDetails;
+
+                    // compute discount savings
+                    $discount_saving = 0;
+                    $discount_saving_percent = 0;
+
+                }
             }
-            a($priceTypes);
-
-        }
 
 
-        az($model);
-        if (false === $includeUnformatted) {
-            unset($model["displayPriceUnformatted"]);
-            unset($model["priceWithoutTaxUnformatted"]);
-            unset($model["priceWithTaxUnformatted"]);
+            $discount_type2 = null;
+            if (array_key_exists("priceWithTax", $discounts)) {
+                $di = $discounts['priceWithTax'];
+                foreach ($di as $k => $d) {
+                    $t = false;
+                    $priceWithTax = $layerDiscount->applyDiscountToPrice($d, $priceWithTax, $t);
+                    if (false === $t) {
+                        unset($discountDetails["priceWithTax"][$k]);
+                    } else {
+                        if (null === $discount_type2) {
+                            $discount_type2 = $d['procedure_type'];
+                        } else {
+                            if ($discount_type2 !== $d['procedure_type']) {
+                                $discount_type2 = "hybrid";
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            $model['priceWithoutTaxDiscount'] = E::price($priceWithoutTax);
+            $model['priceWithTaxDiscount'] = E::price($priceWithTax);
+            $model['displayPriceDiscount'] = (true === $bPriceWithTax) ? $model['priceWithTaxDiscount'] : $model['priceWithoutTaxDiscount'];
+
+            $model['discount_type'] = (true === $bPriceWithTax) ? $discount_type2 : $discount_type;
+
+            $model['discountDetails'] = $discountDetails;
+            az($model);
+            if (false === $includeUnformatted) {
+                unset($model["displayPriceUnformatted"]);
+                unset($model["priceWithoutTaxUnformatted"]);
+                unset($model["priceWithTaxUnformatted"]);
+            }
+
+            // remove private
+            unset($model["_taxes"]);
         }
 
         return $model;

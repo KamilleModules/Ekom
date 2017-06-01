@@ -1668,7 +1668,7 @@ $api->productHasDiscount()->create([
 $api->productCardHasDiscount()->create([
     "product_card_id" => $cardKettleBell,
     "discount_id" => $discountMinus2Euros,
-    "order_phase" => 0,
+    "order_phase" => 2,
     "active" => 1,
 ]);
 
@@ -1679,7 +1679,7 @@ $api->productCardHasDiscount()->create([
 $api->categoryHasDiscount()->create([
     "category_id" => $categoryPilates,
     "discount_id" => $discountMinus10Percent,
-    "order_phase" => 0,
+    "order_phase" => 3,
     "active" => 1,
 ]);
 

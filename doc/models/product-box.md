@@ -95,9 +95,22 @@ The normal form is presented below:
     - priceBefore: the price before entering the node
     - priceAfter: the price after exiting the node
 
-- discount_type: null|string, the discount procedure type, or null if there is no discount
-- discount_operand: string, the discount procedure operand
-- discount_price:
+- discount_type: null|string, the discount procedure type, or null if there is no discount.
+                        Possible values are: 
+                        - percent
+                        - amount
+                        - hybrid (if multiple discounts of different types were applied to this product)
+                        
+                   Note: if multiple discounts of the same type are applied to a product,
+                   then the discount_type value is defined.
+                   
+                   Templates can use this info to know what type of badge to display.     
+                        
+- discount_saving: the formatted amount of saving (for instance 8.00€).
+                    Template can use this info to display things such as: you saved: $discount_saving
+                    Note: this is always in currency unit (not in percent).
+- discount_saving_percent: the percent number of saving (without the % symbol).
+                    
 - attributes: array of $attrName => $attrInfo.
                 
                 Should be used to display an attribute selector subwidget.
@@ -133,7 +146,19 @@ The normal form is presented below:
                                                                         
                                                                     
 
-
+- discountDetails: an array explaining the discount details.
+                    It contains the following entries:
+    - ?priceWithTax: array of discountDetail                    
+    - ?priceWithoutTax: array of discountDetail             
+           A discountDetail is an array with the following keys:
+                    - discount_id: the discount id
+                    - procedure_type: amount|percent|?
+                    - procedure_operand: the procedure operand, see DiscountLayer and latest $date-database.md for more info
+                    - label: the label of the discount
+                    - level: product|card|category
+                    
+           
+           
 
 // extensions
 
