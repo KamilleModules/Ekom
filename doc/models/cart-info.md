@@ -23,9 +23,9 @@ CartInfo
             - attributes: array of attribute, each attribute is an array containing:
                     - attribute_id:
                     - label: the (translated) name of the attribute
-                    - value: the value of the attribute
-            - discount_price: null|float, if not null the discount price  
+                    - value: the value of the attribute  
             - displayPrice: float, the (formatted) price to display, based on ekom modules internal rules 
+            - displayPriceDiscount: float, the (formatted) price to display, based on ekom modules internal rules 
             - displayPriceUnformatted: float, the unformatted price (used for internal computation, not meant to be used by templates)  
             - priceWithoutTax: float, the original price (without tax)
             - priceWithoutTaxUnformatted: the unformatted version of the price without tax (not intended to be displayed)

@@ -218,14 +218,13 @@ and product_id in (" . implode(', ', $productIds) . ")
      *                              if not null, it means that you want to display the productBox for a specific product.
      * @return false|mixed
      */
-    public function getProductBoxModelByCardId($cardId, $shopId = null, $langId = null, $productId = null, $includeUnformatted = false)
+    public function getProductBoxModelByCardId($cardId, $shopId = null, $langId = null, $productId = null)
     {
 
         $cardId = (int)$cardId;
         $productId = (int)$productId;
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
-        $iIncludeUnformatted = (int)$includeUnformatted;
         $bPriceWithTax = E::conf("displayPriceWithTax");
         $iPriceWithTax = (int)$bPriceWithTax;
         $api = EkomApi::inst();
@@ -322,27 +321,30 @@ and product_id in (" . implode(', ', $productIds) . ")
                             }
 
 
-                            $priceWithoutTax = $p['price'];
-                            if (null === $priceWithoutTax) {
-                                $priceWithoutTax = $p['default_price'];
+                            $originalPriceOT = $p['price'];
+                            if (null === $originalPriceOT) {
+                                $originalPriceOT = $p['default_price'];
                             }
+                            $originalPriceOT = E::trimPrice($originalPriceOT);
 
 
                             // get taxes
                             $taxLayer = $api->taxLayer();
                             $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
                             $taxDetails = [];
-                            $priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $priceWithoutTax, $taxDetails);
+                            $originalPriceWT = $taxLayer->applyTaxesToPrice($taxes, $originalPriceOT, $taxDetails);
+                            $originalPriceWT = E::trimPrice($originalPriceWT);
 
 
-                            $formattedPriceWithoutTax = E::price($priceWithoutTax);
-                            $formattedPriceWithTax = E::price($priceWithTax);
+                            // f stands for formatted
+                            $fOriginalPriceOT = E::price($originalPriceOT);
+                            $fOriginalPriceWT = E::price($originalPriceWT);
 
 
                             if (true === $bPriceWithTax) {
-                                $displayPrice = $formattedPriceWithTax;
+                                $fOriginalPrice = $fOriginalPriceWT;
                             } else {
-                                $displayPrice = $formattedPriceWithoutTax;
+                                $fOriginalPrice = $fOriginalPriceOT;
                             }
 
 
@@ -361,9 +363,12 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 "stockText" => $stockText,
 
 
-                                "priceWithoutTax" => $formattedPriceWithoutTax,
-                                "priceWithTax" => $formattedPriceWithTax,
-                                "displayPrice" => $displayPrice, // the price chosen by the ekom module for display
+                                "originalPrice" => $fOriginalPrice,
+                                //--------------------------------------------
+                                // adding un-formatted versions for discount computation
+                                //--------------------------------------------
+                                "rawOriginalPriceOT" => $originalPriceOT,
+                                "rawOriginalPriceWT" => $originalPriceWT,
 
 
                                 "taxDetails" => $taxDetails, // see TaxLayer.applyTaxesToPrice for more details
@@ -384,22 +389,6 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 //--------------------------------------------
                                 "_taxes" => $taxes,
                             ];
-
-
-                            //--------------------------------------------
-                            // adding un-formatted versions for discount computation
-                            //--------------------------------------------
-                            $unformattedPriceWithoutTax = E::trimPrice($priceWithoutTax);
-                            $unformattedPriceWithTax = E::trimPrice($priceWithTax);
-
-                            if (true === $bPriceWithTax) {
-                                $displayPriceUnformatted = $unformattedPriceWithTax;
-                            } else {
-                                $displayPriceUnformatted = $unformattedPriceWithoutTax;
-                            }
-                            $boxConf["displayPriceUnformatted"] = $displayPriceUnformatted;
-                            $boxConf["priceWithoutTaxUnformatted"] = $unformattedPriceWithoutTax;
-                            $boxConf["priceWithTaxUnformatted"] = $unformattedPriceWithTax;
 
 
                             $model = $boxConf;
@@ -461,8 +450,6 @@ and product_id in (" . implode(', ', $productIds) . ")
         ]);
 
 
-        $discountDetails = [];
-
         //--------------------------------------------
         // NOW APPLYING DISCOUNT DYNAMICALLY (so that it's always synced with app rules)
         //--------------------------------------------
@@ -488,16 +475,15 @@ and product_id in (" . implode(', ', $productIds) . ")
             $discountDetails = $discounts;
 
 
-            // first apply all discounts that apply on priceWithoutTax
-            $priceWithoutTax = $model['priceWithoutTaxUnformatted'];
-            $priceWithTax = $model['priceWithTaxUnformatted'];
 
-            $originalPriceWithTax = $priceWithTax;
+            $priceWithoutTax = $model['rawOriginalPriceOT'];
+            $priceWithTax = $model['rawOriginalPriceWT'];
+
             $originalPriceWithoutTax = $priceWithoutTax;
+            $originalPriceWithTax = $priceWithTax;
 
 
-            $taxGroupPercentage = ($priceWithTax - $priceWithoutTax) * 100 / $priceWithoutTax;
-            $taxGroupPercentageBackward = 0;
+            $taxGroupFactor = $priceWithTax / $priceWithoutTax;
 
             $badgesHt = [];
             $badgesTtc = [];
@@ -505,25 +491,50 @@ and product_id in (" . implode(', ', $productIds) . ")
 
             $atLeastOneDiscountApplied = false;
             $lastPriceWithTax = $priceWithTax;
+            $lastPriceWithoutTax = $priceWithoutTax;
             foreach ($discounts as $d) {
                 $t = false;
 
+                $operand = $d['procedure_operand'];
                 if ('priceWithoutTax' === $d['target']) {
                     $priceWithoutTax = $layerDiscount->applyDiscountToPrice($d, $priceWithoutTax, $t);
-                    $operand = $d['procedure_operand'];
-                    $badgesHt[] = [$d['procedure_type'], $operand, $d['label']];
 
-                    $priceWithTax = $priceWithoutTax + $priceWithoutTax * $taxGroupPercentage / 100;
+                    $badgesHt[] = [
+                        "type" => $d['procedure_type'],
+                        "value" => $operand,
+                        "label" => $d['label'],
+                    ];
+
+                    $priceWithTax = $priceWithoutTax * $taxGroupFactor;
                     if ('amount' === $d['procedure_type']) {
                         $operand = $priceWithTax - $lastPriceWithTax;
                     }
-                    $badgesTtc[] = [$d['procedure_type'], $operand, $d['label']];
+                    $badgesTtc[] = [
+                        "type" => $d['procedure_type'],
+                        "value" => $operand,
+                        "label" => $d['label'],
+                    ];
                     $lastPriceWithTax = $priceWithTax;
 
                 } else {
                     $priceWithTax = $layerDiscount->applyDiscountToPrice($d, $priceWithTax, $t);
+                    $badgesTtc[] = [
+                        "type" => $d['procedure_type'],
+                        "value" => $operand,
+                        "label" => $d['label'],
+                    ];
 
 
+                    $priceWithoutTax = $priceWithTax / $taxGroupFactor;
+                    if ('amount' === $d['procedure_type']) {
+                        $operand = $priceWithoutTax - $lastPriceWithoutTax;
+                    }
+                    $badgesHt[] = [
+                        "type" => $d['procedure_type'],
+                        "value" => $operand,
+                        "label" => $d['label'],
+                    ];
+                    $lastPriceWithoutTax = $priceWithoutTax;
                 }
 
 
@@ -533,102 +544,36 @@ and product_id in (" . implode(', ', $productIds) . ")
             }
 
 
-            az($discounts);
-
-
-            $discount_type = null;
-            $discount_saving = 0;
-            $discount_saving_percent = 0;
-            $atLeastOneDiscountApplied = false;
-            if (array_key_exists("priceWithoutTax", $discounts)) {
-                $di = $discounts['priceWithoutTax'];
-                foreach ($di as $k => $d) {
-                    $t = false;
-                    $priceWithoutTax = $layerDiscount->applyDiscountToPrice($d, $priceWithoutTax, $t);
-                    if (true === $t) {
-                        $atLeastOneDiscountApplied = true;
-
-                        if (null === $discount_type) {
-                            $discount_type = $d['procedure_type'];
-                        } else {
-                            if ($discount_type !== $d['procedure_type']) {
-                                $discount_type = "hybrid";
-                            }
-                        }
-                    } else {
-                        unset($discountDetails["priceWithoutTax"][$k]);
-                    }
-                }
-                if (true === $atLeastOneDiscountApplied) {
-                    // get taxes
-                    $taxLayer = $api->taxLayer();
-                    $taxes = $model['_taxes'];
-                    $taxDetails = [];
-                    $priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $priceWithoutTax, $taxDetails);
-                    $model['taxDetails'] = $taxDetails;
-
-
-                    // compute discount savings
-                    $diff = abs($priceWithoutTax - $originalPriceWithoutTax);
-                    $discount_saving = E::price($diff);
-                    $discount_saving_percent = $diff / $originalPriceWithoutTax * 100;
-
-                }
-            }
-
-
-            $discount_type2 = null;
-            $discount_saving2 = 0;
-            $discount_saving_percent2 = 0;
-            if (array_key_exists("priceWithTax", $discounts)) {
-                $di = $discounts['priceWithTax'];
-                foreach ($di as $k => $d) {
-                    $t = false;
-                    $priceWithTax = $layerDiscount->applyDiscountToPrice($d, $priceWithTax, $t);
-                    if (false === $t) {
-                        unset($discountDetails["priceWithTax"][$k]);
-                    } else {
-                        $atLeastOneDiscountApplied = true;
-                        if (null === $discount_type2) {
-                            $discount_type2 = $d['procedure_type'];
-                        } else {
-                            if ($discount_type2 !== $d['procedure_type']) {
-                                $discount_type2 = "hybrid";
-                            }
-                        }
-                    }
-                }
-
-
-                // compute discount savings
-                $diff = abs($priceWithTax - $originalPriceWithTax);
-                $discount_saving2 = E::price($diff);
-                $discount_saving_percent2 = $diff / $originalPriceWithTax * 100;
+            if (true === $bPriceWithTax) {
+                $badgeDetails = $badgesTtc;
+            } else {
+                $badgeDetails = $badgesHt;
             }
 
 
             $model['priceWithoutTaxDiscount'] = E::price($priceWithoutTax);
             $model['priceWithTaxDiscount'] = E::price($priceWithTax);
-            $model['displayPriceDiscount'] = (true === $bPriceWithTax) ? $model['priceWithTaxDiscount'] : $model['priceWithoutTaxDiscount'];
-
-            $model['discount_type'] = (true === $bPriceWithTax) ? $discount_type2 : $discount_type;
-            $model['discount_saving'] = (true === $bPriceWithTax) ? $discount_saving2 : $discount_saving;
-            $model['discount_saving_percent'] = (true === $bPriceWithTax) ? $discount_saving_percent2 : $discount_saving_percent;
-
-            $model['discountDetails'] = $discountDetails;
+            $model['salePrice'] = (true === $bPriceWithTax) ? $model['priceWithTaxDiscount'] : $model['priceWithoutTaxDiscount'];
 
 
             //--------------------------------------------
             //
             //--------------------------------------------
             $model['hasDiscount'] = $atLeastOneDiscountApplied;
-            $model['compoundBadgePercent'] = 0;
+            $model['badgeDetails'] = $badgeDetails;
 
-            if (false === $includeUnformatted) {
-                unset($model["displayPriceUnformatted"]);
-                unset($model["priceWithoutTaxUnformatted"]);
-                unset($model["priceWithTaxUnformatted"]);
+
+            if (true === $bPriceWithTax) {
+                $diff = $originalPriceWithTax - $priceWithTax;
+                $diffPercent = $diff / $originalPriceWithTax * 100;
+            } else {
+                $diff = $originalPriceWithoutTax - $priceWithoutTax;
+                $diffPercent = $diff / $originalPriceWithoutTax * 100;
             }
+
+            $model['compoundBadgePercent'] = E::trimPercent($diffPercent);
+            $model['compoundBadgeAmount'] = E::price($diff);
+
 
             // remove private
             unset($model["_taxes"]);

@@ -52,6 +52,11 @@ class E
         return (float)round($price, 2, \PHP_ROUND_HALF_DOWN);
     }
 
+    public static function trimPercent($percent)
+    {
+        return (float)round($percent, 2, \PHP_ROUND_HALF_DOWN);
+    }
+
     /**
      * Send a front office mail
      */

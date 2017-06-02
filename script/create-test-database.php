@@ -1571,6 +1571,8 @@ foreach ($shops as $shop) {
 //--------------------------------------------
 // discounts
 //--------------------------------------------
+$target = "priceWithoutTax";
+$target = "priceWithTax";
 $discount50Destockage = $api->discount()->create([
     "user_group_id" => null,
     "currency_id" => null,
@@ -1578,7 +1580,7 @@ $discount50Destockage = $api->discount()->create([
     "date_end" => null,
     "procedure_type" => "percent",
     "procedure_operand" => "50",
-    "target" => "priceWithoutTax",
+    "target" => $target,
     "shop_id" => $shopEurope,
 ]);
 
@@ -1589,7 +1591,7 @@ $discountMinusHalfEuro = $api->discount()->create([
     "date_end" => null,
     "procedure_type" => "amount",
     "procedure_operand" => "0.50",
-    "target" => "priceWithoutTax",
+    "target" => $target,
     "shop_id" => $shopEurope,
 ]);
 
@@ -1600,7 +1602,7 @@ $discountMinus2Euros = $api->discount()->create([
     "date_end" => null,
     "procedure_type" => "amount",
     "procedure_operand" => "2",
-    "target" => "priceWithoutTax",
+    "target" => $target,
     "shop_id" => $shopEurope,
 ]);
 
@@ -1611,7 +1613,7 @@ $discountMinus10Percent = $api->discount()->create([
     "date_end" => null,
     "procedure_type" => "percent",
     "procedure_operand" => "10",
-    "target" => "priceWithoutTax",
+    "target" => $target,
     "shop_id" => $shopEurope,
 ]);
 
