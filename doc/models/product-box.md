@@ -74,12 +74,29 @@ The normal form is presented below:
                 The template should use this value to format the stockText (using
                 different colors for instance).
                 
+                By default, if stockAvailable is selected, then the stockText is "in stock",
+                which template authors can alter at will.
+                
+                If outOfStock is selected, then the stockText is the out_of_stock_text value from
+                ek_shop_has_product_lang table. 
+                Note that the value might be an empty string.
+                
+                
+                
 - stockText: string, the text to display
+
+
+
   
   
 - hasDiscount: bool, whether or not this product has at least one discount applied to it.
 - originalPrice: string, the original price to display, either WT or OT, based on ekom preferences/rules                        
 - salePrice: string, the discounted price to display, either WT or OT, based on ekom preferences/rules
+- salePriceWithoutTax: string, the discounted price to display without tax
+- salePriceWithTax: string, the discounted price to display with tax
+- rawSalePriceWithoutTax: internal helper, the unformatted sale price without tax of the product, not intended to be used by template
+- rawSalePriceWithTax: internal helper, the unformatted sale price with tax of the product, not intended to be used by template
+
       
 - savingPercent: negative percent (-10% for instance)
 - savingAmount: negative formatted price (-7€ for instance)

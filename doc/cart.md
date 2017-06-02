@@ -128,7 +128,10 @@ So, that answers the first question:
             
             That makes things simple to understand for everybody (and simplicity is always what I'm seeking).
 
-            
+    - coupon codes.
+            A non connected user shall be able to apply coupon codes to the cart, see the changes that it made,
+            before she is asked to connect.
+            In order to do that, we need to somehow store the coupon codes entered by the user.                                            
 
 
 
@@ -179,6 +182,7 @@ Then, the file might contain a serialized array with the following structure (or
 --------- quantity: 1
 --------- id: 12
 ----- ...
+- coupons: array of valid coupon ids
 ```
 
 So now we can easily/quickly access and store info of a connected user's cart.
@@ -300,14 +304,21 @@ sessions can be shared with multiple modules):
 ```txt
 - ekom.cart:
 ----- $shopId:
---------- 0:
-------------- quantity: 5
-------------- id: 650
---------- 1:
-------------- quantity: 1
-------------- id: 12
---------- ...
+--------- items:
+------------- 0:
+----------------- quantity: 5
+----------------- id: 650
+------------- 1:
+----------------- quantity: 1
+----------------- id: 12
+------------- ...
+--------- coupons: array of valid coupon ids
 ```   
+   
+
+A valid coupon id means that the application has verified that the coupon exist and was accepted according
+to ekom coupon mixing/merging rules (see more details in the latest $date-database.md document).
+   
    
 
 

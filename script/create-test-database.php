@@ -43,6 +43,15 @@ $api->categoryHasDiscount()->deleteAll();
 $api->discountLang()->deleteAll();
 $api->discount()->deleteAll();
 $api->userHasUserGroup()->deleteAll();
+$api->orderHasOrderStatus()->deleteAll();
+$api->orderStatusLang()->deleteAll();
+$api->orderStatus()->deleteAll();
+$api->order()->deleteAll();
+$api->couponHasCartDiscount()->deleteAll();
+$api->cartDiscountLang()->deleteAll();
+$api->cartDiscount()->deleteAll();
+$api->userHasCoupon()->deleteAll();
+$api->coupon()->deleteAll();
 
 // no deps
 $api->timezone()->deleteAll();
@@ -1684,6 +1693,181 @@ $api->categoryHasDiscount()->create([
     "order_phase" => 3,
     "active" => 1,
 ]);
+
+
+//--------------------------------------------
+// order
+//--------------------------------------------
+
+//--------------------------------------------
+// order status
+//--------------------------------------------
+$statuses = [
+    'pending' => [
+        "Pending",
+        "orange",
+    ],
+    'awaitingPayment' => [
+        "Awaiting Payment",
+        "red",
+    ],
+    'awaitingFulfillment' => [
+        "Awaiting Fulfillment",
+        "purple",
+    ],
+    'awaitingShipment' => [
+        "Pending",
+        "blue",
+    ],
+    'completed' => [
+        "Completed",
+        "green",
+    ],
+    'shipped' => [
+        "Shipped",
+        "yellow",
+    ],
+];
+foreach ($statuses as $code => $info) {
+
+    $status = $api->orderStatus()->create([
+        'code' => $code,
+        'color' => $info[1],
+        'shop_id' => $shopEurope,
+    ]);
+
+    $api->orderStatusLang()->create([
+        "order_status_id" => $status,
+        "lang_id" => $langFrench,
+        "label" => $info[0],
+    ]);
+    $api->orderStatusLang()->create([
+        "order_status_id" => $status,
+        "lang_id" => $langEnglish,
+        "label" => $info[0],
+    ]);
+}
+
+
+//--------------------------------------------
+// coupon
+//--------------------------------------------
+$couponABC = $api->coupon()->create([
+    "code" => 'abc',
+    "active" => '1',
+    "mode" => '',
+    "priority" => 0,
+    "shop_id" => $shopEurope,
+]);
+
+$couponDEF = $api->coupon()->create([
+    "code" => 'def',
+    "active" => '1',
+    "mode" => '',
+    "priority" => 0,
+    "shop_id" => $shopEurope,
+]);
+
+$couponGHI = $api->coupon()->create([
+    "code" => 'ghi',
+    "active" => '1',
+    "mode" => '',
+    "priority" => 0,
+    "shop_id" => $shopEurope,
+]);
+
+
+//--------------------------------------------
+// coupon lang
+//--------------------------------------------
+$api->couponLang()->create([
+    "coupon_id" => $couponABC,
+    "lang_id" => $langFrench,
+    "label" => "coupon abc",
+]);
+$api->couponLang()->create([
+    "coupon_id" => $couponDEF,
+    "lang_id" => $langFrench,
+    "label" => "coupon def",
+]);
+$api->couponLang()->create([
+    "coupon_id" => $couponGHI,
+    "lang_id" => $langFrench,
+    "label" => "coupon ghi",
+]);
+
+//--------------------------------------------
+// cart discount
+//--------------------------------------------
+$cdiscountMinus2Euros = $api->cartDiscount()->create([
+    'target' => 'linesTotalWithTax',
+    'procedure_type' => 'relativeAmount',
+    'procedure_operand' => '-2',
+    'shop_id' => $shopEurope,
+]);
+$cdiscountMinus3Euros = $api->cartDiscount()->create([
+    'target' => 'linesTotalWithTax',
+    'procedure_type' => 'relativeAmount',
+    'procedure_operand' => '-3',
+    'shop_id' => $shopEurope,
+]);
+$cdiscountMinus4Euros = $api->cartDiscount()->create([
+    'target' => 'linesTotalWithTax',
+    'procedure_type' => 'relativeAmount',
+    'procedure_operand' => '-4',
+    'shop_id' => $shopEurope,
+]);
+
+//--------------------------------------------
+// cart discount lang
+//--------------------------------------------
+$api->cartDiscountLang()->create([
+    "cart_discount_id" => $cdiscountMinus2Euros,
+    "lang_id" => $langFrench,
+    "label" => "Coupon ABC: Minus 2 Euros",
+]);
+$api->cartDiscountLang()->create([
+    "cart_discount_id" => $cdiscountMinus3Euros,
+    "lang_id" => $langFrench,
+    "label" => "Coupon DEF: Minus 3 Euros",
+]);
+$api->cartDiscountLang()->create([
+    "cart_discount_id" => $cdiscountMinus4Euros,
+    "lang_id" => $langFrench,
+    "label" => "Coupon GHI: Minus 4 Euros",
+]);
+
+
+//--------------------------------------------
+// coupon has cart discount
+//--------------------------------------------
+$api->couponHasCartDiscount()->create([
+    "coupon_id" => $couponABC,
+    "cart_discount_id" => $cdiscountMinus2Euros,
+]);
+$api->couponHasCartDiscount()->create([
+    "coupon_id" => $couponABC,
+    "cart_discount_id" => $cdiscountMinus3Euros,
+]);
+$api->couponHasCartDiscount()->create([
+    "coupon_id" => $couponDEF,
+    "cart_discount_id" => $cdiscountMinus4Euros,
+]);
+
+
+//--------------------------------------------
+// user has coupon
+//--------------------------------------------
+$api->userHasCoupon()->create([
+    "user_id" => $userLing,
+    "coupon_id" => $couponABC,
+    "date" => date('Y-m-d H:i:s'),
+    "order_id" => null,
+]);
+
+
+
+
 
 
 

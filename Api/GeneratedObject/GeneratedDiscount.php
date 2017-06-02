@@ -35,6 +35,7 @@ class GeneratedDiscount extends TableCrudObject
 			'date_end' => null,
 			'procedure_type' => '',
 			'procedure_operand' => '',
+			'target' => '',
 			'shop_id' => 0,
 		], $data);
 

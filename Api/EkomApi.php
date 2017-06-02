@@ -13,6 +13,7 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\Api\Layer\ConditionLayer;
+use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\DiscountLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
@@ -318,6 +319,14 @@ and h.lang_id=$langId
     public function userLayer()
     {
         return $this->getLayer('userLayer');
+    }
+
+    /**
+     * @return CouponLayer
+     */
+    public function couponLayer()
+    {
+        return $this->getLayer('couponLayer');
     }
 
 

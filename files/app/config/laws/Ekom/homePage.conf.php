@@ -1,6 +1,9 @@
 <?php
 
 $conf = [
+    "layout" => [
+        'tpl' => "sandwich_1c/default",
+    ],
     "widgets" => [
         'maincontent.mainSlider' => [
             'grid' => "1",

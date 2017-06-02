@@ -19,7 +19,7 @@ class GeneratedOrder extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_order";
+        $this->table = "ek_order";
     }
 
 
@@ -32,7 +32,7 @@ class GeneratedOrder extends TableCrudObject
 			'user_id' => 0,
 			'reference' => '',
 			'date' => '',
-			'tracking_number' => null,
+			'tracking_number' => '',
 			'user_info' => '',
 			'shop_info' => '',
 			'invoice_address' => '',
@@ -41,9 +41,6 @@ class GeneratedOrder extends TableCrudObject
 		], $data);
 
 
-        if (0 === (int)$ret["tracking_number"]) {
-            $ret["tracking_number"] = null;
-        }
 
         return $ret;
     }

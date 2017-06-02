@@ -26,7 +26,11 @@ class EkomShortCodeProvider extends ShortCodeProvider
     {
         $cardId = ApplicationRegistry::get("ekom.cardId");
         return EkomApi::inst()->productLayer()->getProductBoxModelByCardId($cardId);
+    }
 
+    public function getCartModel()
+    {
+        return EkomApi::inst()->cartLayer()->getCartModel();
     }
 
 }

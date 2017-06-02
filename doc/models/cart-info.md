@@ -5,6 +5,10 @@ CartInfo
 
 
 - cartInfo:
+    - displayPriceWithTax: boolean, whether or not (ekom suggested) to display the price with tax or without tax.
+                        This might be useful only to display/not display the tax line subtotal.
+                        See the ekom coin model figure related to display cart to see what I mean.
+                        
     - totalQuantity: sum of items.quantity
     - items: array of items, each item being an array with the following elements:
             - product_id: int, the id of the product
@@ -24,17 +28,27 @@ CartInfo
                     - attribute_id:
                     - label: the (translated) name of the attribute
                     - value: the value of the attribute  
-            - displayPrice: float, the (formatted) price to display, based on ekom modules internal rules 
-            - displayPriceDiscount: float, the (formatted) price to display, based on ekom modules internal rules 
-            - displayPriceUnformatted: float, the unformatted price (used for internal computation, not meant to be used by templates)  
-            - priceWithoutTax: float, the original price (without tax)
-            - priceWithoutTaxUnformatted: the unformatted version of the price without tax (not intended to be displayed)
-            - priceWithTax: float, the price with taxes
-            - priceWithTaxUnformatted: the unformatted version of the price with tax (not intended to be displayed)
+            - attributeValues: array of attribute values, computed from attributes; template authors can implode this
+            - originalPrice: float, the (formatted) price to display, based on ekom modules internal rules 
+            
+            - salePrice: float, the (formatted) price to display, based on ekom modules internal rules 
+            - salePriceWithTax: float, the (formatted) price with tax to display 
+            - salePriceWithoutTax: float, the (formatted) price without tax to display, based on ekom modules internal rules
+             
             - image: str, the main image uri
+            - stockType: same as in product-box model
+            - stockText: same as in product-box model
+            
+            // ----            
+            - rawSalePriceWithoutTax: the unformatted version of the sale price without tax (not intended to be displayed)
+            - rawSalePriceWithTax: the unformatted version of the sale price with tax (not intended to be displayed)
+            - rawSalePrice: the unformatted version of the sale price, either with or without tax, based on ekom rules (not intended to be displayed)
+            
     - totalWithoutTax: string: the formatted total without taxes applied, and without (estimated?) shipping costs
-                            (priceWithoutTax x quantity)
+                            (priceWithoutTax x quantity).
+                            Consider displaying this only if displayPriceWithTax is false.
+                            
     - totalWithTax: string: the formatted total with taxes applied, and without (estimated?) shipping costs
                             (priceWithTax x quantity)
-    - displayTotal: string: the formatted total chosen by ekom as the recommended total price to display
+    - total: string: the formatted total chosen by ekom as the recommended total price to display
             

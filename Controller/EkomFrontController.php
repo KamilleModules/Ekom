@@ -6,6 +6,7 @@ namespace Controller\Ekom;
 
 use Core\Controller\ApplicationController;
 use Kamille\Utils\Laws\Config\LawsConfig;
+use Module\Ekom\Api\EkomApi;
 
 
 class EkomFrontController extends ApplicationController
@@ -33,15 +34,21 @@ class EkomFrontController extends ApplicationController
 
     protected function renderByViewId($viewId, LawsConfig $config = null, array $options = [])
     {
-        $widgets = [];
+
+        /**
+         * From here we can configure all the common/implicit widgets.
+         * Those are the widgets specific to ekom module and common to all controllers.
+         */
         if (null === $config) {
             $config = LawsConfig::create();
         }
         $config->replace(([
-            "layout" => [
-                "tpl" => "sandwich_1c/default",
+            "widgets" => [
+                "topActionBar.miniCart" => [
+                    "tpl" => "Ekom/MiniCart/sliding",
+                    "conf" => EkomApi::inst()->cartLayer()->getCartInfo(),
+                ],
             ],
-            "widgets" => $widgets,
         ]));
         return parent::renderByViewId($viewId, $config, $options);
     }

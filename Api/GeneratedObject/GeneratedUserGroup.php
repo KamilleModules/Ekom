@@ -30,6 +30,7 @@ class GeneratedUserGroup extends TableCrudObject
     {
         $ret = array_replace([
 			'name' => '',
+			'shop_id' => 0,
 		], $data);
 
 

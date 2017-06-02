@@ -19,7 +19,7 @@ class GeneratedOrderStatus extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_order_status";
+        $this->table = "ek_order_status";
     }
 
 
@@ -29,8 +29,9 @@ class GeneratedOrderStatus extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
-			'label' => '',
-			'lang_id' => 0,
+			'code' => '',
+			'color' => '',
+			'shop_id' => 0,
 		], $data);
 
 

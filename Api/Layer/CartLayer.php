@@ -22,6 +22,7 @@ use QuickPdo\QuickPdo;
 class CartLayer
 {
 
+
     /**
      * @var CartLocalStore
      */
@@ -33,16 +34,16 @@ class CartLayer
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $productId = (int)$productId;
         $alreadyExists = false;
-        foreach ($_SESSION['ekom.cart'][$shopId] as $k => $item) {
+        foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $k => $item) {
             if ((int)$item['id'] === $productId) {
-                $_SESSION['ekom.cart'][$shopId][$k]['quantity'] += $qty;
+                $_SESSION['ekom.cart'][$shopId]['items'][$k]['quantity'] += $qty;
                 $alreadyExists = true;
                 break;
             }
         }
 
         if (false === $alreadyExists) {
-            $_SESSION['ekom.cart'][$shopId][] = [
+            $_SESSION['ekom.cart'][$shopId]['items'][] = [
                 "quantity" => $qty,
                 "id" => $productId,
             ];
@@ -55,9 +56,9 @@ class CartLayer
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $productId = (int)$productId;
-        foreach ($_SESSION['ekom.cart'][$shopId] as $k => $item) {
+        foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $k => $item) {
             if ((int)$item['id'] === $productId) {
-                unset($_SESSION['ekom.cart'][$shopId][$k]);
+                unset($_SESSION['ekom.cart'][$shopId]['items'][$k]);
                 break;
             }
         }
@@ -71,16 +72,16 @@ class CartLayer
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $productId = (int)$productId;
         $alreadyExists = false;
-        foreach ($_SESSION['ekom.cart'][$shopId] as $k => $item) {
+        foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $k => $item) {
             if ((int)$item['id'] === $productId) {
-                $_SESSION['ekom.cart'][$shopId][$k]['quantity'] = $newQty;
+                $_SESSION['ekom.cart'][$shopId]['items'][$k]['quantity'] = $newQty;
                 $alreadyExists = true;
                 break;
             }
         }
 
         if (false === $alreadyExists) {
-            $_SESSION['ekom.cart'][$shopId][] = [
+            $_SESSION['ekom.cart'][$shopId]['items'][] = [
                 "quantity" => $newQty,
                 "id" => $productId,
             ];
@@ -109,7 +110,18 @@ class CartLayer
     }
 
 
-    public function getCartInfo()
+    public function getCartModel()
+    {
+        return $this->doGetCartModel(false);
+    }
+
+    public function getMiniCartModel()
+    {
+        return $this->doGetCartModel(true);
+    }
+
+
+    public function doGetCartModel($isMini = true)
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
@@ -120,7 +132,7 @@ class CartLayer
         $totalWithTax = 0;
         $displayTotal = 0;
 
-        $items = $_SESSION['ekom.cart'][$shopId];
+        $items = $_SESSION['ekom.cart'][$shopId]['items'];
         foreach ($items as $item) {
 
             $qty = $item['quantity'];
@@ -129,10 +141,20 @@ class CartLayer
             if (false !== ($it = $this->getCartItemInfo($id))) {
                 $it['quantity'] = $qty;
                 $modelItems[] = $it;
-                $totalWithoutTax += $qty * $it['priceWithoutTaxUnformatted'];
-                $totalWithTax += $qty * $it['priceWithTaxUnformatted'];
-                $displayTotal += $qty * $it['displayPriceUnformatted'];
+                $totalWithoutTax += $qty * $it['rawSalePriceWithoutTax'];
+                $totalWithTax += $qty * $it['rawSalePriceWithTax'];
+                $displayTotal += $qty * $it['rawSalePrice'];
+                if (false === $isMini) {
+                    $it['image'] = str_replace('/thumb/', '/small/', $it['image']);
+                }
             }
+
+
+            $attrValues = [];
+            foreach ($it['attributes'] as $v) {
+                $attrValues[] = $v['value'];
+            }
+            $it['attributeValues'] = $attrValues;
         }
 
 
@@ -146,9 +168,36 @@ class CartLayer
     }
 
 
+    public function tryAddCouponByCode($code)
+    {
+        $this->initSessionCart();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+        return $_SESSION['ekom.cart'][$shopId]['coupons'];
+    }
+
+    public function getCouponBag()
+    {
+        $this->initSessionCart();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+        return $_SESSION['ekom.cart'][$shopId]['coupons'];
+    }
+
+
     //--------------------------------------------
     //
     //--------------------------------------------
+    /**
+     * @param array $bag , array of coupon ids
+     * @return $this
+     */
+    private function setCouponBag(array $bag)
+    {
+        $this->initSessionCart();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+        $_SESSION['ekom.cart'][$shopId]['coupons'] = $bag;
+        return $this;
+    }
+
     private function initSessionCart()
     {
         EkomApi::inst()->initWebContext();
@@ -157,7 +206,10 @@ class CartLayer
             $_SESSION['ekom.cart'] = [];
         }
         if (false === array_key_exists($shopId, $_SESSION['ekom.cart'])) {
-            $_SESSION['ekom.cart'][$shopId] = [];
+            $_SESSION['ekom.cart'][$shopId] = [
+                'items' => [],
+                'coupons' => [],
+            ];
         }
     }
 
@@ -238,14 +290,17 @@ and p.lang_id=$langId
                     'uri_card' => E::link("Ekom_productCard", ['slug' => $cardSlug]),
                     'product_card_id' => $productCardId,
                     'attributes' => $zeAttr,
-                    'displayPrice' => $b['displayPrice'],
-                    'displayPriceDiscount' => $b['displayPriceDiscount'],
-                    'displayPriceUnformatted' => $b['displayPriceUnformatted'],
-                    'priceWithoutTax' => $b['priceWithoutTax'],
-                    'priceWithoutTaxUnformatted' => $b['priceWithoutTaxUnformatted'],
-                    'priceWithTax' => $b['priceWithTax'],
-                    'priceWithTaxUnformatted' => $b['priceWithTaxUnformatted'],
+                    'originalPrice' => $b['originalPrice'],
+                    'salePrice' => $b['salePrice'],
+                    'salePriceWithTax' => $b['salePriceWithTax'],
+                    'salePriceWithoutTax' => $b['salePriceWithoutTax'],
                     'image' => $mainImage,
+                    'stockType' => $b['stockType'],
+                    'stockText' => $b['stockText'],
+
+                    'rawSalePriceWithoutTax' => $b['rawSalePriceWithoutTax'],
+                    'rawSalePriceWithTax' => $b['rawSalePriceWithTax'],
+                    'rawSalePrice' => $b['rawSalePrice'],
                 ];
 
             }

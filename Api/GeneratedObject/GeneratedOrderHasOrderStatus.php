@@ -19,7 +19,7 @@ class GeneratedOrderHasOrderStatus extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_order_has_order_status";
+        $this->table = "ek_order_has_order_status";
     }
 
 

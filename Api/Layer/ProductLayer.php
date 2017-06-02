@@ -96,7 +96,6 @@ and s.product_card_id=$cardId and sl.lang_id=$langId
 
     public function getProductCardProducts($cardId, $shopId, $langId)
     {
-
         $cardId = (int)$cardId;
         $shopId = (int)$shopId;
         $langId = (int)$langId;
@@ -475,7 +474,6 @@ and product_id in (" . implode(', ', $productIds) . ")
             $discountDetails = $discounts;
 
 
-
             $priceWithoutTax = $model['rawOriginalPriceOT'];
             $priceWithTax = $model['rawOriginalPriceWT'];
 
@@ -551,9 +549,15 @@ and product_id in (" . implode(', ', $productIds) . ")
             }
 
 
-            $model['priceWithoutTaxDiscount'] = E::price($priceWithoutTax);
-            $model['priceWithTaxDiscount'] = E::price($priceWithTax);
-            $model['salePrice'] = (true === $bPriceWithTax) ? $model['priceWithTaxDiscount'] : $model['priceWithoutTaxDiscount'];
+            $salePriceWithoutTax = E::price($priceWithoutTax);
+            $salePriceWithTax = E::price($priceWithTax);
+
+            $model['rawSalePriceWithTax'] = $priceWithTax;
+            $model['rawSalePriceWithoutTax'] = $priceWithoutTax;
+            $model['rawSalePrice'] = (true === $bPriceWithTax) ? $priceWithTax : $priceWithoutTax;
+            $model['salePriceWithoutTax'] = $salePriceWithoutTax;
+            $model['salePriceWithTax'] = $salePriceWithTax;
+            $model['salePrice'] = (true === $bPriceWithTax) ? $salePriceWithTax : $salePriceWithoutTax;
 
 
             //--------------------------------------------
@@ -571,8 +575,8 @@ and product_id in (" . implode(', ', $productIds) . ")
                 $diffPercent = $diff / $originalPriceWithoutTax * 100;
             }
 
-            $model['compoundBadgePercent'] = E::trimPercent($diffPercent);
-            $model['compoundBadgeAmount'] = E::price($diff);
+            $model['savingPercent'] = E::trimPercent($diffPercent);
+            $model['savingAmount'] = E::price($diff);
 
 
             // remove private

@@ -32,6 +32,7 @@ class GeneratedCategoryHasDiscount extends TableCrudObject
 			'category_id' => 0,
 			'discount_id' => 0,
 			'order_phase' => 0,
+			'active' => 0,
 		], $data);
 
 
