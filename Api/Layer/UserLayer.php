@@ -68,7 +68,7 @@ and h.type='shipping'
 and a.active=1
 and l.lang_id=$langId
 
-order by `h.order` asc
+order by h.`order` asc
 
 
             

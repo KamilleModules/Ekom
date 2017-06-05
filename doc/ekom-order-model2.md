@@ -4,7 +4,7 @@ Ekom order model II
 
 
 
-[![ekom-order-model2.jpg](https://s19.postimg.org/c5h38v6qr/ekom-order-model2.jpg)](https://postimg.org/image/l0hxjdvj3/)
+[![ekom-order-model2.jpg](https://s19.postimg.org/4p4i17vtv/ekom-order-model2.jpg)](https://postimg.org/image/3zlpouva7/)
 
 
 
@@ -59,7 +59,7 @@ How info is organized
 - coupons generally apply to that linesTotalWithTax target,
           the result of the linesTotalWithTax minus the discount is called
           the cartTotal. 
-          // todo: add the cartTotal entity to the figure.
+          
           
 - then, the shipping costs are applied, which gives us the order section total.
 

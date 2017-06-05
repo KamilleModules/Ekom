@@ -39,6 +39,7 @@ use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductLang;
 use Module\Ekom\Api\Object\Shop;
 use Module\Ekom\Api\Object\ShopConfiguration;
+use Module\Ekom\Api\Object\ShopHasAddress;
 use Module\Ekom\Api\Object\ShopHasCarrier;
 use Module\Ekom\Api\Object\ShopHasCurrency;
 use Module\Ekom\Api\Object\ShopHasLang;
@@ -323,6 +324,13 @@ class GeneratedEkomApi extends XiaoApi
     public function shopConfiguration()
     {
         return $this->getObject('shopConfiguration');
+    }
+    /**
+     * @return ShopHasAddress
+     */
+    public function shopHasAddress()
+    {
+        return $this->getObject('shopHasAddress');
     }
     /**
      * @return ShopHasCarrier

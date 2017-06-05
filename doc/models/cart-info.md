@@ -28,6 +28,10 @@ CartInfo
                     - attribute_id:
                     - label: the (translated) name of the attribute
                     - value: the value of the attribute  
+            - attributeDetails: alias for attributes. I believe I had some bugs with json_encode and attributes,
+                                so I personally use attributeDetails.
+                                But your mileage may varyn if attributes work for you, you can use either keys. 
+                                
             - attributeValues: array of attribute values, computed from attributes; template authors can implode this
             - originalPrice: float, the (formatted) price to display, based on ekom modules internal rules 
             
@@ -41,19 +45,22 @@ CartInfo
             
             
             - cartTotal: string, the (formatted) cart total (see ekom order model II for more details)
-            - couponDetails: array containing the details of the coupon discounts applied to the cart
+            - totalSaving: string, the negative formatted amount of saving made by coupons's cart discounts on the linesTotalWithTax target (see ekom order model II for more details).
+            - coupons: array containing the details of the coupon discounts applied to the cart
                                 The array can have two forms: one if it's erroneous (i.e. an internal problem occurred), and one if it's successful.
                                 The erroneous form has the following structure:
                                     - error: 1
                                     
-                                The successful form is an array of $target => discountOperationDetails.
-                                Each discountOperationDetail is an array with the following structure:
-              
-                                    - couponCode: string
-                                    - couponLabel: string
-                                    - discountLabel: string
-                                    - old: float, just a reference to the price BEFORE the discount was applied
-                                    - newPrice: string, the formatted price (AFTER the discount was applied)
+                                The successful form is an array of $couponCode => couponDetail.
+                                Each couponDetail is an array with the following structure:
+                                
+                                    - label: string, the coupon label
+                                    - saving: the negative formatted amount of saving for the ensemble of the discounts for this coupon
+                                    - discounts: array of $target => discountDetails
+                                            Each discountDetail is an array with the following structure:
+                                            - label: string, the discount label
+                                            - old: float, just a reference to the price BEFORE the discount was applied
+                                            - newPrice: string, the formatted price (AFTER the discount was applied)
                                     
                                 The $target can be one of the following values (see ekom order model II for more details):
                                     - linesTotalWithTax
@@ -62,7 +69,8 @@ CartInfo
                                     
             
              
-            - image: str, the main image uri
+            - image: str, the main image uri, in thumb format (suited for mini cart)
+            - imageSmall: str, the main image uri, in small format (suited for cart)
             - stockType: same as in product-box model
             - stockText: same as in product-box model
             

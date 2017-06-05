@@ -76,12 +76,51 @@ Here are the ekomJsApi public methods:
  
 // cart
 - cart.removeItem: (product_id ), remove an item from the cart
+                    The following events are triggered:
+                        - cart.updated
+                         
 - cart.addItem: (product_id, qty), add an item to the cart
+                    The following events are triggered:
+                        - cart.itemAdded
+                        - cart.updated
+
 - cart.updateItemQuantity: (product_id, newQty), update the quantity of an item.
                             If the item is not in the cart, it will be added.
+                    The following events are triggered:
+                        - cart.updated
+                                                    
+- cart.addCoupon: (code, onMessage), adds a coupon to the user's cart.
+
+                    A message is available, either a success message or an error
+                    message (if the coupon for some reasons couldn't be added).
+                    In case of success, the message is a string;
+                    in case of errors, the message is an array (since there could be
+                    multiple error messages).
+                    
+                    To access this message and actually do something useful with it,
+                    use the onMessage callback, which has the following signature:
+                    
+                            onMessage ( msg, type )
+                            
+                                with: 
+                                    - msg (string if success, and array if error)
+                                    - type (string: error or success)
+                            
+                    
+                    If adding the coupon is a success, then the cart.updated event
+                    is triggered, otherwise no event is striggered.
+                    
+
+                    The following events are triggered:
+                        - cart.updated  (only in case of success)
+
+
 
 // utils
 - debounce: https://davidwalsh.name/javascript-debounce-function
+
+
+
 
  
 Here are the ekomJsApi private methods:

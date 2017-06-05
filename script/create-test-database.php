@@ -1560,26 +1560,41 @@ $userGroupB2C = $api->userGroup()->create([
 //--------------------------------------------
 // users
 //--------------------------------------------
-foreach ($shops as $shop) {
-    $userLing = $api->user()->create([
-        'shop_id' => $shop,
-        'email' => "lingtalfi@gmail.com",
-        'pass' => E::passEncrypt("poupou"),
-        'date_creation' => "2017-05-28 09:49:44",
-        'mobile' => "0612457865",
-        'phone' => "0247609841",
-        'newsletter' => "1",
-        'active' => "1",
-    ]);
+
+$userLing = $api->user()->create([
+    'shop_id' => $shopEurope,
+    'email' => "lingtalfi@gmail.com",
+    'pass' => E::passEncrypt("poupou"),
+    'date_creation' => "2017-05-28 09:49:44",
+    'mobile' => "0612457865",
+    'phone' => "0247609841",
+    'newsletter' => "1",
+    'active' => "1",
+]);
 
 
-    $api->userHasUserGroup()->create([
-        "user_id" => $userLing,
-        "user_group_id" => $userGroupB2B,
-    ]);
+$api->userHasUserGroup()->create([
+    "user_id" => $userLing,
+    "user_group_id" => $userGroupB2B,
+]);
 
 
-}
+$userLingUsa = $api->user()->create([
+    'shop_id' => $shopUsa,
+    'email' => "lingtalfi@gmail.com",
+    'pass' => E::passEncrypt("poupou"),
+    'date_creation' => "2017-05-28 09:49:44",
+    'mobile' => "0612457865",
+    'phone' => "0247609841",
+    'newsletter' => "1",
+    'active' => "1",
+]);
+
+
+$api->userHasUserGroup()->create([
+    "user_id" => $userLingUsa,
+    "user_group_id" => $userGroupB2B,
+]);
 
 
 //--------------------------------------------
@@ -1907,6 +1922,14 @@ $addressLing2 = $api->address()->create([
     'country_id' => $countryFra,
 ]);
 
+$addressShopEurope = $api->address()->create([
+    'city' => 'Tours',
+    'postcode' => '37000',
+    'address' => '9 rue du général mocquery',
+    'active' => '1',
+    'country_id' => $countryFra,
+]);
+
 
 //--------------------------------------------
 // user has address
@@ -1948,4 +1971,15 @@ $api->shopHasCarrier()->create([
     'shop_id' => $shopEurope,
     'carrier_id' => $carrierDemo,
     'priority' => '0',
+]);
+
+
+//--------------------------------------------
+// shop has address
+//--------------------------------------------
+$api->shopHasAddress()->create([
+    'shop_id' => $shopEurope,
+    'address_id' => $addressShopEurope,
+    'type' => "physical",
+    'order' => 0,
 ]);

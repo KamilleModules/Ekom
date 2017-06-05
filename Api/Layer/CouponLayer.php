@@ -51,11 +51,10 @@ class CouponLayer
      *
      * @return bool, whether or not the coupon was added
      */
-    public function tryAddCouponByCode($code, array &$couponBag = null, &$errors = null)
+    public function tryAddCouponByCode($code, &$errors = null)
     {
-        if (null === $couponBag) {
-            $couponBag = EkomApi::inst()->cartLayer()->getCouponBag();
-        }
+
+        $couponBag = EkomApi::inst()->cartLayer()->getCouponBag();
 
         // does the coupon conditions validates?
         $errors = [];
@@ -65,8 +64,10 @@ class CouponLayer
         // if so, can the coupon be added to the bag?
         if (true === $ok) {
             if (false !== ($id = $this->getCouponIdByCode($code))) {
-                if (true === $this->canBeAddedToBag($id, $couponBag, $errors)) {
-                    $couponBag[] = $id;
+                if (true === $this->mergeToBag($id, $couponBag, $errors)) {
+
+
+                    EkomApi::inst()->cartLayer()->setCouponBag($couponBag);
                 }
             } else {
                 $errors[] = "invalid coupon code: $code";
@@ -76,7 +77,46 @@ class CouponLayer
         return $ok;
     }
 
-    private function canBeAddedToBag($id, array $couponBag, array &$errors = [])
+
+
+    /**
+     *
+     * Try to add the coupon to the given couponBag.
+     *
+     *
+     * @param $code
+     * @param array|null &$couponBag
+     * @param string|null &$errors , an array of errors indicating the reason why the coupon was not added.
+     *
+     * @return bool, whether or not the coupon was added
+     */
+//    public function tryAddCouponByCode($code, array &$couponBag = null, &$errors = null)
+//    {
+//        if (null === $couponBag) {
+//            $couponBag = EkomApi::inst()->cartLayer()->getCouponBag();
+//        }
+//
+//        // does the coupon conditions validates?
+//        $errors = [];
+//        $ok = $this->testCouponConditionsByCode($code, $errors);
+//
+//
+//        // if so, can the coupon be added to the bag?
+//        if (true === $ok) {
+//            if (false !== ($id = $this->getCouponIdByCode($code))) {
+//                if (true === $this->mergeToBag($id, $couponBag, $errors)) {
+//                    $couponBag[] = $id;
+//                    EkomApi::inst()->cartLayer()->setCouponBag($couponBag);
+//                }
+//            } else {
+//                $errors[] = "invalid coupon code: $code";
+//                return false;
+//            }
+//        }
+//        return $ok;
+//    }
+
+    private function mergeToBag($id, array &$couponBag, array &$errors = [])
     {
         $id = (int)$id;
         $info = $this->getCouponInfo($id, false);
@@ -88,6 +128,7 @@ class CouponLayer
             } else {
                 switch ($mode) {
                     case 'merge':
+                        $couponBag[] = $id;
                         break;
                     case 'mergeWithSame':
                         $couponsInfo = $this->getCouponBagInfo($couponBag);
@@ -101,6 +142,8 @@ class CouponLayer
                             $errors[] = "refuted: this coupon cannot be combined with coupon(s) " . implode(', ', $diff);
                             return false;
                         }
+
+                        $couponBag[] = $id;
                         break;
                     default: // unique
                         $priority = $info['priority'];
@@ -116,6 +159,7 @@ class CouponLayer
                             return false;
                         }
 
+                        $couponBag = [$id]; // unique REPLACE the content of the coupon bag
                         break;
                 }
                 return true;
@@ -140,6 +184,12 @@ class CouponLayer
 
 
     /**
+     *
+     * Use this method to apply a valid bag of coupons to a given order (on the cart
+     * page or checkout page for instance).
+     *
+     *
+     *
      * @param array $couponBag
      * @param array $targets , array of target name => target value,
      *          expected targets names are:
@@ -152,55 +202,86 @@ class CouponLayer
      * @param array $validCoupons , the coupons in the bag, minus those discarded by failing condition
      *
      *
-     * @return false|array of $target => discountOperationDetails,
-     *                  Each discountOperationDetail is an array with the following structure:
+     * @return false|array with the following structure:
      *
-     *                      - couponCode: string
-     *                      - couponLabel: string
-     *                      - discountLabel: string
-     *                      - old: float, just a reference to the price BEFORE the discount was applied
-     *                      - newPrice: string, the formatted price (AFTER the discount was applied)
+     *              - cartTotal, the formatted price (linesTotalWithTax with all coupon's discounts with target linesTotalWithTax
+     *                          applied to it, see ekom order model II for more info).
+     *              - totalSaving, the formatted amount of saving for the linesTotalWithTax target
+     *              - coupons: array of couponCode => couponDetail, each couponDetail is an array with the following structure:
+     *
+     *                      - label: coupon label
+     *                      - saving: the formatted amount of saving for the ensemble of the discounts for this coupon
+     *                      - discounts: array of $target => discountDetails.
+     *                                  Each discountDetail is an array with the following structure:
+     *
+     *                                - label: string, the discount label
+     *                                - old: float, just a reference to the price BEFORE the discount was applied
+     *                                - newPrice: string, the formatted price (AFTER the discount was applied)
      *
      *
      */
     public function applyCouponBag(array $couponBag, array $targets, array &$validCoupons = [])
     {
-
-        $details = [
-            'linesTotalWithTax' => [],
-        ];
         try {
 
             if (array_key_exists('linesTotalWithTax', $targets)) {
 
+                $ret = [];
+
                 $linesTotalWithTax = $targets['linesTotalWithTax'];
+                $cartTemp = $linesTotalWithTax;
+                $coupons = [];
                 foreach ($couponBag as $id) {
 
                     $info = $this->getCouponInfo($id, true);
+                    $coupon = [
+                        'label' => $info['label'],
+                    ];
+
                     if (true === $this->testCouponConditionsByCode($info['code'])) {
                         $validCoupons[] = $id;
 
-                        $discounts = $info['discounts'];
-                        foreach ($discounts as $target => $discount) {
-                            switch ($target) {
-                                case 'linesTotalWithTax':
-                                    $old = $linesTotalWithTax;
-                                    $linesTotalWithTax = $this->applyCouponDiscount($linesTotalWithTax, $discount);
-                                    $details['linesTotalWithTax'][] = [
-                                        'couponCode' => $info['code'],
-                                        'couponLabel' => $info['label'],
-                                        'discountLabel' => $discount['label'],
-                                        'old' => $old,
-                                        'newPrice' => E::price($linesTotalWithTax),
-                                    ];
-                                    break;
-                                default:
-                                    throw new \Exception("unknown target: $target");
-                                    break;
+                        $_discounts = [];
+                        foreach ($info['discounts'] as $target => $discounts) {
+
+                            $temp = $linesTotalWithTax;
+                            foreach ($discounts as $k => $discount) {
+                                $_discount = [];
+                                switch ($target) {
+                                    case 'linesTotalWithTax':
+                                        $old = $linesTotalWithTax;
+                                        $linesTotalWithTax = $this->applyCouponDiscount($linesTotalWithTax, $discount);
+
+                                        $_discount['old'] = $old;
+                                        $_discount['newPrice'] = E::price($linesTotalWithTax);
+                                        $_discount['label'] = $discount['label'];
+                                        break;
+                                    default:
+                                        throw new \Exception("unknown target: $target");
+                                        break;
+                                }
+                                $_discounts[] = $_discount;
                             }
+
+                            $coupon['discounts'] = $_discounts;
+                            $coupon['saving'] = E::price(-($temp - $linesTotalWithTax));
                         }
+
+                        $coupons[$info['code']] = $coupon;
+
                     }
                 }
+
+                $ret['cartTotal'] = E::price($linesTotalWithTax);
+                $ret['totalSaving'] = E::price(-($cartTemp - $linesTotalWithTax));
+                $ret['coupons'] = $coupons;
+
+
+                // updating the couponBag so that only valid coupons remain
+                EkomApi::inst()->cartLayer()->setCouponBag($validCoupons);
+
+                return $ret;
+
             } else {
                 throw new \Exception("target undefined: linesTotalWithTax");
             }
@@ -208,7 +289,8 @@ class CouponLayer
             XLog::error("[Ekom module] - CouponLayer.applyCouponBag: $e");
             return false;
         }
-        return $details;
+
+
     }
 
 
@@ -330,15 +412,16 @@ and l.lang_id=$langId
     {
         $type = $discount['procedure_type'];
         $operand = $discount['procedure_operand'];
+
         switch ($type) {
             case 'fixedAmount':
                 $price = $operand;
                 break;
             case 'relativeAmount':
-                $price -= $operand;
+                $price += $operand;
                 break;
             case 'relativePercent':
-                $price -= $price * $operand / 100;
+                $price += $price * $operand / 100;
                 break;
             default:
                 throw new \Exception("Unknown procedure_type: $type");
