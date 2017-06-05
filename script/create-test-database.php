@@ -50,8 +50,11 @@ $api->order()->deleteAll();
 $api->couponHasCartDiscount()->deleteAll();
 $api->cartDiscountLang()->deleteAll();
 $api->cartDiscount()->deleteAll();
-$api->userHasCoupon()->deleteAll();
 $api->coupon()->deleteAll();
+$api->countryLang()->deleteAll();
+$api->userHasAddress()->deleteAll();
+$api->address()->deleteAll();
+$api->shopHasCarrier()->deleteAll();
 
 // no deps
 $api->timezone()->deleteAll();
@@ -64,6 +67,8 @@ $api->productCard()->deleteAll();
 $api->category()->deleteAll();
 $api->tax()->deleteAll();
 $api->userGroup()->deleteAll();
+$api->country()->deleteAll();
+$api->carrier()->deleteAll();
 
 
 //--------------------------------------------
@@ -1856,21 +1861,91 @@ $api->couponHasCartDiscount()->create([
 
 
 //--------------------------------------------
-// user has coupon
+// country
+// country lang
 //--------------------------------------------
-$api->userHasCoupon()->create([
-    "user_id" => $userLing,
-    "coupon_id" => $couponABC,
-    "date" => date('Y-m-d H:i:s'),
-    "order_id" => null,
+$countries = [];
+include __DIR__ . "/countries.php";
+$countryFra = 0;
+foreach ($countries as $iso => $v) {
+    $id = $api->country()->create([
+        'iso_code' => $iso,
+    ]);
+
+    $api->countryLang()->create([
+        'country_id' => $id,
+        'lang_id' => $langFrench,
+        'label' => $v['fra'],
+    ]);
+    $api->countryLang()->create([
+        'country_id' => $id,
+        'lang_id' => $langEnglish,
+        'label' => $v['eng'],
+    ]);
+    if ('FR' === $iso) {
+        $countryFra = $id;
+    }
+}
+
+
+//--------------------------------------------
+// address
+//--------------------------------------------
+$addressLing1 = $api->address()->create([
+    'city' => 'Tours',
+    'postcode' => '37000',
+    'address' => '6 rue port feu hugon',
+    'active' => '1',
+    'country_id' => $countryFra,
+]);
+
+$addressLing2 = $api->address()->create([
+    'city' => 'Chartres',
+    'postcode' => '28000',
+    'address' => '2 avenue du maréchal leclerc',
+    'active' => '1',
+    'country_id' => $countryFra,
 ]);
 
 
+//--------------------------------------------
+// user has address
+//--------------------------------------------
+$api->userHasAddress()->create([
+    'user_id' => $userLing,
+    'address_id' => $addressLing1,
+    'type' => 'billing',
+    'order' => '0',
+]);
+
+$api->userHasAddress()->create([
+    'user_id' => $userLing,
+    'address_id' => $addressLing1,
+    'type' => 'shipping',
+    'order' => '0',
+]);
+
+$api->userHasAddress()->create([
+    'user_id' => $userLing,
+    'address_id' => $addressLing2,
+    'type' => 'shipping',
+    'order' => '1',
+]);
 
 
+//--------------------------------------------
+// carrier
+//--------------------------------------------
+$carrierDemo = $api->carrier()->create([
+    'name' => 'demo',
+]);
 
 
-
-
-
-
+//--------------------------------------------
+// shop has carrier
+//--------------------------------------------
+$api->shopHasCarrier()->create([
+    'shop_id' => $shopEurope,
+    'carrier_id' => $carrierDemo,
+    'priority' => '0',
+]);

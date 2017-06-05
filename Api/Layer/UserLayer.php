@@ -5,7 +5,9 @@ namespace Module\Ekom\Api\Layer;
 
 
 use Core\Services\A;
+use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use QuickPdo\QuickPdo;
 
 class UserLayer
 {
@@ -23,6 +25,62 @@ class UserLayer
             "ek_user_has_user_group.delete.$userId",
             "ek_user_has_user_group.update.$userId",
         ]);
-
     }
+
+
+    /**
+     * @param $userId
+     * @param null $langId
+     * @return false|array representing the preferred shipping address:
+     *
+     *      - city
+     *      - postcode
+     *      - address
+     *      - country_id
+     *      - country_label
+     *
+     */
+    public function getPreferredShippingAddress($userId, $langId = null)
+    {
+
+        //  todo : cache
+        EkomApi::inst()->initWebContext();
+
+        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+        $userId = (int)$userId;
+        $langId = (int)$langId;
+
+
+        return QuickPdo::fetch("
+select 
+a.city,
+a.postcode,
+a.address,
+a.country_id,
+l.label as country_label
+
+from ek_user_has_address h 
+inner join ek_address a on a.id=h.address_id 
+inner join ek_country_lang l on l.country_id=a.country_id 
+
+where h.user_id=$userId
+and h.type='shipping'
+and a.active=1
+and l.lang_id=$langId
+
+order by `h.order` asc
+
+
+            
+            ");
+    }
+
+
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+
+
 }

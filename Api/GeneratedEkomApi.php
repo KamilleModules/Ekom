@@ -3,13 +3,17 @@
 
 namespace Module\Ekom\Api;
 
+use Module\Ekom\Api\Object\Address;
 use Module\Ekom\Api\Object\BackofficeUser;
+use Module\Ekom\Api\Object\Carrier;
 use Module\Ekom\Api\Object\CartDiscount;
 use Module\Ekom\Api\Object\CartDiscountLang;
 use Module\Ekom\Api\Object\Category;
 use Module\Ekom\Api\Object\CategoryHasDiscount;
 use Module\Ekom\Api\Object\CategoryHasProductCard;
 use Module\Ekom\Api\Object\CategoryLang;
+use Module\Ekom\Api\Object\Country;
+use Module\Ekom\Api\Object\CountryLang;
 use Module\Ekom\Api\Object\Coupon;
 use Module\Ekom\Api\Object\CouponHasCartDiscount;
 use Module\Ekom\Api\Object\CouponLang;
@@ -35,6 +39,7 @@ use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductLang;
 use Module\Ekom\Api\Object\Shop;
 use Module\Ekom\Api\Object\ShopConfiguration;
+use Module\Ekom\Api\Object\ShopHasCarrier;
 use Module\Ekom\Api\Object\ShopHasCurrency;
 use Module\Ekom\Api\Object\ShopHasLang;
 use Module\Ekom\Api\Object\ShopHasProduct;
@@ -48,7 +53,7 @@ use Module\Ekom\Api\Object\TaxLang;
 use Module\Ekom\Api\Object\Timezone;
 use Module\Ekom\Api\Object\User;
 use Module\Ekom\Api\Object\UserGroup;
-use Module\Ekom\Api\Object\UserHasCoupon;
+use Module\Ekom\Api\Object\UserHasAddress;
 use Module\Ekom\Api\Object\UserHasUserGroup;
 
 use XiaoApi\Api\XiaoApi;
@@ -68,11 +73,25 @@ class GeneratedEkomApi extends XiaoApi
 {
     
     /**
+     * @return Address
+     */
+    public function address()
+    {
+        return $this->getObject('address');
+    }
+    /**
      * @return BackofficeUser
      */
     public function backofficeUser()
     {
         return $this->getObject('backofficeUser');
+    }
+    /**
+     * @return Carrier
+     */
+    public function carrier()
+    {
+        return $this->getObject('carrier');
     }
     /**
      * @return CartDiscount
@@ -115,6 +134,20 @@ class GeneratedEkomApi extends XiaoApi
     public function categoryLang()
     {
         return $this->getObject('categoryLang');
+    }
+    /**
+     * @return Country
+     */
+    public function country()
+    {
+        return $this->getObject('country');
+    }
+    /**
+     * @return CountryLang
+     */
+    public function countryLang()
+    {
+        return $this->getObject('countryLang');
     }
     /**
      * @return Coupon
@@ -292,6 +325,13 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('shopConfiguration');
     }
     /**
+     * @return ShopHasCarrier
+     */
+    public function shopHasCarrier()
+    {
+        return $this->getObject('shopHasCarrier');
+    }
+    /**
      * @return ShopHasCurrency
      */
     public function shopHasCurrency()
@@ -383,11 +423,11 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('userGroup');
     }
     /**
-     * @return UserHasCoupon
+     * @return UserHasAddress
      */
-    public function userHasCoupon()
+    public function userHasAddress()
     {
-        return $this->getObject('userHasCoupon');
+        return $this->getObject('userHasAddress');
     }
     /**
      * @return UserHasUserGroup

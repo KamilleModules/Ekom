@@ -12,6 +12,9 @@ class EkomHooks
 
     }
 
+    protected static function Ekom_feedCarrierCollection(\Module\Ekom\Carrier\Collection\CarrierCollection $collection){
+
+    }
 
     protected static function NullosAdmin_layout_sideBarMenuModel(array &$sideBarMenuModel)
     {

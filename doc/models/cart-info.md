@@ -31,9 +31,36 @@ CartInfo
             - attributeValues: array of attribute values, computed from attributes; template authors can implode this
             - originalPrice: float, the (formatted) price to display, based on ekom modules internal rules 
             
-            - salePrice: float, the (formatted) price to display, based on ekom modules internal rules 
-            - salePriceWithTax: float, the (formatted) price with tax to display 
-            - salePriceWithoutTax: float, the (formatted) price without tax to display, based on ekom modules internal rules
+            - salePrice: string, the (formatted) price to display, based on ekom modules internal rules 
+            - salePriceWithTax: string, the (formatted) price with tax to display 
+            - salePriceWithoutTax: string, the (formatted) price without tax to display
+            
+            - linePrice: string, the (formatted) line price to display, based on ekom modules internal rules
+            - linePriceWithTax: string, the (formatted) line price with tax to display 
+            - linePriceWithoutTax: string, the (formatted) line price without tax to display
+            
+            
+            - cartTotal: string, the (formatted) cart total (see ekom order model II for more details)
+            - couponDetails: array containing the details of the coupon discounts applied to the cart
+                                The array can have two forms: one if it's erroneous (i.e. an internal problem occurred), and one if it's successful.
+                                The erroneous form has the following structure:
+                                    - error: 1
+                                    
+                                The successful form is an array of $target => discountOperationDetails.
+                                Each discountOperationDetail is an array with the following structure:
+              
+                                    - couponCode: string
+                                    - couponLabel: string
+                                    - discountLabel: string
+                                    - old: float, just a reference to the price BEFORE the discount was applied
+                                    - newPrice: string, the formatted price (AFTER the discount was applied)
+                                    
+                                The $target can be one of the following values (see ekom order model II for more details):
+                                    - linesTotalWithTax
+                                    - linesTotalWithTaxAndShipping
+                                
+                                    
+            
              
             - image: str, the main image uri
             - stockType: same as in product-box model
@@ -50,5 +77,6 @@ CartInfo
                             
     - totalWithTax: string: the formatted total with taxes applied, and without (estimated?) shipping costs
                             (priceWithTax x quantity)
+    - taxAmount: string: the formatted amount of taxes (totalWithTax - totalWithoutTax)
     - total: string: the formatted total chosen by ekom as the recommended total price to display
             

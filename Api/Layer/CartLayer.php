@@ -121,59 +121,15 @@ class CartLayer
     }
 
 
-    public function doGetCartModel($isMini = true)
-    {
-        $this->initSessionCart();
-        $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $model = [];
-        $modelItems = [];
-        $totalQty = 0;
-        $totalWithoutTax = 0;
-        $totalWithTax = 0;
-        $displayTotal = 0;
-
-        $items = $_SESSION['ekom.cart'][$shopId]['items'];
-        foreach ($items as $item) {
-
-            $qty = $item['quantity'];
-            $id = $item['id'];
-            $totalQty += $qty;
-            if (false !== ($it = $this->getCartItemInfo($id))) {
-                $it['quantity'] = $qty;
-                $modelItems[] = $it;
-                $totalWithoutTax += $qty * $it['rawSalePriceWithoutTax'];
-                $totalWithTax += $qty * $it['rawSalePriceWithTax'];
-                $displayTotal += $qty * $it['rawSalePrice'];
-                if (false === $isMini) {
-                    $it['image'] = str_replace('/thumb/', '/small/', $it['image']);
-                }
-            }
 
 
-            $attrValues = [];
-            foreach ($it['attributes'] as $v) {
-                $attrValues[] = $v['value'];
-            }
-            $it['attributeValues'] = $attrValues;
-        }
 
-
-        $model['totalQuantity'] = $totalQty;
-        $model['items'] = $modelItems;
-        $model['totalWithoutTax'] = E::price($totalWithoutTax);
-        $model['totalWithTax'] = E::price($totalWithTax);
-        $model['displayTotal'] = E::price($displayTotal);
-
-        return $model;
-    }
-
-
-    public function tryAddCouponByCode($code)
-    {
-        $this->initSessionCart();
-        $shopId = ApplicationRegistry::get("ekom.shop_id");
-        return $_SESSION['ekom.cart'][$shopId]['coupons'];
-    }
+//    public function tryAddCouponByCode($code)
+//    {
+//        $this->initSessionCart();
+//        $shopId = ApplicationRegistry::get("ekom.shop_id");
+//        return $_SESSION['ekom.cart'][$shopId]['coupons'];
+//    }
 
     public function getCouponBag()
     {
@@ -213,6 +169,89 @@ class CartLayer
         }
     }
 
+    private function doGetCartModel($isMini = true)
+    {
+        $this->initSessionCart();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+        $model = [];
+        $modelItems = [];
+        $totalQty = 0;
+        $totalWithoutTax = 0;
+        $totalWithTax = 0;
+        $displayTotal = 0;
+
+        $items = $_SESSION['ekom.cart'][$shopId]['items'];
+        foreach ($items as $item) {
+
+            $qty = $item['quantity'];
+            $id = $item['id'];
+            $totalQty += $qty;
+            if (false !== ($it = $this->getCartItemInfo($id))) {
+                $it['quantity'] = $qty;
+
+                $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
+                $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
+                $linePrice = $qty * $it['rawSalePrice'];
+
+                $totalWithoutTax += $linePriceWithoutTax;
+                $totalWithTax += $linePriceWithTax;
+                $displayTotal += $linePrice;
+                if (false === $isMini) {
+                    $it['image'] = str_replace('/thumb/', '/small/', $it['image']);
+                }
+
+                $it['linePriceWithoutTax'] = E::price($linePriceWithoutTax);
+                $it['linePriceWithTax'] = E::price($linePriceWithTax);
+                $it['linePrice'] = E::price($linePrice);
+
+                $modelItems[] = $it;
+            }
+
+
+            $attrValues = [];
+            foreach ($it['attributes'] as $v) {
+                $attrValues[] = $v['value'];
+            }
+            $it['attributeValues'] = $attrValues;
+        }
+
+
+        $taxAmount = $totalWithTax - $totalWithoutTax;
+        $model['totalQuantity'] = $totalQty;
+        $model['items'] = $modelItems;
+        $model['totalWithoutTax'] = E::price($totalWithoutTax);
+        $model['totalWithTax'] = E::price($totalWithTax);
+        $model['displayTotal'] = E::price($displayTotal);
+        $model['taxAmount'] = E::price($taxAmount);
+
+
+        //--------------------------------------------
+        // adding/rechecking coupons
+        //--------------------------------------------
+        $model['cartTotal'] = $model['totalWithTax'];
+        $couponApi = EkomApi::inst()->couponLayer();
+        $validCoupons = [];
+        $targets = [
+            "linesTotalWithTax" => $totalWithTax,
+        ];
+
+        if (false !== ($details = $couponApi->applyCouponBag($this->getCouponBag(), $targets, $validCoupons))) {
+            $this->setCouponBag($validCoupons);
+            $cartDetails = $details['linesTotalWithTax'];
+            if (count($cartDetails) > 0) {
+                $last = end($cartDetails);
+                reset($cartDetails);
+                $model['cartTotal'] = $last['newPrice'];
+            }
+
+        } else {
+            $details = ["error" => "1"];
+        }
+        $model['couponDetails'] = $details;
+
+
+        return $model;
+    }
 
     private function getCartItemInfo($pId)
     {

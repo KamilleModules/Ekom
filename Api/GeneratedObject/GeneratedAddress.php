@@ -19,7 +19,7 @@ class GeneratedAddress extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_address";
+        $this->table = "ek_address";
     }
 
 
@@ -29,19 +29,14 @@ class GeneratedAddress extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
-			'type' => '',
 			'city' => '',
 			'postcode' => '',
 			'address' => '',
 			'active' => 0,
-			'state_id' => null,
 			'country_id' => 0,
 		], $data);
 
 
-        if (0 === (int)$ret["state_id"]) {
-            $ret["state_id"] = null;
-        }
 
         return $ret;
     }

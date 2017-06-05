@@ -13,13 +13,13 @@ use XiaoApi\Object\TableCrudObject;
  *
  * You are supposed to extend this object.
  */
-class GeneratedCarrier extends TableCrudObject
+class GeneratedUserHasAddress extends TableCrudObject
 {
 
     public function __construct()
     {
         parent::__construct();
-        $this->table = "ek_carrier";
+        $this->table = "ek_user_has_address";
     }
 
 
@@ -29,7 +29,10 @@ class GeneratedCarrier extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
-			'name' => '',
+			'user_id' => 0,
+			'address_id' => 0,
+			'type' => '',
+			'order' => 0,
 		], $data);
 
 

@@ -19,7 +19,7 @@ class GeneratedCountryLang extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_country_lang";
+        $this->table = "ek_country_lang";
     }
 
 
