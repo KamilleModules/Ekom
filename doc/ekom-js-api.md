@@ -89,28 +89,34 @@ Here are the ekomJsApi public methods:
                     The following events are triggered:
                         - cart.updated
                                                     
-- cart.addCoupon: (code, onMessage), adds a coupon to the user's cart.
+- cart.addCoupon: (code, force, onResponse), adds a coupon to the user's cart.
 
-                    A message is available, either a success message or an error
-                    message (if the coupon for some reasons couldn't be added).
-                    In case of success, the message is a string;
-                    in case of errors, the message is an array (since there could be
-                    multiple error messages).
+                    Use the onResponse callback to test the server's response.
                     
-                    To access this message and actually do something useful with it,
-                    use the onMessage callback, which has the following signature:
-                    
-                            onMessage ( msg, type )
+                    onResponse ( msg, type )
                             
                                 with: 
-                                    - msg (string if success, and array if error)
-                                    - type (string: error or success)
-                            
+                                    - type: error|success|confirm
+                                    - msg: mixed
+                                    
+                    If the type is success, then msg is a string representing the 
+                    success message to display.
                     
-                    If adding the coupon is a success, then the cart.updated event
-                    is triggered, otherwise no event is striggered.
+                    If the type is error, then msg is an array of errors that occured 
+                    for trying adding the coupon.
                     
-
+                    If the type is confirm, and the force flag is false, 
+                    then msg is the confirm message to prompt to the user.
+                    This happen when the coupon the user is trying to add is of type
+                    unique and will therefore replace other coupons, which might not be
+                    what the user want.
+                    If the force flag is set to true, the confirm system is overridden
+                    and there is only two possible outcomes: success or error (not confirm).
+                                                                         
+                                    
+                    If adding the coupon is a success, then the cart.updated event is triggered.
+                    If adding the coupon is not a success, no event is triggered.
+                    
                     The following events are triggered:
                         - cart.updated  (only in case of success)
                                                     

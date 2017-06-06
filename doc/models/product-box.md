@@ -56,6 +56,7 @@ The normal form is presented below:
 
 ```txt
 - product_id: the product id 
+- quantity: the quantity available for that product 
 - images: array of 
                 $fileName => \[
                     thumb => $uriImageThumb, 
@@ -66,6 +67,7 @@ The normal form is presented below:
 - defaultImage: $fileName of the default image (key of the images array)
 - label: string
 - ref: string
+- weight: float, weight of the product
 - description: string
 - stockType: string representing info about the stock, possible values are:
                 - stockAvailable: the stock is available

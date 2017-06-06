@@ -349,10 +349,12 @@ and product_id in (" . implode(', ', $productIds) . ")
 
                             $boxConf = [
                                 "product_id" => (int)$productId,
+                                "quantity" => (int)$p['quantity'],
                                 "images" => $images,
                                 "defaultImage" => $defaultImage,
                                 "label" => $label,
                                 "ref" => $p['reference'],
+                                "weight" => $p['weight'],
                                 "description" => $description,
                                 /**
                                  * Is used by the widget to assign visual cues (for instance success color) to the stockText
@@ -410,7 +412,7 @@ and product_id in (" . implode(', ', $productIds) . ")
                      */
                     $model['errorCode'] = "noAssociation";
                     $model['errorTitle'] = "Product card not associated";
-                    $model['errorMessage'] = "This product card is not associated with this shop, sorry";
+                    $model['errorMessage'] = "This product card is not associated with this shop, sorry (cardId: $cardId, shopId: $shopId, langId: $langId)";
                 }
 
 
@@ -586,25 +588,38 @@ and product_id in (" . implode(', ', $productIds) . ")
         return $model;
     }
 
-    public function getProductBoxModelByProductId($productId, $shopId = null, $langId = null, $includeUnformatted = false)
+    public function getProductBoxModel()
+    {
+        $cardId = ApplicationRegistry::get("ekom.cardId");
+        $ref = ApplicationRegistry::get("ekom.productRef");
+        if (null === $ref) {
+            return EkomApi::inst()->productLayer()->getProductBoxModelByCardId($cardId);
+        } else {
+            return EkomApi::inst()->productLayer()->getProductBoxModelByProductRef($ref);
+        }
+    }
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    public function getProductBoxModelByProductRef($productRef, $shopId = null, $langId = null)
     {
         EkomApi::inst()->initWebContext();
 
-        $productId = (int)$productId;
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
-        $iIncludeUnformatted = (int)$includeUnformatted;
 
 
-        return A::cache()->get("Module.Ekom.Api.Layer.getProductBoxModelByProductId.$shopId.$langId.$productId.$iIncludeUnformatted", function () use ($productId, $shopId, $langId, $includeUnformatted) {
-            $productId = (int)$productId;
+        return A::cache()->get("Module.Ekom.Api.Layer.getProductBoxModelByProductId.$shopId.$langId.$productRef", function () use ($productRef, $shopId, $langId) {
             try {
-
-                $cardId = EkomApi::inst()->product()->readColumn("product_card_id", [
-                    ["id", "=", $productId],
+                $row = EkomApi::inst()->product()->readOne([
+                    'where' => [
+                        ["reference", "=", $productRef],
+                    ],
                 ]);
-                if (false !== $cardId) {
-                    return $this->getProductBoxModelByCardId($cardId, $shopId, $langId, $productId, $includeUnformatted);
+                if (false !== $row) {
+                    return $this->getProductBoxModelByCardId($row['product_card_id'], $shopId, $langId, $row['id']);
                 }
                 $model['errorCode'] = "SqlRequestFailed";
                 $model['errorTitle'] = "sqlRequestFailed";
@@ -630,7 +645,52 @@ and product_id in (" . implode(', ', $productIds) . ")
             "ek_product.update",
             "ekomApi.image.product",
             "ekomApi.image.productCard",
+        ]);
+    }
 
+    public function getProductBoxModelByProductId($productId, $shopId = null, $langId = null)
+    {
+        EkomApi::inst()->initWebContext();
+
+        $productId = (int)$productId;
+        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+
+
+        return A::cache()->get("Module.Ekom.Api.Layer.getProductBoxModelByProductId.$shopId.$langId.$productId", function () use ($productId, $shopId, $langId) {
+            $productId = (int)$productId;
+            try {
+
+                $cardId = EkomApi::inst()->product()->readColumn("product_card_id", [
+                    ["id", "=", $productId],
+                ]);
+                if (false !== $cardId) {
+                    return $this->getProductBoxModelByCardId($cardId, $shopId, $langId, $productId);
+                }
+                $model['errorCode'] = "SqlRequestFailed";
+                $model['errorTitle'] = "sqlRequestFailed";
+                $model['errorMessage'] = "the sql request failed unexpectedly, are you sure pdo is in exceptionMode?";
+                XLog::error("[Ekom module] - ProductLayer.getProductBoxModelByProductId: " . $model['errorMessage']);
+            } catch (\Exception $e) { // suppose pdo is in exception mode
+                $model['errorCode'] = "exception";
+                $model['errorTitle'] = "Exception occurred";
+                $model['errorMessage'] = $e->getMessage();
+                XLog::error("[Ekom module] - ProductLayer.getProductBoxModelByProductId.Exception: $e");
+            }
+            return $model;
+        }, [
+            "ek_shop_has_product_card_lang.*",
+            "ek_shop_has_product_card.*",
+            "ek_product_card_lang.*",
+            "ek_product_card.*",
+            "ek_shop.*",
+            "ek_product_has_product_attribute.*",
+            "ek_product_attribute_lang.*",
+            "ek_product_attribute_value_lang.*",
+            "ek_product.delete",
+            "ek_product.update",
+            "ekomApi.image.product",
+            "ekomApi.image.productCard",
         ]);
     }
 }

@@ -12,9 +12,14 @@ CartInfo
     - totalQuantity: sum of items.quantity
     - items: array of items, each item being an array with the following elements:
             - product_id: int, the id of the product
-            - quantity: int, how many of this product we have in the cart
+            
+            - cart_quantity: int, how many of this product we have in the cart.
+                            Note that this data shouldn't be cached!
+            
+            - quantity: int, the stock quantity for this product (number of remaining items for this product)
             - label: str, the label of the product
             - ref: str
+            - weight: float, the weight of the product
             - uri: the uri of the product 
             - remove_uri: the uri to call to remove the product from the cart  
             - update_qty_uri: the uri to call to update the quantity of the product, you must append the equal symbol followed by the new quantity to that uri,
@@ -22,7 +27,7 @@ CartInfo
                                     If the quantity is zero, then it will have the same effect as removing the product from the cart
                                     
             - uri_card: the uri of the product card 
-            - quantity: int
+            - uri_card_with_ref: the uri of the product card, with the current ref selected 
             - product_card_id: int, the id of the product cart
             - attributes: array of attribute, each attribute is an array containing:
                     - attribute_id:
@@ -42,34 +47,6 @@ CartInfo
             - linePrice: string, the (formatted) line price to display, based on ekom modules internal rules
             - linePriceWithTax: string, the (formatted) line price with tax to display 
             - linePriceWithoutTax: string, the (formatted) line price without tax to display
-            
-            
-            - cartTotal: string, the (formatted) cart total (see ekom order model II for more details)
-            - totalSaving: string, the negative formatted amount of saving made by coupons's cart discounts on the linesTotalWithTax target (see ekom order model II for more details).
-            - hasCoupons: bool, whether or not this cart contains coupons
-            - coupons: array containing the details of the coupon discounts applied to the cart
-                                The array can have two forms: one if it's erroneous (i.e. an internal problem occurred), and one if it's successful.
-                                The erroneous form has the following structure:
-                                    - error: 1
-                                    
-                                The successful form is an array of couponDetail.
-                                Each couponDetail is an array with the following structure:
-                                
-                                    - code: string, the coupon code
-                                    - label: string, the coupon label
-                                    - saving: the negative formatted amount of saving for the ensemble of the discounts for this coupon
-                                    - discounts: array of $target => discountDetails
-                                            Each discountDetail is an array with the following structure:
-                                            - label: string, the discount label
-                                            - old: float, just a reference to the price BEFORE the discount was applied
-                                            - newPrice: string, the formatted price (AFTER the discount was applied)
-                                    
-                                The $target can be one of the following values (see ekom order model II for more details):
-                                    - linesTotalWithTax
-                                    - linesTotalWithTaxAndShipping
-                                
-                                    
-            
              
             - image: str, the main image uri, in thumb format (suited for mini cart)
             - imageSmall: str, the main image uri, in small format (suited for cart)
@@ -87,6 +64,42 @@ CartInfo
                             
     - totalWithTax: string: the formatted total with taxes applied, and without (estimated?) shipping costs
                             (priceWithTax x quantity)
+    - displayTotal: either the totalWithoutTax or the totalWithTax, depending on ekom internal rules
     - taxAmount: string: the formatted amount of taxes (totalWithTax - totalWithoutTax)
-    - total: string: the formatted total chosen by ekom as the recommended total price to display
+    
+    - cartTotal: string, the (formatted) cart total (see ekom order model II for more details)
+    - totalSaving: string, the negative formatted amount of saving made by coupons's cart discounts on the linesTotalWithTax target (see ekom order model II for more details).
+    - hasCoupons: bool, whether or not this cart contains coupons
+    - coupons: array containing the details of the coupon discounts applied to the cart
+                        The array can have two forms: one if it's erroneous (i.e. an internal problem occurred), and one if it's successful.
+                        The erroneous form has the following structure:
+                            - error: 1
+                            
+                        The successful form is an array of couponDetail.
+                        Each couponDetail is an array with the following structure:
+                        
+                            - code: string, the coupon code
+                            - label: string, the coupon label
+                            - saving: the negative formatted amount of saving for the ensemble of the discounts for this coupon
+                            - discounts: array of $target => discountDetails
+                                    Each discountDetail is an array with the following structure:
+                                    - label: string, the discount label
+                                    - old: float, just a reference to the price BEFORE the discount was applied
+                                    - newPrice: string, the formatted price (AFTER the discount was applied)
+                            
+                        The $target can be one of the following values (see ekom order model II for more details):
+                            - linesTotalWithTax
+                            - linesTotalWithTaxAndShipping
+    
+    // work in progress...
+    - carrierSections: array with the following structure:
+            - sections: array of carrierName => sectionInfo, each sectionInfo is an array with the following structure:
+                   - shippingCost: formatted shipping cost
+                   - productsInfo: an array of product_id => productInfo
+                           Each productInfo has the same structure as the passed productInfo.
+            - notHandled: the array of not handled productInfo (productId => productInfo)
+            - isEstimate: bool, whether or not the costs are just an estimate or the real shipping costs
+            - totalShippingCost: string, formatted amount of shipping cost, sum of all sections' shipping costs.     
             
+    - totalShippingCost: alias for carrierSections.totalShippingCost
+    - orderGrandTotal: string, the formatted orderGrandTotal (see ekom order model II for more details)

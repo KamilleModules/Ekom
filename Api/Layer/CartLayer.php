@@ -22,11 +22,42 @@ use QuickPdo\QuickPdo;
 class CartLayer
 {
 
-
     /**
      * @var CartLocalStore
      */
     private $cartLocalStore;
+
+
+    /**
+     *
+     * This method was created to give js a mean to access session data (the
+     * cart products quantities).
+     *
+     * @return array, the current session data for the current shop.
+     */
+//    public function getCartProduct2Quantities()
+//    {
+//        $this->initSessionCart();
+//        $shopId = ApplicationRegistry::get("ekom.shop_id");
+//        $ret = [];
+//        foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $id => $item) {
+//            $ret[$id] = $item['quantity'];
+//        }
+//        return $ret;
+//    }
+//
+//    public function getProductQuantity($productId, $default = 0)
+//    {
+//        $this->initSessionCart();
+//        $shopId = ApplicationRegistry::get("ekom.shop_id");
+//        if (array_key_exists($productId, $_SESSION['ekom.cart'][$shopId]['items'])) {
+//            return $_SESSION['ekom.cart'][$shopId]['items'][$productId]['quantity'];
+//        }
+//        return $default;
+//    }
+
+
+
 
     public function addItem($qty, $productId)
     {
@@ -117,7 +148,7 @@ class CartLayer
 
     public function getMiniCartModel()
     {
-        return $this->doGetCartModel(true);
+        return $this->doGetCartModel();
     }
 
 
@@ -169,7 +200,7 @@ class CartLayer
         }
     }
 
-    private function doGetCartModel($isMini = true)
+    private function doGetCartModel()
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
@@ -188,6 +219,7 @@ class CartLayer
             $totalQty += $qty;
             if (false !== ($it = $this->getCartItemInfo($id))) {
                 $it['quantity'] = $qty;
+                $it['stock_quantity'] = $it['quantity'];
 
                 $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
                 $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
@@ -248,6 +280,29 @@ class CartLayer
             $model['coupons'] = $details['coupons'];
             $model['hasCoupons'] = (count($details['coupons']) > 0);
         }
+
+        $cartTotal = $model['cartTotal'];
+
+
+        //--------------------------------------------
+        // ADDING CARRIER INFORMATION
+        //--------------------------------------------
+        /**
+         * we have basically two cases: either the user is connected, or not.
+         * If the user is not connected, the application chooses its own heuristics
+         * and returns an estimated shipping cost.
+         *
+         * If the user is connected and has a shipping address, the user's shipping address
+         * is used for the base of calculating the estimated shipping cost.
+         *
+         */
+        $carrierGroups = EkomApi::inst()->carrierLayer()->getCarrierGroups($items);
+        $model['carrierSections'] = $carrierGroups;
+        $allShippingCosts = $carrierGroups['totalShippingCost'];
+
+
+        $model['totalShippingCost'] = E::price($allShippingCosts);
+        $model['orderGrandTotal'] = E::price($cartTotal + $allShippingCosts);
 
         return $model;
     }
@@ -324,10 +379,12 @@ and p.lang_id=$langId
                     'product_id' => $b['product_id'],
                     'label' => $b['label'],
                     'ref' => $b['ref'],
+                    'weight' => $b['weight'],
                     'uri' => E::link("Ekom_product", ['slug' => $productSlug]),
                     'remove_uri' => EkomLinkHelper::getUri("removeProductFromCart", $pId),
                     'update_qty_uri' => EkomLinkHelper::getUri("updateCartProduct", $pId),
                     'uri_card' => E::link("Ekom_productCard", ['slug' => $cardSlug]),
+                    'uri_card_with_ref' => E::link("Ekom_productCardRef", ['slug' => $cardSlug, 'ref' => $b["ref"]]),
                     'product_card_id' => $productCardId,
                     'attributes' => $zeAttr,
                     'attributeDetails' => $zeAttr,

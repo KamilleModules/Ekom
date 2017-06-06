@@ -91,6 +91,10 @@ And depending on your answer, you might allow or not allow out-of-date cart.
 But don't think to much about it, because I've chosen already.
 There is no such thing as an out-of-date cart, that's too much problems that I see coming as a dev.
 
+
+Update: see my cart philosophy section later in this document 
+
+
 And if you take the real world analogy it makes sense: imagine you go to a big shopping place and you put
 items in your card. Now someone calls you: you have an emergency, you must leave the place.
 
@@ -447,7 +451,60 @@ This process feels smooth for the user, and is simple to understand for the deve
 
 
 
+cart philosophy
+==================
+2017-06-06
 
+
+Quote:
+    But don't think to much about it, because I've chosen already.
+    There is no such thing as an out-of-date cart, that's too much problems that I see coming as a dev.
+    
+Actually, I thought about it again for a coupon discount, and my conclusion was different, below is what I thought.
+
+
+The shop owner creates a coupon abc which gives 5€ discount to any product.
+
+Use case A (payment within 5 minutes):
+2017-06-06: 10:00:00, the user adds that coupon to her cart.
+2017-06-06: 10:02:00, the shop owner removes the coupon for her shop.
+2017-06-06: 10:05:00, the user goes to the checkout page and pay.
+
+
+Use case B (payment 7 days later):
+2017-06-06: 10:00:00, the user adds that coupon to her cart.
+2017-06-06: 10:02:00, the shop owner removes the coupon for her shop.
+2017-06-13: 10:00:00, the user goes to the checkout page and pay.
+
+
+In case A, it might seem logical (at least from the customer's perspective) that the user will benefit the coupon's discount.
+In case B, it could be a mitigated battle.
+
+
+Ideally, we need to think in more details about how we want to handle those cases.
+ 
+My first approach (the cart is never out-of-sync) is a simple approach, but it doesn't feel very human,
+and customer might complain.
+
+That being said, shop owners won't update coupons every tuesday (or will they?) if you know what I mean, 
+so depending on the frequency a shop owner updates her coupons, we might adapt our philosophy.
+
+
+Nonetheless, my deadline arriving to its end, and given the fact that I've already implemented the cart-never-out-of-sync system,
+I will continue with system for now, but keeping in mind that this area might evolve.
+
+Actually, I could think about that and found out that we might get away with a simple workaround:
+
+- basically giving a one day protect "badge" to a user (putting the badge in the session).
+    What that protect badge does is that if the user pays her item the same day she put her coupons in her cart,
+    she will pay the price affected by that coupon (the coupon state being the state it was when she added it into her
+    cart, and not necessarily the current state of the coupon).
+    
+    Basically, that means that in case A, the user benefits the discount.
+    Now to implement this, we basically need to store the state of the discount in the session (not just the id of the discount).
+    As I said, I let that for a later moment, when I'll get that problem back in my face;
+    because there is a slight chance (although I doubt it seriously) that we won't need that fix.
+    
 
 
 

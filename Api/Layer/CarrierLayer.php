@@ -10,6 +10,7 @@ use Ekom\Carrier\MockCarrier;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
+use Module\Ekom\Carrier\CarrierInterface;
 use Module\Ekom\Carrier\Collection\CarrierCollection;
 use Module\Ekom\Carrier\Collection\CarrierCollectionInterface;
 
@@ -41,6 +42,8 @@ class CarrierLayer
      *                  - productsInfo: an array of product_id => productInfo
      *                          Each productInfo has the same structure as the passed productInfo.
      *          - notHandled: the array of not handled productInfo (productId => productInfo)
+     *          - isEstimate: bool, whether or not the costs are just an estimate or the real shipping costs
+     *          - totalShippingCost: string, formatted amount of shipping cost, sum of all sections' shipping costs.
      *
      *
      *
@@ -62,6 +65,7 @@ class CarrierLayer
         $carriers = $coll->all();
 
 
+        $isEstimate = true;
         $shippingAddress = null;
         if (true === SessionUser::isConnected()) {
             $userId = SessionUser::getValue('id');
@@ -71,6 +75,7 @@ class CarrierLayer
                 XLog::error($msg);
                 throw new EkomApiException($msg);
             }
+            $isEstimate = false;
         }
 
 
@@ -106,9 +111,15 @@ class CarrierLayer
          *
          */
         $sections = [];
+        $totalShippingCost = 0;
         foreach ($carriers as $name => $carrier) {
+
+            /**
+             * @var $carrier CarrierInterface
+             */
             $rejected = [];
             $shippingCost = $carrier->handleOrder($productInfos, $shopAddress, $shippingAddress, $rejected);
+            $totalShippingCost += $shippingCost;
 
 
             $handledProductsInfo = [];
@@ -141,6 +152,8 @@ class CarrierLayer
         return [
             'sections' => $sections,
             'notHandled' => $notHandled,
+            'isEstimate' => $isEstimate,
+            'totalShippingCost' => $totalShippingCost,
         ];
     }
 }

@@ -22,10 +22,9 @@ class EkomShortCodeProvider extends ShortCodeProvider
         return EkomApi::inst()->categoryLayer()->getBreadCrumbs();
     }
 
-    public function getProductBoxByCardId()
+    public function getProductBoxModel()
     {
-        $cardId = ApplicationRegistry::get("ekom.cardId");
-        return EkomApi::inst()->productLayer()->getProductBoxModelByCardId($cardId);
+        return EkomApi::inst()->productLayer()->getProductBoxModel();
     }
 
     public function getCartModel()

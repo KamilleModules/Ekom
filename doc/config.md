@@ -111,7 +111,13 @@ The configuration keys are the following (you can access host or host-currency l
 
 
 ### host level
+
+Note: keys preceded with the question mark symbol (?) are just suggestions for template authors (i.e. not all template
+authors will implement them). 
+
 - displayPriceWithTax: bool=true, whether to display the prices with taxes applied or without taxes applied on the front office.
+- ?stockShowQtyThreshold: int=10, a threshold under which we display the exact quantity of remaining stock (to entice customers
+                        to purchase the product)
 
 
 ### host-currency level

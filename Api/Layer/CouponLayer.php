@@ -51,7 +51,7 @@ class CouponLayer
      *
      * @return bool, whether or not the coupon was added
      */
-    public function tryAddCouponByCode($code, &$errors = null)
+    public function tryAddCouponByCode($code, &$errors = null, &$mode = null)
     {
 
         $couponBag = EkomApi::inst()->cartLayer()->getCouponBag();
@@ -63,8 +63,9 @@ class CouponLayer
 
         // if so, can the coupon be added to the bag?
         if (true === $ok) {
-            if (false !== ($id = $this->getCouponIdByCode($code))) {
-                if (true === $this->mergeToBag($id, $couponBag, $errors)) {
+            if (false !== ($row = $this->getCouponInfoByCode($code))) {
+                if (true === $this->mergeToBag($row['id'], $couponBag, $errors)) {
+                    $mode = $row['mode'];
                     EkomApi::inst()->cartLayer()->setCouponBag($couponBag);
                     return true;
                 } else {
@@ -185,11 +186,11 @@ class CouponLayer
         }
     }
 
-    public function getCouponIdByCode($code)
+    public function getCouponInfoByCode($code)
     {
-        return A::cache()->get("Module.Ekom.Api.Layer.CouponLayer.getCouponIdByCode.$code", function () use ($code) {
-            return EkomApi::inst()->coupon()->readColumn("id", [
-                ['code', "=", $code],
+        return A::cache()->get("Module.Ekom.Api.Layer.CouponLayer.getCouponInfoByCode.$code", function () use ($code) {
+            return QuickPdo::fetch("select id, mode from ek_coupon where code=:code", [
+                "code" => $code,
             ]);
         }, [
             "coupon.delete.*",

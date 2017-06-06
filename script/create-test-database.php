@@ -1248,13 +1248,15 @@ $inactive = [
 $pricesEurope = [
     $productBallonPaille => 5,
 ];
-$quantity0Products = [
-    $productKettleBell_8,
+$products2Qty = [
+    $productKettleBell_8 => 0,
+    $productKettleBell_6 => 15,
+    $productKettleBell_4 => 30,
 ];
 foreach ($products as $product) {
 
-    if (in_array($product, $quantity0Products, true)) {
-        $quantity = 0;
+    if (array_key_exists($product, $products2Qty)) {
+        $quantity = $products2Qty[$product];
     } else {
         $quantity = rand(50, 100);
     }
