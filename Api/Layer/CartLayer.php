@@ -198,9 +198,6 @@ class CartLayer
                 $displayTotal += $linePrice;
 
 
-                $it['imageSmall'] = str_replace('/thumb/', '/small/', $it['image']);
-
-
                 $it['linePriceWithoutTax'] = E::price($linePriceWithoutTax);
                 $it['linePriceWithTax'] = E::price($linePriceWithTax);
                 $it['linePrice'] = E::price($linePrice);
@@ -241,11 +238,16 @@ class CartLayer
         $details = $couponApi->applyCouponBag($this->getCouponBag(), $targets, $validCoupons);
         if (false === $details) {
             $details = ["error" => "1"];
+            $model['cartTotal'] = $model['totalWithTax'];
+            $model['totalSaving'] = "undefined";
+            $model['coupons'] = [];
+            $model['hasCoupons'] = false;
+        } else {
+            $model['cartTotal'] = $details['cartTotal'];
+            $model['totalSaving'] = $details['totalSaving'];
+            $model['coupons'] = $details['coupons'];
+            $model['hasCoupons'] = (count($details['coupons']) > 0);
         }
-        $model['cartTotal'] = $details['cartTotal'];
-        $model['totalSaving'] = $details['totalSaving'];
-        $model['coupons'] = $details['coupons'];
-
 
         return $model;
     }
@@ -310,9 +312,11 @@ and p.lang_id=$langId
 
 
                 $mainImage = "";
+                $imageSmall = "";
                 if (count($b['images']) > 0) {
                     $arr = current($b['images']);
                     $mainImage = $arr['thumb']; // small?
+                    $imageSmall = $arr['small']; // small?
                 }
 
 
@@ -332,6 +336,8 @@ and p.lang_id=$langId
                     'salePriceWithTax' => $b['salePriceWithTax'],
                     'salePriceWithoutTax' => $b['salePriceWithoutTax'],
                     'image' => $mainImage,
+                    'imageSmall' => $imageSmall,
+
                     'stockType' => $b['stockType'],
                     'stockText' => $b['stockText'],
 

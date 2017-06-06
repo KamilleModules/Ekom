@@ -113,6 +113,11 @@ Here are the ekomJsApi public methods:
 
                     The following events are triggered:
                         - cart.updated  (only in case of success)
+                                                    
+- cart.removeCoupon: (index), removes a coupon from the user's cart.
+
+                    The following events are triggered:
+                        - cart.updated  
 
 
 

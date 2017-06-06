@@ -46,14 +46,16 @@ CartInfo
             
             - cartTotal: string, the (formatted) cart total (see ekom order model II for more details)
             - totalSaving: string, the negative formatted amount of saving made by coupons's cart discounts on the linesTotalWithTax target (see ekom order model II for more details).
+            - hasCoupons: bool, whether or not this cart contains coupons
             - coupons: array containing the details of the coupon discounts applied to the cart
                                 The array can have two forms: one if it's erroneous (i.e. an internal problem occurred), and one if it's successful.
                                 The erroneous form has the following structure:
                                     - error: 1
                                     
-                                The successful form is an array of $couponCode => couponDetail.
+                                The successful form is an array of couponDetail.
                                 Each couponDetail is an array with the following structure:
                                 
+                                    - code: string, the coupon code
                                     - label: string, the coupon label
                                     - saving: the negative formatted amount of saving for the ensemble of the discounts for this coupon
                                     - discounts: array of $target => discountDetails

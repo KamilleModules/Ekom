@@ -65,9 +65,10 @@ class CouponLayer
         if (true === $ok) {
             if (false !== ($id = $this->getCouponIdByCode($code))) {
                 if (true === $this->mergeToBag($id, $couponBag, $errors)) {
-
-
                     EkomApi::inst()->cartLayer()->setCouponBag($couponBag);
+                    return true;
+                } else {
+                    return false;
                 }
             } else {
                 $errors[] = "invalid coupon code: $code";
@@ -77,6 +78,12 @@ class CouponLayer
         return $ok;
     }
 
+    public function removeCouponByIndex($index)
+    {
+        $couponBag = EkomApi::inst()->cartLayer()->getCouponBag();
+        unset($couponBag[$index]);
+        EkomApi::inst()->cartLayer()->setCouponBag($couponBag);
+    }
 
 
     /**
@@ -119,53 +126,61 @@ class CouponLayer
     private function mergeToBag($id, array &$couponBag, array &$errors = [])
     {
         $id = (int)$id;
-        $info = $this->getCouponInfo($id, false);
+        $info = $this->getCouponInfo($id, true);
         $code = $info['code'];
-        if ('1' === $info['active']) {
-            $mode = $info['mode'];
-            if (0 === count($couponBag)) {
-                return true;
-            } else {
-                switch ($mode) {
-                    case 'merge':
-                        $couponBag[] = $id;
-                        break;
-                    case 'mergeWithSame':
-                        $couponsInfo = $this->getCouponBagInfo($couponBag);
-                        $diff = [];
-                        foreach ($couponsInfo as $info) {
-                            if ($info['code'] !== $code) {
-                                $diff[] = $info['code'];
-                            }
-                        }
-                        if (count($diff) > 0) {
-                            $errors[] = "refuted: this coupon cannot be combined with coupon(s) " . implode(', ', $diff);
-                            return false;
-                        }
 
-                        $couponBag[] = $id;
-                        break;
-                    default: // unique
-                        $priority = $info['priority'];
-                        $couponsInfo = $this->getCouponBagInfo($couponBag);
-                        $stronger = [];
-                        foreach ($couponsInfo as $info) {
-                            if ($info['priority'] > $priority) {
-                                $stronger[] = $info['code'];
-                            }
-                        }
-                        if (count($stronger) > 0) {
-                            $errors[] = "refuted: this coupon cannot replace coupon(s) " . implode(', ', $stronger);
-                            return false;
-                        }
+        if (count($info['discounts']) > 0) {
 
-                        $couponBag = [$id]; // unique REPLACE the content of the coupon bag
-                        break;
+            if ('1' === $info['active']) {
+                $mode = $info['mode'];
+                if (0 === count($couponBag)) {
+                    $couponBag[] = $id;
+                    return true;
+                } else {
+                    switch ($mode) {
+                        case 'merge':
+                            $couponBag[] = $id;
+                            break;
+                        case 'mergeWithSame':
+                            $couponsInfo = $this->getCouponBagInfo($couponBag);
+                            $diff = [];
+                            foreach ($couponsInfo as $info) {
+                                if ($info['code'] !== $code) {
+                                    $diff[] = $info['code'];
+                                }
+                            }
+                            if (count($diff) > 0) {
+                                $errors[] = "refuted: this coupon cannot be combined with coupon(s) " . implode(', ', $diff);
+                                return false;
+                            }
+
+                            $couponBag[] = $id;
+                            break;
+                        default: // unique
+                            $priority = $info['priority'];
+                            $couponsInfo = $this->getCouponBagInfo($couponBag);
+                            $stronger = [];
+                            foreach ($couponsInfo as $info) {
+                                if ($info['priority'] > $priority) {
+                                    $stronger[] = $info['code'];
+                                }
+                            }
+                            if (count($stronger) > 0) {
+                                $errors[] = "refuted: this coupon cannot replace coupon(s) " . implode(', ', $stronger);
+                                return false;
+                            }
+
+                            $couponBag = [$id]; // unique REPLACE the content of the coupon bag
+                            break;
+                    }
+                    return true;
                 }
-                return true;
+            } else {
+                $errors[] = "coupon inactive: $code";
+                return false;
             }
         } else {
-            $errors[] = "coupon inactive: $code";
+            $errors[] = "coupon $code has no discounts bound to it, please contact the webmaster";
             return false;
         }
     }
@@ -207,8 +222,9 @@ class CouponLayer
      *              - cartTotal, the formatted price (linesTotalWithTax with all coupon's discounts with target linesTotalWithTax
      *                          applied to it, see ekom order model II for more info).
      *              - totalSaving, the formatted amount of saving for the linesTotalWithTax target
-     *              - coupons: array of couponCode => couponDetail, each couponDetail is an array with the following structure:
+     *              - coupons: array of couponDetail, each couponDetail is an array with the following structure:
      *
+     *                      - code: coupon code
      *                      - label: coupon label
      *                      - saving: the formatted amount of saving for the ensemble of the discounts for this coupon
      *                      - discounts: array of $target => discountDetails.
@@ -239,7 +255,7 @@ class CouponLayer
                     ];
 
                     if (true === $this->testCouponConditionsByCode($info['code'])) {
-                        $validCoupons[] = $id;
+
 
                         $_discounts = [];
                         foreach ($info['discounts'] as $target => $discounts) {
@@ -263,11 +279,19 @@ class CouponLayer
                                 $_discounts[] = $_discount;
                             }
 
+
+                            $coupon['code'] = $info['code'];
                             $coupon['discounts'] = $_discounts;
                             $coupon['saving'] = E::price(-($temp - $linesTotalWithTax));
                         }
 
-                        $coupons[$info['code']] = $coupon;
+
+                        if (count($_discounts) > 0) { // some coupons are not bound to discounts yet
+                            $validCoupons[] = $id;
+                            $coupons[] = $coupon;
+                        } else {
+                            throw new \Exception("the coupon " . $info['code'] . " has no discounts bound to it!");
+                        }
 
                     }
                 }
