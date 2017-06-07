@@ -57,8 +57,6 @@ class CartLayer
 //    }
 
 
-
-
     public function addItem($qty, $productId)
     {
         $this->initSessionCart();
@@ -97,27 +95,73 @@ class CartLayer
         $this->writeToLocalStore();
     }
 
-    public function updateItemQuantity($productId, $newQty)
+
+    /**
+     *
+     * Set the quantity for a given product in the cart,
+     * with respect of the acceptOutOfStockOrders directive,
+     * and return the number of that products put in the cart.
+     *
+     *
+     * @return false|true|int,
+     *          if false, a problem occurred, you can get the error with the errors array.
+     *          if true, it means the quantity has been added to the cart.
+     *          if int, represents the quantity that has been put into the cart.
+     *                  Note: if acceptOutOfStockOrders is true, then any quantity will be accepted.
+     *                  If acceptOutOfStockOrders is false, then if there is 7 products left and you order 10,
+     *                  it will return 7.
+     *
+     */
+    public function updateItemQuantity($productId, $newQty, array &$errors = [])
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $productId = (int)$productId;
-        $alreadyExists = false;
-        foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $k => $item) {
-            if ((int)$item['id'] === $productId) {
-                $_SESSION['ekom.cart'][$shopId]['items'][$k]['quantity'] = $newQty;
-                $alreadyExists = true;
-                break;
-            }
-        }
 
-        if (false === $alreadyExists) {
-            $_SESSION['ekom.cart'][$shopId]['items'][] = [
-                "quantity" => $newQty,
-                "id" => $productId,
-            ];
+
+        if (false !== ($remainingQty = EkomApi::inst()->productLayer()->getProductQuantity($productId))) {
+
+            $newQty = (int)$newQty;
+            if ($newQty < 0) {
+                $newQty = 0;
+            }
+
+            $maxQty = $newQty;
+            $acceptOutOfStockOrders = E::conf("acceptOutOfStockOrders", false);
+
+            if (false === $acceptOutOfStockOrders && $newQty > $remainingQty) {
+                $newQty = $remainingQty;
+            }
+
+
+            $alreadyExists = false;
+            foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $k => $item) {
+                if ((int)$item['id'] === $productId) {
+                    $_SESSION['ekom.cart'][$shopId]['items'][$k]['quantity'] = $newQty;
+                    $alreadyExists = true;
+                    break;
+                }
+            }
+
+            if (false === $alreadyExists) {
+                $_SESSION['ekom.cart'][$shopId]['items'][] = [
+                    "quantity" => $newQty,
+                    "id" => $productId,
+                ];
+            }
+            $this->writeToLocalStore();
+
+
+            if ($maxQty === $newQty) {
+                return true;
+            }
+            return $newQty;
+
+        } else {
+            XLog::error("[Ekom module] - CartLayer.updateItemQuantity: cannot access the product quantity for product $productId");
+            $errors[] = "internal problem, please check the logs or contact the webmaster";
         }
-        $this->writeToLocalStore();
+        return false;
     }
 
 
@@ -219,7 +263,6 @@ class CartLayer
             $totalQty += $qty;
             if (false !== ($it = $this->getCartItemInfo($id))) {
                 $it['quantity'] = $qty;
-                $it['stock_quantity'] = $it['quantity'];
 
                 $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
                 $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
@@ -267,42 +310,41 @@ class CartLayer
             "linesTotalWithTax" => $totalWithTax,
         ];
 
-        $details = $couponApi->applyCouponBag($this->getCouponBag(), $targets, $validCoupons);
-        if (false === $details) {
-            $details = ["error" => "1"];
-            $model['cartTotal'] = $model['totalWithTax'];
-            $model['totalSaving'] = "undefined";
-            $model['coupons'] = [];
-            $model['hasCoupons'] = false;
-        } else {
+        if (false !== ($details = $couponApi->applyCouponBag($this->getCouponBag(), $targets, $validCoupons))) {
+
+            $cartTotalRaw = $details['rawCartTotal'];
             $model['cartTotal'] = $details['cartTotal'];
             $model['totalSaving'] = $details['totalSaving'];
             $model['coupons'] = $details['coupons'];
             $model['hasCoupons'] = (count($details['coupons']) > 0);
+
+
+            //--------------------------------------------
+            // ADDING CARRIER INFORMATION
+            //--------------------------------------------
+            /**
+             * we have basically two cases: either the user is connected, or not.
+             * If the user is not connected, the application chooses its own heuristics
+             * and returns an estimated shipping cost.
+             *
+             * If the user is connected and has a shipping address, the user's shipping address
+             * is used for the base of calculating the estimated shipping cost.
+             *
+             */
+            $carrierGroups = EkomApi::inst()->carrierLayer()->getCarrierGroups($items);
+            $model['carrierSections'] = $carrierGroups;
+            $allShippingCosts = $carrierGroups['totalShippingCost'];
+
+
+            $model['totalShippingCost'] = E::price($allShippingCosts);
+            $model['orderGrandTotal'] = E::price($cartTotalRaw + $allShippingCosts);
+        } else {
+//            $details = ["error" => "1"];
+//            $model['cartTotal'] = $model['totalWithTax'];
+//            $model['totalSaving'] = "undefined";
+//            $model['coupons'] = [];
+//            $model['hasCoupons'] = false;
         }
-
-        $cartTotal = $model['cartTotal'];
-
-
-        //--------------------------------------------
-        // ADDING CARRIER INFORMATION
-        //--------------------------------------------
-        /**
-         * we have basically two cases: either the user is connected, or not.
-         * If the user is not connected, the application chooses its own heuristics
-         * and returns an estimated shipping cost.
-         *
-         * If the user is connected and has a shipping address, the user's shipping address
-         * is used for the base of calculating the estimated shipping cost.
-         *
-         */
-        $carrierGroups = EkomApi::inst()->carrierLayer()->getCarrierGroups($items);
-        $model['carrierSections'] = $carrierGroups;
-        $allShippingCosts = $carrierGroups['totalShippingCost'];
-
-
-        $model['totalShippingCost'] = E::price($allShippingCosts);
-        $model['orderGrandTotal'] = E::price($cartTotal + $allShippingCosts);
 
         return $model;
     }
@@ -378,6 +420,7 @@ and p.lang_id=$langId
                 return [
                     'product_id' => $b['product_id'],
                     'label' => $b['label'],
+                    'stock_quantity' => $b['quantity'],
                     'ref' => $b['ref'],
                     'weight' => $b['weight'],
                     'uri' => E::link("Ekom_product", ['slug' => $productSlug]),

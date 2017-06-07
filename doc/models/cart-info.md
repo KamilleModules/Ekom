@@ -12,11 +12,8 @@ CartInfo
     - totalQuantity: sum of items.quantity
     - items: array of items, each item being an array with the following elements:
             - product_id: int, the id of the product
-            
-            - cart_quantity: int, how many of this product we have in the cart.
-                            Note that this data shouldn't be cached!
-            
-            - quantity: int, the stock quantity for this product (number of remaining items for this product)
+            - stock_quantity: int, the quantity available for this product and this shop (shop_has_product.quantity)
+            - quantity: int, how many of this product we have in the cart.
             - label: str, the label of the product
             - ref: str
             - weight: float, the weight of the product

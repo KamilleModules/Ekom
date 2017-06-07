@@ -220,8 +220,8 @@ class CouponLayer
      *
      * @return false|array with the following structure:
      *
-     *              - cartTotal, the formatted price (linesTotalWithTax with all coupon's discounts with target linesTotalWithTax
-     *                          applied to it, see ekom order model II for more info).
+     *              - cartTotal, the formatted cart total (linesTotalWithTax with all coupon's discounts with target linesTotalWithTax applied to it, see ekom order model II for more info).
+     *              - rawCartTotal, float, the unformatted cart total
      *              - totalSaving, the formatted amount of saving for the linesTotalWithTax target
      *              - coupons: array of couponDetail, each couponDetail is an array with the following structure:
      *
@@ -297,6 +297,7 @@ class CouponLayer
                     }
                 }
 
+                $ret['rawCartTotal'] = $linesTotalWithTax;
                 $ret['cartTotal'] = E::price($linesTotalWithTax);
                 $ret['totalSaving'] = E::price(-($cartTemp - $linesTotalWithTax));
                 $ret['coupons'] = $coupons;

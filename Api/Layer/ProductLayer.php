@@ -19,6 +19,29 @@ class ProductLayer
 
 
     /**
+     * @return false|int, the quantity for the given product, or false if something wrong happened
+     */
+    public function getProductQuantity($productId)
+    {
+        EkomApi::inst()->initWebContext();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+
+
+        return A::cache()->get("Module.Ekom.Api.Layer.ProductLayer.getProductQuantity.$shopId.$productId", function () use ($shopId, $productId) {
+            if (false !== ($quantity = EkomApi::inst()->shopHasProduct()->readColumn("quantity", [
+                    ["shop_id", '=', $shopId],
+                    ["product_id", '=', $productId],
+                ]))
+            ) {
+                return $quantity;
+            }
+        }, [
+            "ek_shop_has_product.update.$shopId.$productId",
+            "ek_shop_has_product.delete.$shopId.$productId",
+        ]);
+    }
+
+    /**
      * @return false|int, the id of the product card which slug was given, or false if there is no matching product card.
      */
     public function getProductCardIdBySlug($slug)
@@ -132,6 +155,8 @@ l.lang_id=$langId
 and ll.lang_id=$langId
 and s.shop_id=$shopId
 and p.product_card_id=$cardId
+
+
         ");
 
 

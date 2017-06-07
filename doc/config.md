@@ -118,6 +118,15 @@ authors will implement them).
 - displayPriceWithTax: bool=true, whether to display the prices with taxes applied or without taxes applied on the front office.
 - ?stockShowQtyThreshold: int=10, a threshold under which we display the exact quantity of remaining stock (to entice customers
                         to purchase the product)
+- acceptOutOfStockOrders: bool=false, if false, the customer can never order a quantity that doesn't exist.
+                                    The shop_has_product.quantity represents the existing quantity, so if this column 's value
+                                    is zero, no ordering is allowed when acceptOutOfStockOrders is set to false.
+                                    
+                                    If acceptOutOfStockOrders is set to true, then the customers can place their orders
+                                    no matter what. The quantity (shop_has_product.quantity) stays at 0 and don't go negative. 
+                                    
+                                    
+                                    
 
 
 ### host-currency level
@@ -134,5 +143,9 @@ authors will implement them).
 
 
  
+Directive
+--------------
+What's a directive (in ekom)?
+An alias for shop configuration key.
 
 
