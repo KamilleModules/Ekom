@@ -4,6 +4,8 @@
 namespace Module\Ekom\Utils;
 
 
+use Bat\UriTool;
+use Core\Services\A;
 use Core\Services\Hooks;
 use Core\Services\X;
 use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
@@ -20,9 +22,9 @@ class E
 
     private static $conf = null;
 
-    public static function link($routeId, array $params = [])
+    public static function link($routeId, array $params = [], $absolute = false, $https = null)
     {
-        return ApplicationLinkGenerator::getUri($routeId, $params);
+        return A::link($routeId, $params, $absolute, $https);
     }
 
     public static function passEncrypt($pass)

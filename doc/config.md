@@ -124,6 +124,7 @@ authors will implement them).
                                     
                                     If acceptOutOfStockOrders is set to true, then the customers can place their orders
                                     no matter what. The quantity (shop_has_product.quantity) stays at 0 and don't go negative. 
+- sessionTimeout: int=300, the number of seconds the session is active
                                     
                                     
                                     

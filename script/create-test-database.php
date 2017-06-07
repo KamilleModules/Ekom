@@ -1909,25 +1909,37 @@ foreach ($countries as $iso => $v) {
 // address
 //--------------------------------------------
 $addressLing1 = $api->address()->create([
+    'first_name' => 'pierre',
+    'last_name' => 'Lafitte',
+    'phone' => '06 83 27 59 32',
+    'address' => '6 rue port feu hugon',
     'city' => 'Tours',
     'postcode' => '37000',
-    'address' => '6 rue port feu hugon',
+    'supplement' => '',
     'active' => '1',
     'country_id' => $countryFra,
 ]);
 
 $addressLing2 = $api->address()->create([
+    'first_name' => 'maurice',
+    'last_name' => 'Bouchez',
+    'phone' => '02 47 60 98 41',
+    'address' => '2 avenue du maréchal leclerc',
     'city' => 'Chartres',
     'postcode' => '28000',
-    'address' => '2 avenue du maréchal leclerc',
+    'supplement' => '',
     'active' => '1',
     'country_id' => $countryFra,
 ]);
 
 $addressShopEurope = $api->address()->create([
+    'first_name' => 'Leaderfit',
+    'last_name' => '',
+    'phone' => '02 47 52 66 01',
     'city' => 'Tours',
     'postcode' => '37000',
     'address' => '9 rue du général mocquery',
+    'supplement' => '',
     'active' => '1',
     'country_id' => $countryFra,
 ]);
