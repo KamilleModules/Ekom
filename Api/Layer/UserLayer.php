@@ -4,6 +4,8 @@
 namespace Module\Ekom\Api\Layer;
 
 
+use Authenticate\SessionUser\SessionUser;
+use Bat\ArrayTool;
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
@@ -11,6 +13,100 @@ use QuickPdo\QuickPdo;
 
 class UserLayer
 {
+
+
+    /**
+     * Create an address and return a boolean: whether or not the address was created
+     * or not.
+     *
+     * Note: it is assumed that the fields are validated (by other means) first.
+     *
+     * The data should contain the following keys:
+     *
+     * - first_name
+     * - last_name
+     * - phone
+     * - address
+     * - city
+     * - postcode
+     * - supplement
+     * - active
+     * - country_id
+     * - type: the type of address: billing|shipping
+     * - is_preferred: bool=false, in case the address is of type shipping, whether
+     *                  or not this address should be the preferred one.
+     *
+     *
+     *
+     */
+    public function createAddress($userId, array $data)
+    {
+
+        return QuickPdo::transaction(function () use ($userId, $data) {
+            $userId = (int)$userId;
+
+            $addressData = ArrayTool::superimpose($data, [
+                "first_name" => "",
+                "last_name" => "",
+                "phone" => "",
+                "address" => "",
+                "city" => "",
+                "postcode" => "",
+                "supplement" => "",
+                "active" => "1",
+                "country_id" => 0,
+            ]);
+
+            $address = EkomApi::inst()->address()->create($addressData);
+
+            $minMax = $this->getMinMaxAddressOrder($userId);
+            $min = $minMax['minimum'];
+            $max = $minMax['maximum'];
+
+
+            $isPreferred = false;
+            if (array_key_exists("is_preferred", $data)) {
+                $isPreferred = (bool)$data['is_preferred'];
+            }
+
+            $order = (true === $isPreferred) ? $min - 1 : $max + 1;
+
+            $userHasAddressData = ArrayTool::superimpose($data, [
+                "type" => "shipping",
+                "order" => $order,
+            ]);
+            $userHasAddressData["user_id"] = $userId;
+            $userHasAddressData["address_id"] = $address;
+
+            EkomApi::inst()->userHasAddress()->create($userHasAddressData);
+
+        });
+    }
+
+
+    /**
+     * This method returns the user favorite country,
+     * so that when display the list of countries,
+     * we can pre-select her favorite.
+     *
+     * The heuristics we use is simply use the country of her oreferred shipping address.
+     *
+     */
+    public function getUserPreferredCountry($userId = null, $langId = null)
+    {
+        if (null === $userId) {
+            if (true === SessionUser::isConnected()) {
+                $userId = SessionUser::getValue("id");
+            }
+        }
+        if (null !== $userId) {
+            if (false !== ($addr = $this->getPreferredShippingAddress($userId, $langId))) {
+                return $addr['country_id'];
+            }
+        }
+        return 0;
+    }
+
 
     public function getUserShippingAddresses($userId, $langId = null)
     {
@@ -25,7 +121,7 @@ class UserLayer
         return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getUserShippingAddresses.$langId.$userId", function () use ($userId, $langId) {
 
 
-            return QuickPdo::fetchAll("
+            $rows = QuickPdo::fetchAll("
 select 
 a.id as address_id,        
 a.first_name,        
@@ -53,10 +149,20 @@ order by h.`order` asc
         
         
         ");
+
+            // depending on the lang, we also provide 2 convenient strings for the template (todo):
+            foreach ($rows as $k => $row) {
+                $fName = $row['first_name'] . " " . $row['last_name'];
+                $fAddress = $row['address'] . ", " . $row['postcode'] . " " . $row['city'] . ". " . $row['country'];
+                $rows[$k]['fName'] = $fName;
+                $rows[$k]['fAddress'] = $fAddress;
+            }
+
+            return $rows;
         }, [
             "ek_user_has_address.$userId",
-            "ek_country_lang.delete.*",
-            "ek_country_lang.update.*",
+            "ek_country_lang.delete",
+            "ek_country_lang.update",
         ]);
     }
 
@@ -131,6 +237,19 @@ order by h.`order` asc
     //--------------------------------------------
     //
     //--------------------------------------------
+    private function getMinMaxAddressOrder($userId, $type = "shipping")
+    {
+        $userId = (int)$userId;
+        return QuickPdo::fetch("
+select min(`order`) as minimum, max(`order`) as maximum 
+from ek_user_has_address        
+where user_id=$userId
+and `type`=:zetype
+        
+        ", [
+            "zetype" => $type,
+        ]);
+    }
 
 
 }

@@ -92,10 +92,10 @@ class CategoryLayer
             }
             return $ret;
         }, [
-            'ek_product.*',
+            'ek_product',
             // getCategoryTreeByProductCardId
-            'ek_category.*',
-            'ek_category_lang.*',
+            'ek_category',
+            'ek_category_lang',
         ]);
     }
 
@@ -140,8 +140,8 @@ where c.id=$categoryId and c.shop_id=$shopId and l.lang_id=$langId
 
             return $treeRows;
         }, [
-            'ek_category.*',
-            'ek_category_lang.*',
+            'ek_category',
+            'ek_category_lang',
         ]);
     }
 

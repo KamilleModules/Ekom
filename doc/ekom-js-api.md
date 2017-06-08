@@ -126,6 +126,20 @@ Here are the ekomJsApi public methods:
                         - cart.updated  
 
 
+// user
+- user.createNewAddress: ( data, onFormDataErroneous, onError ), adds a user address.
+                        - data: the form data
+                        - onFormDataErroneous: a callback triggered when the form is invalid.
+                                    onFormDataErroneous ( formModel )
+                                            - formModel: The on-the-fly formModel representing the erroneous form 
+                                    
+                        - onError: a callback triggered if an error occurred server side.
+                                    onError ( errMsg  )
+                                            - errMsg: string, the error message that ekom suggests to display
+
+                    The following events are triggered:
+                        - user.address.updated  (only in case of success)
+                        
 
 // utils
 - debounce: https://davidwalsh.name/javascript-debounce-function

@@ -449,15 +449,15 @@ and p.lang_id=$langId
             }
 
         }, [
-            "ek_shop_has_product_card_lang.*",
-            "ek_shop_has_product_card.*",
-            "ek_product_card_lang.*",
-            "ek_product_card.*",
-            "ek_shop.*",
-            "ek_product_has_product_attribute.*",
-            "ek_product_attribute_lang.*",
-            "ek_product_attribute_value_lang.*",
-            "ek_product.*",
+            "ek_shop_has_product_card_lang",
+            "ek_shop_has_product_card",
+            "ek_product_card_lang",
+            "ek_product_card",
+            "ek_shop",
+            "ek_product_has_product_attribute",
+            "ek_product_attribute_lang",
+            "ek_product_attribute_value_lang",
+            "ek_product",
             "ekomApi.image.product",
             "ekomApi.image.productCard",
         ]);

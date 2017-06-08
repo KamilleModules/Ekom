@@ -13,7 +13,6 @@ class EkomServices
         \Core\Services\Hooks::call('Ekom_feedCarrierCollection', $c);
         return $c;
     }
-
 }
 
 

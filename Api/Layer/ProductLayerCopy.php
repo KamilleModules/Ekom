@@ -218,12 +218,12 @@ and s.product_card_id=$cardId and sl.lang_id=$langId
             }
             return false;
         }, [
-            "ek_shop_has_product_card_lang.*",
-            "ek_shop_has_product_card.*",
-            "ek_product_card_lang.*",
+            "ek_shop_has_product_card_lang",
+            "ek_shop_has_product_card",
+            "ek_product_card_lang",
             "ek_product_card.delete",
             "ek_product_card.update",
-            "ek_shop.*",
+            "ek_shop",
         ]);
     }
 
@@ -272,10 +272,10 @@ and p.product_card_id=$cardId
 
             return $productRows;
         }, [
-            "ek_product.*",
-            "ek_shop_has_product.*",
-            "ek_shop_has_product_lang.*",
-            "ek_shop.*",
+            "ek_product",
+            "ek_shop_has_product",
+            "ek_shop_has_product_lang",
+            "ek_shop",
         ]);
     }
 
@@ -339,9 +339,9 @@ and product_id in (" . implode(', ', $productIds) . ")
             return $productsInfo;
 
         }, [
-            "ek_product_has_product_attribute.*",
-            "ek_product_attribute_lang.*",
-            "ek_product_attribute_value_lang.*",
+            "ek_product_has_product_attribute",
+            "ek_product_attribute_lang",
+            "ek_product_attribute_value_lang",
             "ek_product.delete",
             "ek_product.update",
         ]);
@@ -569,25 +569,25 @@ and product_id in (" . implode(', ', $productIds) . ")
 
 
         }, [
-            "ek_shop_has_product_card_lang.*",
-            "ek_shop_has_product_card.*",
-            "ek_product_card_lang.*",
+            "ek_shop_has_product_card_lang",
+            "ek_shop_has_product_card",
+            "ek_product_card_lang",
             "ek_product_card.delete",
             "ek_product_card.update",
-            "ek_shop.*",
-            "ek_product_has_product_attribute.*",
-            "ek_product_attribute_lang.*",
-            "ek_product_attribute_value_lang.*",
+            "ek_shop",
+            "ek_product_has_product_attribute",
+            "ek_product_attribute_lang",
+            "ek_product_attribute_value_lang",
             "ek_product.delete",
             "ek_product.update",
             // images
             "ekomApi.image.product",
             "ekomApi.image.productCard",
             // taxes
-            "ek_tax.*",
-            "ek_tax_group_has_tax.*",
-            "ek_tax_group.*",
-            "ek_product_card_has_tax_group.*",
+            "ek_tax",
+            "ek_tax_group_has_tax",
+            "ek_tax_group",
+            "ek_product_card_has_tax_group",
             "ek_shop.delete",
             "ek_lang.delete",
             "ek_product_card.delete",
@@ -751,14 +751,14 @@ and product_id in (" . implode(', ', $productIds) . ")
             }
             return $model;
         }, [
-            "ek_shop_has_product_card_lang.*",
-            "ek_shop_has_product_card.*",
-            "ek_product_card_lang.*",
-            "ek_product_card.*",
-            "ek_shop.*",
-            "ek_product_has_product_attribute.*",
-            "ek_product_attribute_lang.*",
-            "ek_product_attribute_value_lang.*",
+            "ek_shop_has_product_card_lang",
+            "ek_shop_has_product_card",
+            "ek_product_card_lang",
+            "ek_product_card",
+            "ek_shop",
+            "ek_product_has_product_attribute",
+            "ek_product_attribute_lang",
+            "ek_product_attribute_value_lang",
             "ek_product.delete",
             "ek_product.update",
             "ekomApi.image.product",

@@ -14,6 +14,7 @@ use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\Api\Layer\ConditionLayer;
+use Module\Ekom\Api\Layer\CountryLayer;
 use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\DiscountLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
@@ -100,8 +101,8 @@ class EkomApi extends GeneratedEkomApi
             $shopRow = A::cache()->get("Module.Ekom.Api.EkomApi.initWebContext.$host", function () use ($host) {
                 return $this->shopLayer()->getShopInfoByHost($host);
             }, [
-                "ek_shop.*",
-                "ek_timezone.*",
+                "ek_shop",
+                "ek_timezone",
             ]);
 
 
@@ -206,10 +207,10 @@ and h.lang_id=$langId
                         return "[Ekom module] - EkomApi: no active currency found for shop $shopId";
                     }
                 }, [
-                    "ek_shop_has_currency.*",
-                    "ek_currency.*",
-                    "ek_lang.*",
-                    "ek_shop_has_lang.*",
+                    "ek_shop_has_currency",
+                    "ek_currency",
+                    "ek_lang",
+                    "ek_shop_has_lang",
                     "ek_shop.delete",
                     "ek_shop.update",
                 ]);
@@ -335,6 +336,15 @@ and h.lang_id=$langId
     public function carrierLayer()
     {
         return $this->getLayer('carrierLayer');
+    }
+
+
+    /**
+     * @return CountryLayer
+     */
+    public function countryLayer()
+    {
+        return $this->getLayer('countryLayer');
     }
 
 

@@ -193,8 +193,8 @@ class CouponLayer
                 "code" => $code,
             ]);
         }, [
-            "coupon.delete.*",
-            "coupon.update.*",
+            "coupon.delete",
+            "coupon.update",
         ]);
     }
 

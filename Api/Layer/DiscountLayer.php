@@ -245,11 +245,11 @@ and l.lang_id=$langId
 
         }, [
             "ek_product.delete.$productId",
-            'ek_discount.*',
-            'ek_discount_lang.*',
-            'ek_product_has_discount.*',
-            'ek_product_card_has_discount.*',
-            'ek_category_has_discount.*',
+            'ek_discount',
+            'ek_discount_lang',
+            'ek_product_has_discount',
+            'ek_product_card_has_discount',
+            'ek_category_has_discount',
             // very little change that ek_category.update should trigger this (the only case is if you change the id of the category, which admittedly almost never happens in prod day to day life)
             // actually, that's a pattern
             'ek_category.delete',

@@ -8,14 +8,39 @@ class EkomHooks
 {
 
 
-    protected static function Ekom_adaptContextualConfig(array &$conf){
+    //--------------------------------------------
+    // CORE
+    //--------------------------------------------
+    protected static function Core_feedOnTheFlyFormProvider(\OnTheFlyForm\Provider\OnTheFlyFormProviderInterface $provider)
+    {
+        if ($provider instanceof \OnTheFlyForm\Provider\OnTheFlyFormProvider) {
+            $provider->setNamespace("Ekom", 'Module\Ekom\OnTheFlyForm');
+        }
+    }
+
+    protected static function Core_configureLawsUtil(\Kamille\Utils\Laws\LawsUtil $util)
+    {
+        $util->addShortCodeProvider(\Module\Ekom\ShortCodeProvider\EkomShortCodeProvider::create());
+    }
+
+
+    //--------------------------------------------
+    // EKOM
+    //--------------------------------------------
+    protected static function Ekom_adaptContextualConfig(array &$conf)
+    {
 
     }
 
-    protected static function Ekom_feedCarrierCollection(\Module\Ekom\Carrier\Collection\CarrierCollection $collection){
+    protected static function Ekom_feedCarrierCollection(\Module\Ekom\Carrier\Collection\CarrierCollection $collection)
+    {
 
     }
 
+
+    //--------------------------------------------
+    // NULLOS ADMIN
+    //--------------------------------------------
     protected static function NullosAdmin_layout_sideBarMenuModel(array &$sideBarMenuModel)
     {
         $sideBarMenuModel['sections'][] = [
@@ -76,12 +101,6 @@ class EkomHooks
                 ],
             ],
         ];
-    }
-
-
-    protected static function Core_configureLawsUtil(\Kamille\Utils\Laws\LawsUtil $util)
-    {
-        $util->addShortCodeProvider(\Module\Ekom\ShortCodeProvider\EkomShortCodeProvider::create());
     }
 
 }
