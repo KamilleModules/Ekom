@@ -20,7 +20,8 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
             "nameLastName" => "last_name",
             "nameAddress" => "address",
             "namePostcode" => "postcode",
-            "nameCountry" => "country",
+            "nameCity" => "city",
+            "nameCountry" => "country_id",
             "namePhone" => "phone",
             "nameExtra" => "extra",
             "nameIsPreferred" => "is_preferred",
@@ -30,6 +31,7 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
             "valueLastName" => "",
             "valueAddress" => "",
             "valuePostcode" => "",
+            "valueCity" => "",
             "valueCountry" => $countryId,
             "valuePhone" => "",
             "valueExtra" => "",
@@ -37,10 +39,11 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
 
             "checkedIsPreferred" => "",
             //
-//            "errorFirstName" => "",
+            "errorFirstName" => "",
             "errorLastName" => "",
             "errorAddress" => "",
             "errorPostcode" => "",
+            "errorCity" => "",
             "errorCountry" => "",
             "errorPhone" => "",
         ];
@@ -53,6 +56,7 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
             'lastName' => ['required'],
             'address' => ['required'],
             'postcode' => ['required'],
+            'city' => ['required'],
             'country' => ['required'],
             'phone' => ['required'],
         ];

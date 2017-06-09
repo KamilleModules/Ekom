@@ -8,6 +8,7 @@ use Authenticate\SessionUser\SessionUser;
 use Bat\ArrayTool;
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
+use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use QuickPdo\QuickPdo;
 
@@ -57,6 +58,7 @@ class UserLayer
                 "country_id" => 0,
             ]);
 
+
             $address = EkomApi::inst()->address()->create($addressData);
 
             $minMax = $this->getMinMaxAddressOrder($userId);
@@ -80,6 +82,8 @@ class UserLayer
 
             EkomApi::inst()->userHasAddress()->create($userHasAddressData);
 
+        }, function ($e) {
+            XLog::error("[Ekom module] - UserLayer.createAddress: $e");
         });
     }
 
@@ -108,6 +112,28 @@ class UserLayer
     }
 
 
+    /**
+     * Return an array of user shipping addresses.
+     * Each address has the following info:
+     *
+     * - address_id
+     * - first_name
+     * - last_name
+     * - phone
+     * - address
+     * - city
+     * - postcode
+     * - supplement
+     * - country
+     * //
+     * - fName, string: a full name, which format depends on some locale parameters
+     * - fAddress, string: a full address, which format depends on some locale parameters
+     * - isPreferred, bool: whether or not this is the favorite user address
+     *
+     *
+     *
+     *
+     */
     public function getUserShippingAddresses($userId, $langId = null)
     {
 
@@ -150,12 +176,14 @@ order by h.`order` asc
         
         ");
 
-            // depending on the lang, we also provide 2 convenient strings for the template (todo):
+            // depending on the shop's country?
             foreach ($rows as $k => $row) {
+
                 $fName = $row['first_name'] . " " . $row['last_name'];
                 $fAddress = $row['address'] . ", " . $row['postcode'] . " " . $row['city'] . ". " . $row['country'];
                 $rows[$k]['fName'] = $fName;
                 $rows[$k]['fAddress'] = $fAddress;
+                $rows[$k]['isPreferred'] = (0 === $k);
             }
 
             return $rows;
