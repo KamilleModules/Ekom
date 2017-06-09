@@ -65,6 +65,7 @@ CartInfo
     - taxAmount: string: the formatted amount of taxes (totalWithTax - totalWithoutTax)
     
     - cartTotal: string, the (formatted) cart total (see ekom order model II for more details)
+                        (basically the total with tax and coupons applied, but without shipping applied)
     - totalSaving: string, the negative formatted amount of saving made by coupons's cart discounts on the linesTotalWithTax target (see ekom order model II for more details).
     - hasCoupons: bool, whether or not this cart contains coupons
     - coupons: array containing the details of the coupon discounts applied to the cart

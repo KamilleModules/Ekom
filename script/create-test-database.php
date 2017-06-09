@@ -1565,7 +1565,7 @@ $userGroupB2C = $api->userGroup()->create([
 
 $userLing = $api->user()->create([
     'shop_id' => $shopEurope,
-    'email' => "lingtalfi@gmail.com",
+    'email' => "ling",
     'pass' => E::passEncrypt("poupou"),
     'date_creation' => "2017-05-28 09:49:44",
     'mobile' => "0612457865",
@@ -1583,7 +1583,7 @@ $api->userHasUserGroup()->create([
 
 $userLingUsa = $api->user()->create([
     'shop_id' => $shopUsa,
-    'email' => "lingtalfi@gmail.com",
+    'email' => "ling",
     'pass' => E::passEncrypt("poupou"),
     'date_creation' => "2017-05-28 09:49:44",
     'mobile' => "0612457865",
@@ -1977,6 +1977,10 @@ $carrierDemo = $api->carrier()->create([
     'name' => 'demo',
 ]);
 
+$carrierUps = $api->carrier()->create([
+    'name' => 'ups',
+]);
+
 
 //--------------------------------------------
 // shop has carrier
@@ -1985,6 +1989,12 @@ $api->shopHasCarrier()->create([
     'shop_id' => $shopEurope,
     'carrier_id' => $carrierDemo,
     'priority' => '0',
+]);
+
+$api->shopHasCarrier()->create([
+    'shop_id' => $shopEurope,
+    'carrier_id' => $carrierUps,
+    'priority' => '1',
 ]);
 
 

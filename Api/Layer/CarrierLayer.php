@@ -5,6 +5,7 @@ namespace Module\Ekom\Api\Layer;
 
 
 use Authenticate\SessionUser\SessionUser;
+use Core\Services\A;
 use Core\Services\X;
 use Ekom\Carrier\MockCarrier;
 use Kamille\Services\XLog;
@@ -13,9 +14,23 @@ use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Carrier\CarrierInterface;
 use Module\Ekom\Carrier\Collection\CarrierCollection;
 use Module\Ekom\Carrier\Collection\CarrierCollectionInterface;
+use QuickPdo\QuickPdo;
 
 class CarrierLayer
 {
+
+
+    /**
+     * @param $name
+     * @return false|CarrierInterface
+     */
+    public function getCarrierByName($name){
+        $coll = X::get("Ekom_getCarrierCollection");
+        /**
+         * @var $coll CarrierCollection
+         */
+        return $coll->getCarrier($name);
+    }
 
     /**
      *
@@ -59,9 +74,6 @@ class CarrierLayer
         /**
          * @var $coll CarrierCollection
          */
-        $coll->addCarrier('mock1', MockCarrier::create()->setReturnPrice(100)->setRejected([6, 7, 8]));
-        $coll->addCarrier('mock2', MockCarrier::create()->setReturnPrice(50)->setRejected([6]));
-//        $coll->addCarrier('mock3', MockCarrier::create()->setReturnPrice(67)->setRejected([]));
         $carriers = $coll->all();
 
 
@@ -156,4 +168,35 @@ class CarrierLayer
             'totalShippingCost' => $totalShippingCost,
         ];
     }
+
+
+    public function getCarriersByShop($shopId)
+    {
+        $shopId = (int)$shopId;
+
+
+        return A::cache()->get("CarrierLayer.getCarriersByShop.$shopId", function () use ($shopId) {
+
+            return QuickPdo::fetchAll("
+select c.id, c.name 
+        
+from ek_carrier c 
+inner join ek_shop_has_carrier h on h.carrier_id=c.id
+ 
+where h.shop_id=$shopId         
+
+order by h.priority asc        
+        
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+
+        }, [
+            "ek_carrier.delete",
+            "ek_carrier.update",
+            "ek_shop_has_carrier.delete.$shopId",
+            "ek_shop_has_carrier.update.$shopId",
+            "ek_shop.delete.$shopId",
+        ]);
+
+    }
+
 }

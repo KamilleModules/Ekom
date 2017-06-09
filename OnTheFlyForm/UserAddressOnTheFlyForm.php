@@ -27,7 +27,7 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
             "nameIsPreferred" => "is_preferred",
 
 
-            "valueFirstName" => "pierre",
+            "valueFirstName" => "",
             "valueLastName" => "",
             "valueAddress" => "",
             "valuePostcode" => "",

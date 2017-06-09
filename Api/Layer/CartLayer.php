@@ -27,6 +27,9 @@ class CartLayer
      */
     private $cartLocalStore;
 
+    private $_cartModel; // cache
+    private $_miniCartModel; // cache
+
 
     /**
      *
@@ -187,12 +190,18 @@ class CartLayer
 
     public function getCartModel()
     {
-        return $this->doGetCartModel();
+        if (null === $this->_cartModel) {
+            $this->_cartModel = $this->doGetCartModel();
+        }
+        return $this->_cartModel;
     }
 
     public function getMiniCartModel()
     {
-        return $this->doGetCartModel();
+        if (null === $this->_miniCartModel) {
+            $this->_miniCartModel = $this->doGetCartModel();
+        }
+        return $this->_miniCartModel;
     }
 
 

@@ -114,26 +114,152 @@ that can handle the shipping of all products, but as developers we have to take 
 
 
 
-Information implementation
+Implementation details
 ==============================
+2017-06-09
 
-At the code level, the following structures can be used:
+
+We use three steps:
+
+- step 1: create shippings
+- step 2: create order
+- step 3: choose payment method
+
+
+To collect info, we start with a base array, and we add information at every step.
+We call this array the order array.
+Here is how the final order array looks like:
+
 
 ```txt
-- shipping info
------ address
---------- product
---------- qty
-
-
-- order section
------ carrier+address
---------- product
---------- qty
---------- estimated_date
---------- shipping_cost
---------- ...(other meta)
+- order
+----- payment_method:
+--------- payment_method_id
+--------- (others)
+----- sections:
+--------- 0:
+------------- address_id
+------------- carrier:
+----------------- carrier_id
+----------------- estimated_date
+----------------- shipping_cost
+------------- items
+----------------- 0:
+--------------------- product
+--------------------- qty
+--------------------- weight
+--------------------- ...coupons?
+----------------- ...
+--------- ...
 ```
+
+
+At the end of step 1, the shippings have been decided and the array looks like this:
+
+```txt
+- order
+----- payment_method: (not set yet)
+----- sections:
+--------- 0:
+------------- carrier: (not set yet)
+------------- address_id
+------------- items
+----------------- 0:
+--------------------- product
+--------------------- qty
+--------------------- weight
+--------------------- ...coupons?
+----------------- ...
+--------- ...
+```
+
+
+At the end of step 2, the order sections have been chosen and the array looks like this:
+
+```txt
+- order
+----- payment_method: (not set yet)
+----- sections:
+--------- 0:
+------------- carrier:
+----------------- carrier_id
+----------------- estimated_date
+----------------- shipping_cost 
+------------- address_id
+------------- items
+----------------- 0:
+--------------------- product
+--------------------- qty
+--------------------- weight
+--------------------- ...coupons?
+----------------- ...
+--------- ...
+```
+
+Then, at the end of step 3, the user chooses the payment method and the array looks like the one at the beginning
+of this discussion.
+
+Note: steps could probably be arranged in any order.
+Note2: this technique doesn't take into account multiple payment (i.e. the user only pays once).
+
+
+More implementation details
+============================
+2017-06-09
+
+
+Create shippings
+-----------------
+
+Client side, we have a button:
+
+```html
+<button class="button save-step-shipping">Ship to this address</button>
+```
+
+If you are in single address mode, you can just pass the address id to the api, and the api will create the shipping
+for you, using the cart data.
+
+If you are in multiple address mode, you will need to find other heuristics but the same mechanism will be used:
+click the "save-step-shipping" button, so this means that you probably need to collect the shipping data
+via a gui and post them when the user clicks on the "save-step-shipping" button.
+
+
+
+
+
+
+
+
+Create order
+---------------
+
+Traditionally, from what I know e-commerce let the user choose between different carriers.
+However, in big websites like amazon, there seems to be a tendency to make the choice automatically for the user.
+
+
+
+I personally like the second method better (the fewer questions asked to the user the better),
+but in ekom we provide a configuration key that would allow the developer to choose different options.
+
+carrierSelectionMode:
+
+- fixed:$carrier_name, the carrier is fixed (by the shop owner) to the value $carrier_name.
+- auto: ekom will choose automatically, using the first carrier that can handle all of the products
+- manual, the user will choose between the carrier available to the user (unless there is only one carrier
+            choice in which case the choice might not be asked)
+            
+
+Note that because the carrier can be chosen automatically, what we ended up doing in ekom is that
+            when the "save-step-shipping" is done, we also perform a check on whether or not the
+            user will have to choose the carrier.
+            If there is no choice, then we apply the "carrier layer" in the same row, thus saving one 
+            round-trip (in a typical ajax driven checkout page).
+            
+            
+
+
+
 
 
 

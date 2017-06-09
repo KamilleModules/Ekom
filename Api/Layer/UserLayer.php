@@ -12,13 +12,117 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use QuickPdo\QuickPdo;
 
+
+/**
+ *
+ *
+ *
+ * addressModel
+ * ==================
+ * - address_id
+ * - first_name
+ * - last_name
+ * - phone
+ * - address
+ * - city
+ * - postcode
+ * - supplement
+ * - country
+ * //
+ * - fName, string: a full name, which format depends on some locale parameters
+ * - fAddress, string: a full address, which format depends on some locale parameters
+ * - is_preferred, bool: whether or not this is the favorite user address
+ *
+ *
+ *
+ *
+ */
 class UserLayer
 {
 
 
+    public function deleteAddress($userId, $addressId)
+    {
+        $userId = (int)$userId;
+        $addressId = (int)$addressId;
+        if (false !== QuickPdo::fetch("select user_id from ek_user_has_address where user_id=$userId and address_id=$addressId")) {
+            EkomApi::inst()->address()->delete(["id" => $addressId]);
+        }
+    }
+
     /**
-     * Create an address and return a boolean: whether or not the address was created
+     * return an addressModel (see top of this document)
+     *
+     *
+     * @return false|array
+     */
+    public function getUserShippingAddressById($userId, $addressId, $langId = null)
+    {
+
+        $userId = (int)$userId;
+        $addressId = (int)$addressId;
+        EkomApi::inst()->initWebContext();
+        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+
+        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getUserShippingAddressById.$langId.$userId.$addressId", function () use ($userId, $langId, $addressId) {
+
+            if (false !== ($row = QuickPdo::fetch("
+
+select 
+a.id as address_id,        
+a.first_name,        
+a.last_name,        
+a.phone,        
+a.address,        
+a.city,        
+a.postcode,        
+a.supplement,        
+l.label as country,
+h.`order`
+
+
+from ek_user_has_address h 
+inner join ek_address a on a.id=h.address_id 
+inner join ek_country_lang l on l.country_id=a.country_id
+
+where 
+a.id=$addressId
+and h.user_id=$userId 
+and h.type='shipping'
+and a.active='1'
+and l.lang_id=$langId
+                 
+        "))
+            ) {
+                $minMax = $this->getMinMaxAddressOrder($userId);
+                $isPreferred = ((int)$row['order'] === (int)$minMax['minimum']);
+
+                list($fName, $fAddress) = $this->getFormattedNameAndAddress($row);
+
+                $row['fName'] = $fName;
+                $row['fAddress'] = $fAddress;
+                $row['is_preferred'] = $isPreferred;
+
+                return $row;
+            }
+            return false;
+        }, [
+            "ek_user_has_address.delete.$userId",
+            "ek_user_has_address.update.$userId",
+            "ek_address.delete.$addressId",
+            "ek_address.update.$addressId",
+            "ek_country_lang.delete",
+            "ek_country_lang.update",
+        ]);
+    }
+
+
+    /**
+     * Create or update an address and return a boolean: whether or not the address was created (or updated)
      * or not.
+     *
+     * It's an update if the addressId argument is not null.
+     * Otherwise, it's an insert.
      *
      * Note: it is assumed that the fields are validated (by other means) first.
      *
@@ -40,7 +144,66 @@ class UserLayer
      *
      *
      */
-    public function createAddress($userId, array $data)
+    public function createAddress($userId, array $data, $addressId = null)
+    {
+        if (null === $addressId) {
+            return $this->createNewAddress($userId, $data);
+        } else {
+            return $this->updateNewAddress($userId, $data, $addressId);
+        }
+    }
+
+    private function updateNewAddress($userId, array $data, $addressId)
+    {
+
+        return QuickPdo::transaction(function () use ($userId, $data, $addressId) {
+            $userId = (int)$userId;
+
+            $addressData = ArrayTool::superimpose($data, [
+                "first_name" => "",
+                "last_name" => "",
+                "phone" => "",
+                "address" => "",
+                "city" => "",
+                "postcode" => "",
+                "supplement" => "",
+                "active" => "1",
+                "country_id" => 0,
+            ]);
+
+
+            EkomApi::inst()->address()->update($addressData, [
+                "id" => $addressId,
+            ]);
+
+
+
+            if (array_key_exists("is_preferred", $data)) {
+                $isPreferred = (bool)$data['is_preferred'];
+                if (true === $isPreferred) {
+                    $minMax = $this->getMinMaxAddressOrder($userId);
+                    $min = $minMax['minimum'];
+                    $order = $min - 1;
+                    $userHasAddressData = [
+                        "order" => $order,
+                    ];
+                    EkomApi::inst()->userHasAddress()->update($userHasAddressData, [
+                        "user_id" => $userId,
+                        "address_id" => $addressId,
+                        "type" => "shipping",
+                    ]);
+                }
+            }
+
+
+
+        }, function ($e) {
+            XLog::error("[Ekom module] - UserLayer.createAddress: $e");
+        });
+    }
+
+
+    private function createNewAddress($userId, array $data)
     {
 
         return QuickPdo::transaction(function () use ($userId, $data) {
@@ -114,23 +277,7 @@ class UserLayer
 
     /**
      * Return an array of user shipping addresses.
-     * Each address has the following info:
-     *
-     * - address_id
-     * - first_name
-     * - last_name
-     * - phone
-     * - address
-     * - city
-     * - postcode
-     * - supplement
-     * - country
-     * //
-     * - fName, string: a full name, which format depends on some locale parameters
-     * - fAddress, string: a full address, which format depends on some locale parameters
-     * - isPreferred, bool: whether or not this is the favorite user address
-     *
-     *
+     * Each address is an addressModel (see top of this document)
      *
      *
      */
@@ -179,11 +326,11 @@ order by h.`order` asc
             // depending on the shop's country?
             foreach ($rows as $k => $row) {
 
-                $fName = $row['first_name'] . " " . $row['last_name'];
-                $fAddress = $row['address'] . ", " . $row['postcode'] . " " . $row['city'] . ". " . $row['country'];
+
+                list($fName, $fAddress) = $this->getFormattedNameAndAddress($row);
                 $rows[$k]['fName'] = $fName;
                 $rows[$k]['fAddress'] = $fAddress;
-                $rows[$k]['isPreferred'] = (0 === $k);
+                $rows[$k]['is_preferred'] = (0 === $k);
             }
 
             return $rows;
@@ -280,4 +427,11 @@ and `type`=:zetype
     }
 
 
+    private function getFormattedNameAndAddress(array $row)
+    {
+        return [
+            $row['first_name'] . " " . $row['last_name'],
+            $row['address'] . ", " . $row['postcode'] . " " . $row['city'] . ". " . $row['country'],
+        ];
+    }
 }

@@ -13,6 +13,7 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\CategoryLayer;
+use Module\Ekom\Api\Layer\CheckoutLayer;
 use Module\Ekom\Api\Layer\ConditionLayer;
 use Module\Ekom\Api\Layer\CountryLayer;
 use Module\Ekom\Api\Layer\CouponLayer;
@@ -345,6 +346,14 @@ and h.lang_id=$langId
     public function countryLayer()
     {
         return $this->getLayer('countryLayer');
+    }
+
+    /**
+     * @return CheckoutLayer
+     */
+    public function checkoutLayer()
+    {
+        return $this->getLayer('checkoutLayer');
     }
 
 

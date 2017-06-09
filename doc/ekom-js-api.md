@@ -127,8 +127,57 @@ Here are the ekomJsApi public methods:
 
 
 // user
-- user.createNewAddress: ( data, onFormDataErroneous, onError ), adds a user address.
-                        - data: the form data
+- user.createAddress: ( data, onSuccess, onFormDataErroneous, onError )
+
+                        Insert or update an user address.
+                        
+                        If data.address_id is set, this is an update, 
+                        otherwise it's an insert.
+                        
+                        - data: the form data, those are transferred to the UserLayer.createAddress method:
+                                    
+                                  - first_name
+                                  - last_name
+                                  - phone
+                                  - address
+                                  - city
+                                  - postcode
+                                  - supplement
+                                  - country_id
+                                  - is_preferred: bool=false, in case the address is of type shipping, whether
+                                                   or not this address should be the preferred one.
+                                                                                 
+                                                                            
+                                                                            
+                        
+                        
+                        - onSuccess: callback executed if the address was inserted/updated.
+                                The onSuccess callback has the following signature:
+                                
+                                        onSuccess ( data )
+                                            With: 
+                                                - data.addresses: The result of the 
+                                                        userLayer->getUserShippingAddresses( userId ) method, which is 
+                                                        an array of addressModel.
+                                                        Each addressModel has the following structure:
+                                                        
+                                                      addressModel
+                                                      ==================
+                                                      - address_id
+                                                      - first_name
+                                                      - last_name
+                                                      - phone
+                                                      - address
+                                                      - city
+                                                      - postcode
+                                                      - supplement
+                                                      - country
+                                                      //
+                                                      - fName, string: a full name, which format depends on some locale parameters
+                                                      - fAddress, string: a full address, which format depends on some locale parameters
+                                                      - is_preferred, bool: whether or not this is the favorite user address                        
+                        
+                        
                         - onFormDataErroneous: a callback triggered when the form is invalid.
                                     onFormDataErroneous ( formModel )
                                             - formModel: The on-the-fly formModel representing the erroneous form 
@@ -139,6 +188,28 @@ Here are the ekomJsApi public methods:
 
                     The following events are triggered:
                         - user.address.updated  (only in case of success)
+                        
+- deleteAddress: (addrId, onSuccess)
+                        Deletes the address (only if it's owned by the session user).
+                        The onSuccess callback has the same signature than the createAddress's onSuccess callback.
+                        
+                    The following events are triggered:
+                        - user.address.updated                          
+                        - user.address.deleted
+                        
+- getAddressInfo: (addrId, onSuccess)
+                        fetch the address model corresponding to the given addrId.
+                        Then executes the onSuccess callback, passing it the address model.
+                        
+                                onSuccess ( addressModel )
+                                
+                        The address model is already defined above (see the createAddress method).
+                        No events are triggered.
+                                              
+                                              
+// checkout                        
+- saveStepShipping: (): todo
+
                         
 
 // utils
