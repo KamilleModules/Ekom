@@ -37,6 +37,11 @@ class EkomHooks
 
     }
 
+    protected static function Ekom_feedPaymentMethodHandlerCollection(\Module\Ekom\PaymentMethodHandler\Collection\PaymentMethodHandlerCollection $collection)
+    {
+
+    }
+
 
     //--------------------------------------------
     // NULLOS ADMIN

@@ -138,11 +138,25 @@ Here is how the final order array looks like:
 --------- (others)
 ----- sections:
 --------- 0:
-------------- address_id
+------------- address:
+----------------- address_id
+----------------- first_name
+----------------- last_name
+----------------- phone
+----------------- address
+----------------- city
+----------------- postcode
+----------------- country
+----------------- supplement
+----------------- fName
+----------------- fAddress
 ------------- carrier:
 ----------------- carrier_id
------------------ estimated_date
------------------ shipping_cost
+----------------- estimated_delivery_date:   null|yyyy-mm-dd HH:ii:ss
+----------------- shipping_cost: string, formatted cost of the shipping af all accepted items for this section
+----------------- rejected:
+--------------------- 0: same as items.0
+--------------------- ...
 ------------- items
 ----------------- 0:
 --------------------- product
@@ -161,8 +175,19 @@ At the end of step 1, the shippings have been decided and the array looks like t
 ----- payment_method: (not set yet)
 ----- sections:
 --------- 0:
-------------- carrier: (not set yet)
-------------- address_id
+------------- address
+----------------- address_id
+----------------- first_name
+----------------- last_name
+----------------- phone
+----------------- address
+----------------- city
+----------------- postcode
+----------------- country
+----------------- supplement
+----------------- fName
+----------------- fAddress
+------------- carrier: null|array, depending on whether we guessed the carrier or not (see the "more implementation details" section)
 ------------- items
 ----------------- 0:
 --------------------- product
@@ -181,11 +206,24 @@ At the end of step 2, the order sections have been chosen and the array looks li
 ----- payment_method: (not set yet)
 ----- sections:
 --------- 0:
+------------- address
+----------------- address_id
+----------------- first_name
+----------------- last_name
+----------------- phone
+----------------- address
+----------------- city
+----------------- postcode
+----------------- country
+----------------- supplement
+----------------- fName
+----------------- fAddress
 ------------- carrier:
 ----------------- carrier_id
------------------ estimated_date
+----------------- estimated_delivery_date
 ----------------- shipping_cost 
-------------- address_id
+----------------- rejectedItems:
+--------------------- 0: same as items.0
 ------------- items
 ----------------- 0:
 --------------------- product
@@ -257,6 +295,46 @@ Note that because the carrier can be chosen automatically, what we ended up doin
             round-trip (in a typical ajax driven checkout page).
             
             
+
+
+
+
+Payment methods
+-------------------
+
+Here is my idea so far:
+
+$h = ekomApi::inst()->paymentLayer()->getPaymentMethodHandler("creditCart")
+$h = ekomApi::inst()->paymentLayer()->getPaymentMethodHandler("paypal")
+
+PaymentMethodHandler:
+- getSelectableItemModel ()
+
+### What's a selectable item?
+
+The gui let you choose a payment method (paypal, ccard, ...).
+So each payment method is represented by one or more items (for instance paypal is just one item,
+but a credit card wallet payment method could have one item per credit card).
+
+So the paymentMethodHandler can provide its own selectable items with this method.
+
+Apart from that, the theme needs a little bit more knowledge about the payment method,
+because in some cases you need more than just displaying items.
+
+For instance, the credit card wallet let you add credit cards, so this means there must be an "Add credit card"
+button somewhere. That's the theme (or at least template) that knows how to display the selectable items and the button
+or anything that goes with it.
+
+In the case of the credit cards wallet, we also need the api that allows for adding new cards,
+this is also part of the theme's knowledge.
+
+(The paymentMethodHandler author must provides all the implementation necessary info though)
+
+So, different templates have different abilities.
+
+To make things easier for template authors, every selectable item should have at least one key:
+
+- type: string, indicate the type of the paymentMethodHandler
 
 
 

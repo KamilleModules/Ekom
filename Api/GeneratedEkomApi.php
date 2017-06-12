@@ -72,6 +72,18 @@ use XiaoApi\Api\XiaoApi;
  */
 class GeneratedEkomApi extends XiaoApi
 {
+
+
+    private static $inst;
+
+    public static function inst()
+    {
+        if (null === self::$inst) {
+            self::$inst = new static();
+        }
+        return self::$inst;
+    }
+
     
     /**
      * @return Address

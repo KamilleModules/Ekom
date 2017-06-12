@@ -19,6 +19,7 @@ use Module\Ekom\Api\Layer\CountryLayer;
 use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\DiscountLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
+use Module\Ekom\Api\Layer\PaymentLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
@@ -250,6 +251,22 @@ and h.lang_id=$langId
     //--------------------------------------------
     //
     //--------------------------------------------
+    /**
+     * @return CartLayer
+     */
+    public function cartLayer()
+    {
+        return $this->getLayer('cartLayer');
+    }
+
+
+    /**
+     * @return CarrierLayer
+     */
+    public function carrierLayer()
+    {
+        return $this->getLayer('carrierLayer');
+    }
 
     /**
      * @return CategoryLayer
@@ -259,37 +276,15 @@ and h.lang_id=$langId
         return $this->getLayer('categoryLayer');
     }
 
-    /**
-     * @return ProductLayer
-     */
-    public function productLayer()
-    {
-        return $this->getLayer('productLayer');
-    }
 
     /**
-     * @return ShopLayer
+     * @return CheckoutLayer
      */
-    public function shopLayer()
+    public function checkoutLayer()
     {
-        return $this->getLayer('shopLayer');
+        return $this->getLayer('checkoutLayer');
     }
 
-    /**
-     * @return ImageLayer
-     */
-    public function imageLayer()
-    {
-        return $this->getLayer('imageLayer');
-    }
-
-    /**
-     * @return TaxLayer
-     */
-    public function taxLayer()
-    {
-        return $this->getLayer('taxLayer');
-    }
 
     /**
      * @return ConditionLayer
@@ -299,12 +294,21 @@ and h.lang_id=$langId
         return $this->getLayer('conditionLayer');
     }
 
+
     /**
-     * @return CartLayer
+     * @return CouponLayer
      */
-    public function cartLayer()
+    public function couponLayer()
     {
-        return $this->getLayer('cartLayer');
+        return $this->getLayer('couponLayer');
+    }
+
+    /**
+     * @return CountryLayer
+     */
+    public function countryLayer()
+    {
+        return $this->getLayer('countryLayer');
     }
 
     /**
@@ -316,44 +320,55 @@ and h.lang_id=$langId
     }
 
     /**
+     * @return ImageLayer
+     */
+    public function imageLayer()
+    {
+        return $this->getLayer('imageLayer');
+    }
+
+
+    /**
+     * @return PaymentLayer
+     */
+    public function paymentLayer()
+    {
+        return $this->getLayer('paymentLayer');
+    }
+
+    /**
+     * @return ProductLayer
+     */
+    public function productLayer()
+    {
+        return $this->getLayer('productLayer');
+    }
+
+
+
+    /**
+     * @return ShopLayer
+     */
+    public function shopLayer()
+    {
+        return $this->getLayer('shopLayer');
+    }
+
+
+    /**
+     * @return TaxLayer
+     */
+    public function taxLayer()
+    {
+        return $this->getLayer('taxLayer');
+    }
+
+    /**
      * @return UserLayer
      */
     public function userLayer()
     {
         return $this->getLayer('userLayer');
-    }
-
-    /**
-     * @return CouponLayer
-     */
-    public function couponLayer()
-    {
-        return $this->getLayer('couponLayer');
-    }
-
-    /**
-     * @return CarrierLayer
-     */
-    public function carrierLayer()
-    {
-        return $this->getLayer('carrierLayer');
-    }
-
-
-    /**
-     * @return CountryLayer
-     */
-    public function countryLayer()
-    {
-        return $this->getLayer('countryLayer');
-    }
-
-    /**
-     * @return CheckoutLayer
-     */
-    public function checkoutLayer()
-    {
-        return $this->getLayer('checkoutLayer');
     }
 
 

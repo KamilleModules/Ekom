@@ -168,6 +168,7 @@ class CartLayer
     }
 
 
+
     public function prepareUserCart()
     {
         if (null !== ($userId = SessionUser::getValue('id'))) {

@@ -10,6 +10,7 @@ use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Exception\EkomApiException;
 use QuickPdo\QuickPdo;
 
 
@@ -40,6 +41,14 @@ use QuickPdo\QuickPdo;
 class UserLayer
 {
 
+
+    public function getUserId()
+    {
+        if (SessionUser::isConnected()) {
+            return SessionUser::getValue("id");
+        }
+        throw new EkomApiException("The user is not connected");
+    }
 
     public function deleteAddress($userId, $addressId)
     {
@@ -177,7 +186,6 @@ and l.lang_id=$langId
             ]);
 
 
-
             if (array_key_exists("is_preferred", $data)) {
                 $isPreferred = (bool)$data['is_preferred'];
                 if (true === $isPreferred) {
@@ -194,7 +202,6 @@ and l.lang_id=$langId
                     ]);
                 }
             }
-
 
 
         }, function ($e) {

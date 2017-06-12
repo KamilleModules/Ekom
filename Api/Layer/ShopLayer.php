@@ -47,7 +47,7 @@ a.city,
 a.postcode,
 a.address,
 a.country_id,
-l.label as country_label
+l.label as country
 
 from ek_shop_has_address h 
 inner join ek_address a on a.id=h.address_id 

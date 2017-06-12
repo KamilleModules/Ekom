@@ -20,11 +20,13 @@ class CarrierLayer
 {
 
 
+
     /**
      * @param $name
      * @return false|CarrierInterface
      */
-    public function getCarrierByName($name){
+    public function getCarrierByName($name)
+    {
         $coll = X::get("Ekom_getCarrierCollection");
         /**
          * @var $coll CarrierCollection
@@ -124,14 +126,19 @@ class CarrierLayer
          */
         $sections = [];
         $totalShippingCost = 0;
+
         foreach ($carriers as $name => $carrier) {
 
             /**
              * @var $carrier CarrierInterface
              */
             $rejected = [];
-            $shippingCost = $carrier->handleOrder($productInfos, $shopAddress, $shippingAddress, $rejected);
-            $totalShippingCost += $shippingCost;
+            $info = $carrier->handleOrder([
+                'products' => $productInfos,
+                'shopAddress' => $shopAddress,
+                'shippingAddress' => $shippingAddress,
+            ], $rejected);
+            $totalShippingCost += $info["shipping_cost"];
 
 
             $handledProductsInfo = [];
@@ -147,7 +154,7 @@ class CarrierLayer
             }
 
             $sections[$name] = [
-                'shippingCost' => $shippingCost,
+                'shippingCost' => $totalShippingCost,
                 'productsInfo' => $handledProductsInfo,
             ];
             if (0 === count($productInfos)) {
@@ -170,6 +177,10 @@ class CarrierLayer
     }
 
 
+    /**
+     * @param $shopId
+     * @return array of carrier id => name
+     */
     public function getCarriersByShop($shopId)
     {
         $shopId = (int)$shopId;

@@ -10,8 +10,35 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Utils\E;
 
+
+/**
+ *
+ * Important notes for developer
+ * ================================
+ *
+ * If singleAddress mode is used, then the section is the following (index=0):
+ *
+ *      $_SESSION['ekom.order']["sections"][0]
+ *
+ *
+ */
 class CheckoutLayer
 {
+
+
+    /**
+     * Returns whether or not the customer should have the ability to
+     * manually choose her carrier(s).
+     */
+    public function hasCarrierChoice()
+    {
+        $carrierSel = E::conf("carrierSelectionMode");
+        if ("manual" === $carrierSel) {
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * @param data :
@@ -19,7 +46,6 @@ class CheckoutLayer
      *      - params: // depend on the type
      *          // params for singleAddress
      *          - address_id
-     *
      * @return bool
      * @throws EkomApiException
      */
@@ -31,7 +57,11 @@ class CheckoutLayer
         switch ($type) {
             case 'singleAddress':
 
+
+                $userLayer = EkomApi::inst()->userLayer();
+                $userId = $userLayer->getUserId();
                 $address_id = (int)$params['address_id'];
+                $address = $userLayer->getUserShippingAddressById($userId, $address_id);
                 $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
 
 
@@ -42,13 +72,16 @@ class CheckoutLayer
                  */
                 $_SESSION['ekom.order']["sections"][0] = [
                     "carrier" => null,
-                    "address_id" => $address_id,
+                    "address" => $address,
                     "items" => $cartModel['items'], // tmp?
                 ];
 
+
                 $ret = true;
                 if (true === $ret) {
-                    $this->applySingleAddressCarrierIfNoChoice();
+                    $carrierModel = [];
+                    $this->applySingleAddressCarrierIfNoChoice($carrierModel);
+                    $_SESSION['ekom.order']["sections"][0]['carrier'] = $cartModel;
                 }
                 break;
             default:
@@ -88,7 +121,7 @@ class CheckoutLayer
     //--------------------------------------------
     //
     //--------------------------------------------
-    private function applySingleAddressCarrierIfNoChoice()
+    private function applySingleAddressCarrierIfNoChoice(array &$carrierModel)
     {
         $carrierSel = E::conf("carrierSelectionMode");
         if ("fixed:" === substr($carrierSel, 0, 6)) {
@@ -96,35 +129,76 @@ class CheckoutLayer
 
             $carrierLayer = EkomApi::inst()->carrierLayer();
 
-            EkomApi::inst()->initWebContext();
-            $shopId = ApplicationRegistry::get("ekom.shop_id");
 
             $carrierName = substr($carrierSel, 6);
+
+
+            EkomApi::inst()->initWebContext();
+            $shopId = ApplicationRegistry::get("ekom.shop_id");
             $carriers = $carrierLayer->getCarriersByShop($shopId);
             if (in_array($carrierName, $carriers, true)) {
+                foreach ($carriers as $carrierId => $name) {
+                    if ($carrierName === $name) {
 
 
-                $carrier = $carrierLayer->getCarrierByName($carrierName);
-                $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
-                $productInfos = $cartModel['items'];
-                $shopAddress = EkomApi::inst()->shopLayer()->getShopPhysicalAddress($shopId);
+                        $carrier = $carrierLayer->getCarrierByName($carrierName);
+                        $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
 
-                az($productInfos);
+                        $shopAddress = EkomApi::inst()->shopLayer()->getShopPhysicalAddress($shopId);
 
-                $carrier->handleOrder($productInfos, $shopAddress, $shippingAddress, $rejected);
+
+                        $shippingAddress = $_SESSION['ekom.order']["sections"][0]['address'];
+
+
+                        $rejected = [];
+                        $info = $carrier->handleOrder([
+                            "products" => $cartModel['items'],
+                            "shopAddress" => $shopAddress,
+                            "shippingAddress" => $shippingAddress,
+                        ], $rejected);
+
+                        $rej = [];
+                        if (count($rejected) > 0) {
+                            foreach ($rejected as $id) {
+                                $rej[$id] = $this->getCartItemById($cartModel, $id);
+                            }
+                        }
+
+
+                        $carrierModel = [
+                            "carrier_id" => $carrierId,
+                            "estimated_delivery_date" => (array_key_exists("estimated_delivery_date", $info)) ? $info['estimated_delivery_date'] : null,
+                            "shipping_cost" => E::price($info['shipping_cost']),
+                            "rejected" => $rejected,
+                        ];
+                    }
+                }
+
 
             } else {
                 throw new \Exception("The chosen carrier ($carrierName) is not available to this shop ($shopId)");
             }
 
         } else if ("auto" === $carrierSel) {
-
+            throw new \Exception("not implemented yet");
         } else {
+            throw new \Exception("not implemented yet");
             $nbAvailableCarriers = 0;
             if (1 === count($nbAvailableCarriers)) {
 
             }
         }
-        az("oo");
+    }
+
+
+    private function getCartItemById($cartModel, $id)
+    {
+        $id = (int)$id;
+        foreach ($cartModel as $info) {
+            if ((int)$info['product_id'] === $id) {
+                return $info;
+            }
+        }
+        return false;
     }
 }
