@@ -15,6 +15,7 @@ CartInfo
             - stock_quantity: int, the quantity available for this product and this shop (shop_has_product.quantity)
             - quantity: int, how many of this product we have in the cart.
             - label: str, the label of the product
+            - description: str, the description of the product
             - ref: str
             - weight: float, the weight of the product
             - uri: the uri of the product 

@@ -81,7 +81,10 @@ class CheckoutLayer
                 if (true === $ret) {
                     $carrierModel = [];
                     $this->applySingleAddressCarrierIfNoChoice($carrierModel);
-                    $_SESSION['ekom.order']["sections"][0]['carrier'] = $cartModel;
+                    $_SESSION['ekom.order']["sections"][0]['carrier'] = $carrierModel;
+                    if (count($carrierModel) > 0) {
+                        $this->refreshSummary();
+                    }
                 }
                 break;
             default:
@@ -99,6 +102,29 @@ class CheckoutLayer
     }
 
 
+    /**
+     *
+     */
+    public function saveStepPayment(array $data)
+    {
+        $ret = true;
+        // assuming single address technique
+        /**
+         * todo: adapt for multiple address technique
+         */
+        if (array_key_exists("paymentId", $data)) {
+            $id = $data['paymentId'];
+            $info = EkomApi::inst()->paymentLayer()->getSelectableItemById($id);
+            $_SESSION['ekom.order']['payment_method'] = $info;
+//            $this->refreshSummary();
+
+        } else {
+            throw new \Exception("Invalid data structure, key not found: paymentId");
+        }
+        return $ret;
+    }
+
+
     public function getOrderModel()
     {
         $this->initOrderModel();
@@ -112,6 +138,7 @@ class CheckoutLayer
 
         if (false === array_key_exists("ekom.order", $_SESSION)) {
             $_SESSION['ekom.order'] = [
+                "summary" => null,
                 "payment_method" => null,
                 "sections" => [],
             ];
@@ -121,6 +148,13 @@ class CheckoutLayer
     //--------------------------------------------
     //
     //--------------------------------------------
+    private function refreshSummary()
+    {
+        $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
+        unset($cartModel['items']);
+        $_SESSION['ekom.order']['summary'] = $cartModel;
+    }
+
     private function applySingleAddressCarrierIfNoChoice(array &$carrierModel)
     {
         $carrierSel = E::conf("carrierSelectionMode");
@@ -167,6 +201,7 @@ class CheckoutLayer
 
                         $carrierModel = [
                             "carrier_id" => $carrierId,
+                            "carrier_label" => $carrier->getLabel(),
                             "estimated_delivery_date" => (array_key_exists("estimated_delivery_date", $info)) ? $info['estimated_delivery_date'] : null,
                             "shipping_cost" => E::price($info['shipping_cost']),
                             "rejected" => $rejected,

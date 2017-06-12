@@ -10,13 +10,7 @@ use Module\Ekom\PaymentMethodHandler\Collection\PaymentMethodHandlerCollectionIn
 class PaymentLayer
 {
 
-    public function getPaymentMethodHandler($name)
-    {
-
-    }
-
-
-    public function getSelectableItems()
+    public function getPaymentMethodBlockModels()
     {
         $coll = X::get("Ekom_getPaymentMethodHandlerCollection");
         /**
@@ -25,7 +19,29 @@ class PaymentLayer
         $ret = [];
         $all = $coll->all();
         foreach ($all as $handler) {
-            $ret[] = $handler->getSelectableItemModel();
+            $ret[] = $handler->getPaymentMethodBlockModel();
+        }
+        return $ret;
+    }
+
+
+    public function getSelectableItemById($id)
+    {
+        $ret = null;
+        $blocks = $this->getPaymentMethodBlockModels();
+        $found = false;
+        foreach ($blocks as $block) {
+            $items = $block['items'];
+            foreach ($items as $item) {
+                if ($id === $item['id']) {
+                    $ret = $item;
+                    $found = true;
+                    break;
+                }
+            }
+        }
+        if (false === $found) {
+            throw new \Exception("No selectable item found with id $id");
         }
         return $ret;
     }

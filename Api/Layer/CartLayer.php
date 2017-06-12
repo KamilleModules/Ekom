@@ -430,6 +430,7 @@ and p.lang_id=$langId
                 return [
                     'product_id' => $b['product_id'],
                     'label' => $b['label'],
+                    'description' => $b['description'],
                     'stock_quantity' => $b['quantity'],
                     'ref' => $b['ref'],
                     'weight' => $b['weight'],

@@ -133,9 +133,14 @@ Here is how the final order array looks like:
 
 ```txt
 - order
+----- summary: 
+--------- grand_total: null|string, the formatted grand total
+--------- shipping_costs: null|string, the formatted combined shipping costs
+--------- ...maybe other things like tax details
 ----- payment_method:
---------- payment_method_id
---------- (others)
+--------- id: id of the payment method
+--------- type: type of the payment method
+--------- ...other info, specific to the payment method
 ----- sections:
 --------- 0:
 ------------- address:
@@ -172,6 +177,7 @@ At the end of step 1, the shippings have been decided and the array looks like t
 
 ```txt
 - order
+----- summary: (not set yet)
 ----- payment_method: (not set yet)
 ----- sections:
 --------- 0:
@@ -203,6 +209,7 @@ At the end of step 2, the order sections have been chosen and the array looks li
 
 ```txt
 - order
+----- summary: (not set yet)
 ----- payment_method: (not set yet)
 ----- sections:
 --------- 0:
@@ -308,15 +315,21 @@ $h = ekomApi::inst()->paymentLayer()->getPaymentMethodHandler("creditCart")
 $h = ekomApi::inst()->paymentLayer()->getPaymentMethodHandler("paypal")
 
 PaymentMethodHandler:
-- getSelectableItemModel ()
+- getMethodBlockModel ()
 
-### What's a selectable item?
+### What's a method block
+
 
 The gui let you choose a payment method (paypal, ccard, ...).
-So each payment method is represented by one or more items (for instance paypal is just one item,
-but a credit card wallet payment method could have one item per credit card).
+So each payment method is represented by one or more block.
+ 
+However, each block can contain more than one selectable item.
+For instance paypal is just one item, but a credit card wallet payment method could have one item per credit card,
+which might be more than one item.
 
-So the paymentMethodHandler can provide its own selectable items with this method.
+So the paymentMethodHandler provides the methodBlock, which is a model containing an items entry.
+
+The items entry represents the selectable items.
 
 Apart from that, the theme needs a little bit more knowledge about the payment method,
 because in some cases you need more than just displaying items.

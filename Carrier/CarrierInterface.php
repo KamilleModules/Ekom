@@ -35,4 +35,6 @@ interface CarrierInterface
      *
      */
     public function handleOrder(array $orderInfo, array &$rejected = []);
+
+    public function getLabel();
 }
