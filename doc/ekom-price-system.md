@@ -32,38 +32,121 @@ How the price is affected?
 ===========
 
 
-In ekom, we start with the shop owner and the product.
-Then, the customer.
+In ekom, we start from the shop owner, and then the customer.
 
-The shop owner creates a product, and she affects a price to the product.
+The shop owner will create a product and choose a price for it.
 
-That price is without tax.
+It is likely that this product will have taxes applied to it.
 
-Then, the shop owner creates taxes, which in ekom translates to creating tax groups,
-and assign the products she wants to the tax groups.
-
-So now, some of her products have a tax group applied to them.
-
-So at this point we've got the price (price without tax), and the price with tax.
-
-Then, our shop owner can create discounts.
-
-Whether you apply the discount on the price with tax or without tax can make a difference (https://postimg.org/image/3kj63y76n/),
-and so the shop owner has the choice of the target of the discount:
-she can apply the discount to the price without tax or to the price with tax.
-
-Also, the shop owner can affect multiple discounts to the same product.
-
-Every time a discount is applied, we have two new versions of the price: the price without tax and the price without tax.
+If this is the case, the shop owner ends up with two prices versions for the same product: 
+a price without tax, and a price with tax.
+ 
+So the first question might be: which version of the price should the customer pay? 
+ 
+ 
+A shop owner also has a business strategy, such as b2b or b2c, and in ekom the price that the customer pays
+depends on that strategy.
 
 
-Let's try to visualize this.
-It's basically the idea described in ekom coin model (https://postimg.org/image/5b275fopr/).
+In b2b, customer pay the price without taxes.
 
-But for this document I would like to display the price as a wagon, transported from left to right, and being affected 
-by different factors.
+In b2c, customer pay the price with taxes.
 
-todo: figure
+A website can mix both strategies, depending on whether or not the customer (aka user) is connected to her account for instance.
+
+
+So indeed we see how the price can potentially split a website in two independent sub-websites, each having its own prices.
+ 
+In ekom, which type of price is displayed is governed by the priceMode directive.
+ 
+ 
+priceMode depends on a shop and a user, which means that for a given shop and user, the priceMode is always the same.
+The formal definition of priceMode being: the priceMode defines whether the user pays the price without tax or the price with tax.
+ 
+ 
+That being said, even if you are going to pay the price with tax, sometimes you have an indication mentioning the price without tax.
+
+For this reason amongst others, the price model always contain both versions of all prices states (we are going to explain price state
+just after).
+
+
+Price state?
+
+Every time the price is affected, it gives us a new price state.
+
+A price state is symbolic, however it concretely resolves to one of the two versions: the version without tax or the version with tax.
+ 
+ 
+Price states
+----------------
+The different price states in ekom are the following:
+ 
+ 
+- price: the original price set by the shop owner
+- sale price: the price with discounts applied to it
+- line price: the price multiplied by the purchased quantity
+- lines total: the sum of all "line price"s 
+- cart total: the lines total with cart discounts applied to it
+- order section subtotal: the cart total with shipping costs applied to it
+- order section total: the order section subtotal with order discounts applied to it
+- order section grand total: the sum of "order section total"s 
+ 
+
+
+Here is a figure: [![ekom-order-model3.jpg](https://s19.postimg.org/611kiszj7/ekom-order-model3.jpg)](https://postimg.org/image/611kiszj3/)
+
+The order section is a cart products' organizational unit based on an user shipping address and a carrier.
+This basically takes into account the fact that a user can send one order's products to multiple addresses,
+and using various carriers.
+
+
+
+
+
+
+### Example
+
+Let's illustrate the price states in a virtual example.
+ 
+The shop owner creates product AA with a cost of 100€.
+The tax for this product is 50%.
+
+
+So, we have:
+
+- priceWithoutTax: 100€
+- priceWithTax: 150€
+
+
+Now she sets the priceMode so that users with no group (including non connected users) will pay the price with tax,
+and users in group B2B will pay the price without tax.
+
+
+Now the shop owner applies a discount.
+The discount is applied either on the price without tax or the price with tax (that's the target).
+
+The shop owner sets a discount of "-10€" for users with no group (including non connected users), 
+using a target of priceWithTax (since those users will pay the price with tax).
+
+Plus, she sets another discount of "-15€" for users of group B2B, using a target of priceWithoutTax this time.
+
+Note that a user of group B2B will only benefit the "-15€" discount (that's how it works in ekom with groups).
+
+That's it for the shop owner side; now let's switch to the customer side.
+The customer Alice buys the product AA and put it in her cart.
+
+Since she is not connected, the price is the price with tax, minus the no group discount: 150-10 = 140€.
+
+Now she connects, and the price changes as she belongs to the B2B group: the price is now 
+the price without tax, minus the B2B discount: 100-15=85€.
+
+
+
+
+
+
+
+
 
 
 

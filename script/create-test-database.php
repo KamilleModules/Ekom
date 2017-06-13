@@ -1475,6 +1475,10 @@ $tax10 = $api->tax()->create([
     'amount' => "10",
 ]);
 
+$tax50 = $api->tax()->create([
+    'amount' => "50",
+]);
+
 
 //--------------------------------------------
 // tax lang
@@ -1504,12 +1508,30 @@ $api->taxLang()->create([
     'label' => "example tax 10%",
 ]);
 
+$api->taxLang()->create([
+    'tax_id' => $tax50,
+    'lang_id' => $langFrench,
+    'label' => "taxe exemple 50%",
+]);
+
+$api->taxLang()->create([
+    'tax_id' => $tax50,
+    'lang_id' => $langEnglish,
+    'label' => "example tax 50%",
+]);
+
 
 //--------------------------------------------
 // tax group
 //--------------------------------------------
 $taxGroupFrance = $api->taxGroup()->create([
     'label' => "france tva",
+    'condition' => "",
+    'shop_id' => $shopEurope,
+]);
+
+$taxGroupDemo = $api->taxGroup()->create([
+    'label' => "tax demo 50%",
     'condition' => "",
     'shop_id' => $shopEurope,
 ]);
@@ -1532,16 +1554,31 @@ $api->taxGroupHasTax()->create([
     "mode" => "",
 ]);
 
+$api->taxGroupHasTax()->create([
+    "tax_group_id" => $taxGroupDemo,
+    "tax_id" => $tax50,
+    "order" => 0,
+    "mode" => "",
+]);
+
 
 //--------------------------------------------
 // product card has tax group
 //--------------------------------------------
 foreach ($cards as $card) {
-    $api->productCardHasTaxGroup()->create([
-        "shop_id" => $shopEurope,
-        "product_card_id" => $card,
-        "tax_group_id" => $taxGroupFrance,
-    ]);
+    if ($cardBallonPaille === $card) {
+        $api->productCardHasTaxGroup()->create([
+            "shop_id" => $shopEurope,
+            "product_card_id" => $card,
+            "tax_group_id" => $taxGroupDemo,
+        ]);
+    } else {
+        $api->productCardHasTaxGroup()->create([
+            "shop_id" => $shopEurope,
+            "product_card_id" => $card,
+            "tax_group_id" => $taxGroupFrance,
+        ]);
+    }
 }
 
 
@@ -1648,6 +1685,17 @@ $discountMinus10Percent = $api->discount()->create([
     "shop_id" => $shopEurope,
 ]);
 
+$discountTestMinus1PointFiveEuro = $api->discount()->create([
+    "user_group_id" => $userGroupB2B,
+    "currency_id" => null,
+    "date_start" => null,
+    "date_end" => null,
+    "procedure_type" => "amount",
+    "procedure_operand" => "1.5",
+    "target" => "priceWithoutTax",
+    "shop_id" => $shopEurope,
+]);
+
 
 //--------------------------------------------
 // discounts lang
@@ -1677,6 +1725,12 @@ $api->discountLang()->create([
     "label" => "-10%",
 ]);
 
+$api->discountLang()->create([
+    "discount_id" => $discountTestMinus1PointFiveEuro,
+    "lang_id" => $langFrench,
+    "label" => "-1.5€",
+]);
+
 
 //--------------------------------------------
 // product has discount
@@ -1702,6 +1756,13 @@ $api->productCardHasDiscount()->create([
     "product_card_id" => $cardKettleBell,
     "discount_id" => $discountMinus2Euros,
     "order_phase" => 2,
+    "active" => 1,
+]);
+
+$api->productCardHasDiscount()->create([
+    "product_card_id" => $cardBallonPaille,
+    "discount_id" => $discountTestMinus1PointFiveEuro,
+    "order_phase" => 0,
     "active" => 1,
 ]);
 

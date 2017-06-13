@@ -222,8 +222,8 @@ and product_id in (" . implode(', ', $productIds) . ")
                 if (array_key_exists($pid, $productId2attr)) {
                     $productsInfo[$k]['attributes'] = $productId2attr[$pid];
                 } else {
-                    XLog::error("[Ekom module] - ProductLayer: attributes not found for product with id $pid in shop $shopId and lang $langId");
-                    $productsInfo[$k]['attributes'] = ["error"];
+//                    XLog::error("[Ekom module] - ProductLayer: attributes not found for product with id $pid in shop $shopId and lang $langId");
+                    $productsInfo[$k]['attributes'] = [];
                 }
             }
             return $productsInfo;
@@ -249,7 +249,10 @@ and product_id in (" . implode(', ', $productIds) . ")
         $productId = (int)$productId;
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
-        $bPriceWithTax = E::conf("displayPriceWithTax");
+
+        $bPriceWithTax = ('wt' === EkomApi::inst()->priceLayer()->getPriceMode()) ? true : false;
+
+
         $iPriceWithTax = (int)$bPriceWithTax;
         $api = EkomApi::inst();
 
@@ -345,30 +348,30 @@ and product_id in (" . implode(', ', $productIds) . ")
                             }
 
 
-                            $originalPriceOT = $p['price'];
-                            if (null === $originalPriceOT) {
-                                $originalPriceOT = $p['default_price'];
+                            $_priceWithoutTax = $p['price'];
+                            if (null === $_priceWithoutTax) {
+                                $_priceWithoutTax = $p['default_price'];
                             }
-                            $originalPriceOT = E::trimPrice($originalPriceOT);
 
 
                             // get taxes
                             $taxLayer = $api->taxLayer();
                             $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
                             $taxDetails = [];
-                            $originalPriceWT = $taxLayer->applyTaxesToPrice($taxes, $originalPriceOT, $taxDetails);
-                            $originalPriceWT = E::trimPrice($originalPriceWT);
+                            $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_priceWithoutTax, $taxDetails);
 
 
-                            // f stands for formatted
-                            $fOriginalPriceOT = E::price($originalPriceOT);
-                            $fOriginalPriceWT = E::price($originalPriceWT);
+                            $_priceWithoutTax = E::trimPrice($_priceWithoutTax);
+                            $_priceWithTax = E::trimPrice($_priceWithTax);
+
+                            $priceWithoutTax = E::price($_priceWithoutTax);
+                            $priceWithTax = E::price($_priceWithTax);
 
 
                             if (true === $bPriceWithTax) {
-                                $fOriginalPrice = $fOriginalPriceWT;
+                                $price = $priceWithoutTax;
                             } else {
-                                $fOriginalPrice = $fOriginalPriceOT;
+                                $price = $priceWithTax;
                             }
 
 
@@ -389,12 +392,13 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 "stockText" => $stockText,
 
 
-                                "originalPrice" => $fOriginalPrice,
-                                //--------------------------------------------
-                                // adding un-formatted versions for discount computation
-                                //--------------------------------------------
-                                "rawOriginalPriceOT" => $originalPriceOT,
-                                "rawOriginalPriceWT" => $originalPriceWT,
+                                "price" => $price,
+                                "priceWithTax" => $priceWithTax,
+                                "priceWithoutTax" => $priceWithoutTax,
+
+                                //
+                                "rawPriceWithoutTax" => $_priceWithoutTax,
+                                "rawPriceWithTax" => $_priceWithTax,
 
 
                                 "taxDetails" => $taxDetails, // see TaxLayer.applyTaxesToPrice for more details
@@ -415,7 +419,6 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 //--------------------------------------------
                                 "_taxes" => $taxes,
                             ];
-
 
                             $model = $boxConf;
                         } else {
@@ -498,11 +501,8 @@ and product_id in (" . implode(', ', $productIds) . ")
             $discounts = $layerDiscount->getDiscountsByProductId($model['product_id'], $shopId, $langId);
 
 
-            $discountDetails = $discounts;
-
-
-            $priceWithoutTax = $model['rawOriginalPriceOT'];
-            $priceWithTax = $model['rawOriginalPriceWT'];
+            $priceWithoutTax = $model['rawPriceWithoutTax'];
+            $priceWithTax = $model['rawPriceWithTax'];
 
             $originalPriceWithoutTax = $priceWithoutTax;
             $originalPriceWithTax = $priceWithTax;
@@ -517,49 +517,54 @@ and product_id in (" . implode(', ', $productIds) . ")
             $atLeastOneDiscountApplied = false;
             $lastPriceWithTax = $priceWithTax;
             $lastPriceWithoutTax = $priceWithoutTax;
+
             foreach ($discounts as $d) {
                 $t = false;
 
                 $operand = $d['procedure_operand'];
                 if ('priceWithoutTax' === $d['target']) {
                     $priceWithoutTax = $layerDiscount->applyDiscountToPrice($d, $priceWithoutTax, $t);
+                    if (false !== $t) {
+                        $badgesHt[] = [
+                            "type" => $d['procedure_type'],
+                            "value" => $operand,
+                            "label" => $d['label'],
+                        ];
 
-                    $badgesHt[] = [
-                        "type" => $d['procedure_type'],
-                        "value" => $operand,
-                        "label" => $d['label'],
-                    ];
-
-                    $priceWithTax = $priceWithoutTax * $taxGroupFactor;
-                    if ('amount' === $d['procedure_type']) {
-                        $operand = $priceWithTax - $lastPriceWithTax;
+                        $priceWithTax = $priceWithoutTax * $taxGroupFactor;
+                        if ('amount' === $d['procedure_type']) {
+                            $operand = $priceWithTax - $lastPriceWithTax;
+                        }
+                        $badgesTtc[] = [
+                            "type" => $d['procedure_type'],
+                            "value" => $operand,
+                            "label" => $d['label'],
+                        ];
+                        $lastPriceWithTax = $priceWithTax;
                     }
-                    $badgesTtc[] = [
-                        "type" => $d['procedure_type'],
-                        "value" => $operand,
-                        "label" => $d['label'],
-                    ];
-                    $lastPriceWithTax = $priceWithTax;
 
                 } else {
                     $priceWithTax = $layerDiscount->applyDiscountToPrice($d, $priceWithTax, $t);
-                    $badgesTtc[] = [
-                        "type" => $d['procedure_type'],
-                        "value" => $operand,
-                        "label" => $d['label'],
-                    ];
+                    if (false !== $t) {
+
+                        $badgesTtc[] = [
+                            "type" => $d['procedure_type'],
+                            "value" => $operand,
+                            "label" => $d['label'],
+                        ];
 
 
-                    $priceWithoutTax = $priceWithTax / $taxGroupFactor;
-                    if ('amount' === $d['procedure_type']) {
-                        $operand = $priceWithoutTax - $lastPriceWithoutTax;
+                        $priceWithoutTax = $priceWithTax / $taxGroupFactor;
+                        if ('amount' === $d['procedure_type']) {
+                            $operand = $priceWithoutTax - $lastPriceWithoutTax;
+                        }
+                        $badgesHt[] = [
+                            "type" => $d['procedure_type'],
+                            "value" => $operand,
+                            "label" => $d['label'],
+                        ];
+                        $lastPriceWithoutTax = $priceWithoutTax;
                     }
-                    $badgesHt[] = [
-                        "type" => $d['procedure_type'],
-                        "value" => $operand,
-                        "label" => $d['label'],
-                    ];
-                    $lastPriceWithoutTax = $priceWithoutTax;
                 }
 
 
@@ -609,7 +614,8 @@ and product_id in (" . implode(', ', $productIds) . ")
             // remove private
             unset($model["_taxes"]);
         }
-
+//        a(__FILE__);
+//        az($model);
         return $model;
     }
 

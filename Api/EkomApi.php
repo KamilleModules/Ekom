@@ -20,6 +20,7 @@ use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\DiscountLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
+use Module\Ekom\Api\Layer\PriceLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
@@ -337,6 +338,16 @@ and h.lang_id=$langId
     }
 
     /**
+     * @return PriceLayer
+     */
+    public function priceLayer()
+    {
+        return $this->getLayer('priceLayer');
+    }
+
+
+
+    /**
      * @return ProductLayer
      */
     public function productLayer()
@@ -370,6 +381,7 @@ and h.lang_id=$langId
     {
         return $this->getLayer('userLayer');
     }
+
 
 
 }

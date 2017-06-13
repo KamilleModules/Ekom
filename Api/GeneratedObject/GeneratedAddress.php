@@ -29,9 +29,13 @@ class GeneratedAddress extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
+			'first_name' => '',
+			'last_name' => '',
+			'phone' => '',
+			'address' => '',
 			'city' => '',
 			'postcode' => '',
-			'address' => '',
+			'supplement' => '',
 			'active' => 0,
 			'country_id' => 0,
 		], $data);

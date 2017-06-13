@@ -194,6 +194,8 @@ class CartLayer
         if (null === $this->_cartModel) {
             $this->_cartModel = $this->doGetCartModel();
         }
+        a(__FILE__);
+        az($this->_cartModel);
         return $this->_cartModel;
     }
 
@@ -261,11 +263,16 @@ class CartLayer
         $model = [];
         $modelItems = [];
         $totalQty = 0;
-        $totalWithoutTax = 0;
-        $totalWithTax = 0;
-        $displayTotal = 0;
+        $linesTotalWithoutTax = 0;
+        $linesTotalWithTax = 0;
+        $linesTotal = 0;
 
         $items = $_SESSION['ekom.cart'][$shopId]['items'];
+
+
+        //--------------------------------------------
+        // CALCULATING LINE PRICES AND TOTAL
+        //--------------------------------------------
         foreach ($items as $item) {
 
             $qty = $item['quantity'];
@@ -278,9 +285,9 @@ class CartLayer
                 $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
                 $linePrice = $qty * $it['rawSalePrice'];
 
-                $totalWithoutTax += $linePriceWithoutTax;
-                $totalWithTax += $linePriceWithTax;
-                $displayTotal += $linePrice;
+                $linesTotalWithoutTax += $linePriceWithoutTax;
+                $linesTotalWithTax += $linePriceWithTax;
+                $linesTotal += $linePrice;
 
 
                 $it['linePriceWithoutTax'] = E::price($linePriceWithoutTax);
@@ -294,20 +301,17 @@ class CartLayer
 //                }
 //                $it['attributeValues'] = $attrValues;
 
-
                 $modelItems[] = $it;
             }
-
-
         }
 
 
-        $taxAmount = $totalWithTax - $totalWithoutTax;
+        $taxAmount = $linesTotalWithTax - $linesTotalWithoutTax;
         $model['totalQuantity'] = $totalQty;
         $model['items'] = $modelItems;
-        $model['totalWithoutTax'] = E::price($totalWithoutTax);
-        $model['totalWithTax'] = E::price($totalWithTax);
-        $model['displayTotal'] = E::price($displayTotal);
+        $model['linesTotalWithoutTax'] = E::price($linesTotalWithoutTax);
+        $model['linesTotalWithTax'] = E::price($linesTotalWithTax);
+        $model['linesTotal'] = E::price($linesTotal);
         $model['taxAmount'] = E::price($taxAmount);
 
 
@@ -317,8 +321,10 @@ class CartLayer
         $couponApi = EkomApi::inst()->couponLayer();
         $validCoupons = [];
         $targets = [
-            "linesTotalWithTax" => $totalWithTax,
+            "linesTotalWithTax" => $linesTotalWithTax,
         ];
+
+
 
         if (false !== ($details = $couponApi->applyCouponBag($this->getCouponBag(), $targets, $validCoupons))) {
 
@@ -350,7 +356,7 @@ class CartLayer
             $model['orderGrandTotal'] = E::price($cartTotalRaw + $allShippingCosts);
         } else {
 //            $details = ["error" => "1"];
-//            $model['cartTotal'] = $model['totalWithTax'];
+//            $model['cartTotal'] = $model['linesTotalWithTax'];
 //            $model['totalSaving'] = "undefined";
 //            $model['coupons'] = [];
 //            $model['hasCoupons'] = false;
@@ -442,7 +448,7 @@ and p.lang_id=$langId
                     'product_card_id' => $productCardId,
                     'attributes' => $zeAttr,
                     'attributeDetails' => $zeAttr,
-                    'originalPrice' => $b['originalPrice'],
+                    'price' => $b['price'],
                     'salePrice' => $b['salePrice'],
                     'salePriceWithTax' => $b['salePriceWithTax'],
                     'salePriceWithoutTax' => $b['salePriceWithoutTax'],

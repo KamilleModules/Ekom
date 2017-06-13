@@ -281,6 +281,7 @@ class CouponLayer
                             }
 
 
+                            $coupon['target'] = $target;
                             $coupon['code'] = $info['code'];
                             $coupon['discounts'] = $_discounts;
                             $coupon['saving'] = E::price(-($temp - $linesTotalWithTax));

@@ -4,9 +4,12 @@
 namespace Controller\Ekom;
 
 
+use Bat\UriTool;
 use Core\Controller\ApplicationController;
+use Kamille\Architecture\Response\Web\RedirectResponse;
 use Kamille\Utils\Laws\Config\LawsConfig;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Utils\E;
 
 
 class EkomFrontController extends ApplicationController
@@ -54,4 +57,10 @@ class EkomFrontController extends ApplicationController
     }
 
 
+    protected function requiresConnectedUser()
+    {
+        $_SESSION['ekom.referer'] = UriTool::uri(null, [], true, true);
+        $link = E::link("Ekom_login", [], true);
+        return RedirectResponse::create($link);
+    }
 }

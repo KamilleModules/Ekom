@@ -92,10 +92,19 @@ The normal form is presented below:
   
   
 - hasDiscount: bool, whether or not this product has at least one discount applied to it.
-- originalPrice: string, the original price to display, either WT or OT, based on ekom preferences/rules                        
+
+- price: string, the original price that the customer should pay, based on the priceMode value.
+- priceWithTax: string, the original price that the customer should pay, with tax
+- priceWithoutTax: string, the original price that the customer should pay, without tax
+                        
+- rawPriceWithoutTax: internal helper, the unformatted version of priceWithoutTax
+- rawPriceWithTax: internal helper, the unformatted version of priceWithTax
+
+
 - salePrice: string, the discounted price to display, either WT or OT, based on ekom preferences/rules
 - salePriceWithoutTax: string, the discounted price to display without tax
 - salePriceWithTax: string, the discounted price to display with tax
+
 - rawSalePriceWithoutTax: internal helper, the unformatted sale price without tax of the product, not intended to be used by template
 - rawSalePriceWithTax: internal helper, the unformatted sale price with tax of the product, not intended to be used by template
 

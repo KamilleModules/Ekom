@@ -36,7 +36,7 @@ CartInfo
                                 But your mileage may varyn if attributes work for you, you can use either keys. 
                                 
             - attributeValues: array of attribute values, computed from attributes; template authors can implode this
-            - originalPrice: float, the (formatted) price to display, based on ekom modules internal rules 
+            - price: float, the (formatted) price to display, based on ekom modules internal rules 
             
             - salePrice: string, the (formatted) price to display, based on ekom modules internal rules 
             - salePriceWithTax: string, the (formatted) price with tax to display 
@@ -56,14 +56,14 @@ CartInfo
             - rawSalePriceWithTax: the unformatted version of the sale price with tax (not intended to be displayed)
             - rawSalePrice: the unformatted version of the sale price, either with or without tax, based on ekom rules (not intended to be displayed)
             
-    - totalWithoutTax: string: the formatted total without taxes applied, and without (estimated?) shipping costs
+    - linesTotalWithoutTax: string: the formatted total without taxes applied, and without (estimated?) shipping costs
                             (priceWithoutTax x quantity).
                             Consider displaying this only if displayPriceWithTax is false.
                             
-    - totalWithTax: string: the formatted total with taxes applied, and without (estimated?) shipping costs
+    - linesTotalWithTax: string: the formatted total with taxes applied, and without (estimated?) shipping costs
                             (priceWithTax x quantity)
-    - displayTotal: either the totalWithoutTax or the totalWithTax, depending on ekom internal rules
-    - taxAmount: string: the formatted amount of taxes (totalWithTax - totalWithoutTax)
+    - linesTotal: either the linesTotalWithoutTax or the linesTotalWithTax, depending on ekom internal rules
+    - taxAmount: string: the formatted amount of taxes (linesTotalWithTax - linesTotalWithoutTax)
     
     - cartTotal: string, the (formatted) cart total (see ekom order model II for more details)
                         (basically the total with tax and coupons applied, but without shipping applied)

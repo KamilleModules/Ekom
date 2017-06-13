@@ -173,6 +173,7 @@ class E
         if (array_key_exists($key, self::$conf)) {
             return self::$conf[$key];
         }
+        throw new \Exception("Key not found in conf: $key, (Temporary exception: todo remove)");
         return $default;
     }
 

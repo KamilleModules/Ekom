@@ -72,8 +72,6 @@ use XiaoApi\Api\XiaoApi;
  */
 class GeneratedEkomApi extends XiaoApi
 {
-
-
     private static $inst;
 
     public static function inst()
@@ -83,6 +81,7 @@ class GeneratedEkomApi extends XiaoApi
         }
         return self::$inst;
     }
+
 
     
     /**
