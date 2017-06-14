@@ -124,9 +124,18 @@ authors will implement them).
                                     If acceptOutOfStockOrders is set to true, then the customers can place their orders
                                     no matter what. The quantity (shop_has_product.quantity) stays at 0 and don't go negative. 
 - sessionTimeout: int=300, the number of seconds the session is active
+- checkoutMode: 
+    - singleAddress: all items are shipped to one address 
+    - (if you want to create other modes with multiple addresses, the ekom-checkout-synopsis.md document might give you some ideas) 
 - carrierSelectionMode: 
     - fixed:$carrier_name, the carrier is fixed (by the shop owner) to the value $carrier_name
     - auto: ekom will choose automatically, using the first carrier that can handle all of the products
+                The original idea behind auto is something like this:
+                        an order preference stored in the database (with an order column for instance),
+                        or a user preference based on criterion such as the cheapest, the fastest, the best quality...,
+                        also stored in the database.
+                        Or it could be something totally different...
+                
     - manual, the user will choose between the carrier available to the user (unless there is only one carrier
                 choice in which case the choice might not be asked)
             

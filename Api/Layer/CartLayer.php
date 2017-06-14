@@ -348,7 +348,7 @@ class CartLayer
              * is used for the base of calculating the estimated shipping cost.
              *
              */
-            $carrierGroups = EkomApi::inst()->carrierLayer()->getCarrierGroups($items);
+            $carrierGroups = EkomApi::inst()->carrierLayer()->estimateShippingCosts($items);
             $model['carrierSections'] = $carrierGroups;
             $allShippingCosts = $carrierGroups['totalShippingCost'];
 

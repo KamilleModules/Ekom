@@ -97,7 +97,6 @@ CartInfo
                    - productsInfo: an array of product_id => productInfo
                            Each productInfo has the same structure as the passed productInfo.
             - notHandled: the array of not handled productInfo (productId => productInfo)
-            - isEstimate: bool, whether or not the costs are just an estimate or the real shipping costs
             - totalShippingCost: string, formatted amount of shipping cost, sum of all sections' shipping costs.     
             
     - totalShippingCost: alias for carrierSections.totalShippingCost

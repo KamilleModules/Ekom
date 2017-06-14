@@ -190,7 +190,7 @@ and l.lang_id=$langId
      * @param null $langId
      * @return false|int
      */
-    public function getUserBillingAddressId($userId, $langId = null)
+    public function getUserBillingAddressId($userId)
     {
 
         $userId = (int)$userId;
@@ -512,6 +512,57 @@ order by h.`order` asc
     }
 
 
+    /**
+     * Check that the given address id belongs to the user and is active and of type shipping.
+     * If so, set it as the preferred address for this user.
+     *
+     * If the address does not belong to the user, or is not active or not of type shipping,
+     * then false is returned.
+     *
+     * @return bool, true in case of success, false otherwise
+     */
+    public function setPreferredShippingAddressId($id, $userId = null)
+    {
+        if (null === $userId) {
+            EkomApi::inst()->initWebContext();
+            $userId = (int)$userId;
+        }
+
+        $id = (int)$id;
+        $rows = $this->getUserShippingAddresses($userId);
+        $found = false;
+        foreach ($rows as $row) {
+            if ($id === (int)$row['address_id']) {
+                $found = true;
+                break;
+            }
+        }
+
+        if (true === $found) {
+            /**
+             * If this is already the user's preferred shipping address
+             * we do nothing
+             */
+
+            $preferredId = $this->getPreferredShippingAddressId($userId);
+            if ((int)$preferredId === (int)$id) {
+                return true;
+            }
+
+            $minMax = $this->getMinMaxAddressOrder($userId);
+            $order = $minMax['minimum'] - 1;
+
+            return QuickPdo::update("ek_user_has_address", [
+                'order' => $order,
+            ], [
+                ["user_id", "=", $userId],
+                ["address_id", "=", $id],
+                ["type", "=", "shipping"],
+            ]);
+        }
+        return false;
+    }
+
     public function getPreferredShippingAddressId($userId)
     {
         EkomApi::inst()->initWebContext();
@@ -524,11 +575,12 @@ select h.address_id
 
 
 from ek_user_has_address h
+inner join ek_address a on a.id=h.address_id
 
-where user_id=$userId
-and `type`='shipping'
-and active=1
-order by `order` asc
+where h.user_id=$userId
+and h.`type`='shipping'
+and a.active=1
+order by h.`order` asc
 
             "))
             ) {

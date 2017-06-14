@@ -3,133 +3,81 @@
 
 namespace Module\Ekom\Api\Layer;
 
-
+use Authenticate\SessionUser\SessionUser;
 use Bat\SessionTool;
-use Kamille\Architecture\Registry\ApplicationRegistry;
+use Core\Services\X;
 use Module\Ekom\Api\EkomApi;
-use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Utils\E;
+use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
 
 
-/**
- *
- * Important notes for developer
- * ================================
- *
- * If singleAddress mode is used, then the section is the following (index=0):
- *
- *      $_SESSION['ekom.order']["sections"][0]
- *
- *
- */
 class CheckoutLayer
 {
 
-
     /**
-     * Returns whether or not the customer should have the ability to
-     * manually choose her carrier(s).
+     * @return false|array orderModel,
+     *              return false if the user is not connected
+     *
      */
-    public function hasCarrierChoice()
+    public function getOrderModel()
     {
-        $carrierSel = E::conf("carrierSelectionMode");
-        if ("manual" === $carrierSel) {
-            return true;
+        if (SessionUser::isConnected()) {
+
+
+            if ('singleAddress' === E::conf("checkoutMode")) {
+
+
+                // start collecting order data
+                $this->initOrderModel();
+
+                $userLayer = EkomApi::inst()->userLayer();
+
+
+                $userId = SessionUser::getValue("id");
+                $shippingAddresses = $userLayer->getUserShippingAddresses($userId);
+
+                /**
+                 * false|addressModel
+                 */
+                $billingAddress = $userLayer->getUserBillingAddress($userId);
+                $countryId = $userLayer->getUserPreferredCountry();
+
+
+                /**
+                 * @var $provider OnTheFlyFormProviderInterface
+                 */
+                $provider = X::get("Core_OnTheFlyFormProvider");
+                $form = $provider->getForm("Ekom", "UserAddress");
+                $hasCarrierChoice = EkomApi::inst()->carrierLayer()->useSingleCarrier();
+                $paymentMethodBlocks = EkomApi::inst()->paymentLayer()->getPaymentMethodBlockModels();
+
+
+                $currentStep = $_SESSION['ekom.order.singleAddress']["current_step"];
+
+
+                $model = [
+                    "billingAddress" => $billingAddress,
+                    "shippingAddresses" => $shippingAddresses,
+                    "defaultCountry" => $countryId,
+                    "shippingAddressFormModel" => $form->getModel(),
+                    "useSingleCarrier" => $hasCarrierChoice,
+                    "paymentMethodBlocks" => $paymentMethodBlocks,
+                    "currentStep" => $currentStep,
+//                            "shippingType" => "singleAddressShipping", // singleAddressShipping|multipleAddressShipping // implicitly: it's singleAddressShipping, unless otherwise specified
+                ];
+
+                return $model;
+            }
         }
         return false;
     }
 
 
-    /**
-     * @param data :
-     *      - type: singleAddress
-     *      - params: // depend on the type
-     *          // params for singleAddress
-     *          - address_id
-     * @return bool
-     * @throws EkomApiException
-     */
-    public function saveStepShipping(array $data)
+    public function setShippingAddressId($id, array $options = null)
     {
-        $ret = false;
-        $type = $data['type'];
-        $params = $data['params'];
-        switch ($type) {
-            case 'singleAddress':
-
-
-                $userLayer = EkomApi::inst()->userLayer();
-                $userId = $userLayer->getUserId();
-                $address_id = (int)$params['address_id'];
-                $address = $userLayer->getUserShippingAddressById($userId, $address_id);
-                $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
-
-
-                /**
-                 * note, we use 0 as the only section identifier for single address,
-                 * so that if the user goes back and forth, we are ensured to have
-                 * only ONE section anyway.
-                 */
-                $_SESSION['ekom.order']["sections"][0] = [
-                    "carrier" => null,
-                    "address" => $address,
-                    "items" => $cartModel['items'], // tmp?
-                ];
-
-
-                $ret = true;
-                if (true === $ret) {
-                    $carrierModel = [];
-                    $this->applySingleAddressCarrierIfNoChoice($carrierModel);
-                    $_SESSION['ekom.order']["sections"][0]['carrier'] = $carrierModel;
-                    if (count($carrierModel) > 0) {
-                        $this->refreshSummary();
-                    }
-                }
-                break;
-            default:
-                throw new EkomApiException("Unknown type: $type");
-                break;
-        }
-
-
-        /**
-         * Try to see if the carrier is selected automatically,
-         * if so, apply the step directly (to save one client round trip in case of an ajax-driven checkout page)
-         */
-
-        return $ret;
+        $this->setSessionValue("shipping_address_id", $id, $options);
     }
 
-
-    /**
-     *
-     */
-    public function saveStepPayment(array $data)
-    {
-        $ret = true;
-        // assuming single address technique
-        /**
-         * todo: adapt for multiple address technique
-         */
-        if (array_key_exists("paymentId", $data)) {
-            $id = $data['paymentId'];
-            $info = EkomApi::inst()->paymentLayer()->getSelectableItemById($id);
-            $_SESSION['ekom.order']['payment_method'] = $info;
-//            $this->refreshSummary();
-
-        } else {
-            throw new \Exception("Invalid data structure, key not found: paymentId");
-        }
-        return $ret;
-    }
-
-
-    public function getOrderModel()
-    {
-        $this->initOrderModel();
-        return $_SESSION['ekom.order'];
-    }
 
 
 
@@ -137,92 +85,102 @@ class CheckoutLayer
     //--------------------------------------------
     //
     //--------------------------------------------
-    private function refreshSummary()
+    private function getCurrentStep()
     {
-        $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
-        unset($cartModel['items']);
-        $_SESSION['ekom.order']['summary'] = $cartModel;
+
     }
 
-    private function applySingleAddressCarrierIfNoChoice(array &$carrierModel)
+
+    private function setSessionValue($key, $value, array $options = null)
     {
-        $carrierSel = E::conf("carrierSelectionMode");
-        if ("fixed:" === substr($carrierSel, 0, 6)) {
+        if ('singleAddress' === E::conf("checkoutMode")) {
+            switch ($key) {
+                case 'shipping_address_id':
+                    $_SESSION['ekom.order.singleAddress']["shipping_address_id"] = $value;
+                    break;
+                default:
+                    break;
+            }
 
-
-            $carrierLayer = EkomApi::inst()->carrierLayer();
-
-
-            $carrierName = substr($carrierSel, 6);
-
-
-            EkomApi::inst()->initWebContext();
-            $shopId = ApplicationRegistry::get("ekom.shop_id");
-            $carriers = $carrierLayer->getCarriersByShop($shopId);
-            if (in_array($carrierName, $carriers, true)) {
-                foreach ($carriers as $carrierId => $name) {
-                    if ($carrierName === $name) {
-
-
-                        $carrier = $carrierLayer->getCarrierByName($carrierName);
-                        $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
-
-                        $shopAddress = EkomApi::inst()->shopLayer()->getShopPhysicalAddress($shopId);
-
-
-                        $shippingAddress = $_SESSION['ekom.order']["sections"][0]['address'];
-
-
-                        $rejected = [];
-                        $info = $carrier->handleOrder([
-                            "products" => $cartModel['items'],
-                            "shopAddress" => $shopAddress,
-                            "shippingAddress" => $shippingAddress,
-                        ], $rejected);
-
-                        $rej = [];
-                        if (count($rejected) > 0) {
-                            foreach ($rejected as $id) {
-                                $rej[$id] = $this->getCartItemById($cartModel, $id);
-                            }
-                        }
-
-
-                        $carrierModel = [
-                            "carrier_id" => $carrierId,
-                            "carrier_label" => $carrier->getLabel(),
-                            "estimated_delivery_date" => (array_key_exists("estimated_delivery_date", $info)) ? $info['estimated_delivery_date'] : null,
-                            "shipping_cost" => E::price($info['shipping_cost']),
-                            "rejected" => $rejected,
-                        ];
+            if (null !== $options) {
+                if (array_key_exists("marker", $options) && null !== $options['marker']) {
+                    $_SESSION['ekom.order.singleAddress']["current_step"] = $options["marker"];
+                }
+                if (array_key_exists("saveAsDefault", $options) && true === (bool)$options['saveAsDefault']) {
+                    switch ($key) {
+                        case 'shipping_address_id':
+                            EkomApi::inst()->userLayer()->setPreferredShippingAddressId($value);
+                            break;
+                        default:
+                            throw new \Exception("Unknown key: $key");
+                            break;
                     }
+                }
+            }
+        } else {
+            throw new \Exception("Not implemented yet");
+        }
+    }
+
+    private function initOrderModel()
+    {
+        SessionTool::start();
+
+        if ('singleAddress' === E::conf("checkoutMode")) {
+            if (false === array_key_exists("ekom.order.singleAddress", $_SESSION)) {
+                /**
+                 *
+                 * class-modules/Ekom/doc/ekom-checkout-synopsis.md
+                 *
+                 *
+                 * - ekom.order.singleAddress
+                 * ----- billing_address_id
+                 * ----- shipping_address_id
+                 * ----- carrier_id
+                 * ----- ?carrier_options array of key => value, depending on the carrier (read relevant carrier doc for more info)
+                 * ----- payment_method_id
+                 * ----- ?payment_method_options: array of key => value, depending on the payment method (read relevant payment method doc for more info)
+                 *
+                 *
+                 */
+                $userLayer = EkomApi::inst()->userLayer();
+                $userId = $userLayer->getUserId();
+                $billingAddressId = $userLayer->getUserBillingAddressId($userId);
+                if (false === $billingAddressId) { // the user might not have a billing address yet
+                    $billingAddressId = null;
+                }
+
+                $shippingAddressId = $userLayer->getPreferredShippingAddressId($userId);
+                if (false === $shippingAddressId) { // the user might not have a shipping address yet
+                    $shippingAddressId = null;
                 }
 
 
-            } else {
-                throw new \Exception("The chosen carrier ($carrierName) is not available to this shop ($shopId)");
-            }
+                // choose default carrier if none is set
+                $carrierId = null;
+                if (false !== ($id = EkomApi::inst()->carrierLayer()->getDefaultCarrierId())) {
+                    $carrierId = $id;
+                }
 
-        } else if ("auto" === $carrierSel) {
-            throw new \Exception("not implemented yet");
+
+                $paymentMethodId = EkomApi::inst()->paymentLayer()->getDefaultPaymentMethodId($userId);
+                if (false === $paymentMethodId) {
+                    $paymentMethodId = null;
+                }
+
+
+                $_SESSION['ekom.order.singleAddress'] = [
+                    "billing_address_id" => $billingAddressId,
+                    "shipping_address_id" => $shippingAddressId,
+                    "carrier_id" => $carrierId,
+                    "payment_method_id" => $paymentMethodId,
+                    "current_step" => 0,
+                ];
+            }
         } else {
-            throw new \Exception("not implemented yet");
-            $nbAvailableCarriers = 0;
-            if (1 === count($nbAvailableCarriers)) {
-
-            }
+            throw new \Exception("Not implemented yed");
         }
     }
 
 
-    private function getCartItemById($cartModel, $id)
-    {
-        $id = (int)$id;
-        foreach ($cartModel as $info) {
-            if ((int)$info['product_id'] === $id) {
-                return $info;
-            }
-        }
-        return false;
-    }
 }

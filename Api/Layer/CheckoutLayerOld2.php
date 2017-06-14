@@ -22,22 +22,10 @@ use Module\Ekom\Utils\E;
  *
  *
  */
-class CheckoutLayerOld
+class CheckoutLayerOld2
 {
 
 
-    /**
-     * Returns whether or not the customer should have the ability to
-     * manually choose her carrier(s).
-     */
-    public function useSingleCarrier()
-    {
-        $carrierSel = E::conf("carrierSelectionMode");
-        if ("manual" === $carrierSel) {
-            return true;
-        }
-        return false;
-    }
 
 
     /**
@@ -132,18 +120,7 @@ class CheckoutLayerOld
     }
 
 
-    public function initOrderModel()
-    {
-        SessionTool::start();
 
-        if (false === array_key_exists("ekom.order", $_SESSION)) {
-            $_SESSION['ekom.order'] = [
-                "summary" => null,
-                "payment_method" => null,
-                "sections" => [],
-            ];
-        }
-    }
 
     //--------------------------------------------
     //
