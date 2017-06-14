@@ -55,6 +55,10 @@ $api->countryLang()->deleteAll();
 $api->userHasAddress()->deleteAll();
 $api->address()->deleteAll();
 $api->shopHasCarrier()->deleteAll();
+$api->userHasPaymentMethod()->deleteAll();
+$api->shopHasPaymentMethod()->deleteAll();
+
+
 
 // no deps
 $api->timezone()->deleteAll();
@@ -69,6 +73,7 @@ $api->tax()->deleteAll();
 $api->userGroup()->deleteAll();
 $api->country()->deleteAll();
 $api->carrier()->deleteAll();
+$api->paymentMethod()->deleteAll();
 
 
 //--------------------------------------------
@@ -2068,3 +2073,40 @@ $api->shopHasAddress()->create([
     'type' => "physical",
     'order' => 0,
 ]);
+
+
+//--------------------------------------------
+// payment method
+//--------------------------------------------
+$paymentCreditCardWallet = $api->paymentMethod()->create([
+    'name' => 'credit_card_wallet',
+]);
+
+$paymentPaypal = $api->paymentMethod()->create([
+    'name' => 'paypal',
+]);
+
+
+//--------------------------------------------
+// shop has payment method
+//--------------------------------------------
+$api->shopHasPaymentMethod()->create([
+    "shop_id" => $shopEurope,
+    "payment_method_id" => $paymentCreditCardWallet,
+    "order" => 0,
+    "configuration" => serialize([]),
+]);
+
+
+$api->shopHasPaymentMethod()->create([
+    "shop_id" => $shopEurope,
+    "payment_method_id" => $paymentPaypal,
+    "order" => 1,
+    "configuration" => serialize([]),
+]);
+
+
+
+
+
+

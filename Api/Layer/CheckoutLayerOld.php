@@ -22,7 +22,7 @@ use Module\Ekom\Utils\E;
  *
  *
  */
-class CheckoutLayer
+class CheckoutLayerOld
 {
 
 
@@ -132,7 +132,18 @@ class CheckoutLayer
     }
 
 
+    public function initOrderModel()
+    {
+        SessionTool::start();
 
+        if (false === array_key_exists("ekom.order", $_SESSION)) {
+            $_SESSION['ekom.order'] = [
+                "summary" => null,
+                "payment_method" => null,
+                "sections" => [],
+            ];
+        }
+    }
 
     //--------------------------------------------
     //

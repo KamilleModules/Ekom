@@ -19,6 +19,7 @@ use Module\Ekom\Api\Layer\CountryLayer;
 use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\DiscountLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
+use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
 use Module\Ekom\Api\Layer\PriceLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
@@ -326,6 +327,14 @@ and h.lang_id=$langId
     public function imageLayer()
     {
         return $this->getLayer('imageLayer');
+    }
+
+    /**
+     * @return OrderLayer
+     */
+    public function orderLayer()
+    {
+        return $this->getLayer('orderLayer');
     }
 
 

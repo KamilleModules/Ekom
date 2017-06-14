@@ -19,7 +19,7 @@ class GeneratedPaymentMethod extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "kamille.ek_payment_method";
+        $this->table = "ek_payment_method";
     }
 
 
@@ -29,8 +29,7 @@ class GeneratedPaymentMethod extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
-			'label' => '',
-			'lang_id' => 0,
+			'name' => '',
 		], $data);
 
 

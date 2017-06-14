@@ -32,7 +32,7 @@ use QuickPdo\QuickPdo;
  * //
  * - fName, string: a full name, which format depends on some locale parameters
  * - fAddress, string: a full address, which format depends on some locale parameters
- * - is_preferred, bool: whether or not this is the favorite user address
+ * - is_preferred, bool: whether or not this is the favorite user address (only for shipping addresses, not billing addresses)
  *
  *
  *
@@ -122,6 +122,99 @@ and l.lang_id=$langId
             "ek_address.update.$addressId",
             "ek_country_lang.delete",
             "ek_country_lang.update",
+        ]);
+    }
+
+
+    /**
+     * return an addressModel (see top of this document)
+     *
+     *
+     * @return false|array
+     */
+    public function getUserBillingAddress($userId, $langId = null)
+    {
+
+        $userId = (int)$userId;
+        EkomApi::inst()->initWebContext();
+        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+
+        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getUserBillingAddress.$langId.$userId", function () use ($userId, $langId) {
+
+            if (false !== ($row = QuickPdo::fetch("
+
+select 
+a.id as address_id,        
+a.first_name,        
+a.last_name,        
+a.phone,        
+a.address,        
+a.city,        
+a.postcode,        
+a.supplement,        
+l.label as country,
+h.`order`
+
+
+from ek_user_has_address h 
+inner join ek_address a on a.id=h.address_id 
+inner join ek_country_lang l on l.country_id=a.country_id
+
+where h.user_id=$userId 
+and h.type='billing'
+and a.active='1'
+and l.lang_id=$langId
+                 
+        "))
+            ) {
+
+                list($fName, $fAddress) = $this->getFormattedNameAndAddress($row);
+
+                $row['fName'] = $fName;
+                $row['fAddress'] = $fAddress;
+
+                return $row;
+            }
+            return false;
+        }, [
+            "ek_user_has_address.delete.$userId",
+            "ek_user_has_address.update.$userId",
+            "ek_country_lang.delete",
+            "ek_country_lang.update",
+        ]);
+    }
+
+
+    /**
+     * @param $userId
+     * @param null $langId
+     * @return false|int
+     */
+    public function getUserBillingAddressId($userId, $langId = null)
+    {
+
+        $userId = (int)$userId;
+        EkomApi::inst()->initWebContext();
+        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getUserBillingAddressId.$userId", function () use ($userId) {
+
+            if (false !== ($ret = QuickPdo::fetch("
+
+select 
+address_id
+
+from ek_user_has_address 
+
+where user_id=$userId 
+and `type`='billing'
+                 
+        "))
+            ) {
+                return (int)$ret['address_id'];
+            }
+            return false;
+        }, [
+            "ek_user_has_address.delete.$userId",
+            "ek_user_has_address.update.$userId",
         ]);
     }
 
@@ -380,16 +473,15 @@ order by h.`order` asc
      */
     public function getPreferredShippingAddress($userId, $langId = null)
     {
-
-        //  todo : cache
         EkomApi::inst()->initWebContext();
 
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
         $userId = (int)$userId;
         $langId = (int)$langId;
 
+        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getPreferredShippingAddress.$userId.$langId", function () use ($userId, $langId) {
 
-        return QuickPdo::fetch("
+            return QuickPdo::fetch("
 select 
 a.city,
 a.postcode,
@@ -411,6 +503,44 @@ order by h.`order` asc
 
             
             ");
+        }, [
+            "ek_user_has_address.delete.$userId",
+            "ek_user_has_address.update.$userId",
+            "ek_address.update",
+            "ek_country_lang.update",
+        ]);
+    }
+
+
+    public function getPreferredShippingAddressId($userId)
+    {
+        EkomApi::inst()->initWebContext();
+        $userId = (int)$userId;
+
+
+        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getPreferredShippingAddressId.$userId", function () use ($userId) {
+            if (false !== ($ret = QuickPdo::fetch("
+select h.address_id
+
+
+from ek_user_has_address h
+
+where user_id=$userId
+and `type`='shipping'
+and active=1
+order by `order` asc
+
+            "))
+            ) {
+                return (int)$ret['address_id'];
+            }
+
+            return false;
+
+        }, [
+            "ek_user_has_address.delete.$userId",
+            "ek_user_has_address.update.$userId",
+        ]);
     }
 
 

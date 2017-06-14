@@ -25,6 +25,7 @@ use Module\Ekom\Api\Object\Order;
 use Module\Ekom\Api\Object\OrderHasOrderStatus;
 use Module\Ekom\Api\Object\OrderStatus;
 use Module\Ekom\Api\Object\OrderStatusLang;
+use Module\Ekom\Api\Object\PaymentMethod;
 use Module\Ekom\Api\Object\Product;
 use Module\Ekom\Api\Object\ProductAttribute;
 use Module\Ekom\Api\Object\ProductAttributeLang;
@@ -43,6 +44,7 @@ use Module\Ekom\Api\Object\ShopHasAddress;
 use Module\Ekom\Api\Object\ShopHasCarrier;
 use Module\Ekom\Api\Object\ShopHasCurrency;
 use Module\Ekom\Api\Object\ShopHasLang;
+use Module\Ekom\Api\Object\ShopHasPaymentMethod;
 use Module\Ekom\Api\Object\ShopHasProduct;
 use Module\Ekom\Api\Object\ShopHasProductCard;
 use Module\Ekom\Api\Object\ShopHasProductCardLang;
@@ -55,6 +57,7 @@ use Module\Ekom\Api\Object\Timezone;
 use Module\Ekom\Api\Object\User;
 use Module\Ekom\Api\Object\UserGroup;
 use Module\Ekom\Api\Object\UserHasAddress;
+use Module\Ekom\Api\Object\UserHasPaymentMethod;
 use Module\Ekom\Api\Object\UserHasUserGroup;
 
 use XiaoApi\Api\XiaoApi;
@@ -239,6 +242,13 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('orderStatusLang');
     }
     /**
+     * @return PaymentMethod
+     */
+    public function paymentMethod()
+    {
+        return $this->getObject('paymentMethod');
+    }
+    /**
      * @return Product
      */
     public function product()
@@ -365,6 +375,13 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('shopHasLang');
     }
     /**
+     * @return ShopHasPaymentMethod
+     */
+    public function shopHasPaymentMethod()
+    {
+        return $this->getObject('shopHasPaymentMethod');
+    }
+    /**
      * @return ShopHasProduct
      */
     public function shopHasProduct()
@@ -447,6 +464,13 @@ class GeneratedEkomApi extends XiaoApi
     public function userHasAddress()
     {
         return $this->getObject('userHasAddress');
+    }
+    /**
+     * @return UserHasPaymentMethod
+     */
+    public function userHasPaymentMethod()
+    {
+        return $this->getObject('userHasPaymentMethod');
     }
     /**
      * @return UserHasUserGroup

@@ -116,245 +116,35 @@ that can handle the shipping of all products, but as developers we have to take 
 
 Implementation details
 ==============================
-2017-06-09
+2017-06-09 --> 2017-06-13
 
 
-We use three steps:
+Like the cart, we store slim data in the session, and restore the corresponding model from cache.
 
-- step 1: create shippings
-- step 2: create order
-- step 3: choose payment method
+We have different types of orders, the multiple address order as described above, or the single address order.
 
-
-To collect info, we start with a base array, and we add information at every step.
-We call this array the order array.
-Here is how the final order array looks like:
-
-
-```txt
-- order
------ summary: 
---------- grand_total: null|string, the formatted grand total
---------- shipping_costs: null|string, the formatted combined shipping costs
---------- ...maybe other things like tax details
------ payment_method:
---------- id: id of the payment method
---------- type: type of the payment method
---------- ...other info, specific to the payment method
------ sections:
---------- 0:
-------------- address:
------------------ address_id
------------------ first_name
------------------ last_name
------------------ phone
------------------ address
------------------ city
------------------ postcode
------------------ country
------------------ supplement
------------------ fName
------------------ fAddress
-------------- carrier:
------------------ carrier_id
------------------ estimated_delivery_date:   null|yyyy-mm-dd HH:ii:ss
------------------ shipping_cost: string, formatted cost of the shipping af all accepted items for this section
------------------ rejected:
---------------------- 0: same as items.0
---------------------- ...
-------------- items
------------------ 0:
---------------------- product
---------------------- qty
---------------------- weight
---------------------- ...coupons?
------------------ ...
---------- ...
-```
-
-
-At the end of step 1, the shippings have been decided and the array looks like this:
-
-```txt
-- order
------ summary: (not set yet)
------ payment_method: (not set yet)
------ sections:
---------- 0:
-------------- address
------------------ address_id
------------------ first_name
------------------ last_name
------------------ phone
------------------ address
------------------ city
------------------ postcode
------------------ country
------------------ supplement
------------------ fName
------------------ fAddress
-------------- carrier: null|array, depending on whether we guessed the carrier or not (see the "more implementation details" section)
-------------- items
------------------ 0:
---------------------- product
---------------------- qty
---------------------- weight
---------------------- ...coupons?
------------------ ...
---------- ...
-```
-
-
-At the end of step 2, the order sections have been chosen and the array looks like this:
-
-```txt
-- order
------ summary: (not set yet)
------ payment_method: (not set yet)
------ sections:
---------- 0:
-------------- address
------------------ address_id
------------------ first_name
------------------ last_name
------------------ phone
------------------ address
------------------ city
------------------ postcode
------------------ country
------------------ supplement
------------------ fName
------------------ fAddress
-------------- carrier:
------------------ carrier_id
------------------ estimated_delivery_date
------------------ shipping_cost 
------------------ rejectedItems:
---------------------- 0: same as items.0
-------------- items
------------------ 0:
---------------------- product
---------------------- qty
---------------------- weight
---------------------- ...coupons?
------------------ ...
---------- ...
-```
-
-Then, at the end of step 3, the user chooses the payment method and the array looks like the one at the beginning
-of this discussion.
-
-Note: steps could probably be arranged in any order.
-Note2: this technique doesn't take into account multiple payment (i.e. the user only pays once).
-
-
-More implementation details
-============================
-2017-06-09
-
-
-Create shippings
------------------
-
-Client side, we have a button:
-
-```html
-<button class="button save-step-shipping">Ship to this address</button>
-```
-
-If you are in single address mode, you can just pass the address id to the api, and the api will create the shipping
-for you, using the cart data.
-
-If you are in multiple address mode, you will need to find other heuristics but the same mechanism will be used:
-click the "save-step-shipping" button, so this means that you probably need to collect the shipping data
-via a gui and post them when the user clicks on the "save-step-shipping" button.
-
-
-
-
-
-
-
-
-Create order
----------------
-
-Traditionally, from what I know e-commerce let the user choose between different carriers.
-However, in big websites like amazon, there seems to be a tendency to make the choice automatically for the user.
-
-
-
-I personally like the second method better (the fewer questions asked to the user the better),
-but in ekom we provide a configuration key that would allow the developer to choose different options.
-
-carrierSelectionMode:
-
-- fixed:$carrier_name, the carrier is fixed (by the shop owner) to the value $carrier_name.
-- auto: ekom will choose automatically, using the first carrier that can handle all of the products
-- manual, the user will choose between the carrier available to the user (unless there is only one carrier
-            choice in which case the choice might not be asked)
-            
-
-Note that because the carrier can be chosen automatically, what we ended up doing in ekom is that
-            when the "save-step-shipping" is done, we also perform a check on whether or not the
-            user will have to choose the carrier.
-            If there is no choice, then we apply the "carrier layer" in the same row, thus saving one 
-            round-trip (in a typical ajax driven checkout page).
-            
-            
-
-
-
-
-Payment methods
--------------------
-
-Here is my idea so far:
-
-$h = ekomApi::inst()->paymentLayer()->getPaymentMethodHandler("creditCart")
-$h = ekomApi::inst()->paymentLayer()->getPaymentMethodHandler("paypal")
-
-PaymentMethodHandler:
-- getMethodBlockModel ()
-
-### What's a method block
-
-
-The gui let you choose a payment method (paypal, ccard, ...).
-So each payment method is represented by one or more block.
+We probably could have more types.
  
-However, each block can contain more than one selectable item.
-For instance paypal is just one item, but a credit card wallet payment method could have one item per credit card,
-which might be more than one item.
-
-So the paymentMethodHandler provides the methodBlock, which is a model containing an items entry.
-
-The items entry represents the selectable items.
-
-Apart from that, the theme needs a little bit more knowledge about the payment method,
-because in some cases you need more than just displaying items.
-
-For instance, the credit card wallet let you add credit cards, so this means there must be an "Add credit card"
-button somewhere. That's the theme (or at least template) that knows how to display the selectable items and the button
-or anything that goes with it.
-
-In the case of the credit cards wallet, we also need the api that allows for adding new cards,
-this is also part of the theme's knowledge.
-
-(The paymentMethodHandler author must provides all the implementation necessary info though)
-
-So, different templates have different abilities.
-
-To make things easier for template authors, every selectable item should have at least one key:
-
-- type: string, indicate the type of the paymentMethodHandler
+As for now, since I have a very short deadline for this order implementation, I will only cover the order of type single address.
+ 
+To acknowledge further order types, we simply use the type property, which can take any string
+ 
+Here is our session model.
 
 
+SingleAddress order model
+----------------------------
 
+- ekom.order.singleAddress
 
+(the items are all the items in the cart, see ekom.cart for more details)
 
-
-
+----- billing_address_id
+----- shipping_address_id
+----- carrier_id
+----- ?carrier_options array of key => value, depending on the carrier (read relevant carrier doc for more info)
+----- payment_method_id
+----- ?payment_method_options: array of key => value, depending on the payment method (read relevant payment method doc for more info)
 
 
 

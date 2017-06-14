@@ -194,8 +194,9 @@ class CartLayer
         if (null === $this->_cartModel) {
             $this->_cartModel = $this->doGetCartModel();
         }
-        a(__FILE__);
-        az($this->_cartModel);
+//        a($_SESSION);
+//        a(__FILE__);
+//        az($this->_cartModel);
         return $this->_cartModel;
     }
 
