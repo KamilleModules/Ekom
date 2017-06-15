@@ -64,7 +64,7 @@ class CarrierLayer
     public function getCarrierIdByName($name)
     {
 
-        return A::cache()->get("CarrierLayer.getCarrierIdByName.$name", function () use ($name) {
+        return A::cache()->get("Ekom.CarrierLayer.getCarrierIdByName.$name", function () use ($name) {
 
             if (false !== ($row = QuickPdo::fetch("
 select c.id 
@@ -115,6 +115,8 @@ where c.name=:zename
         }
         return false;
     }
+
+
 
 
     /**
@@ -187,59 +189,56 @@ where c.name=:zename
 
 
             //--------------------------------------------
-            // ESTIMATING THE COSTS
-            /**
-             * We return an array with various info
-             */
+            // CALCULATING THE COSTS
             //--------------------------------------------
-            $sections = [];
-            $totalShippingCost = 0;
-            foreach ($carriers as $name => $carrier) {
-                /**
-                 * @var $carrier CarrierInterface
-                 */
-                $rejected = [];
-                $info = $carrier->handleOrder([
-                    'products' => $productInfos,
-                    'shopAddress' => $shopAddress,
-                    'shippingAddress' => $shippingAddress,
-                ], $rejected);
-                $totalShippingCost += $info["shipping_cost"];
+            return $this->calculateShippingCostsByCarriers($carriers, $productInfos, $shopAddress, $shippingAddress);
+
+        }
+        return false; // we don't have a shipping address
+    }
 
 
-                $handledProductsInfo = [];
-                foreach ($productInfos as $id => $info) {
-                    if (false === in_array($id, $rejected, true)) {
-                        $handledProductsInfo[$id] = $info;
-                        unset($productInfos[$id]);
-                    }
+    /**
+     *
+     * Calculate the shipping costs for an order with checkoutMode=singleAddress
+     *
+     * @param array $productInfos : same as estimateShippingCosts
+     * @return false|array, same as estimateShippingCosts
+     */
+    public function calculateShippingCostByCarrierId($carrierId, array $productInfos, array $shippingAddress)
+    {
+        $carrierName = $this->getCarrierNameById($carrierId);
+
+        $shopAddress = EkomApi::inst()->shopLayer()->getShopPhysicalAddress();
+        if (false === $shopAddress) {
+            $msg = "[Ekom module] - CarrierLayer.estimateShippingCosts: ekom config error, shop address is not defined";
+            XLog::error($msg);
+            $shopAddress = null;
+        }
+
+
+            /**
+             * We have to deal with the carriers choices that the shop has made
+             */
+            $carriers = [];
+            if (true === EkomApi::inst()->carrierLayer()->useSingleCarrier()) {
+                if (false !== ($carrierInfo = $this->getSingleCarrier())) {
+                    list($carrierName, $carrier) = $carrierInfo;
+                    $carriers[$carrierName] = $carrier;
                 }
-
-                if (0 === count($handledProductsInfo)) {
-                    continue;
-                }
-
-                $sections[$name] = [
-                    'shippingCost' => $totalShippingCost,
-                    'productsInfo' => $handledProductsInfo,
-                ];
-                if (0 === count($productInfos)) {
-                    break;
-                }
+            } else { // the user has the choice, so we will take all shop available carriers to do our estimate
+                EkomApi::inst()->initWebContext();
+                $shopId = ApplicationRegistry::get("ekom.shop_id");
+                $carriers = $this->getCarrierInstancesByShop($shopId);
             }
 
-            /**
-             * At this point, the productInfos array might be empty
-             * (at least if the app is properly configured and can ship every product)
-             */
-            $notHandled = $productInfos;
 
-            return [
-                'sections' => $sections,
-                'notHandled' => $notHandled,
-                'totalShippingCost' => $totalShippingCost,
-            ];
-        }
+            //--------------------------------------------
+            // CALCULATING THE COSTS
+            //--------------------------------------------
+            return $this->calculateShippingCostsByCarriers($carriers, $productInfos, $shopAddress, $shippingAddress);
+
+
         return false; // we don't have a shipping address
     }
 
@@ -251,7 +250,7 @@ where c.name=:zename
     public function getCarriersByShop($shopId)
     {
         $shopId = (int)$shopId;
-        return A::cache()->get("CarrierLayer.getCarriersByShop.$shopId", function () use ($shopId) {
+        return A::cache()->get("Ekom.CarrierLayer.getCarriersByShop.$shopId", function () use ($shopId) {
             return QuickPdo::fetchAll("
 select c.id, c.name 
         
@@ -334,4 +333,67 @@ order by h.priority asc
         return false;
     }
 
+
+    private function calculateShippingCostsByCarriers(array $carriers, array $productInfos, $shopAddress, $shippingAddress)
+    {
+        $sections = [];
+        $totalShippingCost = 0;
+        foreach ($carriers as $name => $carrier) {
+            /**
+             * @var $carrier CarrierInterface
+             */
+            $rejected = [];
+            $info = $carrier->handleOrder([
+                'products' => $productInfos,
+                'shopAddress' => $shopAddress,
+                'shippingAddress' => $shippingAddress,
+            ], $rejected);
+            $totalShippingCost += $info["shipping_cost"];
+
+
+            $handledProductsInfo = [];
+            foreach ($productInfos as $id => $info) {
+                if (false === in_array($id, $rejected, true)) {
+                    $handledProductsInfo[$id] = $info;
+                    unset($productInfos[$id]);
+                }
+            }
+
+            if (0 === count($handledProductsInfo)) {
+                continue;
+            }
+
+            $sections[$name] = [
+                'shippingCost' => $totalShippingCost,
+                'productsInfo' => $handledProductsInfo,
+            ];
+            if (0 === count($productInfos)) {
+                break;
+            }
+        }
+
+        /**
+         * At this point, the productInfos array might be empty
+         * (at least if the app is properly configured and can ship every product)
+         */
+        $notHandled = $productInfos;
+
+        return [
+            'sections' => $sections,
+            'notHandled' => $notHandled,
+            'totalShippingCost' => $totalShippingCost,
+        ];
+    }
+
+    private function getCarrierNameById($id)
+    {
+        return A::cache()->get("Ekom.CarrierLayer.getCarrierNameById.$id", function () use ($id) {
+            return EkomApi::inst()->carrier()->readColumn("name", [
+                ["id", "=", $id],
+            ]);
+        }, [
+            "ek_carrier.delete.$id",
+            "ek_carrier.update.$id",
+        ]);
+    }
 }

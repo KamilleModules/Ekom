@@ -186,6 +186,67 @@ and l.lang_id=$langId
 
 
     /**
+     * return an addressModel (see top of this document)
+     *
+     *
+     * @return false|array
+     */
+    public function getUserBillingAddressById($userId, $id, $langId = null)
+    {
+
+        $id = (int)$id;
+        $userId = (int)$userId;
+        EkomApi::inst()->initWebContext();
+        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+
+        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getUserBillingAddress.$langId.$userId.$id", function () use ($userId, $langId, $id) {
+
+            if (false !== ($row = QuickPdo::fetch("
+
+select 
+a.id as address_id,        
+a.first_name,        
+a.last_name,        
+a.phone,        
+a.address,        
+a.city,        
+a.postcode,        
+a.supplement,        
+l.label as country,
+h.`order`
+
+
+from ek_user_has_address h 
+inner join ek_address a on a.id=h.address_id 
+inner join ek_country_lang l on l.country_id=a.country_id
+
+where a.id=$id 
+and h.user_id=$userId 
+and h.type='billing'
+and a.active='1'
+and l.lang_id=$langId
+                 
+        "))
+            ) {
+
+                list($fName, $fAddress) = $this->getFormattedNameAndAddress($row);
+
+                $row['fName'] = $fName;
+                $row['fAddress'] = $fAddress;
+
+                return $row;
+            }
+            return false;
+        }, [
+            "ek_user_has_address.delete.$userId",
+            "ek_user_has_address.update.$userId",
+            "ek_country_lang.delete",
+            "ek_country_lang.update",
+        ]);
+    }
+
+
+    /**
      * @param $userId
      * @param null $langId
      * @return false|int

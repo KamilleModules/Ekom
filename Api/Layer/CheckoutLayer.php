@@ -30,16 +30,35 @@ class CheckoutLayer
                 // start collecting order data
                 $this->initOrderModel();
 
+
+                // taking data out of sections
+                $a = $_SESSION['ekom.order.singleAddress'];
+                $billingAddressId = $a["billing_address_id"];
+                $shippingAddressId = $a["shipping_address_id"];
+                $carrierId = $a["carrier_id"];
+                $paymentMethodId = $a["payment_method_id"];
+                $carrierStep = $a["current_step"];
+
+
+
+
                 $userLayer = EkomApi::inst()->userLayer();
+                $carrierLayer = EkomApi::inst()->carrierLayer();
 
 
                 $userId = SessionUser::getValue("id");
                 $shippingAddresses = $userLayer->getUserShippingAddresses($userId);
 
+
+
+                $carrierLayer->calculateShippingCostByCarrierId($carrierId);
+
+
                 /**
                  * false|addressModel
                  */
-                $billingAddress = $userLayer->getUserBillingAddress($userId);
+                $billingAddress = $userLayer->getUserBillingAddressById($userId, $billingAddressId);
+                $shippingAddress = $userLayer->getUserShippingAddressById($userId, $shippingAddressId);
                 $countryId = $userLayer->getUserPreferredCountry();
 
 
@@ -48,16 +67,23 @@ class CheckoutLayer
                  */
                 $provider = X::get("Core_OnTheFlyFormProvider");
                 $form = $provider->getForm("Ekom", "UserAddress");
-                $hasCarrierChoice = EkomApi::inst()->carrierLayer()->useSingleCarrier();
+                $hasCarrierChoice = $carrierLayer->useSingleCarrier();
                 $paymentMethodBlocks = EkomApi::inst()->paymentLayer()->getPaymentMethodBlockModels();
 
 
                 $currentStep = $_SESSION['ekom.order.singleAddress']["current_step"];
 
 
+
+
+
+
+
                 $model = [
                     "billingAddress" => $billingAddress,
+                    "shippingAddress" => $shippingAddress,
                     "shippingAddresses" => $shippingAddresses,
+                    "selectedShippingAddressId" => $shippingAddressId,
                     "defaultCountry" => $countryId,
                     "shippingAddressFormModel" => $form->getModel(),
                     "useSingleCarrier" => $hasCarrierChoice,
