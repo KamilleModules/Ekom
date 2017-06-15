@@ -42,6 +42,20 @@ class EkomHooks
 
     }
 
+    protected static function Ekom_feedEkomProductPriceChain(\Module\Ekom\Price\PriceChain\EkomProductPriceChain $chain)
+    {
+
+    }
+
+    protected static function Ekom_feedEkomCartPriceChain(\Module\Ekom\Price\PriceChain\EkomCartPriceChain $chain)
+    {
+
+    }
+
+    protected static function Ekom_feedEkomTotalPriceChain(\Module\Ekom\Price\PriceChain\EkomTotalPriceChain $chain)
+    {
+
+    }
 
     //--------------------------------------------
     // NULLOS ADMIN

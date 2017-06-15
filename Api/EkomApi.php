@@ -15,6 +15,7 @@ use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\Api\Layer\CheckoutLayer;
 use Module\Ekom\Api\Layer\ConditionLayer;
+use Module\Ekom\Api\Layer\ConfigLayer;
 use Module\Ekom\Api\Layer\CountryLayer;
 use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\DiscountLayer;
@@ -347,11 +348,11 @@ and h.lang_id=$langId
     }
 
     /**
-     * @return PriceLayer
+     * @return ConfigLayer
      */
-    public function priceLayer()
+    public function configLayer()
     {
-        return $this->getLayer('priceLayer');
+        return $this->getLayer('configLayer');
     }
 
 

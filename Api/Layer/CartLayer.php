@@ -168,7 +168,6 @@ class CartLayer
     }
 
 
-
     public function prepareUserCart()
     {
         if (null !== ($userId = SessionUser::getValue('id'))) {
@@ -282,17 +281,17 @@ class CartLayer
             if (false !== ($it = $this->getCartItemInfo($id))) {
                 $it['quantity'] = $qty;
 
-                $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
-                $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
+//                $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
+//                $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
                 $linePrice = $qty * $it['rawSalePrice'];
 
-                $linesTotalWithoutTax += $linePriceWithoutTax;
-                $linesTotalWithTax += $linePriceWithTax;
+//                $linesTotalWithoutTax += $linePriceWithoutTax;
+//                $linesTotalWithTax += $linePriceWithTax;
                 $linesTotal += $linePrice;
 
 
-                $it['linePriceWithoutTax'] = E::price($linePriceWithoutTax);
-                $it['linePriceWithTax'] = E::price($linePriceWithTax);
+//                $it['linePriceWithoutTax'] = E::price($linePriceWithoutTax);
+//                $it['linePriceWithTax'] = E::price($linePriceWithTax);
                 $it['linePrice'] = E::price($linePrice);
 
 
@@ -310,8 +309,8 @@ class CartLayer
         $taxAmount = $linesTotalWithTax - $linesTotalWithoutTax;
         $model['totalQuantity'] = $totalQty;
         $model['items'] = $modelItems;
-        $model['linesTotalWithoutTax'] = E::price($linesTotalWithoutTax);
-        $model['linesTotalWithTax'] = E::price($linesTotalWithTax);
+//        $model['linesTotalWithoutTax'] = E::price($linesTotalWithoutTax);
+//        $model['linesTotalWithTax'] = E::price($linesTotalWithTax);
         $model['linesTotal'] = E::price($linesTotal);
         $model['taxAmount'] = E::price($taxAmount);
 
@@ -321,47 +320,38 @@ class CartLayer
         //--------------------------------------------
         $couponApi = EkomApi::inst()->couponLayer();
         $validCoupons = [];
-        $targets = [
-            "linesTotalWithTax" => $linesTotalWithTax,
-        ];
 
 
+        $details = $couponApi->applyCouponBag($linesTotal, $this->getCouponBag(),  $validCoupons);
+//        $details = $couponApi->applyCouponBag($this->getCouponBag(), $targets, $validCoupons);
 
-        if (false !== ($details = $couponApi->applyCouponBag($this->getCouponBag(), $targets, $validCoupons))) {
-
-            $cartTotalRaw = $details['rawCartTotal'];
-            $model['cartTotal'] = $details['cartTotal'];
-            $model['totalSaving'] = $details['totalSaving'];
-            $model['coupons'] = $details['coupons'];
-            $model['hasCoupons'] = (count($details['coupons']) > 0);
-
-
-            //--------------------------------------------
-            // ADDING CARRIER INFORMATION
-            //--------------------------------------------
-            /**
-             * we have basically two cases: either the user is connected, or not.
-             * If the user is not connected, the application chooses its own heuristics
-             * and returns an estimated shipping cost.
-             *
-             * If the user is connected and has a shipping address, the user's shipping address
-             * is used for the base of calculating the estimated shipping cost.
-             *
-             */
-            $carrierGroups = EkomApi::inst()->carrierLayer()->estimateShippingCosts($items);
-            $model['carrierSections'] = $carrierGroups;
-            $allShippingCosts = $carrierGroups['totalShippingCost'];
+        $cartTotalRaw = $details['rawCartTotal'];
+        $model['cartTotal'] = $details['cartTotal'];
+        $model['totalSaving'] = $details['totalSaving'];
+        $model['coupons'] = $details['coupons'];
+        $model['hasCoupons'] = (count($details['coupons']) > 0);
 
 
-            $model['totalShippingCost'] = E::price($allShippingCosts);
-            $model['orderGrandTotal'] = E::price($cartTotalRaw + $allShippingCosts);
-        } else {
-//            $details = ["error" => "1"];
-//            $model['cartTotal'] = $model['linesTotalWithTax'];
-//            $model['totalSaving'] = "undefined";
-//            $model['coupons'] = [];
-//            $model['hasCoupons'] = false;
-        }
+        //--------------------------------------------
+        // ADDING CARRIER INFORMATION
+        //--------------------------------------------
+        /**
+         * we have basically two cases: either the user is connected, or not.
+         * If the user is not connected, the application chooses its own heuristics
+         * and returns an estimated shipping cost.
+         *
+         * If the user is connected and has a shipping address, the user's shipping address
+         * is used for the base of calculating the estimated shipping cost.
+         *
+         */
+        $carrierGroups = EkomApi::inst()->carrierLayer()->estimateShippingCosts($items);
+        $model['carrierSections'] = $carrierGroups;
+        $allShippingCosts = $carrierGroups['totalShippingCost'];
+
+
+        $model['totalShippingCost'] = E::price($allShippingCosts);
+        $model['orderGrandTotal'] = E::price($cartTotalRaw + $allShippingCosts);
+
 
         return $model;
     }
@@ -451,16 +441,16 @@ and p.lang_id=$langId
                     'attributeDetails' => $zeAttr,
                     'price' => $b['price'],
                     'salePrice' => $b['salePrice'],
-                    'salePriceWithTax' => $b['salePriceWithTax'],
-                    'salePriceWithoutTax' => $b['salePriceWithoutTax'],
+//                    'salePriceWithTax' => $b['salePriceWithTax'],
+//                    'salePriceWithoutTax' => $b['salePriceWithoutTax'],
                     'image' => $mainImage,
                     'imageSmall' => $imageSmall,
 
                     'stockType' => $b['stockType'],
                     'stockText' => $b['stockText'],
 
-                    'rawSalePriceWithoutTax' => $b['rawSalePriceWithoutTax'],
-                    'rawSalePriceWithTax' => $b['rawSalePriceWithTax'],
+//                    'rawSalePriceWithoutTax' => $b['rawSalePriceWithoutTax'],
+//                    'rawSalePriceWithTax' => $b['rawSalePriceWithTax'],
                     'rawSalePrice' => $b['rawSalePrice'],
                 ];
 

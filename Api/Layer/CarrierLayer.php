@@ -117,8 +117,6 @@ where c.name=:zename
     }
 
 
-
-
     /**
      * @param array $productInfos , array of productId => productInfo,
      * each productInfo has at least the following keys:
@@ -207,7 +205,7 @@ where c.name=:zename
      */
     public function calculateShippingCostByCarrierId($carrierId, array $productInfos, array $shippingAddress)
     {
-        $carrierName = $this->getCarrierNameById($carrierId);
+
 
         $shopAddress = EkomApi::inst()->shopLayer()->getShopPhysicalAddress();
         if (false === $shopAddress) {
@@ -217,29 +215,35 @@ where c.name=:zename
         }
 
 
-            /**
-             * We have to deal with the carriers choices that the shop has made
-             */
-            $carriers = [];
-            if (true === EkomApi::inst()->carrierLayer()->useSingleCarrier()) {
-                if (false !== ($carrierInfo = $this->getSingleCarrier())) {
-                    list($carrierName, $carrier) = $carrierInfo;
-                    $carriers[$carrierName] = $carrier;
-                }
-            } else { // the user has the choice, so we will take all shop available carriers to do our estimate
-                EkomApi::inst()->initWebContext();
-                $shopId = ApplicationRegistry::get("ekom.shop_id");
-                $carriers = $this->getCarrierInstancesByShop($shopId);
+        /**
+         * We have to deal with the carriers choices that the shop has made
+         */
+        EkomApi::inst()->initWebContext();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+        $rows = $this->getCarriersByShop($shopId);
+        /**
+         * @var $coll CarrierCollection
+         */
+        $coll = X::get("Ekom_getCarrierCollection");
+        $carriers = [];
+        if (array_key_exists($carrierId, $rows)) {
+            $name = $rows[$carrierId];
+            if (false !== ($instance = $coll->getCarrier($name))) {
+                $carriers[$name] = $instance;
+            } else {
+                XLog::error("[Ekom module] - CarrierLayer.calculateShippingCostByCarrierId, cannot find carrier instance with name: $name");
             }
+        } else {
+            XLog::error("[Ekom module] - CarrierLayer.calculateShippingCostByCarrierId, carrier not found with id $carrierId");
+        }
 
-
-            //--------------------------------------------
-            // CALCULATING THE COSTS
-            //--------------------------------------------
+        //--------------------------------------------
+        // CALCULATING THE COSTS
+        //--------------------------------------------
+        if (count($carriers) > 0) {
             return $this->calculateShippingCostsByCarriers($carriers, $productInfos, $shopAddress, $shippingAddress);
-
-
-        return false; // we don't have a shipping address
+        }
+        return false;
     }
 
 

@@ -40,8 +40,6 @@ class CheckoutLayer
                 $carrierStep = $a["current_step"];
 
 
-
-
                 $userLayer = EkomApi::inst()->userLayer();
                 $carrierLayer = EkomApi::inst()->carrierLayer();
 
@@ -51,8 +49,6 @@ class CheckoutLayer
 
 
 
-                $carrierLayer->calculateShippingCostByCarrierId($carrierId);
-
 
                 /**
                  * false|addressModel
@@ -61,6 +57,12 @@ class CheckoutLayer
                 $shippingAddress = $userLayer->getUserShippingAddressById($userId, $shippingAddressId);
                 $countryId = $userLayer->getUserPreferredCountry();
 
+
+
+                $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
+
+                $productInfos = $cartModel['items'];
+                $shippingCosts = $carrierLayer->calculateShippingCostByCarrierId($carrierId, $productInfos, $shippingAddress);
 
                 /**
                  * @var $provider OnTheFlyFormProviderInterface
@@ -74,11 +76,6 @@ class CheckoutLayer
                 $currentStep = $_SESSION['ekom.order.singleAddress']["current_step"];
 
 
-
-
-
-
-
                 $model = [
                     "billingAddress" => $billingAddress,
                     "shippingAddress" => $shippingAddress,
@@ -88,6 +85,7 @@ class CheckoutLayer
                     "shippingAddressFormModel" => $form->getModel(),
                     "useSingleCarrier" => $hasCarrierChoice,
                     "paymentMethodBlocks" => $paymentMethodBlocks,
+                    "shippingCosts" => $shippingCosts,
                     "currentStep" => $currentStep,
 //                            "shippingType" => "singleAddressShipping", // singleAddressShipping|multipleAddressShipping // implicitly: it's singleAddressShipping, unless otherwise specified
                 ];
