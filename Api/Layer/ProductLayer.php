@@ -29,7 +29,7 @@ class ProductLayer
         $shopId = ApplicationRegistry::get("ekom.shop_id");
 
 
-        return A::cache()->get("Module.Ekom.Api.Layer.ProductLayer.getProductQuantity.$shopId.$productId", function () use ($shopId, $productId) {
+        return A::cache()->get("Ekom.ProductLayer.getProductQuantity.$shopId.$productId", function () use ($shopId, $productId) {
             if (false !== ($quantity = EkomApi::inst()->shopHasProduct()->readColumn("quantity", [
                     ["shop_id", '=', $shopId],
                     ["product_id", '=', $productId],
@@ -80,7 +80,7 @@ class ProductLayer
         $shopId = (int)$shopId;
         $langId = (int)$langId;
 
-        return A::cache()->get("Module.Ekom.Api.Layer.ProductLayer.getProductCardInfoByCardId.$langId.$shopId.$cardId", function () use ($shopId, $langId, $cardId) {
+        return A::cache()->get("Ekom.ProductLayer.getProductCardInfoByCardId.$langId.$shopId.$cardId", function () use ($shopId, $langId, $cardId) {
 
             /**
              * First get the product card info
@@ -109,12 +109,21 @@ and s.product_card_id=$cardId and sl.lang_id=$langId
             }
             return false;
         }, [
-            "ek_shop_has_product_card_lang",
-            "ek_shop_has_product_card",
-            "ek_product_card_lang",
-            "ek_product_card.delete",
-            "ek_product_card.update",
-            "ek_shop",
+            "ek_shop_has_product_card_lang.create",
+            "ek_shop_has_product_card_lang.delete.$shopId.$cardId",
+            "ek_shop_has_product_card_lang.update.$shopId.$cardId",
+            "ek_shop_has_product_card.create",
+            "ek_shop_has_product_card.delete.$shopId.$cardId",
+            "ek_shop_has_product_card.update.$shopId.$cardId",
+            "ek_product_card_lang.create",
+            "ek_product_card_lang.delete.$cardId.$langId",
+            "ek_product_card_lang.update.$cardId.$langId",
+            "ek_product_card.create",
+            "ek_product_card.delete.$cardId",
+            "ek_product_card.update.$cardId",
+            "ek_shop.create",
+            "ek_shop.delete.$shopId",
+            "ek_shop.update.$shopId",
         ]);
     }
 
@@ -165,9 +174,12 @@ and p.product_card_id=$cardId
             return $productRows;
         }, [
             "ek_product",
-            "ek_shop_has_product",
-            "ek_shop_has_product_lang",
-            "ek_shop",
+            "ek_shop_has_product.create",
+            "ek_shop_has_product.delete.$shopId",
+            "ek_shop_has_product.update.$shopId",
+            "ek_shop_has_product_lang.create",
+            "ek_shop_has_product_lang.update.$shopId",
+            "ek_shop_has_product_lang.delete.$shopId",
         ]);
     }
 
@@ -193,10 +205,10 @@ and p.product_card_id=$cardId
             $rows = QuickPdo::fetchAll("
 select 
 h.product_id,
-a.id as attribute_id,
+a.product_attribute_id as attribute_id,
 a.name as name_label,
 aa.name,
-v.id as value_id,
+v.product_attribute_value_id as value_id,
 v.value
 
 from ek_product_has_product_attribute h
@@ -368,14 +380,14 @@ and product_id in (" . implode(', ', $productIds) . ")
                             } else { // b2c
 
 
-                                // get taxes
-                                $taxLayer = $api->taxLayer();
-                                $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
-                                $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_price, $taxDetails);
-                                $_price = E::trimPrice($_price);
-                                $_priceWithTax = E::trimPrice($_priceWithTax);
-
                             }
+
+                            // get taxes, for both modes (b2b, b2b), just in case the template need the info
+                            $taxLayer = $api->taxLayer();
+                            $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
+                            $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_price, $taxDetails);
+                            $_price = E::trimPrice($_price);
+                            $_priceWithTax = E::trimPrice($_priceWithTax);
 
                             $price = E::price($_price);
                             $priceWithTax = E::price($_priceWithTax);
@@ -460,17 +472,28 @@ and product_id in (" . implode(', ', $productIds) . ")
 
 
         }, [
-            "ek_shop_has_product_card_lang",
-            "ek_shop_has_product_card",
-            "ek_product_card_lang",
-            "ek_product_card.delete",
-            "ek_product_card.update",
-            "ek_shop",
+            "ek_shop_has_product_card_lang.create",
+            "ek_shop_has_product_card_lang.delete.$shopId.$cardId",
+            "ek_shop_has_product_card_lang.update.$shopId.$cardId",
+            "ek_shop_has_product_card.create",
+            "ek_shop_has_product_card.delete.$shopId.$cardId",
+            "ek_shop_has_product_card.update.$shopId.$cardId",
+            "ek_product_card_lang.create",
+            "ek_product_card_lang.delete.$cardId.$langId",
+            "ek_product_card_lang.update.$cardId.$langId",
+            "ek_product_card.create",
+            "ek_product_card.delete.$cardId",
+            "ek_product_card.update.$cardId",
+            "ek_shop.create",
+            "ek_shop.delete.$shopId",
+            "ek_shop.update.$shopId",
+            //
             "ek_product_has_product_attribute",
             "ek_product_attribute_lang",
             "ek_product_attribute_value_lang",
             "ek_product.delete",
             "ek_product.update",
+            //
             // images
             "ekomApi.image.product",
             "ekomApi.image.productCard",
@@ -478,11 +501,9 @@ and product_id in (" . implode(', ', $productIds) . ")
             "ek_tax",
             "ek_tax_group_has_tax",
             "ek_tax_group",
-            "ek_product_card_has_tax_group",
-            "ek_shop.delete",
-            "ek_lang.delete",
-            "ek_product_card.delete",
-            // discounts....
+            "ek_product_card_has_tax_group.create",
+            "ek_product_card_has_tax_group.update.$shopId.$cardId",
+            "ek_product_card_has_tax_group.delete.$shopId.$cardId",
         ]);
 
 

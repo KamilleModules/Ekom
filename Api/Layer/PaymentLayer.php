@@ -14,6 +14,60 @@ use QuickPdo\QuickPdo;
 class PaymentLayer
 {
 
+    public function getShopPaymentMethods($shopId = null)
+    {
+        if (null === $shopId) {
+            EkomApi::inst()->initWebContext();
+            $shopId = ApplicationRegistry::get("ekom.shop_id");
+        }
+        $shopId = (int)$shopId;
+
+
+        return A::cache()->get("Ekom.PaymentLayer.getShopPaymentMethods.$shopId", function () use ($shopId) {
+
+            return QuickPdo::fetchAll("
+select
+m.id, 
+m.name,
+h.configuration
+
+from ek_shop_has_payment_method h 
+inner join ek_payment_method m on m.id=h.payment_method_id 
+
+where h.shop_id=$shopId
+order by h.`order` asc 
+        ");
+
+        }, [
+            "ek_shop_has_payment_method.create",
+            "ek_shop_has_payment_method.delete.$shopId",
+            "ek_shop_has_payment_method.update.$shopId",
+            "ek_payment_method",
+        ]);
+    }
+
+    public function getShopPaymentMethodBlockModels($shopId = null)
+    {
+        $rows = $this->getShopPaymentMethods($shopId);
+        $names = [];
+        foreach ($rows as $row) {
+            $names[$row['name']] = true;
+        }
+        $coll = X::get("Ekom_getPaymentMethodHandlerCollection");
+        /**
+         * @var $coll PaymentMethodHandlerCollectionInterface
+         */
+        $ret = [];
+        $all = $coll->all();
+        foreach ($all as $name => $handler) {
+            if (array_key_exists($name, $names)) {
+                $ret[] = $handler->getPaymentMethodBlockModel();
+            }
+        }
+        return $ret;
+    }
+
+
     public function getPaymentMethodBlockModels()
     {
         $coll = X::get("Ekom_getPaymentMethodHandlerCollection");
@@ -64,7 +118,7 @@ class PaymentLayer
         $userId = (int)$userId;
         $shopId = (int)$shopId;
 
-        return A::cache()->get("PaymentLayer.getUserPreferredPaymentMethodId.$userId.$shopId", function () use ($userId, $shopId) {
+        return A::cache()->get("Ekom.PaymentLayer.getUserPreferredPaymentMethodId.$userId.$shopId", function () use ($userId, $shopId) {
 
             if (false !== ($row = QuickPdo::fetch("
 select payment_method_id 
@@ -97,7 +151,7 @@ order by `order` asc
         }
         $shopId = (int)$shopId;
 
-        return A::cache()->get("PaymentLayer.getShopPreferredPaymentMethodId.$shopId", function () use ($shopId) {
+        return A::cache()->get("Ekom.PaymentLayer.getShopPreferredPaymentMethodId.$shopId", function () use ($shopId) {
             if (false !== ($row = QuickPdo::fetch("
 select payment_method_id 
 from ek_shop_has_payment_method

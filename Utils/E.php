@@ -10,6 +10,7 @@ use Core\Services\Hooks;
 use Core\Services\X;
 use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Architecture\Registry\ApplicationRegistry;
+use Kamille\Mvc\HtmlPageHelper\HtmlPageHelper;
 use Kamille\Services\XConfig;
 use Kamille\Services\XLog;
 use Kamille\Utils\Routsy\LinkGenerator\ApplicationLinkGenerator;
@@ -21,6 +22,12 @@ class E
 {
 
     private static $conf = null;
+
+
+
+    public static function loadEkomJsApi(){
+        X::get("Ekom_jsApiLoader")->load();
+    }
 
     public static function link($routeId, array $params = [], $absolute = false, $https = null)
     {
@@ -127,6 +134,8 @@ class E
         $moneyFormatArgs = self::conf("moneyFormatArgs");
         return self::formatPrice($number, $moneyFormatArgs);
     }
+
+
 
 
     public static function conf($key, $default = null)

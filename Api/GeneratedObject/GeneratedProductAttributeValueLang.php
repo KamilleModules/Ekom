@@ -29,9 +29,9 @@ class GeneratedProductAttributeValueLang extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
-			'value' => '',
 			'product_attribute_value_id' => 0,
 			'lang_id' => 0,
+			'value' => '',
 		], $data);
 
 

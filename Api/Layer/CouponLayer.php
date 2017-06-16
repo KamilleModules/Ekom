@@ -17,7 +17,7 @@ use QuickPdo\QuickPdo;
 
 class CouponLayer
 {
-    public function testCouponConditionsByCode($code, &$errors = [])
+    public function testCouponConditionsByCode($code, array $data = [], &$errors = [])
     {
 
         EkomApi::inst()->initWebContext();
@@ -29,7 +29,7 @@ class CouponLayer
             include $f;
 
             if (is_callable($func)) {
-                $ret = (bool)call_user_func_array($func, [&$errors]);
+                $ret = (bool)call_user_func_array($func, [$data, &$errors]);
                 if (true === $ret) { // just in case the dev set errors while returning true, cleaning up a bit
                     $errors = [];
                 }
@@ -58,7 +58,8 @@ class CouponLayer
 
         // does the coupon conditions validates?
         $errors = [];
-        $ok = $this->testCouponConditionsByCode($code, $errors);
+        $data = [];
+        $ok = $this->testCouponConditionsByCode($code, $data, $errors);
 
 
         // if so, can the coupon be added to the bag?
@@ -204,26 +205,10 @@ class CouponLayer
      * Use this method to apply a valid bag of coupons to a given order (on the cart
      * page or checkout page for instance).
      *
-     *
-     *
+     * @param $price
+     * @param $target : beforeShipping|afterShipping
      * @param array $couponBag
-     * @param array $targets , array of target name => target value,
-     *          Possible target names are: (ekom order model3)
-     *
-     *          - linesTotal
-     *          - linesTotalWithoutTax
-     *          - linesTotalWithTax
-     *
-     *          - orderSectionSubtotal
-     *          - orderSectionSubtotalWithoutTax
-     *          - orderSectionSubtotalWithTax
-     *
-     *
-     *
-     *
-     * @param array $validCoupons , the coupons in the bag, minus those discarded by failing condition
-     *
-     *
+     * @param array $validCoupons
      * @return false|array with the following structure:
      *
      *              - cartTotal, the formatted cart total
@@ -241,23 +226,15 @@ class CouponLayer
      *                                - label: string, the discount label
      *                                - old: float, just a reference to the price BEFORE the discount was applied
      *                                - newPrice: string, the formatted price (AFTER the discount was applied)
-     *
-     *
      */
-    public function zzzapplyCouponBag(array $couponBag, array $targets, array &$validCoupons = [])
+    public function applyCouponBag($price, $target, array $couponBag, array &$validCoupons = [], array $data = [])
     {
-        throw new \Exception("oo");
+
         try {
 
 
             $ret = [];
-
-            $linesTotal = $targets['linesTotal'];
-            $linesTotalWithTax = $targets['linesTotalWithTax'];
-            $linesTotalWithoutTax = $targets['linesTotalWithoutTax'];
-
-
-            $cartTemp = $linesTotalWithTax;
+            $originalPrice = $price;
             $coupons = [];
             foreach ($couponBag as $id) {
 
@@ -266,134 +243,51 @@ class CouponLayer
                     'label' => $info['label'],
                 ];
 
-                if (true === $this->testCouponConditionsByCode($info['code'])) {
-
+                if (true === $this->testCouponConditionsByCode($info['code'], $data)) {
 
                     $_discounts = [];
-                    foreach ($info['discounts'] as $target => $discounts) {
+                    foreach ($info['discounts'] as $_target => $discounts) {
+                        if ($_target === $target) {
+                            $temp = $price;
 
-                        $temp = $linesTotalWithTax;
-                        foreach ($discounts as $k => $discount) {
-                            $_discount = [];
-                            switch ($target) {
-                                case 'linesTotalWithTax':
-                                    $old = $linesTotalWithTax;
-                                    $linesTotalWithTax = $this->applyCouponDiscount($linesTotalWithTax, $discount);
+                            foreach ($discounts as $k => $discount) {
 
-                                    $_discount['old'] = $old;
-                                    $_discount['newPrice'] = E::price($linesTotalWithTax);
-                                    $_discount['label'] = $discount['label'];
-                                    break;
-                                default:
-                                    throw new \Exception("unknown target: $target");
-                                    break;
+                                $_discount = [];
+                                $old = $price;
+                                /**
+                                 * todo: this applyCouponDiscount method probably needs the data as its input.
+                                 * You might want to rebuild and create a system like for testCouponConditionsByCode,
+                                 * using the filesystem?
+                                 */
+                                $price = $this->applyCouponDiscount($price, $discount);
+                                $_discount['old'] = $old;
+                                $_discount['newPrice'] = E::price($price);
+                                $_discount['label'] = $discount['label'];
+
+                                $_discounts[] = $_discount;
                             }
-                            $_discounts[] = $_discount;
+
+
+                            $coupon['target'] = $target;
+                            $coupon['code'] = $info['code'];
+                            $coupon['discounts'] = $_discounts;
+                            $coupon['saving'] = E::price(-($temp - $price));
                         }
-
-
-                        $coupon['target'] = $target;
-                        $coupon['code'] = $info['code'];
-                        $coupon['discounts'] = $_discounts;
-                        $coupon['saving'] = E::price(-($temp - $linesTotalWithTax));
                     }
-
 
                     if (count($_discounts) > 0) { // some coupons are not bound to discounts yet
                         $validCoupons[] = $id;
                         $coupons[] = $coupon;
-                    } else {
-                        throw new \Exception("the coupon " . $info['code'] . " has no discounts bound to it!");
                     }
 
                 }
             }
 
-            $ret['rawCartTotal'] = $linesTotalWithTax;
-            $ret['cartTotal'] = E::price($linesTotalWithTax);
-            $ret['totalSaving'] = E::price(-($cartTemp - $linesTotalWithTax));
+            $ret['rawDiscountPrice'] = $price;
+            $ret['discountPrice'] = E::price($price);
+            $ret['totalSaving'] = E::price(-($originalPrice - $price));
             $ret['coupons'] = $coupons;
 
-
-            // updating the couponBag so that only valid coupons remain
-            EkomApi::inst()->cartLayer()->setCouponBag($validCoupons);
-
-            return $ret;
-
-
-        } catch (\Exception $e) {
-            XLog::error("[Ekom module] - CouponLayer.applyCouponBag: $e");
-            return false;
-        }
-    }
-
-
-    public function applyCouponBag($price, array $couponBag, array &$validCoupons = [])
-    {
-        try {
-
-
-            $ret = [];
-            $cartTemp = $linesTotalWithTax;
-            $coupons = [];
-            foreach ($couponBag as $id) {
-
-                $info = $this->getCouponInfo($id, true);
-                $coupon = [
-                    'label' => $info['label'],
-                ];
-
-                if (true === $this->testCouponConditionsByCode($info['code'])) {
-
-
-                    $_discounts = [];
-                    foreach ($info['discounts'] as $target => $discounts) {
-
-                        $temp = $linesTotalWithTax;
-                        foreach ($discounts as $k => $discount) {
-                            $_discount = [];
-                            switch ($target) {
-                                case 'linesTotalWithTax':
-                                    $old = $linesTotalWithTax;
-                                    $linesTotalWithTax = $this->applyCouponDiscount($linesTotalWithTax, $discount);
-
-                                    $_discount['old'] = $old;
-                                    $_discount['newPrice'] = E::price($linesTotalWithTax);
-                                    $_discount['label'] = $discount['label'];
-                                    break;
-                                default:
-                                    throw new \Exception("unknown target: $target");
-                                    break;
-                            }
-                            $_discounts[] = $_discount;
-                        }
-
-
-                        $coupon['target'] = $target;
-                        $coupon['code'] = $info['code'];
-                        $coupon['discounts'] = $_discounts;
-                        $coupon['saving'] = E::price(-($temp - $linesTotalWithTax));
-                    }
-
-
-                    if (count($_discounts) > 0) { // some coupons are not bound to discounts yet
-                        $validCoupons[] = $id;
-                        $coupons[] = $coupon;
-                    } else {
-                        throw new \Exception("the coupon " . $info['code'] . " has no discounts bound to it!");
-                    }
-
-                }
-            }
-
-            $ret['rawCartTotal'] = $linesTotalWithTax;
-            $ret['cartTotal'] = E::price($linesTotalWithTax);
-            $ret['totalSaving'] = E::price(-($cartTemp - $linesTotalWithTax));
-            $ret['coupons'] = $coupons;
-
-
-            // updating the couponBag so that only valid coupons remain
-            EkomApi::inst()->cartLayer()->setCouponBag($validCoupons);
 
             return $ret;
 
@@ -479,7 +373,6 @@ and l.lang_id=$langId
                 ");
 
 
-                az($rows);
                 $dis = [];
                 foreach ($rows as $r) {
                     if (!array_key_exists($r['target'], $dis)) {

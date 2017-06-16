@@ -44,6 +44,13 @@ class EkomServices
         \Core\Services\Hooks::call('Ekom_feedEkomTotalPriceChain', $c);
         return $c;
     }
+
+
+    protected static function Ekom_jsApiLoader(){
+        $l = new \Module\Ekom\JsApiLoader\EkomJsApiLoader();
+        \Core\Services\Hooks::call('Ekom_feedJsApiLoader', $l);
+        return $l;
+    }
 }
 
 

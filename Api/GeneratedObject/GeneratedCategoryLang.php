@@ -29,11 +29,11 @@ class GeneratedCategoryLang extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
+			'category_id' => 0,
+			'lang_id' => 0,
 			'label' => '',
 			'description' => '',
 			'slug' => '',
-			'category_id' => 0,
-			'lang_id' => 0,
 		], $data);
 
 

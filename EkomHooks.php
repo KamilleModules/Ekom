@@ -23,6 +23,11 @@ class EkomHooks
         $util->addShortCodeProvider(\Module\Ekom\ShortCodeProvider\EkomShortCodeProvider::create());
     }
 
+    protected static function Ekom_feedJsApiLoader(\Module\Ekom\JsApiLoader\EkomJsApiLoader $loader)
+    {
+
+    }
+
 
     //--------------------------------------------
     // EKOM

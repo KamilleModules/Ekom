@@ -76,10 +76,9 @@ order by h.order asc
             "ek_tax",
             "ek_tax_group_has_tax",
             "ek_tax_group",
-            "ek_product_card_has_tax_group",
-            "ek_shop.delete",
-            "ek_lang.delete",
-            "ek_product_card.delete",
+            "ek_product_card_has_tax_group.create",
+            "ek_product_card_has_tax_group.update.$shopId.$cardId",
+            "ek_product_card_has_tax_group.delete.$shopId.$cardId",
         ]);
     }
 

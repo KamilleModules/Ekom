@@ -29,11 +29,11 @@ class GeneratedProductCardLang extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
+			'product_card_id' => 0,
+			'lang_id' => 0,
 			'label' => '',
 			'description' => '',
 			'slug' => '',
-			'product_card_id' => 0,
-			'lang_id' => 0,
 		], $data);
 
 

@@ -188,10 +188,10 @@ class CartLayer
     }
 
 
-    public function getCartModel()
+    public function getCartModel(array $options = null)
     {
         if (null === $this->_cartModel) {
-            $this->_cartModel = $this->doGetCartModel();
+            $this->_cartModel = $this->doGetCartModel($options);
         }
 //        a($_SESSION);
 //        a(__FILE__);
@@ -199,10 +199,10 @@ class CartLayer
         return $this->_cartModel;
     }
 
-    public function getMiniCartModel()
+    public function getMiniCartModel(array $options = null)
     {
         if (null === $this->_miniCartModel) {
-            $this->_miniCartModel = $this->doGetCartModel();
+            $this->_miniCartModel = $this->doGetCartModel($options);
         }
         return $this->_miniCartModel;
     }
@@ -256,8 +256,14 @@ class CartLayer
         }
     }
 
-    private function doGetCartModel()
+    private function doGetCartModel(array $options = null)
     {
+        if (null === $options) {
+            $useEstimateShippingCosts = true;
+        } else {
+            $useEstimateShippingCosts = (array_key_exists("useEstimateShippingCosts", $options) && true === $options['useEstimateShippingCosts']);
+        }
+
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $model = [];
@@ -307,6 +313,10 @@ class CartLayer
 
 
         $taxAmount = $linesTotalWithTax - $linesTotalWithoutTax;
+
+
+        $isB2b = ('b2b' === EkomApi::inst()->configLayer()->getBusinessType()) ? true : false;
+        $model['isB2B'] = $isB2b;
         $model['totalQuantity'] = $totalQty;
         $model['items'] = $modelItems;
 //        $model['linesTotalWithoutTax'] = E::price($linesTotalWithoutTax);
@@ -322,11 +332,13 @@ class CartLayer
         $validCoupons = [];
 
 
-        $details = $couponApi->applyCouponBag($linesTotal, $this->getCouponBag(),  $validCoupons);
-//        $details = $couponApi->applyCouponBag($this->getCouponBag(), $targets, $validCoupons);
+        $details = $couponApi->applyCouponBag($linesTotal, "beforeShipping", $this->getCouponBag(), $validCoupons);
+//        EkomApi::inst()->cartLayer()->setCouponBag($validCoupons);
 
-        $cartTotalRaw = $details['rawCartTotal'];
-        $model['cartTotal'] = $details['cartTotal'];
+
+        $cartTotalRaw = $details['rawDiscountPrice'];
+        $model['rawCartTotal'] = $cartTotalRaw;
+        $model['cartTotal'] = $details['discountPrice'];
         $model['totalSaving'] = $details['totalSaving'];
         $model['coupons'] = $details['coupons'];
         $model['hasCoupons'] = (count($details['coupons']) > 0);
@@ -335,22 +347,25 @@ class CartLayer
         //--------------------------------------------
         // ADDING CARRIER INFORMATION
         //--------------------------------------------
-        /**
-         * we have basically two cases: either the user is connected, or not.
-         * If the user is not connected, the application chooses its own heuristics
-         * and returns an estimated shipping cost.
-         *
-         * If the user is connected and has a shipping address, the user's shipping address
-         * is used for the base of calculating the estimated shipping cost.
-         *
-         */
-        $carrierGroups = EkomApi::inst()->carrierLayer()->estimateShippingCosts($items);
-        $model['carrierSections'] = $carrierGroups;
-        $allShippingCosts = $carrierGroups['totalShippingCost'];
+        if (true === $useEstimateShippingCosts) {
+
+            /**
+             * we have basically two cases: either the user is connected, or not.
+             * If the user is not connected, the application chooses its own heuristics
+             * and returns an estimated shipping cost.
+             *
+             * If the user is connected and has a shipping address, the user's shipping address
+             * is used for the base of calculating the estimated shipping cost.
+             *
+             */
+            $carrierGroups = EkomApi::inst()->carrierLayer()->estimateShippingCosts($items);
+            $model['carrierSections'] = $carrierGroups;
+            $allShippingCosts = $carrierGroups['totalShippingCost'];
 
 
-        $model['totalShippingCost'] = E::price($allShippingCosts);
-        $model['orderGrandTotal'] = E::price($cartTotalRaw + $allShippingCosts);
+            $model['estimatedTotalShippingCost'] = E::price($allShippingCosts);
+            $model['estimatedOrderGrandTotal'] = E::price($cartTotalRaw + $allShippingCosts);
+        }
 
 
         return $model;

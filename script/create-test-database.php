@@ -1888,19 +1888,19 @@ $api->couponLang()->create([
 // cart discount
 //--------------------------------------------
 $cdiscountMinus2Euros = $api->cartDiscount()->create([
-    'target' => 'linesTotalWithTax',
+    'target' => 'beforeShipping',
     'procedure_type' => 'relativeAmount',
     'procedure_operand' => '-2',
     'shop_id' => $shopEurope,
 ]);
 $cdiscountMinus3Euros = $api->cartDiscount()->create([
-    'target' => 'linesTotalWithTax',
+    'target' => 'beforeShipping',
     'procedure_type' => 'relativeAmount',
     'procedure_operand' => '-3',
     'shop_id' => $shopEurope,
 ]);
 $cdiscountMinus4Euros = $api->cartDiscount()->create([
-    'target' => 'linesTotalWithTax',
+    'target' => 'beforeShipping',
     'procedure_type' => 'relativeAmount',
     'procedure_operand' => '-4',
     'shop_id' => $shopEurope,

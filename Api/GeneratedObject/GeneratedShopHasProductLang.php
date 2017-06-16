@@ -29,13 +29,13 @@ class GeneratedShopHasProductLang extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
+			'shop_id' => 0,
+			'product_id' => 0,
+			'lang_id' => 0,
 			'label' => '',
 			'description' => '',
 			'slug' => '',
 			'out_of_stock_text' => '',
-			'shop_id' => 0,
-			'product_id' => 0,
-			'lang_id' => 0,
 		], $data);
 
 

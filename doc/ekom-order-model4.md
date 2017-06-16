@@ -31,10 +31,16 @@ That's why I want to explain the ekom approach, which might be wrong or right, b
 How is the price affected?
 ===========
 
+The major change in this revision is the fact that we clearly identify two parallel business models, which influences both
+the concepts and the code.
+
+
 
 There are two main types of businesses: b2b or b2c.
 
-The differences are illustrated here: [![ekom-order-model4.jpg](https://s19.postimg.org/re75l91wj/ekom-order-model4.jpg)](https://postimg.org/image/6u2bmrm5b/)
+The differences are illustrated here: [![ekom-order-model4.jpg](https://s19.postimg.org/jqk92y38j/ekom-order-model4.jpg)](https://postimg.org/image/jdsuwrkyn/)
+
+
 
 
 B2b

@@ -27,6 +27,8 @@ class CheckoutLayer
             if ('singleAddress' === E::conf("checkoutMode")) {
 
 
+                $api = EkomApi::inst();
+
                 // start collecting order data
                 $this->initOrderModel();
 
@@ -40,14 +42,14 @@ class CheckoutLayer
                 $carrierStep = $a["current_step"];
 
 
-                $userLayer = EkomApi::inst()->userLayer();
-                $carrierLayer = EkomApi::inst()->carrierLayer();
+                $userLayer = $api->userLayer();
+                $carrierLayer = $api->carrierLayer();
+                $couponLayer = $api->couponLayer();
+                $cartLayer = $api->cartLayer();
 
 
                 $userId = SessionUser::getValue("id");
                 $shippingAddresses = $userLayer->getUserShippingAddresses($userId);
-
-
 
 
                 /**
@@ -58,11 +60,27 @@ class CheckoutLayer
                 $countryId = $userLayer->getUserPreferredCountry();
 
 
-
-                $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
-
+                $cartModel = EkomApi::inst()->cartLayer()->getCartModel([
+                    'useEstimateShippingCosts' => false,
+                ]);
                 $productInfos = $cartModel['items'];
                 $shippingCosts = $carrierLayer->calculateShippingCostByCarrierId($carrierId, $productInfos, $shippingAddress);
+                $shippingCosts['rawTotalShippingCost'] = $shippingCosts['totalShippingCost'];
+                $shippingCosts['totalShippingCost'] = E::price($shippingCosts['rawTotalShippingCost']);
+
+                // in singleAddress mode, we only have one order section
+                $_orderSectionSubtotal = $cartModel['rawCartTotal'] + $shippingCosts['rawTotalShippingCost'];
+                $validCoupons = [];
+                $data = [];// cartItems?
+                $details = $couponLayer->applyCouponBag($_orderSectionSubtotal, "afterShipping", $cartLayer->getCouponBag(), $validCoupons, $data);
+                $_orderSectionTotal  = $details['rawDiscountPrice'];
+                $_orderGrandTotal  = $_orderSectionTotal;
+
+
+
+                $orderSectionSubtotal  = E::price($_orderSectionSubtotal);
+                $orderSectionTotal  = E::price($_orderSectionTotal);
+                $orderGrandTotal  = E::price($_orderGrandTotal);
 
                 /**
                  * @var $provider OnTheFlyFormProviderInterface
@@ -70,7 +88,7 @@ class CheckoutLayer
                 $provider = X::get("Core_OnTheFlyFormProvider");
                 $form = $provider->getForm("Ekom", "UserAddress");
                 $hasCarrierChoice = $carrierLayer->useSingleCarrier();
-                $paymentMethodBlocks = EkomApi::inst()->paymentLayer()->getPaymentMethodBlockModels();
+                $paymentMethodBlocks = $api->paymentLayer()->getShopPaymentMethodBlockModels();
 
 
                 $currentStep = $_SESSION['ekom.order.singleAddress']["current_step"];
@@ -87,8 +105,13 @@ class CheckoutLayer
                     "paymentMethodBlocks" => $paymentMethodBlocks,
                     "shippingCosts" => $shippingCosts,
                     "currentStep" => $currentStep,
+                    "orderSectionSubtotal" => $orderSectionSubtotal,
+                    "orderSectionTotal" => $orderSectionTotal,
+                    "orderGrandTotal" => $orderGrandTotal,
+                    "afterShippingCouponDetails" => $details,
 //                            "shippingType" => "singleAddressShipping", // singleAddressShipping|multipleAddressShipping // implicitly: it's singleAddressShipping, unless otherwise specified
                 ];
+
 
                 return $model;
             }

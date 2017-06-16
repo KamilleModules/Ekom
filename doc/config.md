@@ -125,7 +125,7 @@ authors will implement them).
                                     no matter what. The quantity (shop_has_product.quantity) stays at 0 and don't go negative. 
 - sessionTimeout: int=300, the number of seconds the session is active
 - checkoutMode: 
-    - singleAddress: all items are shipped to one address 
+    - singleAddress: all items are shipped to one address (// in singleAddress mode, we only have one order section) 
     - (if you want to create other modes with multiple addresses, the ekom-checkout-synopsis.md document might give you some ideas) 
 - carrierSelectionMode: 
     - fixed:$carrier_name, the carrier is fixed (by the shop owner) to the value $carrier_name
