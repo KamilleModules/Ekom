@@ -12,12 +12,9 @@ interface PaymentMethodHandlerInterface
      * The model structure depends on the concrete class;
      * however it must contain at least the following keys:
      *
+     * - label:
      * - type: the type of the payment block
-     * - items: an array containing selectable items.
-     *          Each item contains at least the following keys:
-     *
-     *          - id: an unique identifier to identify the selectable item
-     *          - type: the type of the selectable item
+     * - ?panel: the model for a configuration panel if any
      *
      */
     public function getPaymentMethodBlockModel();

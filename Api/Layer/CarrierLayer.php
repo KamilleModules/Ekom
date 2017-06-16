@@ -354,6 +354,7 @@ order by h.priority asc
             ], $rejected);
             $totalShippingCost += $info["shipping_cost"];
 
+            $estimatedDeliveryDate = (array_key_exists('estimated_delivery_date', $info)) ? $info['estimated_delivery_date'] : null;
 
             $handledProductsInfo = [];
             foreach ($productInfos as $id => $info) {
@@ -369,6 +370,8 @@ order by h.priority asc
 
             $sections[$name] = [
                 'shippingCost' => $totalShippingCost,
+                'estimatedDeliveryDate' => $estimatedDeliveryDate,
+                "carrierLabel" => $carrier->getLabel(),
                 'productsInfo' => $handledProductsInfo,
             ];
             if (0 === count($productInfos)) {

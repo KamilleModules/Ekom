@@ -63,10 +63,13 @@ class CheckoutLayer
                 $cartModel = EkomApi::inst()->cartLayer()->getCartModel([
                     'useEstimateShippingCosts' => false,
                 ]);
+
                 $productInfos = $cartModel['items'];
                 $shippingCosts = $carrierLayer->calculateShippingCostByCarrierId($carrierId, $productInfos, $shippingAddress);
                 $shippingCosts['rawTotalShippingCost'] = $shippingCosts['totalShippingCost'];
                 $shippingCosts['totalShippingCost'] = E::price($shippingCosts['rawTotalShippingCost']);
+
+
 
                 // in singleAddress mode, we only have one order section
                 $_orderSectionSubtotal = $cartModel['rawCartTotal'] + $shippingCosts['rawTotalShippingCost'];
@@ -94,6 +97,7 @@ class CheckoutLayer
                 $currentStep = $_SESSION['ekom.order.singleAddress']["current_step"];
 
 
+
                 $model = [
                     "billingAddress" => $billingAddress,
                     "shippingAddress" => $shippingAddress,
@@ -103,15 +107,14 @@ class CheckoutLayer
                     "shippingAddressFormModel" => $form->getModel(),
                     "useSingleCarrier" => $hasCarrierChoice,
                     "paymentMethodBlocks" => $paymentMethodBlocks,
-                    "shippingCosts" => $shippingCosts,
                     "currentStep" => $currentStep,
                     "orderSectionSubtotal" => $orderSectionSubtotal,
                     "orderSectionTotal" => $orderSectionTotal,
                     "orderGrandTotal" => $orderGrandTotal,
                     "afterShippingCouponDetails" => $details,
+                    "orderSections" => $shippingCosts,
 //                            "shippingType" => "singleAddressShipping", // singleAddressShipping|multipleAddressShipping // implicitly: it's singleAddressShipping, unless otherwise specified
                 ];
-
 
                 return $model;
             }
