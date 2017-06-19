@@ -439,6 +439,9 @@ $api->productCardLang()->create([
     "slug" => "kettle-bell",
     "product_card_id" => $cardKettleBell,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Ballon Paille",
@@ -446,6 +449,9 @@ $api->productCardLang()->create([
     "slug" => "ballon-paille",
     "product_card_id" => $cardBallonPaille,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Pilates Ring",
@@ -453,6 +459,9 @@ $api->productCardLang()->create([
     "slug" => "pilates-ring",
     "product_card_id" => $cardPilatesRing,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Chaussettes",
@@ -460,6 +469,9 @@ $api->productCardLang()->create([
     "slug" => "socks",
     "product_card_id" => $cardSocks,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Gravity",
@@ -467,6 +479,9 @@ $api->productCardLang()->create([
     "slug" => "gravity",
     "product_card_id" => $cardGravity,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Cage Power",
@@ -474,6 +489,9 @@ $api->productCardLang()->create([
     "slug" => "cage-power",
     "product_card_id" => $cardCagePower,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Tapis",
@@ -481,6 +499,9 @@ $api->productCardLang()->create([
     "slug" => "tapis",
     "product_card_id" => $cardTapis,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Balance Board",
@@ -488,6 +509,9 @@ $api->productCardLang()->create([
     "slug" => "balance-board",
     "product_card_id" => $cardBalanceBoard,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Bloc Prioception",
@@ -495,6 +519,9 @@ $api->productCardLang()->create([
     "slug" => "bloc-prioception",
     "product_card_id" => $cardBlocPrioception,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Ballon",
@@ -502,6 +529,9 @@ $api->productCardLang()->create([
     "slug" => "ballon",
     "product_card_id" => $cardBallon,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 // english
@@ -518,6 +548,9 @@ $api->productCardLang()->create([
     "slug" => "ballon-paille",
     "product_card_id" => $cardBallonPaille,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Pilates Ring",
@@ -525,6 +558,9 @@ $api->productCardLang()->create([
     "slug" => "pilates-ring",
     "product_card_id" => $cardPilatesRing,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Socks",
@@ -532,6 +568,9 @@ $api->productCardLang()->create([
     "slug" => "socks",
     "product_card_id" => $cardSocks,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Gravity",
@@ -539,6 +578,9 @@ $api->productCardLang()->create([
     "slug" => "gravity",
     "product_card_id" => $cardGravity,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Cage Power",
@@ -546,6 +588,9 @@ $api->productCardLang()->create([
     "slug" => "cage-power",
     "product_card_id" => $cardCagePower,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Tapis",
@@ -553,6 +598,9 @@ $api->productCardLang()->create([
     "slug" => "tapis",
     "product_card_id" => $cardTapis,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Balance Board",
@@ -560,6 +608,9 @@ $api->productCardLang()->create([
     "slug" => "balance-board",
     "product_card_id" => $cardBalanceBoard,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Prioception Bloc",
@@ -567,6 +618,9 @@ $api->productCardLang()->create([
     "slug" => "bloc-prioception",
     "product_card_id" => $cardBlocPrioception,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productCardLang()->create([
     "label" => "Balloon",
@@ -574,6 +628,9 @@ $api->productCardLang()->create([
     "slug" => "ballon",
     "product_card_id" => $cardBallon,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 
@@ -721,18 +778,27 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productKettleBell_4,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productLang()->create([
     "label" => "",
     "description" => "",
     "product_id" => $productKettleBell_6,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productLang()->create([
     "label" => "",
     "description" => "",
     "product_id" => $productKettleBell_8,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -740,6 +806,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productBallonPaille,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -747,6 +816,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productPilatesRingBlack,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -754,6 +826,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productPilatesRingBlue,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -761,6 +836,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productSocksBlackSmall,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -768,6 +846,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productSocksBlackMedium,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 
@@ -776,6 +857,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productGravity,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 
@@ -784,6 +868,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productCagePower,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 
@@ -792,6 +879,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productTapisBleu,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -799,6 +889,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productBalanceBoard,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -806,6 +899,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productBlocProprioception,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -813,6 +909,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productBallonGris55cm,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -820,6 +919,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productBallonGris65cm,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -827,6 +929,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productBallonGris75cm,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 
@@ -836,18 +941,27 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productKettleBell_4,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productLang()->create([
     "label" => "",
     "description" => "",
     "product_id" => $productKettleBell_6,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->productLang()->create([
     "label" => "",
     "description" => "",
     "product_id" => $productKettleBell_8,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -855,6 +969,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productBallonPaille,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -862,6 +979,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productPilatesRingBlack,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -869,6 +989,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productPilatesRingBlue,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -876,6 +999,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productSocksBlackSmall,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -883,6 +1009,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productSocksBlackMedium,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 
@@ -891,6 +1020,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productGravity,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 
@@ -899,6 +1031,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productCagePower,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 
@@ -907,6 +1042,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productTapisBleu,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -914,6 +1052,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productBalanceBoard,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -921,6 +1062,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productBlocProprioception,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -928,6 +1072,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productBallonGris55cm,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -935,6 +1082,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productBallonGris65cm,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->productLang()->create([
@@ -942,6 +1092,9 @@ $api->productLang()->create([
     "description" => "",
     "product_id" => $productBallonGris75cm,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 
@@ -1120,6 +1273,9 @@ $api->categoryLang()->create([
     "slug" => "equipement",
     "category_id" => $categoryEquipement,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->categoryLang()->create([
     "label" => "formation",
@@ -1127,6 +1283,9 @@ $api->categoryLang()->create([
     "slug" => "formation",
     "category_id" => $categoryFormation,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->categoryLang()->create([
     "label" => "discipline",
@@ -1134,6 +1293,9 @@ $api->categoryLang()->create([
     "slug" => "discipline",
     "category_id" => $categoryDiscipline,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->categoryLang()->create([
     "label" => "pilates",
@@ -1141,6 +1303,9 @@ $api->categoryLang()->create([
     "slug" => "pilates",
     "category_id" => $categoryPilates,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->categoryLang()->create([
@@ -1149,6 +1314,9 @@ $api->categoryLang()->create([
     "slug" => "cross-training",
     "category_id" => $categoryCrossTraining,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->categoryLang()->create([
     "label" => "matériel",
@@ -1156,6 +1324,9 @@ $api->categoryLang()->create([
     "slug" => "materiel",
     "category_id" => $categoryMateriel,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->categoryLang()->create([
     "label" => "utilisation",
@@ -1163,6 +1334,9 @@ $api->categoryLang()->create([
     "slug" => "utilisation",
     "category_id" => $categoryUtilisation,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->categoryLang()->create([
     "label" => "équilibre",
@@ -1170,6 +1344,9 @@ $api->categoryLang()->create([
     "slug" => "equilibre",
     "category_id" => $categoryEquilibre,
     "lang_id" => $langFrench,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 
@@ -1180,6 +1357,9 @@ $api->categoryLang()->create([
     "slug" => "equipement",
     "category_id" => $categoryEquipement,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->categoryLang()->create([
     "label" => "course",
@@ -1187,6 +1367,9 @@ $api->categoryLang()->create([
     "slug" => "course",
     "category_id" => $categoryFormation,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->categoryLang()->create([
     "label" => "discipline",
@@ -1194,6 +1377,9 @@ $api->categoryLang()->create([
     "slug" => "discipline",
     "category_id" => $categoryDiscipline,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->categoryLang()->create([
     "label" => "pilates",
@@ -1201,6 +1387,9 @@ $api->categoryLang()->create([
     "slug" => "pilates",
     "category_id" => $categoryPilates,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->categoryLang()->create([
@@ -1209,6 +1398,9 @@ $api->categoryLang()->create([
     "slug" => "cross-training",
     "category_id" => $categoryCrossTraining,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->categoryLang()->create([
@@ -1217,6 +1409,9 @@ $api->categoryLang()->create([
     "slug" => "supplies",
     "category_id" => $categoryMateriel,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->categoryLang()->create([
     "label" => "usage",
@@ -1224,6 +1419,9 @@ $api->categoryLang()->create([
     "slug" => "usage",
     "category_id" => $categoryUtilisation,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 $api->categoryLang()->create([
     "label" => "balance",
@@ -1231,6 +1429,9 @@ $api->categoryLang()->create([
     "slug" => "balance",
     "category_id" => $categoryEquilibre,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 
@@ -1240,6 +1441,9 @@ $api->categoryLang()->create([
     "slug" => "course",
     "category_id" => $categoryUsFormation,
     "lang_id" => $langEnglish,
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 
@@ -1317,6 +1521,9 @@ foreach ($products as $product) {
         "shop_id" => $shopEurope,
         "product_id" => $product,
         "lang_id" => $langFrench,
+        "meta_title" => "",
+        "meta_description" => "",
+        "meta_keywords" => serialize([]),
     ]);
     $api->shopHasProductLang()->create([
         "label" => "",
@@ -1326,6 +1533,9 @@ foreach ($products as $product) {
         "shop_id" => $shopEurope,
         "product_id" => $product,
         "lang_id" => $langEnglish,
+        "meta_title" => "",
+        "meta_description" => "",
+        "meta_keywords" => serialize([]),
     ]);
     $api->shopHasProductLang()->create([
         "label" => "",
@@ -1335,6 +1545,9 @@ foreach ($products as $product) {
         "shop_id" => $shopUsa,
         "product_id" => $product,
         "lang_id" => $langEnglish,
+        "meta_title" => "",
+        "meta_description" => "",
+        "meta_keywords" => serialize([]),
     ]);
 }
 
@@ -1436,6 +1649,9 @@ foreach ($cards as $card) {
         "label" => "",
         "slug" => $slug,
         "description" => "",
+        "meta_title" => "",
+        "meta_description" => "",
+        "meta_keywords" => serialize([]),
     ]);
 
     $api->shopHasProductCardLang()->create([
@@ -1445,6 +1661,9 @@ foreach ($cards as $card) {
         "label" => "",
         "slug" => "",
         "description" => "",
+        "meta_title" => "",
+        "meta_description" => "",
+        "meta_keywords" => serialize([]),
     ]);
 }
 
@@ -1456,6 +1675,9 @@ $api->shopHasProductCardLang()->create([
     "label" => "",
     "slug" => "",
     "description" => "",
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 $api->shopHasProductCardLang()->create([
@@ -1465,6 +1687,9 @@ $api->shopHasProductCardLang()->create([
     "label" => "",
     "slug" => "",
     "description" => "",
+    "meta_title" => "",
+    "meta_description" => "",
+    "meta_keywords" => serialize([]),
 ]);
 
 

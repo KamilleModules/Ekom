@@ -4,7 +4,7 @@
 namespace Module\Ekom\Utils;
 
 
-use Bat\UriTool;
+use Authenticate\SessionUser\SessionUser;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Core\Services\X;
@@ -13,10 +13,9 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Mvc\HtmlPageHelper\HtmlPageHelper;
 use Kamille\Services\XConfig;
 use Kamille\Services\XLog;
-use Kamille\Utils\Routsy\LinkGenerator\ApplicationLinkGenerator;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Notifier\EkomNotifier;
-use Umail\Umail;
 use Umail\UmailInterface;
 
 class E
@@ -24,6 +23,39 @@ class E
 
     private static $conf = null;
 
+    public static function getUserId()
+    {
+        if (SessionUser::isConnected()) {
+            return SessionUser::getValue("id");
+        }
+        throw new EkomApiException("The user is not connected");
+    }
+
+    /**
+     *
+     *
+     * http://www.thesempost.com/new-title-description-lengths-for-google-seo/
+     *
+     * - meta_title: 70 chars
+     * - meta_description: 100 chars
+     *
+     */
+    public static function seo($title = null, $description = null, array $keywords = null)
+    {
+        if (null !== $title) {
+            HtmlPageHelper::$title = $title;
+        }
+        if (null !== $description) {
+            HtmlPageHelper::$description = $description;
+        }
+
+        if (null !== $keywords) {
+            HtmlPageHelper::addMeta([
+                "name" => "keywords",
+                "content" => implode(',', $keywords),
+            ]);
+        }
+    }
 
     public static function notify($eventName)
     {

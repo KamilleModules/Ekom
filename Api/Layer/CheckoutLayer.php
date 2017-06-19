@@ -53,6 +53,7 @@ class CheckoutLayer
 
                 // taking data out of sections
                 $a = $_SESSION['ekom.order.singleAddress'];
+
                 $billingAddressId = $a["billing_address_id"];
                 $shippingAddressId = $a["shipping_address_id"];
                 $carrierId = $a["carrier_id"];

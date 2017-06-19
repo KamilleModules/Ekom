@@ -91,10 +91,16 @@ select
 sl.label,
 sl.slug,
 sl.description,
+sl.meta_title,
+sl.meta_description,
+sl.meta_keywords,
 s.product_id,
 s.active,
 l.label as default_label,
 l.description as default_description,
+l.meta_title as default_meta_title,
+l.meta_description as default_meta_description,
+l.meta_keywords as default_meta_keywords,
 l.slug as default_slug
 
 from ek_shop_has_product_card_lang sl 
@@ -150,9 +156,15 @@ s.quantity,
 s.active,
 l.label,
 l.description,
+l.meta_title,
+l.meta_description,
+l.meta_keywords,
 l.out_of_stock_text,
 ll.label as default_label,
 ll.description as default_description,
+ll.meta_title as default_meta_title,
+ll.meta_description as default_meta_description,
+ll.meta_keywords as default_meta_keywords,
 l.slug
 
 
@@ -354,6 +366,14 @@ and product_id in (" . implode(', ', $productIds) . ")
                             }
 
 
+                            //--------------------------------------------
+                            // META
+                            //--------------------------------------------
+                            $metaTitle = $this->getMetaTitle($p, $row, $label);
+                            $metaDescription = $this->getMetaDescription($p, $row, $label, $description);
+                            $metaKeywords = $this->getMetaKeywords($p, $row, $label, $description);
+
+
                             $stockType = "stockAvailable";
                             $stockText = "in stock";
                             if (0 === (int)$p['quantity']) {
@@ -387,15 +407,12 @@ and product_id in (" . implode(', ', $productIds) . ")
                             $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
 
 
-
                             $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_price, $taxDetails);
                             $_price = E::trimPrice($_price);
                             $_priceWithTax = E::trimPrice($_priceWithTax);
 
                             $price = E::price($_price);
                             $priceWithTax = E::price($_priceWithTax);
-
-
 
 
                             $boxConf = [
@@ -407,6 +424,10 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 "ref" => $p['reference'],
                                 "weight" => $p['weight'],
                                 "description" => $description,
+                                //
+                                "metaTitle" => $metaTitle,
+                                "metaDescription" => $metaDescription,
+                                "metaKeywords" => $metaKeywords,
                                 /**
                                  * Is used by the widget to assign visual cues (for instance success color) to the stockText
                                  * List of available types will be defined later.
@@ -773,4 +794,69 @@ and product_id in (" . implode(', ', $productIds) . ")
             "ekomApi.image.productCard",
         ]);
     }
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    private function getMetaTitle(array $product, array $card, $label)
+    {
+        $ret = '';
+
+        if ('' !== $product['meta_title']) { // ek_shop_has_product_lang.description
+            $ret = $product['meta_title'];
+        } elseif ('' !== $product['default_meta_title']) { // ek_product_lang.description
+            $ret = $product['default_meta_title'];
+        } else {
+            // ek_shop_has_product_card_lang.description and ek_product_card_lang.description
+            $ret = ("" !== $card['meta_title']) ? $card['meta_title'] : $card['default_meta_title'];
+        }
+        if ('' === $ret) {
+            // ekom heuristics
+            $ret = $label . ' (' . $product['reference'] . ')';
+
+        }
+        return $ret;
+    }
+
+    private function getMetaDescription(array $product, array $card, $label, $description)
+    {
+        $ret = '';
+
+        if ('' !== $product['meta_description']) { // ek_shop_has_product_lang.description
+            $ret = $product['meta_description'];
+        } elseif ('' !== $product['default_meta_description']) { // ek_product_lang.description
+            $ret = $product['default_meta_description'];
+        } else {
+            // ek_shop_has_product_card_lang.description and ek_product_card_lang.description
+            $ret = ("" !== $card['meta_description']) ? $card['meta_description'] : $card['default_meta_description'];
+        }
+        if ('' === $ret) {
+            // ekom heuristics
+            $ret = $description;
+
+        }
+        return $ret;
+    }
+
+    private function getMetaKeywords(array $product, array $card, $label, $description)
+    {
+        $ret = [];
+
+        if ('' !== $product['meta_keywords']) { // ek_shop_has_product_lang.description
+            $ret = unserialize($product['meta_keywords']);
+        } elseif ('' !== $product['default_meta_keywords']) { // ek_product_lang.description
+            $ret = unserialize($product['default_meta_keywords']);
+        } else {
+            // ek_shop_has_product_card_lang.description and ek_product_card_lang.description
+            $ret = ("" !== $card['meta_keywords']) ? unserialize($card['meta_keywords']) : unserialize($card['default_meta_keywords']);
+        }
+        if ('' === $ret) {
+            // ekom heuristics
+            $ret = [];
+        }
+        return $ret;
+    }
+
+
 }

@@ -71,6 +71,61 @@ select * from ek_order where id=$id and user_id=$userId
     }
 
 
+    public function getUserOrderSummaries($userId)
+    {
+        if ("singleAddress" === E::conf("checkoutMode")) {
+
+
+            $userId = (int)$userId;
+
+            return A::cache()->get("Ekom.OrderLayer.getUserOrderSummaries.$userId", function () use ($userId) {
+
+                $rows = QuickPdo::fetchAll("
+select id, reference, `date`, order_details from ek_order where user_id=$userId        
+        ");
+                $ret = [];
+                foreach ($rows as $k => $row) {
+
+//                $rows[$k]['user_info'] = unserialize($row['user_info']);
+//                $rows[$k]['shop_info'] = unserialize($row['shop_info']);
+//                $rows[$k]['shipping_address'] = unserialize($row['shipping_address']);
+//                $rows[$k]['billing_address'] = unserialize($row['billing_address']);
+                    $details = unserialize($row['order_details']);
+//                az($details);
+                    $products = [];
+                    $section = $details['orderSections']['sections'][0];
+                    $pInfo = $section['productsInfo'];
+                    foreach ($pInfo as $p) {
+                        $products[] = [
+                            "label" => $p['label'],
+                            "ref" => $p['ref'],
+                            "uri" => $p['uri_card_with_ref'],
+                            "quantity" => $p['quantity'],
+                            "linePrice" => $p['linePrice'],
+                            "image" => $p['image'],
+                        ];
+                    }
+
+
+                    $ret[] = [
+                        "id" => $row['id'],
+                        "ref" => $row['reference'],
+                        "date" => $row['date'],
+                        "orderGrandTotal" => $details['orderGrandTotal'],
+                        "products" => $products,
+                    ];
+
+
+                }
+                return $ret;
+            }, [
+                "ek_order",
+            ]);
+        }
+        throw new \Exception("Not implemented yet with checkoutMode " . E::conf("checkoutMode"));
+    }
+
+
 
 
     //--------------------------------------------

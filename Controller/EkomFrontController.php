@@ -63,4 +63,7 @@ class EkomFrontController extends ApplicationController
         $link = E::link("Ekom_login", [], true);
         return RedirectResponse::create($link);
     }
+
+
+
 }
