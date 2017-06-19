@@ -17,7 +17,7 @@ $profile = array_replace_recursive($profile, [
             'ek_order.tracking_number',
             'ek_order.user_info',
             'ek_order.shop_info',
-            'ek_order.invoice_address',
+            'ek_order.shipping_address',
             'ek_order.billing_address',
             'ek_order.order_details',
             'action',

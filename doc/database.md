@@ -582,12 +582,12 @@ Note that we need to flatten all data, be it a dynamic carrier strategy, or an u
     - id, label, currency_symbol, currency_code
 
 
-- invoice_address_info: serialized array with the following:
+- shipping_address_info: serialized array with the following:
     - invoice_country
     - invoice_state: 
     - invoice_city
     - invoice_postcode: varchar  (some postcodes contain letters)
-    - invoice_address 
+    - shipping_address 
 
 
 - billing_address_info: serialized array with the following:

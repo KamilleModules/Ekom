@@ -57,7 +57,6 @@ use Module\Ekom\Api\Object\Timezone;
 use Module\Ekom\Api\Object\User;
 use Module\Ekom\Api\Object\UserGroup;
 use Module\Ekom\Api\Object\UserHasAddress;
-use Module\Ekom\Api\Object\UserHasPaymentMethod;
 use Module\Ekom\Api\Object\UserHasUserGroup;
 
 use XiaoApi\Api\XiaoApi;
@@ -464,13 +463,6 @@ class GeneratedEkomApi extends XiaoApi
     public function userHasAddress()
     {
         return $this->getObject('userHasAddress');
-    }
-    /**
-     * @return UserHasPaymentMethod
-     */
-    public function userHasPaymentMethod()
-    {
-        return $this->getObject('userHasPaymentMethod');
     }
     /**
      * @return UserHasUserGroup

@@ -238,6 +238,12 @@ class CartLayer
         return $this;
     }
 
+
+    public function clean()
+    {
+        $_SESSION['ekom.cart'] = [];
+    }
+
     //--------------------------------------------
     //
     //--------------------------------------------
@@ -299,6 +305,7 @@ class CartLayer
 //                $it['linePriceWithoutTax'] = E::price($linePriceWithoutTax);
 //                $it['linePriceWithTax'] = E::price($linePriceWithTax);
                 $it['linePrice'] = E::price($linePrice);
+                $it['rawLinePrice'] = $linePrice;
 
 
 //                $attrValues = [];
@@ -322,7 +329,9 @@ class CartLayer
 //        $model['linesTotalWithoutTax'] = E::price($linesTotalWithoutTax);
 //        $model['linesTotalWithTax'] = E::price($linesTotalWithTax);
         $model['linesTotal'] = E::price($linesTotal);
+        $model['rawLinesTotal'] = $linesTotal;
         $model['taxAmount'] = E::price($taxAmount);
+        $model['rawTaxAmount'] = $taxAmount;
 
 
         //--------------------------------------------
@@ -340,6 +349,7 @@ class CartLayer
         $model['rawCartTotal'] = $cartTotalRaw;
         $model['cartTotal'] = $details['discountPrice'];
         $model['totalSaving'] = $details['totalSaving'];
+        $model['rawTotalSaving'] = $details['rawTotalSaving'];
         $model['coupons'] = $details['coupons'];
         $model['hasCoupons'] = (count($details['coupons']) > 0);
 
@@ -366,7 +376,6 @@ class CartLayer
             $model['estimatedTotalShippingCost'] = E::price($allShippingCosts);
             $model['estimatedOrderGrandTotal'] = E::price($cartTotalRaw + $allShippingCosts);
         }
-
 
         return $model;
     }
@@ -455,7 +464,9 @@ and p.lang_id=$langId
                     'attributes' => $zeAttr,
                     'attributeDetails' => $zeAttr,
                     'price' => $b['price'],
+                    'rawPrice' => $b['rawPrice'],
                     'salePrice' => $b['salePrice'],
+                    'rawSalePrice' => $b['rawSalePrice'],
 //                    'salePriceWithTax' => $b['salePriceWithTax'],
 //                    'salePriceWithoutTax' => $b['salePriceWithoutTax'],
                     'image' => $mainImage,
@@ -463,10 +474,10 @@ and p.lang_id=$langId
 
                     'stockType' => $b['stockType'],
                     'stockText' => $b['stockText'],
+                    'taxDetails' => $b['taxDetails'],
 
 //                    'rawSalePriceWithoutTax' => $b['rawSalePriceWithoutTax'],
 //                    'rawSalePriceWithTax' => $b['rawSalePriceWithTax'],
-                    'rawSalePrice' => $b['rawSalePrice'],
                 ];
 
             }

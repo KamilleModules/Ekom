@@ -15,6 +15,7 @@ use Kamille\Services\XConfig;
 use Kamille\Services\XLog;
 use Kamille\Utils\Routsy\LinkGenerator\ApplicationLinkGenerator;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Notifier\EkomNotifier;
 use Umail\Umail;
 use Umail\UmailInterface;
 
@@ -24,8 +25,26 @@ class E
     private static $conf = null;
 
 
+    public static function notify($eventName)
+    {
+        /**
+         * @var $notifier EkomNotifier
+         */
+        $notifier = X::get("Ekom_notifier");
+        return call_user_func_array([$notifier, "notify"], func_get_args());
+    }
 
-    public static function loadEkomJsApi(){
+    public static function subscribe($eventName, callable $handler)
+    {
+        /**
+         * @var $notifier EkomNotifier
+         */
+        $notifier = X::get("Ekom_notifier");
+        return $notifier->subscribe($eventName, $handler);
+    }
+
+    public static function loadEkomJsApi()
+    {
         X::get("Ekom_jsApiLoader")->load();
     }
 
@@ -136,8 +155,6 @@ class E
     }
 
 
-
-
     public static function conf($key, $default = null)
     {
 
@@ -182,6 +199,7 @@ class E
         if (array_key_exists($key, self::$conf)) {
             return self::$conf[$key];
         }
+
         throw new \Exception("Key not found in conf: $key, (Temporary exception: todo remove)");
         return $default;
     }

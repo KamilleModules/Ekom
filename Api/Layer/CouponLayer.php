@@ -283,9 +283,11 @@ class CouponLayer
                 }
             }
 
+            $totalSaving = ($originalPrice - $price);
             $ret['rawDiscountPrice'] = $price;
             $ret['discountPrice'] = E::price($price);
             $ret['totalSaving'] = E::price(-($originalPrice - $price));
+            $ret['rawTotalSaving'] = $totalSaving;
             $ret['coupons'] = $coupons;
 
 

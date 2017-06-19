@@ -35,7 +35,7 @@ class GeneratedOrder extends TableCrudObject
 			'tracking_number' => '',
 			'user_info' => '',
 			'shop_info' => '',
-			'invoice_address' => '',
+			'shipping_address' => '',
 			'billing_address' => '',
 			'order_details' => '',
 		], $data);

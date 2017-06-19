@@ -53,11 +53,16 @@ A::addBodyEndJsCode("plainJs", file_get_contents("my-init.js"));
 The methods
 ================
 
-Ekom js api is mostly based on the event listener principles: 
+
+Ekom js api covers many areas of the Ekom module.
+
+One of the fundamental concept of this api is that it's mostly based on the event listener principles: 
 there are some events, and you can listen to them.
 
-he widget authors use their common sense to implement their part (whether they should trigger an event or
-listen to an event...). 
+Widget authors can also create their own events and trigger them when they want,
+so that other people can listen to them.
+
+ 
 
 
 Here are the ekomJsApi public methods:
@@ -75,14 +80,15 @@ Here are the ekomJsApi public methods:
 
  
 // cart
-- cart.removeItem: (product_id ), remove an item from the cart
-                    The following events are triggered:
-                        - cart.updated
-                         
 - cart.addItem: (product_id, qty), add an item to the cart
                     The following events are triggered:
                         - cart.itemAdded
                         - cart.updated
+                        
+- cart.removeItem: (product_id ), remove an item from the cart
+                    The following events are triggered:
+                        - cart.updated
+                         
 
 - cart.updateItemQuantity: (product_id, newQty), update the quantity of an item.
                             If the item is not in the cart, it will be added.
@@ -208,7 +214,56 @@ Here are the ekomJsApi public methods:
                                               
                                               
 // checkout                        
-- saveStepShipping: (): todo
+- setShippingAddressId: function (id, onSuccess, onError, options)
+                This sets the shipping address for the checkout process.
+                - id: the id of the address to mark as the shipping address
+                - onSuccess ( arr:data )
+                            data.orderModel contains the order model
+                - onError ( string:errorMessage )
+                - options: (all options are optional)      
+                        - marker: set a marker in session, which you can use to make the various
+                                steps of the checkout process look persistent.
+                                For instance, if the user has selected the address and goes to step two,
+                                when she refresh the page, you can use the markers to redirect her
+                                directly to step two.
+                        - saveAsDefault: false
+                                if you want to make the item (in this case the address) the user's
+                                preferred item, set this to true.
+                                It doesn't work with all item types.
+                                Actually now it only works for addresses.
+                                If it works, then next time the user goes through the checkout process,
+                                this item (address) will be automatically pre-selected.
+                                
+                The following events are triggered:
+                    - checkout.address.selected                                                
+                                
+                                                                                                                            
+- setPaymentMethod: function (id, paymentMethodOptions, onSuccess, onError, options)
+                This sets the payment method for the checkout process.
+                - id: the id of the payment method chosen by the user
+                - paymentMethodOptions: an array which help determining the payment method details
+                            chosen by the user.
+                            Not all payment methods use options.
+                            The "credit card wallet" payment method is the reason why
+                            paymentMethodOptions exist in the first place.
+                            With the "credit card wallet" payment method, the user can choose
+                            between different credit cards that she has registered.
+                            The paymentMethodOptions in this case is used to identify which card
+                            was chosen by the user.
+                - onSuccess: same as setShippingAddressId                            
+                - onError: same as setShippingAddressId                            
+                - options: same as setShippingAddressId                            
+                        
+- updateProductQuantity: function (product_id, newQty)                                
+                Update the quantity of a given product in the cart and for the checkout process.
+
+                The following events are triggered:
+                    - checkout.cart.updated
+                    
+- placeOrder: function (onSuccess)                                
+                place the user order (creates the order in the database).
+                - onSuccess ( data )
+                        data.orderModel contains the order model
 
                         
 

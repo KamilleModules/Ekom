@@ -348,11 +348,18 @@ order by h.priority asc
              */
             $rejected = [];
             $info = $carrier->handleOrder([
+                'forReal' => true,
                 'products' => $productInfos,
                 'shopAddress' => $shopAddress,
                 'shippingAddress' => $shippingAddress,
             ], $rejected);
             $totalShippingCost += $info["shipping_cost"];
+
+
+            $trackingNumber = "";
+            if (array_key_exists("tracking_number", $info)) {
+                $trackingNumber = $info['tracking_number'];
+            }
 
             $estimatedDeliveryDate = (array_key_exists('estimated_delivery_date', $info)) ? $info['estimated_delivery_date'] : null;
 
@@ -368,11 +375,15 @@ order by h.priority asc
                 continue;
             }
 
-            $sections[$name] = [
-                'shippingCost' => $totalShippingCost,
+
+            $sections[] = [
+                'name' => $name,
+                'shippingCost' => E::price($totalShippingCost),
+                'rawShippingCost' => $totalShippingCost,
                 'estimatedDeliveryDate' => $estimatedDeliveryDate,
                 "carrierLabel" => $carrier->getLabel(),
                 'productsInfo' => $handledProductsInfo,
+                'trackingNumber' => $trackingNumber,
             ];
             if (0 === count($productInfos)) {
                 break;

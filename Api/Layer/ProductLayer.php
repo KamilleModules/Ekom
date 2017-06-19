@@ -385,12 +385,17 @@ and product_id in (" . implode(', ', $productIds) . ")
                             // get taxes, for both modes (b2b, b2b), just in case the template need the info
                             $taxLayer = $api->taxLayer();
                             $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
+
+
+
                             $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_price, $taxDetails);
                             $_price = E::trimPrice($_price);
                             $_priceWithTax = E::trimPrice($_priceWithTax);
 
                             $price = E::price($_price);
                             $priceWithTax = E::price($_priceWithTax);
+
+
 
 
                             $boxConf = [

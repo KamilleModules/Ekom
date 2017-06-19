@@ -62,6 +62,16 @@ class EkomHooks
 
     }
 
+    protected static function Ekom_feedEkomNotifier(\Module\Ekom\Notifier\EkomNotifier $notifier)
+    {
+
+    }
+
+    protected static function Ekom_feedStatusProviderCollection(\Module\Ekom\Status\ProviderCollection\StatusProviderCollection $collection)
+    {
+
+    }
+
     //--------------------------------------------
     // NULLOS ADMIN
     //--------------------------------------------

@@ -73,7 +73,7 @@ class UserLayer
         EkomApi::inst()->initWebContext();
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
 
-        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getUserShippingAddressById.$langId.$userId.$addressId", function () use ($userId, $langId, $addressId) {
+        return A::cache()->get("Ekom.UserLayer.getUserShippingAddressById.$langId.$userId.$addressId", function () use ($userId, $langId, $addressId) {
 
             if (false !== ($row = QuickPdo::fetch("
 
@@ -139,7 +139,7 @@ and l.lang_id=$langId
         EkomApi::inst()->initWebContext();
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
 
-        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getUserBillingAddress.$langId.$userId", function () use ($userId, $langId) {
+        return A::cache()->get("Ekom.UserLayer.getUserBillingAddress.$langId.$userId", function () use ($userId, $langId) {
 
             if (false !== ($row = QuickPdo::fetch("
 
@@ -199,7 +199,7 @@ and l.lang_id=$langId
         EkomApi::inst()->initWebContext();
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
 
-        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getUserBillingAddress.$langId.$userId.$id", function () use ($userId, $langId, $id) {
+        return A::cache()->get("Ekom.UserLayer.getUserBillingAddress.$langId.$userId.$id", function () use ($userId, $langId, $id) {
 
             if (false !== ($row = QuickPdo::fetch("
 
@@ -256,7 +256,7 @@ and l.lang_id=$langId
 
         $userId = (int)$userId;
         EkomApi::inst()->initWebContext();
-        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getUserBillingAddressId.$userId", function () use ($userId) {
+        return A::cache()->get("Ekom.UserLayer.getUserBillingAddressId.$userId", function () use ($userId) {
 
             if (false !== ($ret = QuickPdo::fetch("
 
@@ -452,7 +452,7 @@ and `type`='billing'
         $langId = (int)$langId;
 
 
-        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getUserShippingAddresses.$langId.$userId", function () use ($userId, $langId) {
+        return A::cache()->get("Ekom.UserLayer.getUserShippingAddresses.$langId.$userId", function () use ($userId, $langId) {
 
 
             $rows = QuickPdo::fetchAll("
@@ -505,7 +505,7 @@ order by h.`order` asc
 
     public function getUserGroupIds($userId)
     {
-        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getUserGroupIds.$userId", function () use ($userId) {
+        return A::cache()->get("Ekom.UserLayer.getUserGroupIds.$userId", function () use ($userId) {
 
             $userId = (int)$userId;
             return EkomApi::inst()->userHasUserGroup()->readValues("user_group_id", [
@@ -516,6 +516,41 @@ order by h.`order` asc
         }, [
             "ek_user_has_user_group.delete.$userId",
             "ek_user_has_user_group.update.$userId",
+        ]);
+    }
+
+    public function getUserGroupNames($userId)
+    {
+        return A::cache()->get("Ekom.UserLayer.getUserGroupNames.$userId", function () use ($userId) {
+
+            $userId = (int)$userId;
+            return QuickPdo::fetchAll("
+select g.id, g.name 
+from ek_user_group g 
+inner join ek_user_has_user_group h on h.user_group_id=g.id
+where h.user_id=$userId             
+            ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+        }, [
+            "ek_user_has_user_group.create",
+            "ek_user_has_user_group.delete.$userId",
+            "ek_user_has_user_group.update.$userId",
+            "ek_user_group.update.$userId",
+        ]);
+    }
+
+    public function getUserInfo($userId)
+    {
+        return A::cache()->get("Ekom.UserLayer.getUserInfo.$userId", function () use ($userId) {
+
+            $userId = (int)$userId;
+            return QuickPdo::fetchAll("
+select *
+from ek_user
+where id=$userId             
+            ");
+        }, [
+            "ek_user.update.$userId",
+            "ek_user.delete.$userId",
         ]);
     }
 
@@ -540,7 +575,7 @@ order by h.`order` asc
         $userId = (int)$userId;
         $langId = (int)$langId;
 
-        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getPreferredShippingAddress.$userId.$langId", function () use ($userId, $langId) {
+        return A::cache()->get("Ekom.UserLayer.getPreferredShippingAddress.$userId.$langId", function () use ($userId, $langId) {
 
             return QuickPdo::fetch("
 select 
@@ -630,7 +665,7 @@ order by h.`order` asc
         $userId = (int)$userId;
 
 
-        return A::cache()->get("Module.Ekom.Api.Layer.UserLayer.getPreferredShippingAddressId.$userId", function () use ($userId) {
+        return A::cache()->get("Ekom.UserLayer.getPreferredShippingAddressId.$userId", function () use ($userId) {
             if (false !== ($ret = QuickPdo::fetch("
 select h.address_id
 

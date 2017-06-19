@@ -55,7 +55,6 @@ $api->countryLang()->deleteAll();
 $api->userHasAddress()->deleteAll();
 $api->address()->deleteAll();
 $api->shopHasCarrier()->deleteAll();
-$api->userHasPaymentMethod()->deleteAll();
 $api->shopHasPaymentMethod()->deleteAll();
 
 
@@ -1791,29 +1790,17 @@ $api->categoryHasDiscount()->create([
 // order status
 //--------------------------------------------
 $statuses = [
-    'pending' => [
-        "Pending",
+    'orderPlaced' => [
+        "Order placed",
         "orange",
     ],
-    'awaitingPayment' => [
-        "Awaiting Payment",
+    'paymentAccepted' => [
+        "Payment accepted",
         "red",
-    ],
-    'awaitingFulfillment' => [
-        "Awaiting Fulfillment",
-        "purple",
-    ],
-    'awaitingShipment' => [
-        "Pending",
-        "blue",
-    ],
-    'completed' => [
-        "Completed",
-        "green",
     ],
     'shipped' => [
         "Shipped",
-        "yellow",
+        "purple",
     ],
 ];
 foreach ($statuses as $code => $info) {

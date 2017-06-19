@@ -139,7 +139,7 @@ order by h.order asc
         }
 
         foreach ($nodes as $info) {
-            $priceBefore = $ret;
+            $priceBefore = (float)$ret;
             $amount = $info["amount"];
             $ret += $ret * $amount / 100;
             $priceAfter = $ret;
