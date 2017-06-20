@@ -33,6 +33,9 @@ class GeneratedProductLang extends TableCrudObject
 			'lang_id' => 0,
 			'label' => '',
 			'description' => '',
+			'meta_title' => '',
+			'meta_description' => '',
+			'meta_keywords' => '',
 		], $data);
 
 

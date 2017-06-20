@@ -34,6 +34,9 @@ class GeneratedProductCardLang extends TableCrudObject
 			'label' => '',
 			'description' => '',
 			'slug' => '',
+			'meta_title' => '',
+			'meta_description' => '',
+			'meta_keywords' => '',
 		], $data);
 
 

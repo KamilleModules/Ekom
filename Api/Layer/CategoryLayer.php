@@ -80,7 +80,7 @@ class CategoryLayer
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
 
 
-        return A::cache()->get("Module.Ekom.Api.Layer.CategoryLayer.getCategoryIdTreeByProductId.$shopId.$langId.$productId", function () use ($api, $shopId, $langId, $productId) {
+        return A::cache()->get("Ekom.CategoryLayer.getCategoryIdTreeByProductId.$shopId.$langId.$productId", function () use ($api, $shopId, $langId, $productId) {
 
             $ret = [];
             $cardId = EkomApi::inst()->product()->readColumn("product_card_id", [
@@ -99,6 +99,31 @@ class CategoryLayer
         ]);
     }
 
+    /**
+     * This method return the id of all categories being contained inside a given category,
+     * and including itself.
+     */
+    public function getDescendantCategoryIdTree($categoryId, $shopId = null)
+    {
+        $api = EkomApi::inst();
+        $api->initWebContext();
+        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+        $categoryId = (int)$categoryId;
+
+
+        return A::cache()->get("Ekom.CategoryLayer.getDescendantCategoryIdTree.$shopId.$categoryId", function () use ($shopId, $categoryId) {
+
+            $ret = [$categoryId];
+            // get descendants
+            $this->doCollectDescendants($shopId, $categoryId, $ret);
+            sort($ret);
+            return $ret;
+        }, [
+            'ek_category',
+        ]);
+    }
+
+
     //--------------------------------------------
     //
     //--------------------------------------------
@@ -112,7 +137,7 @@ class CategoryLayer
         /**
          * Get the category of the card for this shop
          */
-        return A::cache()->get("Module.Ekom.Api.Layer.CategoryLayer.getCategoryTreeByProductCardId.$shopId.$langId.$cardId", function () use ($api, $shopId, $langId, $cardId) {
+        return A::cache()->get("Ekom.CategoryLayer.getCategoryTreeByProductCardId.$shopId.$langId.$cardId", function () use ($api, $shopId, $langId, $cardId) {
             $categoryId = $api->categoryHasProductCard()->readColumn("category_id", [
                 ["product_card_id", "=", (int)$cardId],
             ]);
@@ -145,5 +170,16 @@ where c.id=$categoryId and c.shop_id=$shopId and l.lang_id=$langId
         ]);
     }
 
-
+    private function doCollectDescendants($shopId, $categoryId, array &$ret)
+    {
+        $ids = QuickPdo::fetchAll("
+select id from ek_category 
+where shop_id=$shopId 
+and category_id=$categoryId
+            ", [], \PDO::FETCH_COLUMN);
+        foreach ($ids as $id) {
+            $ret[] = (int)$id;
+            $this->doCollectDescendants($shopId, $id, $ret);
+        }
+    }
 }

@@ -23,6 +23,7 @@ use Module\Ekom\Api\Layer\ImageLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
 use Module\Ekom\Api\Layer\PriceLayer;
+use Module\Ekom\Api\Layer\ProductCardLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
@@ -59,6 +60,18 @@ class EkomApi extends GeneratedEkomApi
 
 
     /**
+     * Will set the time zone, and will put the following variables in the applicationRegistry:
+     *
+     * - ekom.host
+     * - ekom.shop_id
+     * - ekom.lang_id
+     * - ekom.lang_iso
+     * - ekom.currency_id
+     * - ekom.currency_iso
+     * - ekom.currency_rate
+     *
+     *
+     *
      * Should be called by every ekom web controller that displays a page.
      *
      * It creates the following variables in session if they don't already exist.
@@ -356,6 +369,14 @@ and h.lang_id=$langId
     }
 
 
+    /**
+     * @return ProductCardLayer
+     */
+    public function productCardLayer()
+    {
+        return $this->getLayer('productCardLayer');
+    }
+
 
     /**
      * @return ProductLayer
@@ -364,7 +385,6 @@ and h.lang_id=$langId
     {
         return $this->getLayer('productLayer');
     }
-
 
 
     /**
@@ -391,7 +411,6 @@ and h.lang_id=$langId
     {
         return $this->getLayer('userLayer');
     }
-
 
 
 }

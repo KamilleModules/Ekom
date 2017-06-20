@@ -4,7 +4,6 @@
 namespace Module\Ekom;
 
 
-
 class EkomServices
 {
 
@@ -81,6 +80,9 @@ class EkomServices
         }
         throw new \Module\Ekom\Exception\EkomException("statusProvider not configured for the current shop");
     }
+
+
+
 }
 
 

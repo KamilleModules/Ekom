@@ -36,6 +36,9 @@ class GeneratedShopHasProductLang extends TableCrudObject
 			'description' => '',
 			'slug' => '',
 			'out_of_stock_text' => '',
+			'meta_title' => '',
+			'meta_description' => '',
+			'meta_keywords' => '',
 		], $data);
 
 
