@@ -10,6 +10,7 @@ use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
 use Kamille\Services\XLog;
+use Module\Ekom\Api\Layer\AttributeLayer;
 use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\CategoryLayer;
@@ -267,6 +268,14 @@ and h.lang_id=$langId
     //--------------------------------------------
     //
     //--------------------------------------------
+    /**
+     * @return AttributeLayer
+     */
+    public function attributeLayer()
+    {
+        return $this->getLayer('attributeLayer');
+    }
+
     /**
      * @return CartLayer
      */

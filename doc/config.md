@@ -138,6 +138,10 @@ authors will implement them).
                 
     - manual, the user will choose between the carrier available to the user (unless there is only one carrier
                 choice in which case the choice might not be asked)
+- attribute2TemplateAdaptor: path to the adaptor class, which is used by the 
+                EkomProductListModifierListener class, which is basically responsible for adapting attribute names into 
+                widget templates on a product list.
+                It must implement Attribute2TemplateAdaptorInterface.
             
                                     
                                     

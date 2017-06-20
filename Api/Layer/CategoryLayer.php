@@ -124,6 +124,36 @@ class CategoryLayer
     }
 
 
+    public function getIdBySlug($slug)
+    {
+
+        EkomApi::inst()->initWebContext();
+        $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
+        $langId = (int)ApplicationRegistry::get("ekom.lang_id");
+
+        return A::cache()->get("", function () use ($shopId, $langId, $slug) {
+
+
+            return (int)QuickPdo::fetch("
+select l.category_id
+from ek_category_lang l
+inner join ek_category c on c.id=l.category_id
+
+where c.shop_id=$shopId 
+and l.lang_id=$langId 
+and l.slug=:slug
+
+", [
+                "slug" => $slug,
+            ], \PDO::FETCH_COLUMN);
+        }, [
+            "ek_category_lang",
+            "ek_category",
+        ]);
+
+    }
+
+
     //--------------------------------------------
     //
     //--------------------------------------------

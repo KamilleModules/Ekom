@@ -82,6 +82,13 @@ class EkomServices
     }
 
 
+    protected static function Ekom_dynamicWidgetBinder()
+    {
+        $o = \Kamille\Utils\Laws\DynamicWidgetBinder\DynamicWidgetBinder::create();
+        \Core\Services\Hooks::call("Ekom_feedDynamicWidgetBinder", $o);
+        return $o;
+    }
+
 
 }
 

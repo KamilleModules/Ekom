@@ -319,8 +319,6 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 $productId,
                                 $cardId,
                             ]);
-
-
                             $imageFileNames = array_keys($images);
                             $defaultImage = $imageFileNames[0];
                             foreach ($imageFileNames as $s) {
@@ -554,84 +552,6 @@ and product_id in (" . implode(', ', $productIds) . ")
             $layerDiscount = $api->discountLayer();
             $discounts = $layerDiscount->getDiscountsByProductId($model['product_id'], $shopId, $langId);
 
-            if (false === 'old') { // ekom order model2
-
-                $priceWithoutTax = $model['rawPriceWithoutTax'];
-                $priceWithTax = $model['rawPriceWithTax'];
-
-                $originalPriceWithoutTax = $priceWithoutTax;
-                $originalPriceWithTax = $priceWithTax;
-
-
-                $taxGroupFactor = $priceWithTax / $priceWithoutTax;
-
-                $badgesHt = [];
-                $badgesTtc = [];
-
-
-                $atLeastOneDiscountApplied = false;
-                $lastPriceWithTax = $priceWithTax;
-                $lastPriceWithoutTax = $priceWithoutTax;
-
-
-                foreach ($discounts as $d) {
-                    $t = false;
-
-                    $operand = $d['procedure_operand'];
-
-
-                    if ('priceWithoutTax' === $d['target']) {
-                        $priceWithoutTax = $layerDiscount->applyDiscountToPrice($d, $priceWithoutTax, $t);
-                        if (false !== $t) {
-                            $badgesHt[] = [
-                                "type" => $d['procedure_type'],
-                                "value" => $operand,
-                                "label" => $d['label'],
-                            ];
-
-                            $priceWithTax = $priceWithoutTax * $taxGroupFactor;
-                            if ('amount' === $d['procedure_type']) {
-                                $operand = $priceWithTax - $lastPriceWithTax;
-                            }
-                            $badgesTtc[] = [
-                                "type" => $d['procedure_type'],
-                                "value" => $operand,
-                                "label" => $d['label'],
-                            ];
-                            $lastPriceWithTax = $priceWithTax;
-                        }
-
-                    } else {
-                        $priceWithTax = $layerDiscount->applyDiscountToPrice($d, $priceWithTax, $t);
-                        if (false !== $t) {
-
-                            $badgesTtc[] = [
-                                "type" => $d['procedure_type'],
-                                "value" => $operand,
-                                "label" => $d['label'],
-                            ];
-
-
-                            $priceWithoutTax = $priceWithTax / $taxGroupFactor;
-                            if ('amount' === $d['procedure_type']) {
-                                $operand = $priceWithoutTax - $lastPriceWithoutTax;
-                            }
-                            $badgesHt[] = [
-                                "type" => $d['procedure_type'],
-                                "value" => $operand,
-                                "label" => $d['label'],
-                            ];
-                            $lastPriceWithoutTax = $priceWithoutTax;
-                        }
-
-                    }
-
-
-                    if (true === $t) {
-                        $atLeastOneDiscountApplied = true;
-                    }
-                }
-            }
 
 
             if (true === $isB2b) {
@@ -677,6 +597,7 @@ and product_id in (" . implode(', ', $productIds) . ")
 
             $model['savingPercent'] = E::trimPercent($diffPercent);
             $model['savingAmount'] = E::price($diff);
+            $model['isB2B'] = $isB2b;
 
 
             // remove private

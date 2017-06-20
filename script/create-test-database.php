@@ -1114,19 +1114,19 @@ $api->productHasProductAttribute()->create([
 
 $api->productHasProductAttribute()->create([
     "product_id" => $productBallonGris55cm,
-    "product_attribute_id" => $attrColor,
+    "product_attribute_id" => $attrDiameter,
     "product_attribute_value_id" => $api->productAttributeValue()->readColumn('id', [['value', '=', '55 cm']]),
 ]);
 
 $api->productHasProductAttribute()->create([
     "product_id" => $productBallonGris65cm,
-    "product_attribute_id" => $attrColor,
+    "product_attribute_id" => $attrDiameter,
     "product_attribute_value_id" => $api->productAttributeValue()->readColumn('id', [['value', '=', '65 cm']]),
 ]);
 
 $api->productHasProductAttribute()->create([
     "product_id" => $productBallonGris75cm,
-    "product_attribute_id" => $attrColor,
+    "product_attribute_id" => $attrDiameter,
     "product_attribute_value_id" => $api->productAttributeValue()->readColumn('id', [['value', '=', '75 cm']]),
 ]);
 

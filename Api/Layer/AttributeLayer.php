@@ -4,46 +4,32 @@
 namespace Module\Ekom\Api\Layer;
 
 
+use Bat\UriTool;
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
-use Module\Ekom\Utils\ListModifiers;
 use QuickPdo\QuickPdo;
 
-class ProductCardLayer
+class AttributeLayer
 {
 
-
-//    public function getProductCardsByCategory($categoryId)
-//    {
-//
-//        EkomApi::inst()->initWebContext();
-//        $langId = (int)ApplicationRegistry::get("ekom.lang_id");
-//
-//
-//        /**
-//         * Todo: cache;
-//         */
-//        $catIds = EkomApi::inst()->categoryLayer()->getDescendantCategoryIdTree($categoryId);
-//
-//        return QuickPdo::fetchAll("
-//select
-//l.product_card_id,
-//l.label
-//
-//from ek_product_card_lang l
-//inner join ek_category_has_product_card h on h.product_card_id=l.product_card_id
-//
-//where h.category_id in (" . implode(', ', $catIds) . ")
-//and l.lang_id=$langId
-//
-//
-//        ");
-//    }
+    public function getAvailableAttributeByCategorySlug($categorySlug, $groupByAttribute = true, $shopId = null, $langId = null)
+    {
+        $categoryId = EkomApi::inst()->categoryLayer()->getIdBySlug($categorySlug);
+        $ret = $this->getAvailableAttributeByCategoryId($categoryId, $shopId, $langId);
+        if (true === $groupByAttribute) {
+            $ret2 = [];
+            foreach ($ret as $p) {
+                $name = $p['name'];
+                $ret2[$name][] = $p;
+            }
+            return $ret2;
+        }
+        return $ret;
+    }
 
 
-
-    public function getProductCardsByCategory($categoryId, ListModifiers $filter = null, $shopId = null, $langId = null)
+    public function getAvailableAttributeByCategoryId($categoryId, $shopId = null, $langId = null)
     {
         EkomApi::inst()->initWebContext();
         $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
@@ -53,28 +39,27 @@ class ProductCardLayer
         $catIds = EkomApi::inst()->categoryLayer()->getDescendantCategoryIdTree($categoryId);
 
 
-        return A::cache()->get("Ekom.ProductCardLayer.getProductCardsByCategory.$shopId.$langId.$categoryId.$filter", function () use ($catIds, $langId, $shopId) {
+        return A::cache()->get("Ekom.ProductCardLayer.getAvailableAttributeByCategoryId.$shopId.$langId.$categoryId.", function () use ($catIds, $langId, $shopId) {
 
-            return QuickPdo::fetchAll("
+            $rows = QuickPdo::fetchAll("
 select 
-
 p.id as product_id,
-c.id as card_id
-        
-        
+a.name,
+al.name as name_label,
+v.value,
+vl.value as value_label,
+a.id as attribute_id,
+v.id as value_id,
+count(distinct p.id) as count
         
 from ek_category_has_product_card chc 
 inner join ek_product_card c on c.id=chc.product_card_id
 inner join ek_product p on p.product_card_id=c.id
-
-
-
 inner join ek_product_has_product_attribute h on h.product_id=p.id
 inner join ek_product_attribute a on a.id=h.product_attribute_id
 inner join ek_product_attribute_lang al on al.product_attribute_id=a.id
 inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id
 inner join ek_product_attribute_value_lang vl on vl.product_attribute_value_id=v.id
-
 
 inner join ek_shop_has_product_card shc on shc.product_card_id=c.id
 inner join ek_shop_has_product shp on shp.product_id=p.id
@@ -87,8 +72,19 @@ and shc.active=1
 and shp.active=1        
 
 
+group by a.name, v.value
         
         ");
+
+            $ret = [];
+            foreach ($rows as $row) {
+                $row['uri'] = UriTool::uri(null, [
+                    $row['name'] => $row['value'],
+                ], false, false);
+                $ret[] = $row;
+            }
+            return $ret;
+
         }, [
             "ek_category_has_product_card",
             "ek_product_card",
@@ -103,6 +99,4 @@ and shp.active=1
             "ek_shop_has_product_card.update.$shopId",
         ]);
     }
-
-
 }

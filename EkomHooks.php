@@ -4,6 +4,8 @@
 namespace Module\Ekom;
 
 
+use Module\Ekom\Laws\DynamicWidgetBinder\EkomProductListModifierListener;
+
 class EkomHooks
 {
 
@@ -70,6 +72,11 @@ class EkomHooks
     protected static function Ekom_feedStatusProviderCollection(\Module\Ekom\Status\ProviderCollection\StatusProviderCollection $collection)
     {
 
+    }
+
+    protected static function Ekom_feedDynamicWidgetBinder(\Kamille\Utils\Laws\DynamicWidgetBinder\DynamicWidgetBinder $binder)
+    {
+        $binder->setListener("productListModifiers", \Module\Ekom\Laws\DynamicWidgetBinder\EkomProductListModifierListener::create());
     }
 
     //--------------------------------------------
