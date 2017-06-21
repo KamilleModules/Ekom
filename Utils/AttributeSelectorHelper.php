@@ -4,6 +4,7 @@
 namespace Module\Ekom\Utils;
 
 use Kamille\Services\XLog;
+use Module\Ekom\Api\EkomApi;
 
 
 /**
@@ -94,6 +95,7 @@ class AttributeSelectorHelper
             //--------------------------------------------
             // COMPILE THE RESULTS PER ATTRIBUTE
             //--------------------------------------------
+            $productLayer = EkomApi::inst()->productLayer();
 
             foreach ($allAttr as $name => $values) {
                 $theValues = [];
@@ -126,7 +128,19 @@ class AttributeSelectorHelper
                         if ((int)$productId === (int)$pId) {
                             $selected = "1";
                         }
-                        $productUri = E::link("Ekom_product", ['slug' => $slug]);
+
+//                        $productUri = E::link("Ekom_product", ['slug' => $slug]);
+
+                        $info = $productLayer->getLinkInfoByProductId($pId);
+
+
+                        /**
+                         * Note: about this productUri
+                         * Note: this uri might be a little buggy if there are many products as exposed in the intro.
+                         * Todo: read the intro, and find the appropriate solution
+                         * Note: for now I believe it will only work if the product has only one attribute (I'm in a rush sorry)...
+                         */
+                        $productUri = E::link("Ekom_productCardRef", ['slug' => $info['cardSlug'], 'ref' => $info['ref']]);
                         $productAjaxUri = E::link("Ekom_ajaxApi") . "?action=getProductInfo&id=" . $pId;
 
                     }
@@ -163,7 +177,6 @@ class AttributeSelectorHelper
             XLog::error("[Ekom module] - AttributeSelectorHelper: the product $productId was not found for the given items");
             return false;
         }
-
 
         return $ret;
     }

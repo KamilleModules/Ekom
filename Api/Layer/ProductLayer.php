@@ -20,6 +20,49 @@ class ProductLayer
 {
 
 
+    public function getLinkInfoByProductId($productId)
+    {
+
+
+        $productId = (int)$productId;
+
+
+        return A::cache()->get("Ekom.ProductLayer.getLinkInfoByProductId.$productId", function () use ($productId) {
+
+
+            $row = QuickPdo::fetch("
+select 
+h.slug as slug,
+cl.slug as slug_default,
+p.reference
+
+
+from ek_product p 
+inner join ek_shop_has_product_card_lang h on h.product_card_id=p.product_card_id 
+inner join ek_product_card_lang cl on cl.product_card_id=h.product_card_id and cl.lang_id=h.lang_id
+
+
+where p.id=$productId
+        
+        
+        ");
+
+
+            $slug = ("" !== $row['slug']) ? $row['slug'] : $row['slug_default'];
+            return [
+                "cardSlug" => $slug,
+                "ref" => $row['reference'],
+            ];
+
+        }, [
+            "ek_product",
+            "ek_shop_has_product_card_lang",
+            "ek_product_card_lang",
+        ]);
+
+
+    }
+
     /**
      * @return false|int, the quantity for the given product, or false if something wrong happened
      */
@@ -328,7 +371,6 @@ and product_id in (" . implode(', ', $productIds) . ")
                             }
 
 
-
                             /**
                              * Selected product
                              */
@@ -411,7 +453,6 @@ and product_id in (" . implode(', ', $productIds) . ")
 
                             $price = E::price($_price);
                             $priceWithTax = E::price($_priceWithTax);
-
 
 
                             $boxConf = [
@@ -551,7 +592,6 @@ and product_id in (" . implode(', ', $productIds) . ")
         if (array_key_exists('product_id', $model)) { // if model is not in error form
             $layerDiscount = $api->discountLayer();
             $discounts = $layerDiscount->getDiscountsByProductId($model['product_id'], $shopId, $langId);
-
 
 
             if (true === $isB2b) {

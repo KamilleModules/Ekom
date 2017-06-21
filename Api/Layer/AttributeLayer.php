@@ -13,6 +13,30 @@ use QuickPdo\QuickPdo;
 class AttributeLayer
 {
 
+
+    /**
+     *
+     * @param array $labels
+     *      array of attributeLabel => valueLabel
+     *
+     * This method was created for importing attributes rapidly, when only the labels were known.
+     */
+    public function insertAttributesByLabels(array $labels)
+    {
+
+
+
+        foreach($labels as $attrLabel => $valueLabels){
+
+
+
+            foreach($valueLabels as $label){
+
+            }
+        }
+    }
+
+
     public function getAvailableAttributeByCategorySlug($categorySlug, $groupByAttribute = true, $shopId = null, $langId = null)
     {
         $categoryId = EkomApi::inst()->categoryLayer()->getIdBySlug($categorySlug);

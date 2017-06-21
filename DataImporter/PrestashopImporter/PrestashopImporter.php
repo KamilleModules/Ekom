@@ -11,6 +11,12 @@ use QuickPdo\QuickPdo;
  * Importer for data from prestashop 1.6
  *
  *
+ * Synopsis:
+ *
+ * - importProducts (we import them first so that we have the reference ready for subsequent calls)
+ * - importAttributes
+ *
+ *
  *
  * Products are stored in the ps_product table.
  * Correspondence between products and their "variations" are stored in the ps_product_attribute table.
@@ -21,7 +27,7 @@ use QuickPdo\QuickPdo;
  * ps_product
  * --------------
  * - id_product
- * - price         	decimal(20,6)
+ * - price            decimal(20,6)
  * - reference
  * - weight         decimal(20,6)
  *
@@ -31,8 +37,8 @@ use QuickPdo\QuickPdo;
  * - id_product
  * - id_product_attribute
  * - reference (of the variation)
- * - price          decimal(20,6)
- * - weight         decimal(20,6)
+ * - price          decimal(20,6) variation
+ * - weight         decimal(20,6) variation
  *
  *
  *
@@ -96,6 +102,51 @@ class PrestashopImporter
     }
 
 
+    /**
+     * @param callable|null
+     *          bool  $filterByGroupName ( groupName )
+     *          if return false, the entry will be ignored.
+     */
+//    public function importAttributes(callable $filterByGroupName = null)
+//    {
+//
+//        $this->check();
+//
+//
+//        $attrLayer = EkomApi::inst()->attributeLayer();
+//        $attrLayer->getAvailableAttributeByCategoryId()
+//
+//        $db = $this->dbSrc;
+//        $rows = QuickPdo::fetchAll("
+//select id_attribute_group, name
+//from $db.ps_attribute_group_lang
+//        ");
+//
+//        foreach ($rows as $row) {
+//            $groupId = $row['id_attribute_group'];
+//
+//
+//            if (null !== $filterByGroupName && false === call_user_func($filterByGroupName, $row['name'])) {
+//                continue;
+//            }
+//
+//            $rowsAttr = QuickPdo::fetchAll("
+//select al.id_attribute, al.name
+//from $db.ps_attribute a
+//inner join $db.ps_attribute_lang al on al.id_attribute=a.id_attribute
+//
+//where a.id_attribute_group=$groupId
+//            ");
+//
+//
+//
+//            a($row);
+//            a($rowsAttr);
+//
+//        }
+//
+//    }
+
     public function importProducts()
     {
         $this->check();
@@ -125,13 +176,15 @@ class PrestashopImporter
          *
          *      p/1/5/2/0/1520-$identifier.jpg
          *
+         *
+         *
          * $identifier takes all the following values:
-         * - cart_default2x             (160x160)
-         * - home_default2x             (500x500)
-         * - large_default2x            (916x916)
-         * - medium_default2x           (250x250)
+         * - cart_default2x             (160x160)       -> thumb
+         * - home_default2x             (500x500)       -> medium
+         * - large_default2x            (916x916)       -> large
+         * - medium_default2x           (250x250)       -> small
          * - small_default2x            (196x196)
-         * - thickbox_default2x         (1600x1600)
+         * - thickbox_default2x         (1600x1600)     -> original
          *
          *
          *
@@ -145,6 +198,7 @@ class PrestashopImporter
          *      - medium: contains any number of files
          *      - small: contains any number of files
          *      - thumb: contains any number of files
+         *
          *
          * However, the name must be the same across all directories, so for instance: kettle-bell-05.jpg
          * (same name under the large, medium, small and thumb folders).
@@ -198,24 +252,68 @@ order by p.id_product asc
         
         ");
 
+        $productApi = EkomApi::inst()->product();
+        $cardApi = EkomApi::inst()->productCard();
 
-        $product = EkomApi::inst()->product();
-        $card = EkomApi::inst()->productCard();
+
+
+
 
         foreach ($rows as $row) {
             $id_product = $row['id_product'];
+            a($row['id_product']);
 
 
-            $rowsAttr = QuickPdo::fetchAll("
+            $imageTypes = [
+                '-cart_default2x.jpg',
+                '-home_default2x.jpg',
+                '-large_default2x.jpg',
+                '-medium_default2x.jpg',
+            ];
+
+
+            /**
+             * WARNING!!
+             * This is just a helper for my use case, not the perfect
+             * prestashop 2 ekom importer.
+             *
+             * In my case, all products in our prestashop application seem
+             * to use at most one product attribute at the time (like size, color, diameter, etc...)
+             * but never two (or more) at the same time.
+             *
+             * Since implementing a product with multiple parallel attributes would take a little more
+             * time (and I don't have it yet), this implementation will only fulfill my use case
+             * and assume that a product can only have at most one product attribute at the time.
+             *
+             *
+             *
+             */
+
+
+
+            $productId = $productApi->create([
+                "reference" => $row['reference'],
+                "weight" => $row['reference'],
+            ]);
+
+
+            $attrRows = QuickPdo::fetchAll("
 select 
-            
+pa.reference as price_variation,
+pa.price as price_variation,
+pa.weight as weight_variation,
             
             ");
 
+            foreach ($imageTypes as $suffix) {
+                $imgSrc = $this->imgDirSrc . "/" . $this->hash($id_product) . '/' . $id_product . $suffix;
+                if (true === file_exists($imgSrc)) {
+                    a($imgSrc);
+
+                    $imgTarget = $imgSrc;
 
 
-            $img = $this->imgDirSrc . "/" . $this->hash($id_product) . '/' . $id_product . '-cart_default2x.jpg';
-            if (true === file_exists($img)) {
+                }
             }
         }
 

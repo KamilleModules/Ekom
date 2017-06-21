@@ -4,6 +4,7 @@
 namespace Module\Ekom\Api\Layer;
 
 
+use Bat\CaseTool;
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
@@ -13,6 +14,59 @@ use QuickPdo\QuickPdo;
 
 class CategoryLayer
 {
+
+
+    /**
+     * This method was created for inserting the original categories from a dash file (see Dash2Array tool),
+     * where only the label is known.
+     * It is a quick'n'dirty tool used to quickly create the original database.
+     */
+    public function insertCategoryByLabel($label, $parentId = null, $shopId = null, $langId = null)
+    {
+
+        EkomApi::inst()->initWebContext();
+        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$shopId;
+
+
+        $idCat = 0;
+        QuickPdo::transaction(function () use (&$idCat, $parentId, $shopId, $langId, $label) {
+
+
+            $name = CaseTool::toSnake($label);
+
+            if (false !== ($r = QuickPdo::fetch("select count(1) as count from ek_category where `name`=:zename", ['zename' => $name]))) {
+                if ($r['count'] > 0) {
+                    $name .= '-' . rand(1, 10000);
+                }
+            }
+
+
+            $idCat = EkomApi::inst()->category()->create([
+                "name" => $name,
+                "category_id" => $parentId,
+                "shop_id" => $shopId,
+            ]);
+            $description = "Description of category $label";
+
+            EkomApi::inst()->categoryLang()->create([
+                "category_id" => $idCat,
+                "lang_id" => $langId,
+                "label" => $label,
+                "description" => $description,
+                "slug" => $name,
+                "meta_title" => $label,
+                "meta_description" => $description,
+                "meta_keywords" => "$label",
+            ]);
+
+
+        }, function (\Exception $e) {
+            throw $e;
+        });
+
+        return $idCat;
+    }
 
     /**
      * This breadcrumbs method returns breadcrumbs based on the uri.
@@ -169,6 +223,86 @@ and l.slug=:slug
     }
 
 
+    /**
+     * This function can be used to create menu.
+     *
+     *
+     *
+     * @param $name
+     * @param int $maxDepth =-1,
+     *              - if -1, all the tree will be returned
+     *              - if 0, only the current level (children of category identified by the given $name)
+     *              - if any positive number, represents the maximum level that this function can reach
+     *
+     *
+     * @return array
+     * Return an array of items, each of which having the following structure:
+     *
+     * - category_id
+     * - label
+     * - slug
+     * - uri: a link to the category's page
+     * - level: The current level of the node, starting at 0 and increasing
+     * - children: array of children
+     */
+    public function getSubCategoriesByName($name, $maxDepth = -1)
+    {
+        EkomApi::inst()->initWebContext();
+        $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
+        $langId = (int)ApplicationRegistry::get("ekom.lang_id");
+
+
+        return A::cache()->get("Ekom.CategoryLayer.getSubCategoriesByName.$shopId.$langId.$name.$maxDepth", function () use ($shopId, $maxDepth, $name, $langId) {
+
+
+            $rows = QuickPdo::fetchAll("
+select 
+cl.category_id,
+cl.label,
+cl.slug,
+c.name
+
+from ek_category c 
+inner join ek_category_lang cl on cl.category_id=c.id 
+
+where 
+c.category_id = (
+  select id from ek_category 
+  where `name`=:cname
+  and shop_id=$shopId
+) 
+
+and cl.lang_id=$langId
+
+        
+        
+        ", [
+                "cname" => $name,
+            ]);
+
+            $ret = [];
+            $level = 0;
+            foreach ($rows as $row) {
+
+                $children = [];
+                if (-1 === $maxDepth || $maxDepth > 0) {
+                    $this->doCollectDescendantsInfo($shopId, $row['category_id'], $children, $level + 1, $maxDepth);
+                }
+                $row['uri'] = E::link("Ekom_category", ['slug' => $row['slug']]);
+                $row['level'] = $level;
+                $row['children'] = $children;
+                $ret[] = $row;
+            }
+
+            return $ret;
+
+        }, [
+            "ek_category",
+            "ek_category_lang",
+        ]);
+    }
+
+
     //--------------------------------------------
     //
     //--------------------------------------------
@@ -225,6 +359,37 @@ and id != $categoryId
         foreach ($ids as $id) {
             $ret[] = (int)$id;
             $this->doCollectDescendants($shopId, $id, $ret);
+        }
+    }
+
+    private function doCollectDescendantsInfo($shopId, $categoryId, array &$ret, $level = 0, $maxLevel = -1)
+    {
+        $rows = QuickPdo::fetchAll("
+select
+        
+cl.category_id,
+cl.label,
+cl.slug,
+c.name
+
+from ek_category c 
+inner join ek_category_lang cl on cl.category_id=c.id 
+  
+where c.shop_id=$shopId 
+and c.category_id=$categoryId
+and c.id != $categoryId
+            ");
+        foreach ($rows as $row) {
+
+            $children = [];
+            if (-1 === $maxLevel || $level < $maxLevel) {
+                $this->doCollectDescendantsInfo($shopId, $row['category_id'], $children, $level + 1, $maxLevel);
+            }
+            $row['uri'] = E::link("Ekom_category", ['slug' => $row['slug']]);
+            $row['level'] = $level;
+            $row['children'] = $children;
+            $ret[] = $row;
+
         }
     }
 }
