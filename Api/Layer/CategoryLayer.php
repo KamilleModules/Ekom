@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
+use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
@@ -124,6 +125,10 @@ class CategoryLayer
     }
 
 
+    /**
+     * @param $slug
+     * @return int|false
+     */
     public function getIdBySlug($slug)
     {
 
@@ -131,10 +136,10 @@ class CategoryLayer
         $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
         $langId = (int)ApplicationRegistry::get("ekom.lang_id");
 
-        return A::cache()->get("", function () use ($shopId, $langId, $slug) {
+        $ret = A::cache()->get("Ekom.CategoryLayer.getIdBySlug.$shopId.$langId.$slug", function () use ($shopId, $langId, $slug) {
 
 
-            return (int)QuickPdo::fetch("
+            if (false !== ($ret = QuickPdo::fetch("
 select l.category_id
 from ek_category_lang l
 inner join ek_category c on c.id=l.category_id
@@ -144,12 +149,22 @@ and l.lang_id=$langId
 and l.slug=:slug
 
 ", [
-                "slug" => $slug,
-            ], \PDO::FETCH_COLUMN);
+                    "slug" => $slug,
+                ], \PDO::FETCH_COLUMN))
+            ) {
+                return (int)$ret;
+            }
+            return $ret;
         }, [
             "ek_category_lang",
             "ek_category",
         ]);
+
+        if (false === $ret) {
+            XLog::error("[Ekom module] - CategoryLayer: no id found with slug $slug for shopId $shopId and langId $langId");
+        }
+
+        return $ret;
 
     }
 
@@ -175,7 +190,6 @@ and l.slug=:slug
 
             $treeRows = [];
 
-
             while (false !== ($parentRow = QuickPdo::fetch("select
 c.id,
 c.name,
@@ -184,7 +198,7 @@ l.label,
 l.slug
 from ek_category c 
 inner join ek_category_lang l on l.category_id=c.id
-where c.id=$categoryId and c.shop_id=$shopId and l.lang_id=$langId        
+where c.id=$categoryId and c.category_id!=$categoryId and c.shop_id=$shopId and l.lang_id=$langId        
         "))) {
                 $categoryId = $parentRow['category_id'];
                 $treeRows[] = $parentRow;
@@ -206,6 +220,7 @@ where c.id=$categoryId and c.shop_id=$shopId and l.lang_id=$langId
 select id from ek_category 
 where shop_id=$shopId 
 and category_id=$categoryId
+and id != $categoryId
             ", [], \PDO::FETCH_COLUMN);
         foreach ($ids as $id) {
             $ret[] = (int)$id;

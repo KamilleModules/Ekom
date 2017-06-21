@@ -199,9 +199,12 @@ and l.lang_id=$langId
              * Cats is the category of the product, or a category above (parent)
              */
             $cats = EkomApi::inst()->categoryLayer()->getCategoryIdTreeByProductId($productId);
+            if (0 === count($cats)) {
+                XLog::error("[Ekom module] - DiscountLayer: no categories found for product $productId");
+            }
+
 //        az($cats);
             $sCats = implode(', ', $cats);
-
             // get the discounts that apply to the product,
             $discountsCategory = QuickPdo::fetchAll("
 select 
@@ -228,6 +231,7 @@ and l.lang_id=$langId
         
         
         ");
+
 
 //            a([
 //                'product' => $discountsProduct,

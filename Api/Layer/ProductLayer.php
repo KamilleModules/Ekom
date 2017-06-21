@@ -286,7 +286,6 @@ and product_id in (" . implode(', ', $productIds) . ")
             $model = [];
 
             try {
-
                 if (false !== ($row = $this->getProductCardInfoByCardId($cardId, $shopId, $langId))) {
 
                     if ('1' === $row['active']) {
@@ -295,6 +294,7 @@ and product_id in (" . implode(', ', $productIds) . ")
                         /**
                          * Take the list of attributes
                          */
+
 
                         $productsInfo = $this->getProductCardProductsWithAttributes($cardId, $shopId, $langId);
                         if (count($productsInfo) > 0) {
@@ -326,6 +326,7 @@ and product_id in (" . implode(', ', $productIds) . ")
                                     $defaultImage = $s;
                                 }
                             }
+
 
 
                             /**
@@ -399,7 +400,6 @@ and product_id in (" . implode(', ', $productIds) . ")
 
 
                             }
-
                             // get taxes, for both modes (b2b, b2b), just in case the template need the info
                             $taxLayer = $api->taxLayer();
                             $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
@@ -411,6 +411,7 @@ and product_id in (" . implode(', ', $productIds) . ")
 
                             $price = E::price($_price);
                             $priceWithTax = E::price($_priceWithTax);
+
 
 
                             $boxConf = [
@@ -530,7 +531,6 @@ and product_id in (" . implode(', ', $productIds) . ")
             "ek_product_card_has_tax_group.delete.$shopId.$cardId",
         ]);
 
-
         //--------------------------------------------
         // NOW APPLYING DISCOUNT DYNAMICALLY (so that it's always synced with app rules)
         //--------------------------------------------
@@ -606,7 +606,6 @@ and product_id in (" . implode(', ', $productIds) . ")
 
         }
 //        a(__FILE__);
-//        az($model);
         return $model;
     }
 
