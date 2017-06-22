@@ -19,9 +19,26 @@ class EkomProductListModifierListener implements DynamicWidgetBinderListenerInte
         return new static();
     }
 
+
+    /**
+     * @param $payload
+     *              array of attrName => attrInfo
+     *              Each attrInfo is an array with the following structure:
+     *              - product_id
+     *              - name
+     *              - name_label
+     *              - value
+     *              - value_label
+     *              - attribute_id
+     *              - value_id
+     *              - count
+     *              - uri: uri to the current variation of the product
+     *
+     *
+     * @param array $config , the laws widget config array to decorate
+     */
     public function decorate($payload, array &$config)
     {
-
         $adaptor = E::conf("attribute2TemplateAdaptor");
         if (class_exists($adaptor)) {
 

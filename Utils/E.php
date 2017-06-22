@@ -40,7 +40,7 @@ class E
      * - meta_description: 100 chars
      *
      */
-    public static function seo($title = null, $description = null, array $keywords = null)
+    public static function seo($title = null, $description = null, $keywords = null)
     {
         if (null !== $title) {
             HtmlPageHelper::$title = $title;
@@ -49,7 +49,7 @@ class E
             HtmlPageHelper::$description = $description;
         }
 
-        if (null !== $keywords) {
+        if (is_array($keywords)) {
             HtmlPageHelper::addMeta([
                 "name" => "keywords",
                 "content" => implode(',', $keywords),

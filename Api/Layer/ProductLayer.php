@@ -459,10 +459,19 @@ and product_id in (" . implode(', ', $productIds) . ")
                             $priceWithTax = E::price($_priceWithTax);
 
 
+                            $cardSlug = ("" !== $row['slug']) ? $row['slug'] : $row['default_slug'];
+                            $cardUri = E::link("Ekom_productCardRef", [
+                                'slug' => $cardSlug,
+                                'ref' => $p['reference'],
+                            ]);
+
+
+
                             $boxConf = [
                                 "product_id" => (int)$productId,
                                 "quantity" => (int)$p['quantity'],
                                 "images" => $images,
+                                "uriCard" => $cardUri,
                                 "defaultImage" => $defaultImage,
                                 "label" => $label,
                                 "ref" => $p['reference'],

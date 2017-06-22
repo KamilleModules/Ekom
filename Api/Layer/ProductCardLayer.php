@@ -6,9 +6,12 @@ namespace Module\Ekom\Api\Layer;
 
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
+use ListModifier\Circle\ListModifierCircle;
+use ListModifier\Util\RequestModifier2RowsGeneratorAdaptorUtil;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\ListModifiers;
 use QuickPdo\QuickPdo;
+use RowsGenerator\ArrayRowsGenerator;
 
 class ProductCardLayer
 {
@@ -42,7 +45,7 @@ class ProductCardLayer
 //    }
 
 
-    public function getProductCardsByCategory($categoryId, ListModifiers $filter = null, $shopId = null, $langId = null)
+    public function getProductCardsByCategory($categoryId, ListModifierCircle $circle = null, $shopId = null, $langId = null)
     {
         EkomApi::inst()->initWebContext();
         $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
@@ -51,7 +54,7 @@ class ProductCardLayer
         $catIds = EkomApi::inst()->categoryLayer()->getDescendantCategoryIdTree($categoryId);
 
 
-        return A::cache()->get("Ekom.ProductCardLayer.getProductCardsByCategory.$shopId.$langId.$categoryId.$filter", function () use ($catIds, $langId, $shopId) {
+        return A::cache()->get("Ekom.ProductCardLayer.getProductCardsByCategory.$shopId.$langId.$categoryId.$circle", function () use ($circle, $catIds, $langId, $shopId) {
 
             $rows = QuickPdo::fetchAll("
 select chc.product_card_id
@@ -62,6 +65,8 @@ inner join ek_shop_has_product_card shc on shc.product_card_id=chc.product_card_
 where chc.category_id in(" . implode(', ', $catIds) . ")        
 and shc.shop_id=$shopId        
 and shc.active=1    
+
+
         
         ");
 
@@ -71,6 +76,13 @@ and shc.active=1
             foreach ($rows as $row) {
                 $ret[] = $productLayer->getProductBoxModelByCardId($row['product_card_id'], $shopId, $langId);
             }
+
+
+            $gen = ArrayRowsGenerator::create()->setArray($ret);
+            RequestModifier2RowsGeneratorAdaptorUtil::decorate($gen, $circle);
+            $ret = $gen->getRows();
+
+
             return $ret;
 
         }, [

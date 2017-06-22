@@ -72,6 +72,13 @@ use QuickPdo\QuickPdo;
  *
  *
  *
+ * ps_image
+ * ---------------
+ * - id_image
+ * - id_product
+ *
+ *
+ *
  *
  *
  *
@@ -323,6 +330,8 @@ where a.id_attribute_group=$groupId
 
         EkomApi::inst()->product()->deleteAll();
         EkomApi::inst()->productCard()->deleteAll();
+        FileSystemTool::remove($this->imgDirTarget);
+        FileSystemTool::mkdir($this->imgDirTarget, 0777, true);
 
 
         /**
@@ -448,6 +457,12 @@ order by p.id_product asc
 
 
         foreach ($rows as $row) {
+
+//            if(459 !== (int)$row['id_product']){
+//                continue;
+//            }
+
+
             $id_product = $row['id_product'];
 //            a($row['id_product']);
 
@@ -488,6 +503,8 @@ where pa.id_product=$id_product
             ");
 
 
+//            a($attrRows);
+//            a($row);
             // insert product card and products in ekom
             $cardId = $cardApi->create([]);
 
@@ -551,6 +568,18 @@ where pa.id_product=$id_product
                         "price" => $price,
                         "product_card_id" => $cardId,
                     ]);
+
+                    $productLangApi->create([
+                        "product_id" => $productId,
+                        "lang_id" => $langId,
+                        "label" => $row['label'],
+                        "description" => $row['description'],
+                        "meta_title" => $row['meta_title'],
+                        "meta_description" => $row['meta_description'],
+                        "meta_keywords" => $row['meta_keywords'],
+                    ]);
+
+
                     $productAttrId = $this->getAttrDataFromMemo($attrRow['id_attribute_group'], $memoAttributes, "attr");
                     $productValueId = $this->getAttrDataFromMemo($attrRow['id_attribute'], $memoValues, "value");
 
@@ -565,6 +594,29 @@ where pa.id_product=$id_product
                         ]);
                     }
 
+
+                    $shopHasProductApi->create([
+                        "shop_id" => $shopId,
+                        "product_id" => $productId,
+                        "price" => null,
+                        "wholesale_price" => $row["wholesale_price"],
+                        "quantity" => rand(10, 300), // oops
+                        "active" => "1",
+                    ]);
+
+
+                    $shopHasProductLangApi->create([
+                        "shop_id" => $shopId,
+                        "product_id" => $productId,
+                        "lang_id" => $langId,
+                        "label" => "",
+                        "description" => "",
+                        "slug" => "",
+                        "out_of_stock_text" => "",
+                        "meta_title" => "",
+                        "meta_description" => "",
+                        "meta_keywords" => "",
+                    ]);
                 }
             }
             //
@@ -579,43 +631,43 @@ where pa.id_product=$id_product
                     "price" => $row['price'],
                     "product_card_id" => $cardId,
                 ]);
+                $productLangApi->create([
+                    "product_id" => $productId,
+                    "lang_id" => $langId,
+                    "label" => $row['label'],
+                    "description" => $row['description'],
+                    "meta_title" => $row['meta_title'],
+                    "meta_description" => $row['meta_description'],
+                    "meta_keywords" => $row['meta_keywords'],
+                ]);
 
+
+
+                $shopHasProductApi->create([
+                    "shop_id" => $shopId,
+                    "product_id" => $productId,
+                    "price" => null,
+                    "wholesale_price" => $row["wholesale_price"],
+                    "quantity" => rand(10, 300), // oops
+                    "active" => "1",
+                ]);
+
+
+                $shopHasProductLangApi->create([
+                    "shop_id" => $shopId,
+                    "product_id" => $productId,
+                    "lang_id" => $langId,
+                    "label" => "",
+                    "description" => "",
+                    "slug" => "",
+                    "out_of_stock_text" => "",
+                    "meta_title" => "",
+                    "meta_description" => "",
+                    "meta_keywords" => "",
+                ]);
 
             }
 
-            $productLangApi->create([
-                "product_id" => $productId,
-                "lang_id" => $langId,
-                "label" => $row['label'],
-                "description" => $row['description'],
-                "meta_title" => $row['meta_title'],
-                "meta_description" => $row['meta_description'],
-                "meta_keywords" => $row['meta_keywords'],
-            ]);
-
-
-            $shopHasProductApi->create([
-                "shop_id" => $shopId,
-                "product_id" => $productId,
-                "price" => null,
-                "wholesale_price" => $row["wholesale_price"],
-                "quantity" => rand(10, 300), // oops
-                "active" => "1",
-            ]);
-
-
-            $shopHasProductLangApi->create([
-                "shop_id" => $shopId,
-                "product_id" => $productId,
-                "lang_id" => $langId,
-                "label" => "",
-                "description" => "",
-                "slug" => "",
-                "out_of_stock_text" => "",
-                "meta_title" => "",
-                "meta_description" => "",
-                "meta_keywords" => "",
-            ]);
 
 
             $shopHasCardApi->create([
@@ -637,11 +689,21 @@ where pa.id_product=$id_product
             ]);
 
 
-            foreach ($imageTypes as $suffix => $ekomType) {
-                $imgSrc = $this->imgDirSrc . "/" . $this->hash($id_product) . '/' . $id_product . $suffix;
-                if (true === file_exists($imgSrc)) {
-                    $imgTarget = $this->imgDirTarget . "/" . $this->hash($cardId) . "/$ekomType/" . CaseTool::toSnake($row['label']) . '.jpg';
-                    FileSystemTool::copyFile($imgSrc, $imgTarget);
+            //--------------------------------------------
+            // IMAGES
+            //--------------------------------------------
+            $label = CaseTool::toSnake($row['label']);
+            $imageIds = QuickPdo::fetchAll("
+select id_image from $db.ps_image where id_product=$id_product         
+            ", [], \PDO::FETCH_COLUMN);
+
+            foreach ($imageIds as $imageId) {
+                foreach ($imageTypes as $suffix => $ekomType) {
+                    $imgSrc = $this->imgDirSrc . "/" . $this->hash($imageId) . '/' . $imageId . $suffix;
+                    if (true === file_exists($imgSrc)) {
+                        $imgTarget = $this->imgDirTarget . "/" . $this->hash($cardId) . "/$ekomType/" . $label . '-' . $imageId . '.jpg';
+                        FileSystemTool::copyFile($imgSrc, $imgTarget);
+                    }
                 }
             }
         }
