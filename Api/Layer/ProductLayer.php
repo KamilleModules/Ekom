@@ -344,7 +344,7 @@ and product_id in (" . implode(', ', $productIds) . ")
 
 
                             $productId = (string)$productId;
-                            if ('0' === $productId) {
+                            if (empty($productId)) {
                                 $productId = $row['product_id'];
                                 if (null === $productId) {
                                     $productId = $productsInfo[0]["product_id"];
@@ -358,15 +358,19 @@ and product_id in (" . implode(', ', $productIds) . ")
                             $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $productId);
 
 
+                            $defaultImage = "";
                             $images = $api->imageLayer()->getImages("productBox", [
                                 $productId,
                                 $cardId,
                             ]);
-                            $imageFileNames = array_keys($images);
-                            $defaultImage = $imageFileNames[0];
-                            foreach ($imageFileNames as $s) {
-                                if (false !== strpos($s, '-default')) {
-                                    $defaultImage = $s;
+
+                            if ($images) {
+                                $imageFileNames = array_keys($images);
+                                $defaultImage = $imageFileNames[0];
+                                foreach ($imageFileNames as $s) {
+                                    if (false !== strpos($s, '-default')) {
+                                        $defaultImage = $s;
+                                    }
                                 }
                             }
 

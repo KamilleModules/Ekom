@@ -54,40 +54,22 @@ class ProductCardLayer
         return A::cache()->get("Ekom.ProductCardLayer.getProductCardsByCategory.$shopId.$langId.$categoryId.$filter", function () use ($catIds, $langId, $shopId) {
 
             $rows = QuickPdo::fetchAll("
-select 
+select chc.product_card_id
 
-shc.product_id as product_id,
-c.id as card_id
-        
-        
-        
-from ek_category_has_product_card chc 
-inner join ek_product_card c on c.id=chc.product_card_id
-inner join ek_product p on p.product_card_id=c.id
-
-
-
-inner join ek_product_has_product_attribute h on h.product_id=p.id
-inner join ek_product_attribute a on a.id=h.product_attribute_id
-inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id
-
-
-inner join ek_shop_has_product_card shc on shc.product_card_id=c.id and shc.product_id is not null
-inner join ek_shop_has_product shp on shp.product_id=p.id
-
-        
+from ek_category_has_product_card chc
+  
+inner join ek_shop_has_product_card shc on shc.product_card_id=chc.product_card_id
 where chc.category_id in(" . implode(', ', $catIds) . ")        
 and shc.shop_id=$shopId        
-and shc.active=1        
-and shp.active=1        
-
-group by c.id
+and shc.active=1    
         
         ");
+
+
             $ret = [];
             $productLayer = EkomApi::inst()->productLayer();
             foreach ($rows as $row) {
-                $ret[] = $productLayer->getProductBoxModelByCardId($row['card_id'], null, null, $row['product_id']);
+                $ret[] = $productLayer->getProductBoxModelByCardId($row['product_card_id'], $shopId, $langId);
             }
             return $ret;
 
