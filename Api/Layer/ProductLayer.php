@@ -248,7 +248,6 @@ and p.product_card_id=$cardId
 
         return A::cache()->get("Module.Ekom.Api.Layer.getProductCardProductsWithAttributes.$shopId.$langId.$cardId", function () use ($shopId, $langId, $cardId) {
 
-
             $productsInfo = $this->getProductCardProducts($cardId, $shopId, $langId);
 
             $productIds = [];
@@ -256,23 +255,24 @@ and p.product_card_id=$cardId
                 $productIds[] = $row['product_id'];
             }
 
-
             $rows = QuickPdo::fetchAll("
 select 
 h.product_id,
-a.product_attribute_id as attribute_id,
-a.name as name_label,
-aa.name,
-v.product_attribute_value_id as value_id,
-v.value
+al.product_attribute_id as attribute_id,
+al.name as name_label,
+a.name,
+v.value,
+vl.product_attribute_value_id as value_id,
+vl.value as value_label
 
 from ek_product_has_product_attribute h
-inner join ek_product_attribute aa on aa.id=h.product_attribute_id
-inner join ek_product_attribute_lang a on a.product_attribute_id=aa.id 
-inner join ek_product_attribute_value_lang v on v.product_attribute_value_id=h.product_attribute_value_id 
+inner join ek_product_attribute a on a.id=h.product_attribute_id
+inner join ek_product_attribute_lang al on al.product_attribute_id=a.id 
+inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id 
+inner join ek_product_attribute_value_lang vl on vl.product_attribute_value_id=v.id 
 
-where a.lang_id=$langId 
-and v.lang_id=$langId
+where al.lang_id=$langId 
+and vl.lang_id=$langId
 and product_id in (" . implode(', ', $productIds) . ")
          
          
@@ -357,6 +357,10 @@ and product_id in (" . implode(', ', $productIds) . ")
                             //--------------------------------------------
                             $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $productId);
 
+                            if (count($attr)) {
+                                a(__FILE__);
+                                az($attr);
+                            }
 
                             $defaultImage = "";
                             $images = $api->imageLayer()->getImages("productBox", [
@@ -464,7 +468,6 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 'slug' => $cardSlug,
                                 'ref' => $p['reference'],
                             ]);
-
 
 
                             $boxConf = [

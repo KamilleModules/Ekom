@@ -56,20 +56,84 @@ class ProductCardLayer
 
         return A::cache()->get("Ekom.ProductCardLayer.getProductCardsByCategory.$shopId.$langId.$categoryId.$circle", function () use ($circle, $catIds, $langId, $shopId) {
 
-            $rows = QuickPdo::fetchAll("
+
+//            $rows = QuickPdo::fetchAll("
+//select chc.product_card_id
+//
+//from ek_category_has_product_card chc
+//
+//inner join ek_shop_has_product_card shc on shc.product_card_id=chc.product_card_id
+//where chc.category_id in(" . implode(', ', $catIds) . ")
+//and shc.shop_id=$shopId
+//and shc.active=1
+//
+//
+//
+//        ");
+
+
+            $sJoin = "";
+            $sWhere = "";
+            $markers = [];
+
+
+            $mod = $circle->getRequestModifier();
+            $searchItems = $mod->getSearchItems();
+
+
+            $attrNames = [
+                'taille',
+                'colonnes',
+            ];
+
+            $included = false;
+            foreach ($attrNames as $attrName) {
+                if (array_key_exists($attrName, $searchItems)) {
+                    if (false === $included) {
+
+                        $included = true;
+                        $sJoin .= "
+inner join ek_product p on p.product_card_id=chc.product_card_id
+inner join ek_product_has_product_attribute h on h.product_id=p.id
+inner join ek_product_attribute a on a.id=h.product_attribute_id
+inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id                
+                ";
+
+                    }
+
+                    // assuming operator is safe
+                    list($operand, $operator) = $searchItems[$attrName];
+
+                    $sWhere .= "
+and a.name = :attrname
+and v.value $operator :attrvalue                
+                ";
+
+                    $markers['attrname'] = $attrName;
+                    $markers['attrvalue'] = $operand;
+                }
+            }
+
+
+            $query = "
 select chc.product_card_id
 
 from ek_category_has_product_card chc
   
 inner join ek_shop_has_product_card shc on shc.product_card_id=chc.product_card_id
+
+$sJoin
+
 where chc.category_id in(" . implode(', ', $catIds) . ")        
 and shc.shop_id=$shopId        
 and shc.active=1    
 
-
+$sWhere
         
-        ");
+        ";
 
+//            az($query);
+            $rows = QuickPdo::fetchAll($query, $markers);
 
             $ret = [];
             $productLayer = EkomApi::inst()->productLayer();

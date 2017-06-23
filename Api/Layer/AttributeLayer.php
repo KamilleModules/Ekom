@@ -13,27 +13,30 @@ use QuickPdo\QuickPdo;
 class AttributeLayer
 {
 
-
-    /**
-     *
-     * @param array $labels
-     *      array of attributeLabel => valueLabel
-     *
-     * This method was created for importing attributes rapidly, when only the labels were known.
-     */
-    public function insertAttributesByLabels(array $labels)
+    public function getAttributeCombinationByProductId($pId)
     {
+        $pId = (int)$pId;
+        return A::cache()->get("Ekom.AttributeLayer.getAttributeCombinationByProductId.$pId", function () use ($pId) {
 
+            return QuickPdo::fetchAll("
+select distinct product_attribute_id
+from ek_product_has_product_attribute
+where product_id=$pId
+", [], \PDO::FETCH_COLUMN);
+        }, [
+            "ek_product_has_product_attribute",
+        ]);
+    }
 
-
-        foreach($labels as $attrLabel => $valueLabels){
-
-
-
-            foreach($valueLabels as $label){
-
-            }
-        }
+    public function getAttrValueBySlug($slug)
+    {
+        return A::cache()->get("Ekom.AttributeLayer.getAttrValueBySlug.$slug", function () use ($slug) {
+            return QuickPdo::fetch("select id from ek_product_attribute_value where `value`=:slug", [
+                'slug' => $slug,
+            ], \PDO::FETCH_COLUMN);
+        }, [
+            "ek_product_attribute_value",
+        ]);
     }
 
 
@@ -53,6 +56,27 @@ class AttributeLayer
     }
 
 
+    /**
+     *
+     *
+     * Intent:
+     * take all products,
+     * that have at least an attribute,
+     * and owned by the given category,
+     * and count the number of products (in that selection)
+     * that has the same attribute and value combination.
+     *
+     *
+     *
+     *
+     *
+     * The result of this method answers the question:
+     *
+     * What are the attributes inside the given category and
+     * count: how many products have this attribute.
+     *
+     *
+     */
     public function getAvailableAttributeByCategoryId($categoryId, $shopId = null, $langId = null)
     {
         EkomApi::inst()->initWebContext();
@@ -63,11 +87,11 @@ class AttributeLayer
         $catIds = EkomApi::inst()->categoryLayer()->getDescendantCategoryIdTree($categoryId);
 
 
-        return A::cache()->get("Ekom.ProductCardLayer.getAvailableAttributeByCategoryId.$shopId.$langId.$categoryId.", function () use ($catIds, $langId, $shopId) {
+        return A::cache()->get("Ekom.AttributeLayer.getAvailableAttributeByCategoryId.$shopId.$langId.$categoryId.", function () use ($catIds, $langId, $shopId) {
 
             $rows = QuickPdo::fetchAll("
 select 
-p.id as product_id,
+#p.id as product_id,
 a.name,
 al.name as name_label,
 v.value,
@@ -100,14 +124,16 @@ group by a.name, v.value
         
         ");
 
-            $ret = [];
-            foreach ($rows as $row) {
-                $row['uri'] = UriTool::uri(null, [
-                    $row['name'] => $row['value'],
-                ], false, false);
-                $ret[] = $row;
-            }
-            return $ret;
+
+            return $rows;
+//            $ret = [];
+//            foreach ($rows as $row) {
+//                $row['uri'] = UriTool::uri(null, [
+//                    $row['name'] => $row['value'],
+//                ], false, false);
+//                $ret[] = $row;
+//            }
+//            return $ret;
 
         }, [
             "ek_category_has_product_card",

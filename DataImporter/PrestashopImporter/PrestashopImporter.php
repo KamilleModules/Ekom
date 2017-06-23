@@ -217,7 +217,7 @@ where a.id_attribute_group=$groupId
             ");
 
 
-            $attrName = CaseTool::toSnake($row['name']);
+            $attrName = $this->toSnake($row['name']);
 
 
             $exist = false;
@@ -246,7 +246,7 @@ where a.id_attribute_group=$groupId
 
                 $exist = false;
 
-                $value = CaseTool::toSnake($rowAttr['name']);
+                $value = $this->toSnake($rowAttr['name']);
 
                 if (false === ($attrValueId = $attrValueApi->readColumn("id", [
                         ["value", "=", $value],
@@ -331,7 +331,6 @@ where a.id_attribute_group=$groupId
         EkomApi::inst()->product()->deleteAll();
         EkomApi::inst()->productCard()->deleteAll();
         FileSystemTool::clearDir($this->imgDirTarget, true, false);
-
 
 
         /**
@@ -690,7 +689,7 @@ where pa.id_product=$id_product
             //--------------------------------------------
             // IMAGES
             //--------------------------------------------
-            $label = CaseTool::toSnake($row['label']);
+            $label = $this->toSnake($row['label']);
             $imageIds = QuickPdo::fetchAll("
 select id_image from $db.ps_image where id_product=$id_product         
             ", [], \PDO::FETCH_COLUMN);
@@ -736,5 +735,13 @@ select id_image from $db.ps_image where id_product=$id_product
             XLog::debug("[Ekom module] - PrestashopImporter: Data not found: $data for type $type");
             return false;
         }
+    }
+
+
+    private function toSnake($str)
+    {
+        $str = str_replace([',', '.'], ' ', $str);
+        $ret = CaseTool::toSnake($str);
+        return $ret;
     }
 }
