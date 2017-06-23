@@ -330,8 +330,8 @@ where a.id_attribute_group=$groupId
 
         EkomApi::inst()->product()->deleteAll();
         EkomApi::inst()->productCard()->deleteAll();
-        FileSystemTool::remove($this->imgDirTarget);
-        FileSystemTool::mkdir($this->imgDirTarget, 0777, true);
+        FileSystemTool::clearDir($this->imgDirTarget, true, false);
+
 
 
         /**
@@ -642,7 +642,6 @@ where pa.id_product=$id_product
                 ]);
 
 
-
                 $shopHasProductApi->create([
                     "shop_id" => $shopId,
                     "product_id" => $productId,
@@ -667,7 +666,6 @@ where pa.id_product=$id_product
                 ]);
 
             }
-
 
 
             $shopHasCardApi->create([

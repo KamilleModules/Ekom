@@ -87,9 +87,20 @@ class CheckoutLayer
                 ]);
 
                 $productInfos = $cartModel['items'];
-                $shippingCosts = $carrierLayer->calculateShippingCostByCarrierId($carrierId, $productInfos, $shippingAddress);
-                $shippingCosts['rawTotalShippingCost'] = $shippingCosts['totalShippingCost'];
-                $shippingCosts['totalShippingCost'] = E::price($shippingCosts['rawTotalShippingCost']);
+
+                /**
+                 * the user doesn't have an address yet.
+                 */
+                if (false === $shippingAddress) {
+                    $shippingCosts['rawTotalShippingCost'] = 0;
+                    $shippingCosts['totalShippingCost'] = '--'; // means not set for templates
+                    $shippingCosts['sections'] = [];
+                } else {
+                    $shippingCosts = $carrierLayer->calculateShippingCostByCarrierId($carrierId, $productInfos, $shippingAddress);
+                    $shippingCosts['rawTotalShippingCost'] = $shippingCosts['totalShippingCost'];
+                    $shippingCosts['totalShippingCost'] = E::price($shippingCosts['rawTotalShippingCost']);
+                }
+
 
                 // in singleAddress mode, we only have one order section
                 $_orderSectionSubtotal = $cartModel['rawCartTotal'] + $shippingCosts['rawTotalShippingCost'];
@@ -134,8 +145,8 @@ class CheckoutLayer
                 $model = [
                     "checkoutMode" => $checkoutMode,
                     "isB2B" => $cartModel['isB2B'],
-                    "billingAddress" => $billingAddress,
-                    "shippingAddress" => $shippingAddress,
+                    "billingAddress" => $billingAddress, // or false
+                    "shippingAddress" => $shippingAddress, // or false
                     "shippingAddresses" => $shippingAddresses,
                     "selectedShippingAddressId" => $shippingAddressId,
                     "defaultCountry" => $countryId,
