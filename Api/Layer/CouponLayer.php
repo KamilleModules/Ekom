@@ -227,7 +227,7 @@ class CouponLayer
      *                                - old: float, just a reference to the price BEFORE the discount was applied
      *                                - newPrice: string, the formatted price (AFTER the discount was applied)
      */
-    public function applyCouponBag($price, $target, array $couponBag, array &$validCoupons = [], array $data = [])
+    public function applyCouponBag($price, $priceWithTax, $target, array $couponBag, array &$validCoupons = [], array $data = [])
     {
 
         try {
@@ -235,6 +235,7 @@ class CouponLayer
 
             $ret = [];
             $originalPrice = $price;
+            $originalPriceWithTax = $priceWithTax;
             $coupons = [];
             foreach ($couponBag as $id) {
 
@@ -249,19 +250,25 @@ class CouponLayer
                     foreach ($info['discounts'] as $_target => $discounts) {
                         if ($_target === $target) {
                             $temp = $price;
+                            $tempWithTax = $priceWithTax;
 
                             foreach ($discounts as $k => $discount) {
 
                                 $_discount = [];
                                 $old = $price;
+                                $oldWithTax = $priceWithTax;
                                 /**
                                  * todo: this applyCouponDiscount method probably needs the data as its input.
                                  * You might want to rebuild and create a system like for testCouponConditionsByCode,
                                  * using the filesystem?
                                  */
                                 $price = $this->applyCouponDiscount($price, $discount);
+                                $priceWithTax = $this->applyCouponDiscount($priceWithTax, $discount);
+
                                 $_discount['old'] = $old;
                                 $_discount['newPrice'] = E::price($price);
+                                $_discount['oldWithTax'] = $oldWithTax;
+                                $_discount['newPrice'] = E::price($priceWithTax);
                                 $_discount['label'] = $discount['label'];
 
                                 $_discounts[] = $_discount;
@@ -272,6 +279,7 @@ class CouponLayer
                             $coupon['code'] = $info['code'];
                             $coupon['discounts'] = $_discounts;
                             $coupon['saving'] = E::price(-($temp - $price));
+                            $coupon['savingWithTax'] = E::price(-($tempWithTax - $priceWithTax));
                         }
                     }
 
@@ -284,10 +292,17 @@ class CouponLayer
             }
 
             $totalSaving = ($originalPrice - $price);
+            $totalSavingWithTax = ($originalPriceWithTax - $priceWithTax);
             $ret['rawDiscountPrice'] = $price;
             $ret['discountPrice'] = E::price($price);
-            $ret['totalSaving'] = E::price(-($originalPrice - $price));
+            $ret['rawDiscountPriceWithTax'] = $priceWithTax;
+            $ret['discountPriceWithTax'] = E::price($priceWithTax);
+
             $ret['rawTotalSaving'] = $totalSaving;
+            $ret['totalSaving'] = E::price(-($originalPrice - $price));
+
+            $ret['rawTotalSavingWithTax'] = $totalSavingWithTax;
+            $ret['totalSavingWithTax'] = E::price(-($originalPriceWithTax - $priceWithTax));
             $ret['coupons'] = $coupons;
 
 

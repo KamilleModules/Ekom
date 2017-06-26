@@ -17,6 +17,20 @@ class ProductCardLayer
 {
 
 
+    /**
+     * A maintenance method to do "batch" operations on cards.
+     */
+    public function getProductCardIdsByShop($shopId = null)
+    {
+        EkomApi::inst()->initWebContext();
+        $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+
+        return QuickPdo::fetchAll("
+select product_card_id from ek_shop_has_product_card
+where shop_id=$shopId        
+        ", [], \PDO::FETCH_COLUMN);
+    }
+
 //    public function getProductCardsByCategory($categoryId)
 //    {
 //
@@ -52,7 +66,6 @@ class ProductCardLayer
         $langId = (null === $langId) ? (int)ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
         $categoryId = (int)$categoryId;
         $catIds = EkomApi::inst()->categoryLayer()->getDescendantCategoryIdTree($categoryId);
-
 
         return A::cache()->get("Ekom.ProductCardLayer.getProductCardsByCategory.$shopId.$langId.$categoryId.$circle", function () use ($circle, $catIds, $langId, $shopId) {
 
@@ -135,11 +148,13 @@ $sWhere
 //            az($query);
             $rows = QuickPdo::fetchAll($query, $markers);
 
+
             $ret = [];
             $productLayer = EkomApi::inst()->productLayer();
             foreach ($rows as $row) {
                 $ret[] = $productLayer->getProductBoxModelByCardId($row['product_card_id'], $shopId, $langId);
             }
+            az($catIds, $rows);
 
 
             $gen = ArrayRowsGenerator::create()->setArray($ret);
@@ -162,5 +177,15 @@ $sWhere
         ]);
     }
 
+    public function setTaxGroup($cardId, $taxGroupId, $shopId = null)
+    {
+        EkomApi::inst()->initWebContext();
+        $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+        EkomApi::inst()->productCardHasTaxGroup()->create([
+            "shop_id" => $shopId,
+            "product_card_id" => $cardId,
+            "tax_group_id" => $taxGroupId,
+        ]);
+    }
 
 }

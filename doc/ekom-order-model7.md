@@ -1,11 +1,11 @@
-Ekom price system 3
+Ekom price system 7
 =====================
-2017-06-15
+2017-06-26
 
 
 This document's intent in the long term is to supersede all other price related documents.
 
-It's inspired by **ekom-price-system.md**,  **ekom-price-system2.md**, **ekom-order-model2.md** and **ekom-coin-model.md**, which at the time of writing are accurate.
+It's inspired by **ekom-price-system.md**,  **ekom-price-system2.md**, **ekom-order-model6.md** and **ekom-coin-model.md**, which at the time of writing are accurate.
 
 
 How the price is affected is an essential question in e-commerce.
@@ -14,7 +14,7 @@ In ekom, it depends on many actors, including:
 
 - taxes
 - discounts
-- coupons
+- coupons (aka cart discounts)
 - shipping costs
 
 
@@ -31,26 +31,39 @@ That's why I want to explain the ekom approach, which might be wrong or right, b
 How is the price affected?
 ===========
 
-The major change in this revision is the fact that we clearly identify two parallel business models, which influences both
-the concepts and the code.
+The major change in this revision is that each price state is declined in three versions: 
+
+- symbolic version
+- without tax version
+- with tax version
+
+Here is the model used by ekom: [![ekom-order-model7.jpg](https://s19.postimg.org/h5bgnt3ab/ekom-order-model7.jpg)](https://postimg.org/image/xt2yqay1r/)
 
 
 
-There are two main types of businesses: b2b or b2c.
 
-The differences are illustrated here: [![ekom-order-model4.jpg](https://s19.postimg.org/jqk92y38j/ekom-order-model4.jpg)](https://postimg.org/image/jdsuwrkyn/)
-
-
-
-
-B2b
+How does it work?
 -------
 
-b2b is the simplest system to understand, because there are no taxes involved.
 The shop owner sets the price of her product.
 
-Then discounts apply, which gives us the salePrice.
+Then she set up the discounts, which gives us the discountedPrice.
 
+Then, we apply the taxes, which gives us the discountedPriceWithTax.
+
+From there, we will always have three distinct versions of the price:
+
+- the symbolic version
+- the without tax version
+- the with tax version
+
+The symbolic version is just an alias to either the without tax version or the tax version,
+depending on the business type (b2b or b2c).
+Templates generally use the symbolic version as it comes with less overhead.
+
+
+The salePrice is an alias for the discountedPrice.
+ 
 Multiply the salePrice by the quantity and you get the linePrice.
 
 Summing all line prices you get the linesTotal.
@@ -68,49 +81,24 @@ So this price system is composed of various price states in a given order:
  
 - price 
 - (apply discounts) 
-- salePrice 
-- (multiply by quantity) 
-- linePrice
-- (sum all linePrice) 
-- linesTotal
-- (apply "before shipping" cart discounts) 
-- cartTotal
-- (add shipping costs) 
-- orderSectionSubtotal
-- (apply "after shipping" cart discounts)
-- orderSectionTotal
-- (sum all orderSectionTotal) 
-- orderGrandTotal
-
-
-B2c
-----------
-
-b2c is almost the same, except that we use the price with tax as the basis for the calculations.
-The tax are applied at the price level (very first state).
-
-We have the following system:
-
-- price 
+- discountedPrice
 - (apply taxes) 
-- priceWithTax
-- (apply discounts) 
 - salePrice 
 - (multiply by quantity) 
-- linePrice
+- linePrice 
 - (sum all linePrice) 
 - linesTotal
 - (apply "before shipping" cart discounts) 
 - cartTotal
 - (add shipping costs) 
-- orderSectionSubtotal
+- orderSectionSubtotal 
 - (apply "after shipping" cart discounts)
 - orderSectionTotal
 - (sum all orderSectionTotal) 
 - orderGrandTotal
 
- 
- 
- 
- 
+
+
+
+
 

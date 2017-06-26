@@ -357,11 +357,6 @@ and product_id in (" . implode(', ', $productIds) . ")
                             //--------------------------------------------
                             $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $productId);
 
-                            if (count($attr)) {
-                                a(__FILE__);
-                                az($attr);
-                            }
-
                             $defaultImage = "";
                             $images = $api->imageLayer()->getImages("productBox", [
                                 $productId,
@@ -437,30 +432,22 @@ and product_id in (" . implode(', ', $productIds) . ")
                             }
 
                             // initializing values for merged b2b/b2c array
-                            $_priceWithTax = null;
-                            $taxDetails = [];
-                            $taxes = [];
+//                            $_priceWithTax = null;
+//                            $taxDetails = [];
+//                            $taxes = [];
 
 
-                            if (true === $isB2b) {
-                                // ras
-
-
-                            } else { // b2c
-
-
-                            }
                             // get taxes, for both modes (b2b, b2b), just in case the template need the info
-                            $taxLayer = $api->taxLayer();
-                            $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
+//                            $taxLayer = $api->taxLayer();
+//                            $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
+//                            $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_price, $taxDetails);
 
 
-                            $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_price, $taxDetails);
                             $_price = E::trimPrice($_price);
-                            $_priceWithTax = E::trimPrice($_priceWithTax);
+//                            $_priceWithTax = E::trimPrice($_priceWithTax);
 
                             $price = E::price($_price);
-                            $priceWithTax = E::price($_priceWithTax);
+//                            $priceWithTax = E::price($_priceWithTax);
 
 
                             $cardSlug = ("" !== $row['slug']) ? $row['slug'] : $row['default_slug'];
@@ -493,15 +480,15 @@ and product_id in (" . implode(', ', $productIds) . ")
 
 
                                 "price" => $price,
-                                "priceWithTax" => $priceWithTax,
+//                                "priceWithTax" => $priceWithTax,
 //                                "priceWithoutTax" => $priceWithoutTax,
 
                                 //
                                 "rawPrice" => $_price,
-                                "rawPriceWithTax" => $_priceWithTax,
+//                                "rawPriceWithTax" => $_priceWithTax,
 
 
-                                "taxDetails" => $taxDetails, // see TaxLayer.applyTaxesToPrice for more details
+//                                "taxDetails" => $taxDetails, // see TaxLayer.applyTaxesToPrice for more details
                                 "attributes" => $attr,
                                 //--------------------------------------------
                                 // EXTENSION: SPECIFIC TO SOME PLUGINS
@@ -517,7 +504,7 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 //--------------------------------------------
                                 // PRIVATE, are removed before the result is returned
                                 //--------------------------------------------
-                                "_taxes" => $taxes,
+//                                "_taxes" => $taxes,
                             ];
 
                             $model = $boxConf;
@@ -588,35 +575,37 @@ and product_id in (" . implode(', ', $productIds) . ")
             "ek_product_card_has_tax_group.delete.$shopId.$cardId",
         ]);
 
-        //--------------------------------------------
-        // NOW APPLYING DISCOUNT DYNAMICALLY (so that it's always synced with app rules)
-        //--------------------------------------------
-        /**
-         * Actually, todo: we can cache it for one day using:
-         *
-         * - the user group Ids
-         * - the currency
-         * - today's date
-         *
-         * However, if the discount date ends in the middle of the day,
-         * we need another helper external system to clean the cache in time.
-         *
-         * - suggestion: try to see how well/fast it works without cache first
-         *
-         *
-         */
         if (array_key_exists('product_id', $model)) { // if model is not in error form
+            //--------------------------------------------
+            // NOW APPLYING DISCOUNT DYNAMICALLY (so that it's always synced with app rules)
+            //--------------------------------------------
+            /**
+             * Actually, todo: we can cache it for one day using:
+             *
+             * - the user group Ids
+             * - the currency
+             * - today's date
+             *
+             * However, if the discount date ends in the middle of the day,
+             * we need another helper external system to clean the cache in time.
+             *
+             * - suggestion: try to see how well/fast it works without cache first
+             *
+             *
+             */
             $layerDiscount = $api->discountLayer();
             $discounts = $layerDiscount->getDiscountsByProductId($model['product_id'], $shopId, $langId);
 
 
-            if (true === $isB2b) {
-                $_price = $model['rawPrice'];
-            } else {
-                $_price = $model['rawPriceWithTax'];
-            }
+            $_price = $model['rawPrice'];
 
-            $_salePrice = $_price;
+//            if (true === $isB2b) {
+//                $_price = $model['rawPrice'];
+//            } else {
+//                $_price = $model['rawPriceWithTax'];
+//            }
+
+            $_discountedPrice = $_price;
             $badges = [];
             $atLeastOneDiscountApplied = false;
             foreach ($discounts as $d) {
@@ -624,7 +613,7 @@ and product_id in (" . implode(', ', $productIds) . ")
                 $operand = $d['procedure_operand'];
                 $target = $d['target']; // implicit/ignored for now with ekom order model4
 
-                $_salePrice = $layerDiscount->applyDiscountToPrice($d, $_salePrice, $t);
+                $_discountedPrice = $layerDiscount->applyDiscountToPrice($d, $_discountedPrice, $t);
                 if (false !== $t) {
                     $badges[] = [
                         "type" => $d['procedure_type'],
@@ -636,8 +625,8 @@ and product_id in (" . implode(', ', $productIds) . ")
             }
 
 
-            $model['rawSalePrice'] = $_salePrice;
-            $model['salePrice'] = E::price($_salePrice);
+            $model['rawDiscountedPriceWithoutTax'] = $_discountedPrice;
+            $model['discountedPriceWithoutTax'] = E::price($_discountedPrice);
 
 
             //--------------------------------------------
@@ -647,20 +636,58 @@ and product_id in (" . implode(', ', $productIds) . ")
             $model['badgeDetails'] = $badges;
 
 
-            $diff = $_price - $_salePrice;
+            $diff = $_price - $_discountedPrice;
             $diffPercent = $diff / $_price * 100;
-
-
             $model['savingPercent'] = E::trimPercent($diffPercent);
             $model['savingAmount'] = E::price($diff);
+
+
             $model['isB2B'] = $isB2b;
 
 
             // remove private
-            unset($model["_taxes"]);
+//            unset($model["_taxes"]);
 
+
+            //--------------------------------------------
+            // NOW COMPUTING TAX
+            //--------------------------------------------
+            $_discountedPriceWithTax = null;
+            $taxDetails = [];
+            $taxes = [];
+
+            $taxLayer = $api->taxLayer();
+            $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
+            $_discountedPriceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_discountedPrice, $taxDetails);
+
+
+            $model['rawDiscountedPriceWithTax'] = $_discountedPriceWithTax;
+            $model['discountedPriceWithTax'] = E::trimPrice($_discountedPriceWithTax);
+            $model['taxDetails'] = $taxDetails;
+
+
+
+
+            $model['salePriceWithoutTax'] = $model['discountedPriceWithoutTax'];
+            $model['salePriceWithTax'] = $model['discountedPriceWithTax'];
+
+
+            //--------------------------------------------
+            // NOW GIVING SALE PRICE TO THE TEMPLATES
+            //--------------------------------------------
+            if (true === $isB2b) {
+                $model['discountedPrice'] = $model['discountedPriceWithoutTax'];
+                $model['salePrice'] = $model['salePriceWithoutTax'];
+                $model['rawSalePrice'] = $_discountedPrice;
+            } else {
+                $model['discountedPrice'] = $model['discountedPriceWithTax'];
+                $model['salePrice'] = $model['salePriceWithTax'];
+                $model['rawSalePrice'] = $_discountedPriceWithTax;
+            }
 
         }
+
+
 //        a(__FILE__);
         return $model;
     }

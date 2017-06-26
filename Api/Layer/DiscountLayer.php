@@ -16,6 +16,55 @@ class DiscountLayer
 
 
     /**
+     * Prescription:
+     * - do this once per day, at 04:00 am,
+     * so that you start a day with fresh cached discount prices.
+     *
+     *
+     * To give you an idea,
+     * I executed this method on my local computer
+     * with 1434 products, it took about 6 minute and 13 seconds to finish,
+     * with tabatha cache off.
+     *
+     *
+     */
+    public function refreshDiscounts($shopId = null)
+    {
+        EkomApi::inst()->initWebContext();
+        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+        $shopId = (int)$shopId;
+        $pIds = QuickPdo::fetchAll("
+select product_id from ek_shop_has_product
+where shop_id=$shopId
+", [], \PDO::FETCH_COLUMN);
+
+        foreach ($pIds as $pId) {
+            if($pId>1000){
+                a($pId);
+            $this->refreshDiscountsByProductId($pId, $shopId);
+            }
+        }
+    }
+
+
+    public function refreshDiscountsByProductId($productId, $shopId = null)
+    {
+        EkomApi::inst()->initWebContext();
+        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+        $productLayer = EkomApi::inst()->productLayer();
+        $box = $productLayer->getProductBoxModelByProductId($productId, $shopId);
+        $salePrice = $box['rawSalePrice'];
+
+        return QuickPdo::update("ek_shop_has_product", [
+            "_sale_price" => $salePrice,
+        ], [
+            ["shop_id", "=", $shopId],
+            ["product_id", "=", $productId],
+        ]);
+    }
+
+
+    /**
      * Apply discount to price and return the discounted price.
      *
      * Reminder, this method should be called dynamically and should not be cached (unless you know

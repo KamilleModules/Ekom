@@ -282,6 +282,7 @@ class CartLayer
         $items = $_SESSION['ekom.cart'][$shopId]['items'];
 
 
+        $isB2b = ('b2b' === EkomApi::inst()->configLayer()->getBusinessType()) ? true : false;
         //--------------------------------------------
         // CALCULATING LINE PRICES AND TOTAL
         //--------------------------------------------
@@ -290,23 +291,34 @@ class CartLayer
             $qty = $item['quantity'];
             $id = $item['id'];
             $totalQty += $qty;
+
+
             if (false !== ($it = $this->getCartItemInfo($id))) {
                 $it['quantity'] = $qty;
 
 //                $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
 //                $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
-                $linePrice = $qty * $it['rawSalePrice'];
+                $linePriceWithoutTax = $qty * $it['rawDiscountedPriceWithoutTax'];
+                $linePriceWithTax = $qty * $it['rawDiscountedPriceWithTax'];
 
 //                $linesTotalWithoutTax += $linePriceWithoutTax;
 //                $linesTotalWithTax += $linePriceWithTax;
-                $linesTotal += $linePrice;
+                $linesTotalWithoutTax += $linePriceWithoutTax;
+                $linesTotalWithTax += $linePriceWithTax;
 
 
 //                $it['linePriceWithoutTax'] = E::price($linePriceWithoutTax);
 //                $it['linePriceWithTax'] = E::price($linePriceWithTax);
-                $it['linePrice'] = E::price($linePrice);
-                $it['rawLinePrice'] = $linePrice;
+                $it['linePriceWithoutTax'] = E::price($linePriceWithoutTax);
+                $it['rawLinePriceWithoutTax'] = $linePriceWithoutTax;
+                $it['linePriceWithTax'] = E::price($linePriceWithTax);
+                $it['rawLinePriceWithTax'] = $linePriceWithTax;
 
+                if (true === $isB2b) {
+                    $it['linePrice'] = $it['linePriceWithoutTax'];
+                } else {
+                    $it['linePrice'] = $it['linePriceWithTax'];
+                }
 
 //                $attrValues = [];
 //                foreach ($it['attributes'] as $v) {
@@ -322,16 +334,24 @@ class CartLayer
         $taxAmount = $linesTotalWithTax - $linesTotalWithoutTax;
 
 
-        $isB2b = ('b2b' === EkomApi::inst()->configLayer()->getBusinessType()) ? true : false;
         $model['isB2B'] = $isB2b;
         $model['totalQuantity'] = $totalQty;
         $model['items'] = $modelItems;
 //        $model['linesTotalWithoutTax'] = E::price($linesTotalWithoutTax);
 //        $model['linesTotalWithTax'] = E::price($linesTotalWithTax);
-        $model['linesTotal'] = E::price($linesTotal);
-        $model['rawLinesTotal'] = $linesTotal;
+        $model['linesTotalWithoutTax'] = E::price($linesTotalWithoutTax);
+        $model['rawLinesTotalWithoutTax'] = $linesTotalWithoutTax;
+        $model['linesTotalWithTax'] = E::price($linesTotalWithTax);
+        $model['rawLinesTotalWithTax'] = $linesTotalWithTax;
         $model['taxAmount'] = E::price($taxAmount);
         $model['rawTaxAmount'] = $taxAmount;
+        if (true === $isB2b) {
+            $model['linesTotal'] = $model['linesTotalWithoutTax'];
+            $model['rawLinesTotal'] = $model['linesTotalWithoutTax'];
+        } else {
+            $model['linesTotal'] = $model['linesTotalWithTax'];
+            $model['rawLinesTotal'] = $model['linesTotalWithTax'];
+        }
 
 
         //--------------------------------------------
@@ -341,17 +361,35 @@ class CartLayer
         $validCoupons = [];
 
 
-        $details = $couponApi->applyCouponBag($linesTotal, "beforeShipping", $this->getCouponBag(), $validCoupons);
+        $details = $couponApi->applyCouponBag($linesTotal, $linesTotalWithTax, "beforeShipping", $this->getCouponBag(), $validCoupons);
 //        EkomApi::inst()->cartLayer()->setCouponBag($validCoupons);
 
 
         $cartTotalRaw = $details['rawDiscountPrice'];
-        $model['rawCartTotal'] = $cartTotalRaw;
-        $model['cartTotal'] = $details['discountPrice'];
-        $model['totalSaving'] = $details['totalSaving'];
-        $model['rawTotalSaving'] = $details['rawTotalSaving'];
+        $cartTotalRawWithTax = $details['rawDiscountPriceWithTax'];
+
+        $model['rawCartTotalWithoutTax'] = $cartTotalRaw;
+        $model['rawCartTotalWithTax'] = $cartTotalRawWithTax;
+
+        $model['cartTotalWithoutTax'] = $details['discountPrice'];
+        $model['cartTotalWithTax'] = $details['discountPriceWithTax'];
+
+        $model['totalSavingWithoutTax'] = $details['totalSaving'];
+        $model['totalSavingWithTax'] = $details['totalSavingWithTax'];
+        $model['rawTotalSavingWithoutTax'] = $details['rawTotalSaving'];
+        $model['rawTotalSavingWithTax'] = $details['rawTotalSavingWithTax'];
+
         $model['coupons'] = $details['coupons'];
         $model['hasCoupons'] = (count($details['coupons']) > 0);
+
+
+        if (true === $isB2b) {
+            $model['cartTotal'] = $model['cartTotalWithoutTax'];
+            $model['totalSaving'] = $model['totalSavingWithoutTax'];
+        } else {
+            $model['cartTotal'] = $model['cartTotalWithTax'];
+            $model['totalSaving'] = $model['totalSavingWithTax'];
+        }
 
 
         //--------------------------------------------
@@ -374,7 +412,14 @@ class CartLayer
 
 
             $model['estimatedTotalShippingCost'] = E::price($allShippingCosts);
-            $model['estimatedOrderGrandTotal'] = E::price($cartTotalRaw + $allShippingCosts);
+            $model['estimatedOrderGrandTotalWithoutTax'] = E::price($cartTotalRaw + $allShippingCosts);
+            $model['estimatedOrderGrandTotalWithTax'] = E::price($cartTotalRawWithTax + $allShippingCosts);
+
+            if (true === $isB2b) {
+                $model['estimatedOrderGrandTotal'] = $model['estimatedOrderGrandTotalWithoutTax'];
+            } else {
+                $model['estimatedOrderGrandTotal'] = $model['estimatedOrderGrandTotalWithTax'];
+            }
         }
 
         return $model;
@@ -467,6 +512,10 @@ and p.lang_id=$langId
                     'rawPrice' => $b['rawPrice'],
                     'salePrice' => $b['salePrice'],
                     'rawSalePrice' => $b['rawSalePrice'],
+                    'discountedPriceWithoutTax' => $b['discountedPriceWithoutTax'],
+                    'rawDiscountedPriceWithoutTax' => $b['rawDiscountedPriceWithoutTax'],
+                    'discountedPriceWithTax' => $b['discountedPriceWithTax'],
+                    'rawDiscountedPriceWithTax' => $b['rawDiscountedPriceWithTax'],
 //                    'salePriceWithTax' => $b['salePriceWithTax'],
 //                    'salePriceWithoutTax' => $b['salePriceWithoutTax'],
                     'image' => $mainImage,
