@@ -38,6 +38,8 @@ class CheckoutLayer
      */
     public function getOrderModel()
     {
+
+
         $checkoutMode = E::conf("checkoutMode");
         if (SessionUser::isConnected()) {
 
@@ -103,17 +105,24 @@ class CheckoutLayer
 
 
                 // in singleAddress mode, we only have one order section
-                $_orderSectionSubtotal = $cartModel['rawCartTotal'] + $shippingCosts['rawTotalShippingCost'];
+                $_orderSectionSubtotalWithoutTax = $cartModel['rawCartTotalWithoutTax'] + $shippingCosts['rawTotalShippingCost'];
+                $_orderSectionSubtotalWithTax = $cartModel['rawCartTotalWithTax'] + $shippingCosts['rawTotalShippingCost'];
                 $validCoupons = [];
                 $data = [];// cartItems?
-                $details = $couponLayer->applyCouponBag($_orderSectionSubtotal, "afterShipping", $cartLayer->getCouponBag(), $validCoupons, $data);
-                $_orderSectionTotal = $details['rawDiscountPrice'];
-                $_orderGrandTotal = $_orderSectionTotal;
+                $details = $couponLayer->applyCouponBag($_orderSectionSubtotalWithoutTax, $_orderSectionSubtotalWithTax, "afterShipping", $cartLayer->getCouponBag(), $validCoupons, $data);
+                $_orderSectionTotalWithoutTax = $details['rawDiscountPrice'];
+                $_orderSectionTotalWithTax = $details['rawDiscountPriceWithTax'];
+                $_orderGrandTotalWithoutTax = $_orderSectionTotalWithoutTax;
+                $_orderGrandTotalWithTax = $_orderSectionTotalWithTax;
 
 
-                $orderSectionSubtotal = E::price($_orderSectionSubtotal);
-                $orderSectionTotal = E::price($_orderSectionTotal);
-                $orderGrandTotal = E::price($_orderGrandTotal);
+                $orderSectionSubtotalWithoutTax = E::price($_orderSectionSubtotalWithoutTax);
+                $orderSectionTotalWithoutTax = E::price($_orderSectionTotalWithoutTax);
+                $orderGrandTotalWithoutTax = E::price($_orderGrandTotalWithoutTax);
+
+                $orderSectionSubtotalWithTax = E::price($_orderSectionSubtotalWithTax);
+                $orderSectionTotalWithTax = E::price($_orderSectionTotalWithTax);
+                $orderGrandTotalWithTax = E::price($_orderGrandTotalWithTax);
 
                 /**
                  * @var $provider OnTheFlyFormProviderInterface
@@ -132,14 +141,19 @@ class CheckoutLayer
 
 
                 $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
-                $cartTotal = $cartModel['cartTotal'];
-                $_cartTotal = $cartModel['rawCartTotal'];
 
-                $_couponTotalSaving = 0;
-                $_couponTotalSaving += $cartModel['rawTotalSaving'];
-                $_couponTotalSaving += $details['rawTotalSaving'];
+                $isB2b = $cartModel['isB2B'];
 
-                $couponTotalSaving = E::price(-$_couponTotalSaving);
+
+                $_couponTotalSavingWithoutTax = 0;
+                $_couponTotalSavingWithoutTax += $cartModel['rawTotalSavingWithoutTax'];
+                $_couponTotalSavingWithoutTax += $details['rawTotalSaving'];
+                $couponTotalSavingWithoutTax = E::price(-$_couponTotalSavingWithoutTax);
+
+                $_couponTotalSavingWithTax = 0;
+                $_couponTotalSavingWithTax += $cartModel['rawTotalSavingWithTax'];
+                $_couponTotalSavingWithTax += $details['rawTotalSavingWithTax'];
+                $couponTotalSavingWithTax = E::price(-$_couponTotalSavingWithTax);
 
 
                 $model = [
@@ -154,16 +168,32 @@ class CheckoutLayer
                     "useSingleCarrier" => $hasCarrierChoice,
                     "paymentMethodBlocks" => $paymentMethodBlocks,
                     "currentStep" => $currentStep,
-                    "orderSectionSubtotal" => $orderSectionSubtotal,
-                    "rawOrderSectionSubtotal" => $_orderSectionSubtotal,
-                    "orderSectionTotal" => $orderSectionTotal,
-                    "rawOrderSectionTotal" => $_orderSectionTotal,
-                    "orderGrandTotal" => $orderGrandTotal,
-                    "rawOrderGrandTotal" => $_orderGrandTotal,
+                    //
+                    "orderSectionSubtotalWithoutTax" => $orderSectionSubtotalWithoutTax,
+                    "rawOrderSectionSubtotalWithoutTax" => $_orderSectionSubtotalWithoutTax,
+                    "orderSectionTotalWithoutTax" => $orderSectionTotalWithoutTax,
+                    "rawOrderSectionTotalWithoutTax" => $_orderSectionTotalWithoutTax,
+                    "orderGrandTotalWithoutTax" => $orderGrandTotalWithoutTax,
+                    "rawOrderGrandTotalWithoutTax" => $_orderGrandTotalWithoutTax,
+                    //
+                    "orderSectionSubtotalWithTax" => $orderSectionSubtotalWithTax,
+                    "rawOrderSectionSubtotalWithTax" => $_orderSectionSubtotalWithTax,
+                    "orderSectionTotalWithTax" => $orderSectionTotalWithTax,
+                    "rawOrderSectionTotalWithTax" => $_orderSectionTotalWithTax,
+                    "orderGrandTotalWithTax" => $orderGrandTotalWithTax,
+                    "rawOrderGrandTotalWithTax" => $_orderGrandTotalWithTax,
+                    //
+
+
                     "beforeShippingCoupons" => $cartModel['coupons'],
                     "afterShippingCouponDetails" => $details,
-                    "couponTotalSaving" => $couponTotalSaving,
-                    "rawCouponTotalSaving" => $_couponTotalSaving,
+
+                    "couponTotalSavingWithoutTax" => $couponTotalSavingWithoutTax,
+                    "rawCouponTotalSavingWithoutTax" => $_couponTotalSavingWithoutTax,
+
+                    "couponTotalSavingWithTax" => $couponTotalSavingWithTax,
+                    "rawCouponTotalSavingWithTax" => $_couponTotalSavingWithTax,
+
                     "paymentMethodId" => $paymentMethodId,
                     "paymentMethodOptions" => $paymentMethodOptions,
                     "paymentMethod" => $paymentMethod, // or null
@@ -173,10 +203,42 @@ class CheckoutLayer
                     "rawTaxAmount" => $cartModel['rawTaxAmount'],
                     "linesTotal" => $cartModel['linesTotal'],
                     "rawLinesTotal" => $cartModel['rawLinesTotal'],
-                    "cartTotal" => $cartTotal,
-                    "rawCartTotal" => $_cartTotal,
+                    "linesTotalWithoutTax" => $cartModel['linesTotalWithoutTax'],
+                    "rawLinesTotalWithoutTax" => $cartModel['rawLinesTotalWithoutTax'],
+                    "linesTotalWithTax" => $cartModel['linesTotalWithTax'],
+                    "rawLinesTotalWithTax" => $cartModel['rawLinesTotalWithTax'],
+                    "cartTotal" => $cartModel['cartTotal'],
+                    "rawCartTotal" => $cartModel['rawCartTotal'],
+                    "cartTotalWithTax" => $cartModel['cartTotalWithTax'],
+                    "rawCartTotalWithTax" => $cartModel['rawCartTotalWithTax'],
+                    "cartTotalWithoutTax" => $cartModel['cartTotalWithoutTax'],
+                    "rawCartTotalWithoutTax" => $cartModel['rawCartTotalWithoutTax'],
 //                            "shippingType" => "singleAddressShipping", // singleAddressShipping|multipleAddressShipping // implicitly: it's singleAddressShipping, unless otherwise specified
                 ];
+
+
+                if (true === $isB2b) {
+                    $model["orderSectionSubtotal"] = $orderSectionSubtotalWithoutTax;
+                    $model["rawOrderSectionSubtotal"] = $_orderSectionSubtotalWithoutTax;
+                    $model["orderSectionTotal"] = $orderSectionTotalWithoutTax;
+                    $model["rawOrderSectionTotal"] = $_orderSectionTotalWithoutTax;
+                    $model["orderGrandTotal"] = $orderGrandTotalWithoutTax;
+                    $model["rawOrderGrandTotal"] = $_orderGrandTotalWithoutTax;
+
+                    $model["couponTotalSaving"] = $couponTotalSavingWithoutTax;
+                    $model["rawCouponTotalSaving"] = $_couponTotalSavingWithoutTax;
+
+                } else {
+                    $model["orderSectionSubtotal"] = $orderSectionSubtotalWithTax;
+                    $model["rawOrderSectionSubtotal"] = $_orderSectionSubtotalWithTax;
+                    $model["orderSectionTotal"] = $orderSectionTotalWithTax;
+                    $model["rawOrderSectionTotal"] = $_orderSectionTotalWithTax;
+                    $model["orderGrandTotal"] = $orderGrandTotalWithTax;
+                    $model["rawOrderGrandTotal"] = $_orderGrandTotalWithTax;
+
+                    $model["couponTotalSaving"] = $couponTotalSavingWithTax;
+                    $model["rawCouponTotalSaving"] = $_couponTotalSavingWithTax;
+                }
                 return $model;
             }
         }

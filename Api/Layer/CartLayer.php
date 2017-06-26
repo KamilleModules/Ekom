@@ -385,9 +385,11 @@ class CartLayer
 
         if (true === $isB2b) {
             $model['cartTotal'] = $model['cartTotalWithoutTax'];
+            $model['rawCartTotal'] = $model['rawCartTotalWithoutTax'];
             $model['totalSaving'] = $model['totalSavingWithoutTax'];
         } else {
             $model['cartTotal'] = $model['cartTotalWithTax'];
+            $model['rawCartTotal'] = $model['rawCartTotalWithTax'];
             $model['totalSaving'] = $model['totalSavingWithTax'];
         }
 

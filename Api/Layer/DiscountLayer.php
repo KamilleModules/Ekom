@@ -28,7 +28,7 @@ class DiscountLayer
      *
      *
      */
-    public function refreshDiscounts($shopId = null)
+    public function refreshDiscounts($shopId = null, array $slice = null)
     {
         EkomApi::inst()->initWebContext();
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
@@ -38,10 +38,18 @@ select product_id from ek_shop_has_product
 where shop_id=$shopId
 ", [], \PDO::FETCH_COLUMN);
 
+
+        $start = 0;
+        $end = count($pIds) - 1;
+        if (null !== $slice) {
+            list($start, $end) = $slice;
+        }
+
+
         foreach ($pIds as $pId) {
-            if($pId>1000){
+            if ($pId >= $start && $pId <= $end) {
                 a($pId);
-            $this->refreshDiscountsByProductId($pId, $shopId);
+                $this->refreshDiscountsByProductId($pId, $shopId);
             }
         }
     }
@@ -53,10 +61,13 @@ where shop_id=$shopId
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $productLayer = EkomApi::inst()->productLayer();
         $box = $productLayer->getProductBoxModelByProductId($productId, $shopId);
-        $salePrice = $box['rawSalePrice'];
+
+        $salePriceWithoutTax = $box['rawSalePrice'];
+        $salePriceWithTax = $box['rawSalePriceWithTax'];
 
         return QuickPdo::update("ek_shop_has_product", [
-            "_sale_price" => $salePrice,
+            "_sale_price_without_tax" => $salePriceWithoutTax,
+            "_sale_price_with_tax" => $salePriceWithTax,
         ], [
             ["shop_id", "=", $shopId],
             ["product_id", "=", $productId],
