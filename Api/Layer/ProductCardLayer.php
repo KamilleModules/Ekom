@@ -32,32 +32,9 @@ where shop_id=$shopId
         ", [], \PDO::FETCH_COLUMN);
     }
 
-//    public function getProductCardsByCategory($categoryId)
-//    {
-//
-//        EkomApi::inst()->initWebContext();
-//        $langId = (int)ApplicationRegistry::get("ekom.lang_id");
-//
-//
-//        /**
-//         * Todo: cache;
-//         */
-//        $catIds = EkomApi::inst()->categoryLayer()->getDescendantCategoryIdTree($categoryId);
-//
-//        return QuickPdo::fetchAll("
-//select
-//l.product_card_id,
-//l.label
-//
-//from ek_product_card_lang l
-//inner join ek_category_has_product_card h on h.product_card_id=l.product_card_id
-//
-//where h.category_id in (" . implode(', ', $catIds) . ")
-//and l.lang_id=$langId
-//
-//
-//        ");
-//    }
+
+
+
 
 
     public function getProductCardsByCategory($categoryId, $isB2b, ListModifierCircle $circle = null, $shopId = null, $langId = null)

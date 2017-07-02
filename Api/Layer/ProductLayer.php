@@ -20,6 +20,24 @@ class ProductLayer
 {
 
 
+    public function getProductInfo($productId)
+    {
+        $productId = (int)$productId;
+
+        return A::cache()->get("Ekom.ProductLayer.getProductInfo.$productId", function () use ($productId) {
+            return QuickPdo::fetch("
+select p.reference, p.product_card_id, l.label
+from ek_product p 
+inner join ek_product_lang l on l.product_id=p.id
+where p.id=$productId
+");
+        }, [
+            "ek_product",
+            "ek_product_lang",
+        ]);
+    }
+
+
     public function getLinkInfoByProductId($productId)
     {
 

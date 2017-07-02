@@ -543,7 +543,7 @@ where h.user_id=$userId
         return A::cache()->get("Ekom.UserLayer.getUserInfo.$userId", function () use ($userId) {
 
             $userId = (int)$userId;
-            return QuickPdo::fetchAll("
+            return QuickPdo::fetch("
 select *
 from ek_user
 where id=$userId             

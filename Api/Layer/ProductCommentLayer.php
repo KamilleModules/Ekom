@@ -4,9 +4,11 @@
 namespace Module\Ekom\Api\Layer;
 
 
+use Bat\UriTool;
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XConfig;
+use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
@@ -38,11 +40,12 @@ class ProductCommentLayer
         }
 
 
+        $date = date('Y-m-d H:i:s');
         $commentId = QuickPdo::insert("ek_product_comment", [
             'shop_id' => $shopId,
             'product_id' => $productId,
             'user_id' => $userId,
-            'date' => date('Y-m-d H:i:s'),
+            'date' => $date,
             'rating' => $data['rating'],
             'useful_counter' => 0,
             'title' => $title,
@@ -50,20 +53,61 @@ class ProductCommentLayer
             'active' => $active,
         ]);
 
-        if (true === $commentNeedValidation) {
-            if (true === E::sendMail("commentAwaitsModeration", [
-                    "to" => $commentModeratorEmail,
-                    "vars" => function(){
-                        return [
+        $userInfo = EkomApi::inst()->userLayer()->getUserInfo($userId);
+        $userEmail = $userInfo['email'];
+        $boxModel = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($productId);
 
-                        ];
-                    },
+        $link = $boxModel['uriCard'];
+        $link = UriTool::uri($link, [], true, true);
+
+
+        if (true === $commentNeedValidation) {
+
+
+            // send email to moderator
+            if (false === E::sendMail("commentAwaitsModeration", [
+                    "to" => $commentModeratorEmail,
+                    "subject" => "{siteName}: a comment awaits your moderation",
+                    "commonVars" => [
+                        'productLabel' => $boxModel['label'],
+                        'productRef' => $boxModel['ref'],
+                        'productUri' => $link,
+                        'title' => $title,
+                        'comment' => $data['comment'],
+                        'date' => $date,
+                    ],
                 ])
             ) {
+                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send commentAwaitsModeration email to $commentModeratorEmail");
+            }
 
+
+            // send email to user
+            if (false === E::sendMail("yourCommentAwaitsModeration", [
+                    "subject" => "{siteName}: your comment awaits moderation",
+                    "to" => $userEmail,
+                ])
+            ) {
+                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send YourCommentAwaitsModeration email to $userEmail");
+            }
+
+        } else {
+            // send email to user
+            if (false === E::sendMail("yourCommentHasBeenApproved", [
+                    "to" => $userEmail,
+                    "subject" => "{siteName}: your comment has been approved",
+                    'commonVars' => [
+                        'productLabel' => $boxModel['label'],
+                        'productRef' => $boxModel['ref'],
+                        'productUri' => $link,
+                    ],
+                ])
+            ) {
+                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send yourCommentHasBeenApproved email to $userEmail");
             }
         }
 
+        return $commentId;
     }
 
 

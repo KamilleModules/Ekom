@@ -145,19 +145,12 @@ class E
             $commonVars = [];
         }
 
-        // providing siteName var for free
-        $siteName = XConfig::get("Application.site.name");
-        if (false === array_key_exists("siteName", $commonVars)) {
-            $commonVars['siteName'] = $siteName;
-        }
-
 
         /**
          * @var $mail UmailInterface
          */
         $mail = X::get("Core_umail");
         $tplName = "Ekom/front/$type";
-
 
         $params = array_replace([
             "to" => null,
@@ -168,6 +161,12 @@ class E
             "commonVars" => $commonVars,
         ], $params);
 
+
+        // providing siteName var for free
+        $siteName = XConfig::get("Application.site.name");
+        if (false === array_key_exists("siteName", $params['commonVars'])) {
+            $params['commonVars']['siteName'] = $siteName;
+        }
 
 //        $logoFile = __DIR__ . "/myshop-logo.jpg";
 //        $commonVars = [
@@ -187,6 +186,7 @@ class E
             ->setVars($params['commonVars'], $params['vars'])
             ->setTemplate($tplName)
             ->send();
+
 
         return ($res === $expected);
 
