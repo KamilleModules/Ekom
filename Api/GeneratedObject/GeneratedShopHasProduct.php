@@ -35,6 +35,8 @@ class GeneratedShopHasProduct extends TableCrudObject
 			'wholesale_price' => '',
 			'quantity' => 0,
 			'active' => 0,
+			'_sale_price_without_tax' => '',
+			'_sale_price_with_tax' => '',
 		], $data);
 
 

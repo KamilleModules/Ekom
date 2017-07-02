@@ -35,6 +35,7 @@ use Module\Ekom\Api\Object\ProductCard;
 use Module\Ekom\Api\Object\ProductCardHasDiscount;
 use Module\Ekom\Api\Object\ProductCardHasTaxGroup;
 use Module\Ekom\Api\Object\ProductCardLang;
+use Module\Ekom\Api\Object\ProductComment;
 use Module\Ekom\Api\Object\ProductHasDiscount;
 use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductLang;
@@ -57,6 +58,7 @@ use Module\Ekom\Api\Object\Timezone;
 use Module\Ekom\Api\Object\User;
 use Module\Ekom\Api\Object\UserGroup;
 use Module\Ekom\Api\Object\UserHasAddress;
+use Module\Ekom\Api\Object\UserHasProduct;
 use Module\Ekom\Api\Object\UserHasUserGroup;
 
 use XiaoApi\Api\XiaoApi;
@@ -311,6 +313,13 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('productCardLang');
     }
     /**
+     * @return ProductComment
+     */
+    public function productComment()
+    {
+        return $this->getObject('productComment');
+    }
+    /**
      * @return ProductHasDiscount
      */
     public function productHasDiscount()
@@ -463,6 +472,13 @@ class GeneratedEkomApi extends XiaoApi
     public function userHasAddress()
     {
         return $this->getObject('userHasAddress');
+    }
+    /**
+     * @return UserHasProduct
+     */
+    public function userHasProduct()
+    {
+        return $this->getObject('userHasProduct');
     }
     /**
      * @return UserHasUserGroup

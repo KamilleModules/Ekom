@@ -122,15 +122,33 @@ class E
      */
     public static function sendMail($type, array $params)
     {
-        $subject = null;
-        switch ($type) {
-            case 'accountCreated':
-                $subject = "{siteName}: Your account has been created";
-                break;
-            default:
-                XLog::error("[Ekom module] - E::sendMail: Unknown mail type: $type");
-                return false;
-                break;
+        if (array_key_exists('subject', $params)) {
+            $subject = $params['subject'];
+        } else {
+
+            $subject = null;
+            switch ($type) {
+                case 'accountCreated':
+                    $subject = "{siteName}: Your account has been created";
+                    break;
+                default:
+                    XLog::error("[Ekom module] - E::sendMail: Unknown mail type: $type");
+                    return false;
+                    break;
+            }
+        }
+
+
+        if (array_key_exists('commonVars', $params)) {
+            $commonVars = $params['commonVars'];
+        } else {
+            $commonVars = [];
+        }
+
+        // providing siteName var for free
+        $siteName = XConfig::get("Application.site.name");
+        if (false === array_key_exists("siteName", $commonVars)) {
+            $commonVars['siteName'] = $siteName;
         }
 
 
@@ -139,7 +157,7 @@ class E
          */
         $mail = X::get("Core_umail");
         $tplName = "Ekom/front/$type";
-        $siteName = XConfig::get("Application.site.name");
+
 
         $params = array_replace([
             "to" => null,
@@ -147,9 +165,7 @@ class E
             "vars" => function ($email) {
                 return [];
             },
-            "commonVars" => [
-                'siteName' => $siteName,
-            ],
+            "commonVars" => $commonVars,
         ], $params);
 
 

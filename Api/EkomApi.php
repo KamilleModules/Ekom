@@ -25,6 +25,7 @@ use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
 use Module\Ekom\Api\Layer\PriceLayer;
 use Module\Ekom\Api\Layer\ProductCardLayer;
+use Module\Ekom\Api\Layer\ProductCommentLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
@@ -384,6 +385,14 @@ and h.lang_id=$langId
     public function productCardLayer()
     {
         return $this->getLayer('productCardLayer');
+    }
+
+    /**
+     * @return ProductCommentLayer
+     */
+    public function productCommentLayer()
+    {
+        return $this->getLayer('productCommentLayer');
     }
 
 
