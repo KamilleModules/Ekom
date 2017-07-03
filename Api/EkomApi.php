@@ -6,11 +6,11 @@ namespace Module\Ekom\Api;
 use Bat\SessionTool;
 use Core\Services\A;
 use Http4All\Header\AcceptLanguageHelper;
-use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\Layer\AttributeLayer;
+use Module\Ekom\Api\Layer\BundleLayer;
 use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\CategoryLayer;
@@ -20,11 +20,10 @@ use Module\Ekom\Api\Layer\ConfigLayer;
 use Module\Ekom\Api\Layer\CountryLayer;
 use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\DiscountLayer;
-use Module\Ekom\Api\Layer\FeaturesLayer;
+use Module\Ekom\Api\Layer\FeatureLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
-use Module\Ekom\Api\Layer\PriceLayer;
 use Module\Ekom\Api\Layer\ProductCardLayer;
 use Module\Ekom\Api\Layer\ProductCommentLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
@@ -279,6 +278,14 @@ and h.lang_id=$langId
     }
 
     /**
+     * @return BundleLayer
+     */
+    public function bundleLayer()
+    {
+        return $this->getLayer('bundleLayer');
+    }
+
+    /**
      * @return CartLayer
      */
     public function cartLayer()
@@ -347,11 +354,11 @@ and h.lang_id=$langId
     }
 
     /**
-     * @return FeaturesLayer
+     * @return FeatureLayer
      */
-    public function featuresLayer()
+    public function featureLayer()
     {
-        return $this->getLayer('featuresLayer');
+        return $this->getLayer('featureLayer');
     }
 
     /**

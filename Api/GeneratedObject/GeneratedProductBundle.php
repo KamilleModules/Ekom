@@ -30,6 +30,7 @@ class GeneratedProductBundle extends TableCrudObject
     {
         $ret = array_replace([
 			'active' => 0,
+			'shop_id' => 0,
 		], $data);
 
 

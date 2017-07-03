@@ -643,6 +643,7 @@ and product_id in (" . implode(', ', $productIds) . ")
                 }
             }
 
+            $_discountedPrice = E::trimPrice($_discountedPrice);
 
             $model['rawDiscountedPriceWithoutTax'] = $_discountedPrice;
             $model['discountedPriceWithoutTax'] = E::price($_discountedPrice);
@@ -679,18 +680,18 @@ and product_id in (" . implode(', ', $productIds) . ")
             $taxLayer = $api->taxLayer();
             $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
             $_discountedPriceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_discountedPrice, $taxDetails);
-
+            $_discountedPriceWithTax = E::trimPrice($_discountedPriceWithTax);
 
             $model['rawDiscountedPriceWithTax'] = $_discountedPriceWithTax;
-            $model['discountedPriceWithTax'] = E::trimPrice($_discountedPriceWithTax);
+            $model['discountedPriceWithTax'] = E::price($_discountedPriceWithTax);
             $model['taxDetails'] = $taxDetails;
 
 
             $model['salePriceWithoutTax'] = $model['discountedPriceWithoutTax'];
             $model['salePriceWithTax'] = $model['discountedPriceWithTax'];
-
             $model['rawSalePriceWithoutTax'] = $_discountedPrice;
             $model['rawSalePriceWithTax'] = $_discountedPriceWithTax;
+
 
 
             //--------------------------------------------

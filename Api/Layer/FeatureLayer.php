@@ -9,7 +9,7 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
 use QuickPdo\QuickPdo;
 
-class FeaturesLayer
+class FeatureLayer
 {
     public function getFeaturesModelByProductId($productId, $shopId = null, $langId = null)
     {
@@ -19,7 +19,7 @@ class FeaturesLayer
         $productId = (int)$productId;
 
 
-        return A::cache()->get("Ekom.FeaturesLayer.$shopId.$langId.$productId", function () use ($productId, $shopId, $langId) {
+        return A::cache()->get("Ekom.FeatureLayer.$shopId.$langId.$productId", function () use ($productId, $shopId, $langId) {
 
 
             return QuickPdo::fetchAll("
