@@ -71,7 +71,7 @@ where category_id in (" . implode(", ", $catIds) . ")
 
         EkomApi::inst()->initWebContext();
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
-        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$shopId;
+        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
 
 
         $idCat = 0;

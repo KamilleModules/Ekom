@@ -20,6 +20,10 @@ use Module\Ekom\Api\Object\CouponLang;
 use Module\Ekom\Api\Object\Currency;
 use Module\Ekom\Api\Object\Discount;
 use Module\Ekom\Api\Object\DiscountLang;
+use Module\Ekom\Api\Object\Feature;
+use Module\Ekom\Api\Object\FeatureLang;
+use Module\Ekom\Api\Object\FeatureValue;
+use Module\Ekom\Api\Object\FeatureValueLang;
 use Module\Ekom\Api\Object\Lang;
 use Module\Ekom\Api\Object\Order;
 use Module\Ekom\Api\Object\OrderHasOrderStatus;
@@ -31,12 +35,15 @@ use Module\Ekom\Api\Object\ProductAttribute;
 use Module\Ekom\Api\Object\ProductAttributeLang;
 use Module\Ekom\Api\Object\ProductAttributeValue;
 use Module\Ekom\Api\Object\ProductAttributeValueLang;
+use Module\Ekom\Api\Object\ProductBundle;
+use Module\Ekom\Api\Object\ProductBundleHasProduct;
 use Module\Ekom\Api\Object\ProductCard;
 use Module\Ekom\Api\Object\ProductCardHasDiscount;
 use Module\Ekom\Api\Object\ProductCardHasTaxGroup;
 use Module\Ekom\Api\Object\ProductCardLang;
 use Module\Ekom\Api\Object\ProductComment;
 use Module\Ekom\Api\Object\ProductHasDiscount;
+use Module\Ekom\Api\Object\ProductHasFeature;
 use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductLang;
 use Module\Ekom\Api\Object\Shop;
@@ -208,6 +215,34 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('discountLang');
     }
     /**
+     * @return Feature
+     */
+    public function feature()
+    {
+        return $this->getObject('feature');
+    }
+    /**
+     * @return FeatureLang
+     */
+    public function featureLang()
+    {
+        return $this->getObject('featureLang');
+    }
+    /**
+     * @return FeatureValue
+     */
+    public function featureValue()
+    {
+        return $this->getObject('featureValue');
+    }
+    /**
+     * @return FeatureValueLang
+     */
+    public function featureValueLang()
+    {
+        return $this->getObject('featureValueLang');
+    }
+    /**
      * @return Lang
      */
     public function lang()
@@ -285,6 +320,20 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('productAttributeValueLang');
     }
     /**
+     * @return ProductBundle
+     */
+    public function productBundle()
+    {
+        return $this->getObject('productBundle');
+    }
+    /**
+     * @return ProductBundleHasProduct
+     */
+    public function productBundleHasProduct()
+    {
+        return $this->getObject('productBundleHasProduct');
+    }
+    /**
      * @return ProductCard
      */
     public function productCard()
@@ -325,6 +374,13 @@ class GeneratedEkomApi extends XiaoApi
     public function productHasDiscount()
     {
         return $this->getObject('productHasDiscount');
+    }
+    /**
+     * @return ProductHasFeature
+     */
+    public function productHasFeature()
+    {
+        return $this->getObject('productHasFeature');
     }
     /**
      * @return ProductHasProductAttribute

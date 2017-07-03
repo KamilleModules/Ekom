@@ -20,6 +20,7 @@ use Module\Ekom\Api\Layer\ConfigLayer;
 use Module\Ekom\Api\Layer\CountryLayer;
 use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\DiscountLayer;
+use Module\Ekom\Api\Layer\FeaturesLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
@@ -343,6 +344,14 @@ and h.lang_id=$langId
     public function discountLayer()
     {
         return $this->getLayer('discountLayer');
+    }
+
+    /**
+     * @return FeaturesLayer
+     */
+    public function featuresLayer()
+    {
+        return $this->getLayer('featuresLayer');
     }
 
     /**

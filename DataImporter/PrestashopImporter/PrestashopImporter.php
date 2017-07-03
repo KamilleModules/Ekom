@@ -10,6 +10,7 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use QuickPdo\QuickPdo;
+use QuickPdo\QuickPdoExceptionTool;
 
 /**
  *
@@ -113,6 +114,181 @@ class PrestashopImporter
         return $this;
     }
 
+
+    /**
+     * Features in prestashop
+     * ==========================
+     * - ps_feature
+     *      - id_feature
+     *      - position
+     *
+     * - ps_feature_lang
+     *      - id_feature
+     *      - id_lang
+     *      - name
+     *
+     * - ps_feature_product
+     *      - id_feature
+     *      - id_product
+     *      - id_feature_value
+     *
+     * - ps_feature_shop
+     *      - id_feature
+     *      - id_shop
+     *
+     * - ps_feature_value
+     *      - id_feature_value
+     *      - id_feature
+     *      - custom (I don't know what that is)
+     *
+     * - ps_feature_value_lang
+     *      - id_feature_value
+     *      - id_lang
+     *      - value
+     *
+     *
+     * - ps_product
+     *      - ...
+     *      - id_product
+     *      - reference
+     *
+     *
+     *
+     */
+    public function importFeatures(array $options = [])
+    {
+
+        $options = array_merge([
+            'ekomShopId' => 1,
+            'prestaShopId' => 1,
+            'ekomLangId' => 1,
+            'prestaLangId' => 1,
+        ], $options);
+
+
+        $db = $this->dbSrc;
+        $db2 = $this->dbTarget;
+        $prestaShopId = (int)$options['prestaShopId'];
+        $ekomShopId = (int)$options['ekomShopId'];
+        $prestaLangId = (int)$options['prestaLangId'];
+        $ekomLangId = (int)$options['ekomLangId'];
+
+        $features = QuickPdo::fetchAll("
+select 
+f.position,
+fl.id_feature,
+fl.name
+
+from $db.ps_feature f
+inner join $db.ps_feature_lang fl on fl.id_feature=f.id_feature
+inner join $db.ps_feature_shop s on s.id_feature=f.id_feature      
+  
+where fl.id_lang=$prestaLangId  
+and s.id_shop=$prestaShopId
+  
+        ");
+
+
+//        a($features);
+        $featureApi = EkomApi::inst()->feature();
+        $featureLangApi = EkomApi::inst()->featureLang();
+        $featureValueApi = EkomApi::inst()->featureValue();
+        $featureValueLangApi = EkomApi::inst()->featureValueLang();
+        $proHasApi = EkomApi::inst()->productHasFeature();
+
+
+        $featureApi->deleteAll();
+        $featureValueApi->deleteAll();
+        foreach ($features as $feature) {
+
+
+            $position = $feature['position'];
+
+            $featureId = $featureApi->create([]);
+            $featureLangApi->create([
+                "feature_id" => $featureId,
+                "lang_id" => $ekomLangId,
+                "name" => $feature['name'],
+            ]);
+
+
+            $values = QuickPdo::fetchAll("
+select 
+vl.id_feature_value,
+vl.`value`
+     
+from $db.ps_feature_value v
+inner join $db.ps_feature_value_lang vl on vl.id_feature_value=v.id_feature_value
+
+where v.id_feature=$featureId
+and vl.id_lang=$prestaLangId
+            
+            ");
+
+
+            $id_feature = $feature['id_feature'];
+
+
+            foreach ($values as $row) {
+                $valueId = $featureValueApi->create([
+                    'feature_id' => $featureId,
+                ]);
+
+                $featureValueLangApi->create([
+                    'feature_value_id' => $valueId,
+                    'lang_id' => $ekomLangId,
+                    'value' => $row["value"],
+                ]);
+
+
+                $id_feature_value = $row['id_feature_value'];
+                $products = QuickPdo::fetchAll("
+select
+fp.id_feature,
+fp.id_product,
+fp.id_feature_value,
+p.reference
+
+from $db.ps_feature_product fp 
+inner join $db.ps_product p on p.id_product=fp.id_product
+where fp.id_feature=$id_feature
+and fp.id_feature_value=$id_feature_value
+
+
+                ");
+
+                foreach ($products as $product) {
+                    $ref = $product['reference'];
+                    if (false !== ($pro = QuickPdo::fetch("
+select id from $db2.ek_product where reference=:ref                    
+                    ", [
+                            'ref' => $ref,
+                        ]))
+                    ) {
+                        $ekomProductId = $pro['id'];
+                        try {
+
+                            $proHasApi->create([
+                                'product_id' => $ekomProductId,
+                                'feature_id' => $featureId,
+                                'shop_id' => $ekomShopId,
+                                'feature_value_id' => $featureId,
+                                'position' => $position,
+                            ]);
+                        } catch (\PDOException $e) {
+                            if (false === QuickPdoExceptionTool::isDuplicateEntry($e)) {
+                                throw $e;
+                            }
+                        }
+                    }
+                }
+
+            }
+
+
+        }
+
+    }
 
     /**
      * If your new application has new cats, then how do you map your old products to the new cats?

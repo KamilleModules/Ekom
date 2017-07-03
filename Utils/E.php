@@ -187,7 +187,6 @@ class E
             ->setTemplate($tplName)
             ->send();
 
-
         return ($res === $expected);
 
 
