@@ -31,6 +31,7 @@ class GeneratedProductBundleHasProduct extends TableCrudObject
         $ret = array_replace([
 			'product_bundle_id' => 0,
 			'product_id' => 0,
+			'quantity' => 0,
 		], $data);
 
 
