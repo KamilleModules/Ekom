@@ -60,6 +60,35 @@ class CartLayer
 //    }
 
 
+    public function addItems(array $productId2Qty)
+    {
+        $this->initSessionCart();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+
+        foreach ($productId2Qty as $productId => $qty) {
+
+            $productId = (int)$productId;
+            $alreadyExists = false;
+            foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $k => $item) {
+                if ((int)$item['id'] === $productId) {
+                    $_SESSION['ekom.cart'][$shopId]['items'][$k]['quantity'] += $qty;
+                    $alreadyExists = true;
+                    break;
+                }
+            }
+
+            if (false === $alreadyExists) {
+                $_SESSION['ekom.cart'][$shopId]['items'][] = [
+                    "quantity" => $qty,
+                    "id" => $productId,
+                ];
+            }
+        }
+
+
+        $this->writeToLocalStore();
+    }
+
     public function addItem($qty, $productId)
     {
         $this->initSessionCart();

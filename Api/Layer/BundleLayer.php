@@ -15,6 +15,13 @@ class BundleLayer
 {
 
 
+    public function addBundleToCard($bundleId, array $removedProductIds = [])
+    {
+
+        $productId2Qty = [];
+        EkomApi::inst()->cartLayer()->addItems($productId2Qty);
+    }
+
     /**
      * array $removedProductIds, array with the following structure:
      *              bundleId => removedProductIds,
