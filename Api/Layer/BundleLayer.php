@@ -15,10 +15,24 @@ class BundleLayer
 {
 
 
-    public function addBundleToCard($bundleId, array $removedProductIds = [])
+    public function addBundleToCart($bundleId, array $removedProductIds = [])
     {
 
         $productId2Qty = [];
+
+        $productInfos = $this->getProductInfoByBundleId($bundleId);
+        foreach ($productInfos as $k => $info) {
+            $pId = $info['product_id'];
+            if (in_array($pId, $removedProductIds)) {
+                unset($productInfos[$k]);
+            }
+        }
+
+        foreach ($productInfos as $info) {
+            $productId2Qty[$info['product_id']] = $info['quantity'];
+        }
+
+
         EkomApi::inst()->cartLayer()->addItems($productId2Qty);
     }
 
@@ -183,6 +197,35 @@ and b.shop_id=$shopId
 and b.active=1
         
         ", [], \PDO::FETCH_COLUMN);
+
+        }, [
+            "ek_product_bundle_has_product",
+            "ek_product_bundle",
+        ]);
+    }
+
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    private function getProductInfoByBundleId($bundleId)
+    {
+
+        return A::cache()->get("Ekom.BundleLayer.getProductIdsByBundleId.$bundleId", function () use ($bundleId) {
+
+            return QuickPdo::fetchAll("
+select 
+h.product_id,
+h.quantity
+ 
+from ek_product_bundle_has_product h 
+inner join ek_product_bundle b on b.id=h.product_bundle_id
+ 
+where b.id=$bundleId 
+and b.active=1
+        
+        ");
 
         }, [
             "ek_product_bundle_has_product",

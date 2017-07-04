@@ -20,6 +20,32 @@ class ProductLayer
 {
 
 
+    /**
+     * @return int, the id of the type
+     */
+    public function insertTypeIfNotExist($name)
+    {
+
+
+        if (false !== ($row = QuickPdo::fetch("
+select p.id from ek_product p
+inner join ek_product_training t on t.id=p.product_type_id
+        
+where t.name = :name        
+        
+        ", [
+                "name" => $name,
+            ]))
+        ) {
+            return (int)$row['id'];
+        }
+
+        $id = EkomApi::inst()->productType()->create([
+            "name" => $name,
+        ]);
+        return (int)$id;
+    }
+
     public function getProductInfo($productId)
     {
         $productId = (int)$productId;
@@ -691,7 +717,6 @@ and product_id in (" . implode(', ', $productIds) . ")
             $model['salePriceWithTax'] = $model['discountedPriceWithTax'];
             $model['rawSalePriceWithoutTax'] = $_discountedPrice;
             $model['rawSalePriceWithTax'] = $_discountedPriceWithTax;
-
 
 
             //--------------------------------------------
