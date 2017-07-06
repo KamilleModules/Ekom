@@ -165,7 +165,7 @@ ENGINE = InnoDB;
 -- Table `kamille`.`ek_product_card`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `kamille`.`ek_product_card` (
-  `id` INT GENERATED ALWAYS AS (),
+  `id` INT NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -1440,7 +1440,7 @@ ENGINE = InnoDB;
 -- Table `kamille`.`ek_product_card`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `kamille`.`ek_product_card` (
-  `id` INT GENERATED ALWAYS AS (),
+  `id` INT NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
