@@ -41,6 +41,8 @@ use Module\Ekom\Api\Object\ProductCard;
 use Module\Ekom\Api\Object\ProductCardHasDiscount;
 use Module\Ekom\Api\Object\ProductCardHasTaxGroup;
 use Module\Ekom\Api\Object\ProductCardLang;
+use Module\Ekom\Api\Object\ProductCombination;
+use Module\Ekom\Api\Object\ProductCombinationHasProduct;
 use Module\Ekom\Api\Object\ProductComment;
 use Module\Ekom\Api\Object\ProductHasDiscount;
 use Module\Ekom\Api\Object\ProductHasFeature;
@@ -361,6 +363,20 @@ class GeneratedEkomApi extends XiaoApi
     public function productCardLang()
     {
         return $this->getObject('productCardLang');
+    }
+    /**
+     * @return ProductCombination
+     */
+    public function productCombination()
+    {
+        return $this->getObject('productCombination');
+    }
+    /**
+     * @return ProductCombinationHasProduct
+     */
+    public function productCombinationHasProduct()
+    {
+        return $this->getObject('productCombinationHasProduct');
     }
     /**
      * @return ProductComment
