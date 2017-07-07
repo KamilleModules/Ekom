@@ -39,6 +39,11 @@ class EkomHooks
 
     }
 
+
+    protected static function Ekom_decorateProductIdToUniqueProductIdAdaptor(\Module\Ekom\Utils\ProductIdToUniqueProductIdAdaptor\ProductIdToUniqueProductIdAdaptor $adaptor){
+
+    }
+
     /**
      * @param array $configInfo , an array containing the following structure:
      *  - 0: viewId
@@ -94,6 +99,13 @@ class EkomHooks
     {
         $binder->setListener("productListModifiers", \Module\Ekom\Laws\DynamicWidgetBinder\EkomProductListModifierListener::create());
     }
+
+
+    protected static function Ekom_prepareJsonService($service){
+
+    }
+
+
 
     //--------------------------------------------
     // NULLOS ADMIN

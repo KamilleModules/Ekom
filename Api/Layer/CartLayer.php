@@ -7,12 +7,14 @@ namespace Module\Ekom\Api\Layer;
 use ArrayToString\ArrayToStringTool;
 use Authenticate\SessionUser\SessionUser;
 use Core\Services\A;
+use Core\Services\X;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\CartLocalStore;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\EkomLinkHelper;
+use Module\Ekom\Utils\ProductIdToUniqueProductIdAdaptor\ProductIdToUniqueProductIdAdaptor;
 use QuickPdo\QuickPdo;
 
 
@@ -62,15 +64,16 @@ class CartLayer
 
     public function addItems(array $productId2Qty)
     {
+        az(__FILE__ . ": addItems");
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
 
         foreach ($productId2Qty as $productId => $qty) {
 
-            $productId = (int)$productId;
+            $productId = (string)$productId;
             $alreadyExists = false;
             foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $k => $item) {
-                if ((int)$item['id'] === $productId) {
+                if ((string)$item['id'] === $productId) {
                     $_SESSION['ekom.cart'][$shopId]['items'][$k]['quantity'] += $qty;
                     $alreadyExists = true;
                     break;
@@ -89,14 +92,19 @@ class CartLayer
         $this->writeToLocalStore();
     }
 
-    public function addItem($qty, $productId)
+    public function addItem($qty, $productId, $complementaryId = null)
     {
+
+        $upid = $this->getUniqueProductId($productId, $complementaryId);
+
+
+
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $productId = (int)$productId;
+        $upid = (string)$upid;
         $alreadyExists = false;
         foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $k => $item) {
-            if ((int)$item['id'] === $productId) {
+            if ((string)$item['id'] === $upid) {
                 $_SESSION['ekom.cart'][$shopId]['items'][$k]['quantity'] += $qty;
                 $alreadyExists = true;
                 break;
@@ -106,7 +114,7 @@ class CartLayer
         if (false === $alreadyExists) {
             $_SESSION['ekom.cart'][$shopId]['items'][] = [
                 "quantity" => $qty,
-                "id" => $productId,
+                "id" => $upid,
             ];
         }
         $this->writeToLocalStore();
@@ -116,9 +124,9 @@ class CartLayer
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $productId = (int)$productId;
+        $productId = (string)$productId;
         foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $k => $item) {
-            if ((int)$item['id'] === $productId) {
+            if ((string)$item['id'] === $productId) {
                 unset($_SESSION['ekom.cart'][$shopId]['items'][$k]);
                 break;
             }
@@ -148,7 +156,7 @@ class CartLayer
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $productId = (int)$productId;
+        $productId = (string)$productId;
 
 
         if (false !== ($remainingQty = EkomApi::inst()->productLayer()->getProductQuantity($productId))) {
@@ -168,7 +176,7 @@ class CartLayer
 
             $alreadyExists = false;
             foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $k => $item) {
-                if ((int)$item['id'] === $productId) {
+                if ((string)$item['id'] === $productId) {
                     $_SESSION['ekom.cart'][$shopId]['items'][$k]['quantity'] = $newQty;
                     $alreadyExists = true;
                     break;
@@ -599,5 +607,15 @@ and p.lang_id=$langId
             $this->cartLocalStore = new CartLocalStore();
         }
         return $this->cartLocalStore;
+    }
+
+
+    private function getUniqueProductId($productId, $complementaryId = null)
+    {
+        $o = X::get("Ekom_productIdToUniqueProductId");
+        /**
+         * @var $o ProductIdToUniqueProductIdAdaptor
+         */
+        return $o->getUniqueProductId($productId, $complementaryId);
     }
 }

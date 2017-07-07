@@ -5,6 +5,7 @@ namespace Module\Ekom\Api\Layer;
 
 
 use Core\Services\A;
+use Core\Services\Hooks;
 use Core\Services\X;
 use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Architecture\Registry\ApplicationRegistry;
@@ -19,6 +20,25 @@ use QuickPdo\QuickPdo;
 class ProductLayer
 {
 
+    public function getProductTypeById($productId)
+    {
+
+        $productId = (int)$productId;
+
+        return A::cache()->get("Ekom.ProductLayer.getProductTypeById.$productId", function () use ($productId) {
+
+            return QuickPdo::fetch("
+select t.name
+from ek_product_type t 
+inner join ek_product p on p.product_type_id=t.id
+where p.id=$productId
+", [], \PDO::FETCH_COLUMN);
+
+        }, [
+            "ek_product_type",
+            "ek_product",
+        ]);
+    }
 
     /**
      * @return int, the id of the type
@@ -359,7 +379,6 @@ and product_id in (" . implode(', ', $productIds) . ")
      */
     public function getProductBoxModelByCardId($cardId, $shopId = null, $langId = null, $productId = null)
     {
-
         $cardId = (int)$cardId;
         $productId = (int)$productId;
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
@@ -505,8 +524,6 @@ and product_id in (" . implode(', ', $productIds) . ")
                             ]);
 
 
-
-
                             $boxConf = [
                                 "product_id" => (int)$productId,
                                 "product_type" => $p['product_type'],
@@ -588,6 +605,13 @@ and product_id in (" . implode(', ', $productIds) . ")
                 $model['errorMessage'] = $e->getMessage();
                 XLog::error("[Ekom module] - ProductLayer.Exception: $e");
             }
+
+
+            //--------------------------------------------
+            // hooks
+            //--------------------------------------------
+            Hooks::call("Ekom_decorateBoxModel", $model);
+
             return $model;
 
 

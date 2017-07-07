@@ -60,6 +60,14 @@ class EkomServices
         return $o;
     }
 
+
+    protected static function Ekom_productIdToUniqueProductId()
+    {
+        $o = new \Module\Ekom\Utils\ProductIdToUniqueProductIdAdaptor\ProductIdToUniqueProductIdAdaptor();
+        \Core\Services\Hooks::call("Ekom_decorateProductIdToUniqueProductIdAdaptor", $o);
+        return $o;
+    }
+
     protected static function Ekom_statusProviderCollection()
     {
         $o = new \Module\Ekom\Status\ProviderCollection\EkomStatusProviderCollection();
