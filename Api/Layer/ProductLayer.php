@@ -238,6 +238,7 @@ p.id as product_id,
 p.reference,
 p.weight,
 p.price as default_price,
+t.name as product_type,
 s.price,
 s.quantity,
 s.active,
@@ -256,6 +257,7 @@ l.slug
 
 
 from ek_product p
+inner join ek_product_type t on t.id=p.product_type_id
 inner join ek_product_lang ll on ll.product_id=p.id
 inner join ek_shop_has_product s on s.product_id=p.id 
 inner join ek_shop_has_product_lang l on l.shop_id=s.shop_id and l.product_id=s.product_id
@@ -374,6 +376,7 @@ and product_id in (" . implode(', ', $productIds) . ")
 
             try {
                 if (false !== ($row = $this->getProductCardInfoByCardId($cardId, $shopId, $langId))) {
+
 
                     if ('1' === $row['active']) {
 
@@ -502,8 +505,11 @@ and product_id in (" . implode(', ', $productIds) . ")
                             ]);
 
 
+
+
                             $boxConf = [
                                 "product_id" => (int)$productId,
+                                "product_type" => $p['product_type'],
                                 "quantity" => (int)$p['quantity'],
                                 "images" => $images,
                                 "uriCard" => $cardUri,

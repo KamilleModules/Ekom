@@ -34,16 +34,21 @@ class EkomHooks
     //--------------------------------------------
     // EKOM
     //--------------------------------------------
+    protected static function Ekom_decorateBoxModel(array &$model)
+    {
+
+    }
+
     /**
      * @param array $configInfo , an array containing the following structure:
      *  - 0: viewId
      *  - 1: LawsConfig
      *
      */
-    protected static function Ekom_decorate_LawsConfig(array $configInfo)
-    {
-
-    }
+//    protected static function Ekom_decorate_LawsConfig(array $configInfo)
+//    {
+//
+//    }
 
     protected static function Ekom_adaptContextualConfig(array &$conf)
     {
