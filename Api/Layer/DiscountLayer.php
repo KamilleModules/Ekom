@@ -227,7 +227,7 @@ and l.lang_id=$langId
         ");
 
 
-            // get the discounts that apply to the product,
+            // get the discounts that apply to the card,
             $discountsCard = QuickPdo::fetchAll("
 select 
 d.id as discount_id,
@@ -256,17 +256,22 @@ and l.lang_id=$langId
 
 
             /**
+             * Get the discounts applying to categories
+             */
+            $discountsCategory = [];
+            /**
              * Cats is the category of the product, or a category above (parent)
              */
             $cats = EkomApi::inst()->categoryLayer()->getCategoryIdTreeByProductId($productId);
             if (0 === count($cats)) {
-                XLog::error("[Ekom module] - DiscountLayer: no categories found for product $productId");
+                XLog::error("[Ekom module] - DiscountLayer.getDiscountsByProductId: no categories found for product $productId");
             }
 
-//        az($cats);
-            $sCats = implode(', ', $cats);
-            // get the discounts that apply to the product,
-            $discountsCategory = QuickPdo::fetchAll("
+            if ($cats) {
+
+                $sCats = implode(', ', $cats);
+                // get the discounts that apply to the product,
+                $discountsCategory = QuickPdo::fetchAll("
 select 
 d.id as discount_id,
 d.user_group_id,        
@@ -292,6 +297,7 @@ and l.lang_id=$langId
         
         ");
 
+            }
 
 //            a([
 //                'product' => $discountsProduct,

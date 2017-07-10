@@ -15,6 +15,7 @@ use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\Api\Layer\CheckoutLayer;
+use Module\Ekom\Api\Layer\CommentLayer;
 use Module\Ekom\Api\Layer\ConditionLayer;
 use Module\Ekom\Api\Layer\ConfigLayer;
 use Module\Ekom\Api\Layer\CountryLayer;
@@ -24,8 +25,11 @@ use Module\Ekom\Api\Layer\FeatureLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
+use Module\Ekom\Api\Layer\ProductCardCombinationLayer;
 use Module\Ekom\Api\Layer\ProductCardLayer;
+use Module\Ekom\Api\Layer\ProductCombinationLayer;
 use Module\Ekom\Api\Layer\ProductCommentLayer;
+use Module\Ekom\Api\Layer\ProductHelperLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
@@ -321,6 +325,14 @@ and h.lang_id=$langId
 
 
     /**
+     * @return CommentLayer
+     */
+    public function commentLayer()
+    {
+        return $this->getLayer('commentLayer');
+    }
+
+    /**
      * @return ConditionLayer
      */
     public function conditionLayer()
@@ -328,6 +340,13 @@ and h.lang_id=$langId
         return $this->getLayer('conditionLayer');
     }
 
+    /**
+     * @return ConfigLayer
+     */
+    public function configLayer()
+    {
+        return $this->getLayer('configLayer');
+    }
 
     /**
      * @return CouponLayer
@@ -386,14 +405,6 @@ and h.lang_id=$langId
         return $this->getLayer('paymentLayer');
     }
 
-    /**
-     * @return ConfigLayer
-     */
-    public function configLayer()
-    {
-        return $this->getLayer('configLayer');
-    }
-
 
     /**
      * @return ProductCardLayer
@@ -411,6 +422,14 @@ and h.lang_id=$langId
         return $this->getLayer('productCommentLayer');
     }
 
+
+    /**
+     * @return ProductHelperLayer
+     */
+    public function productHelperLayer()
+    {
+        return $this->getLayer('productHelperLayer');
+    }
 
     /**
      * @return ProductLayer

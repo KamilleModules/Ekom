@@ -19,7 +19,7 @@ class GeneratedUserHasProduct extends TableCrudObject
     public function __construct()
     {
         parent::__construct();
-        $this->table = "ek_user_has_ek_product";
+        $this->table = "ek_user_has_product";
     }
 
 
@@ -29,8 +29,8 @@ class GeneratedUserHasProduct extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
-			'ek_user_id' => 0,
-			'ek_product_id' => 0,
+			'user_id' => 0,
+			'product_id' => 0,
 		], $data);
 
 

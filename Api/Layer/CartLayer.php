@@ -98,7 +98,6 @@ class CartLayer
         $upid = $this->getUniqueProductId($productId, $complementaryId);
 
 
-
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $upid = (string)$upid;
@@ -325,37 +324,40 @@ class CartLayer
         //--------------------------------------------
         foreach ($items as $item) {
 
-            $qty = $item['quantity'];
             $id = $item['id'];
-            $totalQty += $qty;
-
 
             if (false !== ($it = $this->getCartItemInfo($id))) {
-                $it['quantity'] = $qty;
+                $qty = $item['quantity'];
+
+
+                if (false === array_key_exists('errorCode', $it)) {
+
+                    $it['quantity'] = $qty;
+                    $totalQty += $qty;
 
 //                $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
 //                $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
-                $linePriceWithoutTax = $qty * $it['rawDiscountedPriceWithoutTax'];
-                $linePriceWithTax = $qty * $it['rawDiscountedPriceWithTax'];
+                    $linePriceWithoutTax = $qty * $it['rawDiscountedPriceWithoutTax'];
+                    $linePriceWithTax = $qty * $it['rawDiscountedPriceWithTax'];
 
 //                $linesTotalWithoutTax += $linePriceWithoutTax;
 //                $linesTotalWithTax += $linePriceWithTax;
-                $linesTotalWithoutTax += $linePriceWithoutTax;
-                $linesTotalWithTax += $linePriceWithTax;
+                    $linesTotalWithoutTax += $linePriceWithoutTax;
+                    $linesTotalWithTax += $linePriceWithTax;
 
 
 //                $it['linePriceWithoutTax'] = E::price($linePriceWithoutTax);
 //                $it['linePriceWithTax'] = E::price($linePriceWithTax);
-                $it['linePriceWithoutTax'] = E::price($linePriceWithoutTax);
-                $it['rawLinePriceWithoutTax'] = $linePriceWithoutTax;
-                $it['linePriceWithTax'] = E::price($linePriceWithTax);
-                $it['rawLinePriceWithTax'] = $linePriceWithTax;
+                    $it['linePriceWithoutTax'] = E::price($linePriceWithoutTax);
+                    $it['rawLinePriceWithoutTax'] = $linePriceWithoutTax;
+                    $it['linePriceWithTax'] = E::price($linePriceWithTax);
+                    $it['rawLinePriceWithTax'] = $linePriceWithTax;
 
-                if (true === $isB2b) {
-                    $it['linePrice'] = $it['linePriceWithoutTax'];
-                } else {
-                    $it['linePrice'] = $it['linePriceWithTax'];
-                }
+                    if (true === $isB2b) {
+                        $it['linePrice'] = $it['linePriceWithoutTax'];
+                    } else {
+                        $it['linePrice'] = $it['linePriceWithTax'];
+                    }
 
 //                $attrValues = [];
 //                foreach ($it['attributes'] as $v) {
@@ -363,7 +365,10 @@ class CartLayer
 //                }
 //                $it['attributeValues'] = $attrValues;
 
-                $modelItems[] = $it;
+                    $modelItems[] = $it;
+                } else {
+                    XLog::error("[Ekom module] - CartLayer.doGetCartModel: errorCode: " . $it['errorCode'] . ", msg: " . $it['errorMessage']);
+                }
             }
         }
 

@@ -15,6 +15,7 @@ use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Price\PriceChain\EkomProductPriceChain;
 use Module\Ekom\Utils\AttributeSelectorHelper;
 use Module\Ekom\Utils\E;
+use Module\EkomCardCombination\Api\EkomCardCombinationApi;
 use QuickPdo\QuickPdo;
 
 class ProductLayer
@@ -43,26 +44,20 @@ where p.id=$productId
     /**
      * @return int, the id of the type
      */
-    public function insertTypeIfNotExist($name)
+    public function insertTypeIfNotExist($name, $shopId = null)
     {
+        EkomApi::inst()->initWebContext();
+        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
 
-
-        if (false !== ($row = QuickPdo::fetch("
-select p.id from ek_product p
-inner join ek_product_training t on t.id=p.product_type_id
-        
-where t.name = :name        
-        
-        ", [
-                "name" => $name,
-            ]))
-        ) {
-            return (int)$row['id'];
-        }
-
-        $id = EkomApi::inst()->productType()->create([
+        $id = QuickPdo::fetch("select id from ek_product_type where name = :name and shop_id=$shopId", [
             "name" => $name,
-        ]);
+        ], \PDO::FETCH_COLUMN);
+        if (false === $id) {
+            $id = EkomApi::inst()->productType()->create([
+                "name" => $name,
+                "shop_id" => $shopId,
+            ]);
+        }
         return (int)$id;
     }
 
@@ -524,6 +519,15 @@ and product_id in (" . implode(', ', $productIds) . ")
                             ]);
 
 
+                            //--------------------------------------------
+                            // rating
+                            //--------------------------------------------
+                            $ratingInfo = EkomApi::inst()->commentLayer()->getRatingInfo($cardId);
+
+
+
+
+
                             $boxConf = [
                                 "product_id" => (int)$productId,
                                 "product_type" => $p['product_type'],
@@ -558,13 +562,15 @@ and product_id in (" . implode(', ', $productIds) . ")
 
 //                                "taxDetails" => $taxDetails, // see TaxLayer.applyTaxesToPrice for more details
                                 "attributes" => $attr,
+                                // rating
+                                "rating_amount" => $ratingInfo['average'], // percent
+                                "rating_nbVotes" => $ratingInfo['count'],
+                                // card combination
+
                                 //--------------------------------------------
                                 // EXTENSION: SPECIFIC TO SOME PLUGINS
                                 // consider using namespace_varName notation
                                 //--------------------------------------------
-                                // rating
-                                "rating_amount" => "80", // percent
-                                "rating_nbVotes" => "6",
                                 // video
                                 "video_sources" => [
                                     "/video/Larz Rocking Leaderfit Paris 2017 Step V2.mp4" => "video/mp4",
@@ -575,7 +581,14 @@ and product_id in (" . implode(', ', $productIds) . ")
 //                                "_taxes" => $taxes,
                             ];
 
+
+
                             $model = $boxConf;
+
+
+                            Hooks::call("Ekom_decorateBoxModel", $model);
+
+
                         } else {
                             $model['errorCode'] = "emptyProductCard";
                             $model['errorTitle'] = "Empty product card";
@@ -763,7 +776,6 @@ and product_id in (" . implode(', ', $productIds) . ")
             }
 
         }
-
 
 //        a(__FILE__);
         return $model;

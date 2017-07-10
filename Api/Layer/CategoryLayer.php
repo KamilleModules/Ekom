@@ -186,9 +186,10 @@ where category_id in (" . implode(", ", $catIds) . ")
             $cardId = EkomApi::inst()->product()->readColumn("product_card_id", [
                 ["id", "=", $productId],
             ]);
-            $rows = $this->getCategoryTreeByProductCardId($cardId);
-            foreach ($rows as $row) {
-                $ret[] = $row['id'];
+            if (false !== ($rows = $this->getCategoryTreeByProductCardId($cardId))) {
+                foreach ($rows as $row) {
+                    $ret[] = $row['id'];
+                }
             }
             return $ret;
         }, [
@@ -348,6 +349,9 @@ and cl.lang_id=$langId
     //--------------------------------------------
     //
     //--------------------------------------------
+    /**
+     * @return array of categories, or false
+     */
     private function getCategoryTreeByProductCardId($cardId, $shopId = null, $langId = null) // might be promoted to public someday
     {
         $api = EkomApi::inst();
@@ -362,9 +366,13 @@ and cl.lang_id=$langId
             $categoryId = $api->categoryHasProductCard()->readColumn("category_id", [
                 ["product_card_id", "=", (int)$cardId],
             ]);
+            if (false === $categoryId) {
+                return false;
+            }
 
 
             $treeRows = [];
+
 
             while (false !== ($parentRow = QuickPdo::fetch("select
 c.id,
@@ -382,7 +390,6 @@ where c.id=$categoryId and c.category_id!=$categoryId and c.shop_id=$shopId and 
                     break;
                 }
             }
-
             return $treeRows;
         }, [
             'ek_category',

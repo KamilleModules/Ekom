@@ -33,10 +33,6 @@ where shop_id=$shopId
     }
 
 
-
-
-
-
     public function getProductCardsByCategory($categoryId, $isB2b, ListModifierCircle $circle = null, $shopId = null, $langId = null)
     {
         EkomApi::inst()->initWebContext();
@@ -262,5 +258,7 @@ $sTheOrder
             "tax_group_id" => $taxGroupId,
         ]);
     }
+
+
 
 }

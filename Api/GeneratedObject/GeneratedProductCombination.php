@@ -29,7 +29,8 @@ class GeneratedProductCombination extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $ret = array_replace([
-			'mutable' => 0,
+			'product_id' => 0,
+			'shop_id' => 0,
 		], $data);
 
 

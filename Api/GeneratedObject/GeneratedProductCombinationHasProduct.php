@@ -32,7 +32,6 @@ class GeneratedProductCombinationHasProduct extends TableCrudObject
 			'product_combination_id' => 0,
 			'product_id' => 0,
 			'quantity' => 0,
-			'active' => 0,
 		], $data);
 
 

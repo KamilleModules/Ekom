@@ -13,6 +13,36 @@ use QuickPdo\QuickPdo;
 class AttributeLayer
 {
 
+    public function insertAttributeIfNotExist($name)
+    {
+
+        $id = QuickPdo::fetch("select id from ek_product_attribute where name = :name", [
+            "name" => $name,
+        ], \PDO::FETCH_COLUMN);
+        if (false === $id) {
+            $id = EkomApi::inst()->productAttribute()->create([
+                "name" => $name,
+            ]);
+        }
+        return (int)$id;
+    }
+
+
+    public function insertAttributeValueIfNotExist($value)
+    {
+
+        $id = QuickPdo::fetch("select id from ek_product_attribute_value where value = :value", [
+            "value" => $value,
+        ], \PDO::FETCH_COLUMN);
+        if (false === $id) {
+            $id = EkomApi::inst()->productAttributeValue()->create([
+                "value" => $value,
+            ]);
+        }
+        return (int)$id;
+    }
+
+
     public function getAttributeCombinationByProductId($pId)
     {
         $pId = (int)$pId;
