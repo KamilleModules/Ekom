@@ -13,6 +13,9 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Price\PriceChain\EkomProductPriceChain;
+use Module\Ekom\ProductBox\AttributesModel\Generator\AttributesModelGeneratorInterface;
+use Module\Ekom\ProductBox\AttributesModel\GeneratorFactory\AttributesModelGeneratorFactory;
+use Module\Ekom\ProductBox\AttributesModel\GeneratorFactory\AttributesModelGeneratorFactoryInterface;
 use Module\Ekom\Utils\AttributeSelectorHelper;
 use Module\Ekom\Utils\E;
 use Module\EkomCardCombination\Api\EkomCardCombinationApi;
@@ -413,11 +416,6 @@ and product_id in (" . implode(', ', $productIds) . ")
                             }
 
 
-                            //--------------------------------------------
-                            // compute the attributes info for the model
-                            //--------------------------------------------
-                            $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $productId);
-
                             $defaultImage = "";
                             $images = $api->imageLayer()->getImages("productBox", [
                                 $productId,
@@ -520,12 +518,31 @@ and product_id in (" . implode(', ', $productIds) . ")
 
 
                             //--------------------------------------------
+                            // attributes
+                            //--------------------------------------------
+                            if (false === 'deprecated') {
+                                /**
+                                 * @var $attrModelGenFactory AttributesModelGeneratorFactoryInterface
+                                 */
+                                $attrModelGenFactory = X::get("Ekom_getAttributesModelGeneratorFactory");
+
+                                /**
+                                 * @var $attrModelGen AttributesModelGeneratorInterface
+                                 */
+                                $attrModelGen = $attrModelGenFactory->get([
+                                    'product_type' => $p['product_type'],
+                                    'extra' => 0,
+                                ]);
+
+                                $attr = $attrModelGen->generate($productsInfo, $productId);
+                            }
+                            $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $productId);
+
+
+                            //--------------------------------------------
                             // rating
                             //--------------------------------------------
                             $ratingInfo = EkomApi::inst()->commentLayer()->getRatingInfo($cardId);
-
-
-
 
 
                             $boxConf = [
@@ -536,6 +553,7 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 "uriCard" => $cardUri,
                                 "defaultImage" => $defaultImage,
                                 "label" => $label,
+                                "label_escaped" => htmlspecialchars($label),
                                 "ref" => $p['reference'],
                                 "weight" => $p['weight'],
                                 "description" => $description,
@@ -580,7 +598,6 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 //--------------------------------------------
 //                                "_taxes" => $taxes,
                             ];
-
 
 
                             $model = $boxConf;

@@ -14,7 +14,14 @@ use Module\Ekom\Api\EkomApi;
  *
  * The attribute selector displays all the possible variations of attributes values for a given reference.
  *
- * So for instance if we are on a card with two attributes: color and size, the attribute selector looks like this:
+ *
+ * Multiple approaches are possible.
+ * My first approach was the following:
+ *
+ * Approach 1
+ * =================
+ *
+ * Let's say we are on a card with two attributes: color and size, the attribute selector looks like this:
  *
  * ---------------
  * Color:
@@ -41,6 +48,41 @@ use Module\Ekom\Api\EkomApi;
  * Okay, this means basically that for each button we need to determine it's state: active/inactive,
  * based on whether a corresponding reference exist or not.
  *
+ *
+ *
+ * Unfortunately there is a problem with this approach: imagine we have only two products:
+ * green-8 and blue-6.
+ * With the current active/inactive system, if inactive means the user cannot click on the button,
+ * then we cannot pass from green-8 to blue-6 because they don't have any attribute in common,
+ * so we need another approach.
+ *
+ *
+ * Approach 2
+ * =================
+ * In this approach, the order in which attributes are chosen by the user matters.
+ * The first attribute must be selected first, and contains all possible choices,
+ * THEN only, once the first attribute is selected, the list of all possible "second level" attributes
+ * is displayed, and so on...
+ *
+ * So basically, we first display all the available colors (and they are all active):
+ *
+ * Color:
+ *      <green>    blue
+ *
+ *
+ * And then, depending on whether the user selects the green or the blue attribute, we display the corresponding
+ * sizes, so for instance if the user selects green, we display size 8, and if the user selects color blue,
+ * then we display size 6.
+ *
+ * This way we can workaround the limitations of approach 1.
+ *
+ * Also, every time a (active) button is clicked (no matter what level), it selects an existing product,
+ * so that there is no way the user is misguided (same intent as approach 1).
+ *
+ *
+ *
+ *
+ * =============
  * This class helps with that (I put this code in a separated class to ease testing).
  *
  *
@@ -66,11 +108,14 @@ class AttributeSelectorHelper
      *
      * And so the array returned by this function represents that state.
      *
-     *
+     * @param $cardProducts, the ensemble of products belonging to the same card
+     * @param $productId, the id of the product from which derives the default attributes combination
+     * @return array of attributes model, see doc for more info
      *
      */
-    public static function adaptProductWithAttributesToAttributesModel(array $items, $productId)
+    public static function adaptProductWithAttributesToAttributesModel(array $cardProducts, $productId)
     {
+
         $productId = (int)$productId;
         $ret = [];
 
@@ -83,7 +128,7 @@ class AttributeSelectorHelper
         $attrName2Label = [];
         $attrValue2Info = []; // [value_label, value_id]
         $p = null;
-        foreach ($items as $item) {
+        foreach ($cardProducts as $item) {
             $attr = $item['attributes'];
             $sAttr = '';
             foreach ($attr as $at) {

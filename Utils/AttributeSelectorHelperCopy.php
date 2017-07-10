@@ -66,11 +66,14 @@ class AttributeSelectorHelperCopy
      *
      * And so the array returned by this function represents that state.
      *
-     * 
+     *
      *
      */
     public static function adaptProductWithAttributesToAttributesModel(array $items, $productId)
     {
+
+
+
         $productId = (int)$productId;
         $ret = [];
 
@@ -81,6 +84,7 @@ class AttributeSelectorHelperCopy
         $attr2Info = [];
         $attrName2Id = [];
         $attrName2Label = [];
+        $attrValue2Info = []; // [value_label, value_id]
         $p = null;
         foreach ($items as $item) {
             $attr = $item['attributes'];
@@ -90,6 +94,7 @@ class AttributeSelectorHelperCopy
                 $sAttr .= $at['value'];
                 $attrName2Label[$at['name']] = $at['name_label'];
                 $attrName2Id[$at['name']] = $at['attribute_id'];
+                $attrValue2Info[$at['value']] = [$at['value_label'], $at['value_id']];
             }
             if ((int)$item['product_id'] === $productId) {
                 $p = $item;
@@ -162,9 +167,12 @@ class AttributeSelectorHelperCopy
 
                     }
 
+                    list($valueLabel, $valueId) = $attrValue2Info[$value];
 
                     $theValues[] = [
                         "value" => $value,
+                        "value_label" => $valueLabel,
+                        "value_id" => $valueId,
                         "selected" => $selected,
                         "active" => $active,
                         "quantity" => $quantity,
