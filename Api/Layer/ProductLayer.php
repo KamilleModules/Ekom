@@ -49,6 +49,7 @@ where p.id=$productId
      */
     public function insertTypeIfNotExist($name, $shopId = null)
     {
+        $name = (string)$name;
         EkomApi::inst()->initWebContext();
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
 
@@ -339,6 +340,7 @@ where al.lang_id=$langId
 and vl.lang_id=$langId
 and product_id in (" . implode(', ', $productIds) . ")
          
+order by h.order asc         
          
 ");
 
@@ -537,7 +539,6 @@ and product_id in (" . implode(', ', $productIds) . ")
                                 $attr = $attrModelGen->generate($productsInfo, $productId);
                             }
                             $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $productId);
-
 
                             //--------------------------------------------
                             // rating

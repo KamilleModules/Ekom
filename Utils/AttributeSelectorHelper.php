@@ -108,150 +108,233 @@ class AttributeSelectorHelper
      *
      * And so the array returned by this function represents that state.
      *
-     * @param $cardProducts, the ensemble of products belonging to the same card
-     * @param $productId, the id of the product from which derives the default attributes combination
+     * @param $cardProducts , the ensemble of products belonging to the same card
+     * @param $productId , the id of the product from which derives the default attributes combination
      * @return array of attributes model, see doc for more info
+     *
+     *          - value: the attribute value, formatted for the database
+     *          - value_label: the attribute value, formatted for the humans
+     *          - value_id: the attribute value id in the database
+     *          - selected: 1|0, whether or not the attribute value is part of
+     *          - (DEPRECATED)quantity: if it's 0, indicate that this particular combination is out of stock.
+     *                          Note: some products have quantity=-1, which means infinite.
+     *                          We let the template interpret those values for themselves.
+     *
+     *                          Deprecation note: quantity brings a whole new set of problem when
+     *                          you go into implementation details, I suggest we deprecate it
+     *                          and let the user click on a button and see for herself (once
+     *                          the page is refreshed) that the quantity is 0.
+     *                          The implementation problem I had:
+     *                          Suppose you have three attributes:
+     *                              - country: Belgium
+     *                              - date: 14 - 16
+     *
+     *                          Now imagine that the product with combination Belgium-14
+     *                          is in stock with quantity=200,
+     *                          but the combination Belgium-16 is out of stock.
+     *
+     *                          The idea is that the Belgium button is available,
+     *                          the 14 button is available too,
+     *                          but the 16 button is not available.
+     *
+     *                          It might be a good idea to implement this system if you have time
+     *                          for this (but right now I don't)
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *          - (DEPRECATED) possible: 1|0, whether or not the attribute value should be display.
+     *
+     *                              THIS IS DEPRECATED, since I don't see why we should give
+     *                              to the template something that it's not supposed to display anyway!!!
+     *
+     *
+     *                              For instance if country=china, we won't display city=Paris
+     *                              In other words is the attribute visible for the user.
+     *                              Note: level 1 (root) attributes always have possible=1
+     *
+     *
      *
      */
     public static function adaptProductWithAttributesToAttributesModel(array $cardProducts, $productId)
     {
 
+        $productLayer = EkomApi::inst()->productLayer();
         $productId = (int)$productId;
-        $ret = [];
 
         //--------------------------------------------
-        // LIST ALL POSSIBLE ATTR VALUES
+        // gathering all possible attributes, and more stuff
         //--------------------------------------------
-        $allAttr = [];
-        $attr2Info = [];
-        $attrName2Id = [];
-        $attrName2Label = [];
-        $attrValue2Info = []; // [value_label, value_id]
-        $p = null;
-        foreach ($cardProducts as $item) {
-            $attr = $item['attributes'];
-            $sAttr = '';
-            foreach ($attr as $at) {
-                $allAttr[$at['name']][] = $at['value'];
-                $sAttr .= $at['value'];
-                $attrName2Label[$at['name']] = $at['name_label'];
-                $attrName2Id[$at['name']] = $at['attribute_id'];
-                $attrValue2Info[$at['value']] = [$at['value_label'], $at['value_id']];
-            }
-            if ((int)$item['product_id'] === $productId) {
-                $p = $item;
-            }
-            $attr2Info[$sAttr] = [$item['reference'], $item['product_id'], $item['slug'], $item['active'], $item['quantity']];
-        }
-        foreach ($allAttr as $name => $values) {
-            $allAttr[$name] = array_unique($values);
-        }
-        //--------------------------------------------
-        // GET THE PRODUCT'S ATTR VALUES
-        //--------------------------------------------
-        if (null !== $p) {
+        /**
+         * Chains of possible:
+         * since attributes are "supposedly" order by order asc
+         * (note for the implementor: if they are not, you will have a problem)
+         * then we can predict possible value chains (just by looking at the different attribute combinations
+         * of the different cards), and thus say whether or not an attribute combination is possible.
+         *
+         * If it's not possible, it shouldn't be displayed.
+         * The best example I have so far to illustrate this is:
+         *
+         * country: China - France
+         * city: Beijing - Paris,
+         *
+         * When the user selects France, you don't want Beijing to be an option...
+         *
+         */
+        $allAttributes = [];
+        $selectedAttributeIds = [];
+        $_values = [];
+        $possibleChains = [];
+        foreach ($cardProducts as $cardProduct) {
+            $_productId = (int)$cardProduct['product_id'];
+            $_qty = (int)$cardProduct['quantity'];
+            $attributes = $cardProduct['attributes'];
+            $possibleChains[$_productId] = '';
+            foreach ($attributes as $index => $attributeInfo) {
 
-            $productAttributes = [];
-            foreach ($p['attributes'] as $info) {
-                $productAttributes[$info['name']] = $info['value'];
-            }
-
-            //--------------------------------------------
-            // COMPILE THE RESULTS PER ATTRIBUTE
-            //--------------------------------------------
-            $productLayer = EkomApi::inst()->productLayer();
-
-            foreach ($allAttr as $name => $values) {
-                $theValues = [];
+                $attrId = $attributeInfo['attribute_id'];
+                $valueId = $attributeInfo['value_id'];
+                $possibleChains[$_productId] .= $valueId . '-';
+                $selected = ($productId === $_productId) ? '1' : '0';
+                $attributeInfo['selected'] = $selected;
+                $attributeInfo['_product_id'] = $_productId;
+                $attributeInfo['_qty'] = $_qty;
+                $selectedAttributeIds[$index] = $attributeInfo["attribute_id"];
 
 
-                foreach ($values as $value) {
+                /**
+                 * eliminating potential doublons right away,
+                 * but if the doublon is selected and the existing copy is not,
+                 * the doublon replaces the existing copy (otherwise the user cannot
+                 * select the item at all)
+                 */
+                if (
+                    array_key_exists($attrId, $_values) &&
+                    array_key_exists($valueId, $_values[$attrId])
+                ) {
 
-                    $thisProductAttributes = $productAttributes;
-                    $thisProductAttributes[$name] = $value;
-                    $s = implode('', $thisProductAttributes);
-
-
-                    $pId = 0;
-                    $ref = 0;
-                    $slug = 0;
-                    $selected = "0";
-                    $active = "0";
-                    $quantity = "0";
-                    $productUri = "";
-                    $productAjaxUri = "";
-                    $existence = "0";
-                    if (array_key_exists($s, $attr2Info)) {
-                        $existence = "1";
-                        $pInfo = $attr2Info[$s];
-                        list($ref, $pId, $slug, $active, $quantity) = $pInfo;
-                        if ('' === $slug) {
-                            $slug = $ref;
+                    if ('0' === $selected) {
+                        // the candidate doublon is not selected, so it doesn't matter,
+                        // we can skip it
+                        continue;
+                    } else {
+                        // the candidate doublon is selected, so it overrides the existing copy
+                        foreach ($allAttributes[$index] as $k => $v) {
+                            if ($valueId === $v['value_id'] && '0' === $v['selected']) {
+                                $allAttributes[$index][$k] = $attributeInfo;
+                                continue 2;
+                            }
                         }
-
-                        if ((int)$productId === (int)$pId) {
-                            $selected = "1";
-                        }
-
-//                        $productUri = E::link("Ekom_product", ['slug' => $slug]);
-
-                        $info = $productLayer->getLinkInfoByProductId($pId);
-
-
-                        /**
-                         * Note: about this productUri
-                         * Note: this uri might be a little buggy if there are many products as exposed in the intro.
-                         * Todo: read the intro, and find the appropriate solution
-                         * Note: for now I believe it will only work if the product has only one attribute (I'm in a rush sorry)...
-                         */
-                        $productUri = E::link("Ekom_productCardRef", ['slug' => $info['cardSlug'], 'ref' => $info['ref']]);
-                        $productAjaxUri = E::link("Ekom_ajaxApi") . "?action=getProductInfo&id=" . $pId;
-
                     }
-
-                    list($valueLabel, $valueId) = $attrValue2Info[$value];
-
-                    $theValues[] = [
-                        "value" => $value,
-                        "value_label" => $valueLabel,
-                        "value_id" => $valueId,
-                        "selected" => $selected,
-                        "active" => $active,
-                        "quantity" => $quantity,
-                        "existence" => $existence,
-                        "productUri" => $productUri,
-                        "getProductInfoAjaxUri" => $productAjaxUri,
-                        "product_id" => $pId,
-                    ];
                 }
 
 
-                $ret[$name] = [
-                    "label" => $attrName2Label[$name],
-                    "values" => $theValues,
-                    /**
-                     * Note: the attribute_id value is an extension of the original productBox model.
-                     * It was added as a "courtesy" for cart methods (some cart methods want to
-                     * access the attribute_id and using the productLayer methods is
-                     * handy for them...)
-                     */
-                    "attribute_id" => $attrName2Id[$name],
-                ];
+                $_values[$attrId][$valueId] = true;
+                $allAttributes[$index][] = $attributeInfo;
             }
+        }
 
 
-        } else {
-            XLog::error("[Ekom module] - AttributeSelectorHelper: the product $productId was not found for the given items");
-            return false;
+        //--------------------------------------------
+        // adding the possible property
+        //--------------------------------------------
+        $level = 1;
+        $curChain = "";
+        $nextChain = "";
+        foreach ($allAttributes as $attrIndex => $attributes) {
+
+            foreach ($attributes as $k => $attributeInfo) {
+
+                $_productId = $attributeInfo['_product_id'];
+
+
+                if (1 === $level) {
+                    $attributes[$k]['possible'] = "1";
+                } else {
+
+
+                    $atLeastOneMatch = false;
+                    foreach ($possibleChains as $possibleChain) {
+
+                        $needle = $curChain . $attributeInfo['value_id'] . '-';
+                        if (0 === strpos($possibleChain, $needle)) {
+                            $atLeastOneMatch = true;
+                            break;
+                        }
+                    }
+                    if (true === $atLeastOneMatch) {
+                        $attributes[$k]['possible'] = "1";
+                    } else {
+                        $attributes[$k]['possible'] = "0";
+                        /**
+                         * Comment the line below if you want to display the possible 0|1
+                         * instead of getting rid of possible=0
+                         */
+                        unset($attributes[$k]);
+                    }
+
+                }
+                if ('1' === $attributeInfo['selected']) {
+                    $nextChain = $attributeInfo['value_id'] . '-';
+                }
+
+
+                if (array_key_exists($k, $attributes) && "1" === $attributes[$k]['possible']) {
+
+                    $info = $productLayer->getLinkInfoByProductId($_productId);
+                    /**
+                     * Note: about this productUri
+                     * Note: this uri might be a little buggy if there are many products as exposed in the intro.
+                     * Todo: read the intro, and find the appropriate solution
+                     * Note: for now I believe it will only work if the product has only one attribute (I'm in a rush sorry)...
+                     */
+                    $productUri = E::link("Ekom_productCardRef", ['slug' => $info['cardSlug'], 'ref' => $info['ref']]);
+                    $productAjaxUri = E::link("Ekom_ajaxApi") . "?action=getProductInfo&id=" . $_productId;
+                    $attributes[$k]['productUri'] = $productUri;
+                    $attributes[$k]['getProductInfoAjaxUri'] = $productAjaxUri;
+                }
+            }
+            $curChain .= $nextChain;
+            $allAttributes[$attrIndex] = $attributes;
+            $level++;
+        }
+
+
+        $ret = [];
+        foreach ($allAttributes as $attributes) {
+            foreach ($attributes as $attributeInfo) {
+                $name = $attributeInfo["name"];
+                if (false === array_key_exists($name, $ret)) {
+                    $ret[$name] = [
+                        "label" => $attributeInfo["name_label"],
+                        "values" => [],
+                    ];
+                }
+
+                $ret[$name]['values'][] = [
+                    'value' => $attributeInfo['value'],
+                    'value_label' => $attributeInfo['value_label'],
+                    'value_id' => $attributeInfo['value_id'],
+                    'selected' => $attributeInfo['selected'],
+                    'productUri' => $attributeInfo['productUri'],
+                    'getProductInfoAjaxUri' => $attributeInfo['getProductInfoAjaxUri'],
+                    'product_id' => $attributeInfo['_product_id'],
+                ];
+
+                $ret[$name]['attribute_id'] = $attributeInfo['attribute_id'];
+            }
         }
 
         return $ret;
     }
 
 
-    //--------------------------------------------
-    //
-    //--------------------------------------------
+//--------------------------------------------
+//
+//--------------------------------------------
     /**
      * Here is some code you can use to test the method above
      */

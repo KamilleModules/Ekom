@@ -95,15 +95,15 @@ class CartLayer
     public function addItem($qty, $productId, $complementaryId = null)
     {
 
-        $upid = $this->getUniqueProductId($productId, $complementaryId);
+//        $upid = $this->getUniqueProductId($productId, $complementaryId);
 
 
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $upid = (string)$upid;
+
         $alreadyExists = false;
         foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $k => $item) {
-            if ((string)$item['id'] === $upid) {
+            if ((string)$item['id'] === $productId) {
                 $_SESSION['ekom.cart'][$shopId]['items'][$k]['quantity'] += $qty;
                 $alreadyExists = true;
                 break;
@@ -113,7 +113,7 @@ class CartLayer
         if (false === $alreadyExists) {
             $_SESSION['ekom.cart'][$shopId]['items'][] = [
                 "quantity" => $qty,
-                "id" => $upid,
+                "id" => $productId,
             ];
         }
         $this->writeToLocalStore();
@@ -313,7 +313,6 @@ class CartLayer
         $totalQty = 0;
         $linesTotalWithoutTax = 0;
         $linesTotalWithTax = 0;
-        $linesTotal = 0;
 
         $items = $_SESSION['ekom.cart'][$shopId]['items'];
 
@@ -327,6 +326,7 @@ class CartLayer
             $id = $item['id'];
 
             if (false !== ($it = $this->getCartItemInfo($id))) {
+
                 $qty = $item['quantity'];
 
 
@@ -403,9 +403,11 @@ class CartLayer
         $validCoupons = [];
 
 
-        $details = $couponApi->applyCouponBag($linesTotal, $linesTotalWithTax, "beforeShipping", $this->getCouponBag(), $validCoupons);
-//        EkomApi::inst()->cartLayer()->setCouponBag($validCoupons);
 
+
+
+        $details = $couponApi->applyCouponBag($linesTotalWithoutTax, $linesTotalWithTax, "beforeShipping", $this->getCouponBag(), $validCoupons);
+//        EkomApi::inst()->cartLayer()->setCouponBag($validCoupons);
 
         $cartTotalRaw = $details['rawDiscountPrice'];
         $cartTotalRawWithTax = $details['rawDiscountPriceWithTax'];
@@ -465,6 +467,7 @@ class CartLayer
                 $model['estimatedOrderGrandTotal'] = $model['estimatedOrderGrandTotalWithTax'];
             }
         }
+
 
         return $model;
     }
@@ -615,12 +618,12 @@ and p.lang_id=$langId
     }
 
 
-    private function getUniqueProductId($productId, $complementaryId = null)
-    {
-        $o = X::get("Ekom_productIdToUniqueProductId");
-        /**
-         * @var $o ProductIdToUniqueProductIdAdaptor
-         */
-        return $o->getUniqueProductId($productId, $complementaryId);
-    }
+//    private function getUniqueProductId($productId, $complementaryId = null)
+//    {
+//        $o = X::get("Ekom_productIdToUniqueProductId");
+//        /**
+//         * @var $o ProductIdToUniqueProductIdAdaptor
+//         */
+//        return $o->getUniqueProductId($productId, $complementaryId);
+//    }
 }
