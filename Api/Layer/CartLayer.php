@@ -7,6 +7,7 @@ namespace Module\Ekom\Api\Layer;
 use ArrayToString\ArrayToStringTool;
 use Authenticate\SessionUser\SessionUser;
 use Core\Services\A;
+use Core\Services\Hooks;
 use Core\Services\X;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
@@ -19,6 +20,14 @@ use QuickPdo\QuickPdo;
 
 
 /**
+ * About the cart:
+ * ==================
+ * - allowedExtraArgs: an array of arguments that the modules can add to the cart session storage (and re-use later
+ *          for their own needs).
+ *          For instance, the EkomCardCombination module uses this mechanism to identify/memorize the configuration
+ *          of the product added to the cart.
+ *
+ *
  *
  */
 class CartLayer
@@ -61,6 +70,26 @@ class CartLayer
 //        return $default;
 //    }
 
+    public function getItemsExtraArgs($productId, $argName, $default = null)
+    {
+        $productId = (int)$productId;
+        $this->initSessionCart();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+        $items = $_SESSION['ekom.cart'][$shopId]['items'];
+        foreach ($items as $item) {
+            if ((int)$item['id'] === $productId) {
+                if (
+                    array_key_exists("extraArgs", $item) &&
+                    array_key_exists($argName, $item['extraArgs'])
+                ) {
+                    return $item['extraArgs'][$argName];
+                }
+            }
+        }
+        return $default;
+
+    }
+
 
     public function addItems(array $productId2Qty)
     {
@@ -92,7 +121,7 @@ class CartLayer
         $this->writeToLocalStore();
     }
 
-    public function addItem($qty, $productId, $complementaryId = null)
+    public function addItem($qty, $productId, array $extraArgs = [])
     {
 
 //        $upid = $this->getUniqueProductId($productId, $complementaryId);
@@ -100,6 +129,9 @@ class CartLayer
 
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
+
+
+        $this->sanitizeExtraArgs($extraArgs);
 
         $alreadyExists = false;
         foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $k => $item) {
@@ -111,10 +143,17 @@ class CartLayer
         }
 
         if (false === $alreadyExists) {
-            $_SESSION['ekom.cart'][$shopId]['items'][] = [
+
+            $arr = [
                 "quantity" => $qty,
                 "id" => $productId,
             ];
+
+            if ($extraArgs) {
+                $arr['extraArgs'] = $extraArgs;
+            }
+
+            $_SESSION['ekom.cart'][$shopId]['items'][] = $arr;
         }
         $this->writeToLocalStore();
     }
@@ -280,6 +319,8 @@ class CartLayer
         $_SESSION['ekom.cart'] = [];
     }
 
+
+
     //--------------------------------------------
     //
     //--------------------------------------------
@@ -324,6 +365,7 @@ class CartLayer
         foreach ($items as $item) {
 
             $id = $item['id'];
+
 
             if (false !== ($it = $this->getCartItemInfo($id))) {
 
@@ -372,6 +414,8 @@ class CartLayer
             }
         }
 
+//        echo '<hr>';
+//        az($items);
 
         $taxAmount = $linesTotalWithTax - $linesTotalWithoutTax;
 
@@ -401,9 +445,6 @@ class CartLayer
         //--------------------------------------------
         $couponApi = EkomApi::inst()->couponLayer();
         $validCoupons = [];
-
-
-
 
 
         $details = $couponApi->applyCouponBag($linesTotalWithoutTax, $linesTotalWithTax, "beforeShipping", $this->getCouponBag(), $validCoupons);
@@ -512,7 +553,8 @@ and p.lang_id=$langId
                 $productCardId = $row['product_card_id'];
                 $productSlug = $row['reference'];
                 $cardSlug = ('' !== $row['card_slug']) ? $row['card_slug'] : $row['card_default_slug'];
-
+//a($b);
+//echo'<hr>';
 
                 $attr = $b['attributes'];
                 $zeAttr = [];
@@ -540,7 +582,7 @@ and p.lang_id=$langId
                 }
 
 
-                return [
+                return array_replace($b, [
                     'product_id' => $b['product_id'],
                     'label' => $b['label'],
                     'description' => $b['description'],
@@ -574,7 +616,7 @@ and p.lang_id=$langId
 
 //                    'rawSalePriceWithoutTax' => $b['rawSalePriceWithoutTax'],
 //                    'rawSalePriceWithTax' => $b['rawSalePriceWithTax'],
-                ];
+                ]);
 
             }
 
@@ -626,4 +668,17 @@ and p.lang_id=$langId
 //         */
 //        return $o->getUniqueProductId($productId, $complementaryId);
 //    }
+
+    private function sanitizeExtraArgs(array &$extraArgs)
+    {
+        $allowedExtraArgs = [];
+        Hooks::call("Ekom_feedCartAllowedExtraArgs", $allowedExtraArgs);
+        foreach ($extraArgs as $k => $v) {
+            if (false === array_key_exists($k, $allowedExtraArgs)) {
+                unset($extraArgs, $k);
+            }
+        }
+    }
+
+
 }

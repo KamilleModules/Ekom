@@ -604,9 +604,6 @@ order by h.order asc
                             $model = $boxConf;
 
 
-                            Hooks::call("Ekom_decorateBoxModel", $model);
-
-
                         } else {
                             $model['errorCode'] = "emptyProductCard";
                             $model['errorTitle'] = "Empty product card";
@@ -638,10 +635,6 @@ order by h.order asc
             }
 
 
-            //--------------------------------------------
-            // hooks
-            //--------------------------------------------
-            Hooks::call("Ekom_decorateBoxModel", $model);
 
             return $model;
 
@@ -681,7 +674,18 @@ order by h.order asc
             "ek_product_card_has_tax_group.delete.$shopId.$cardId",
         ]);
 
+
         if (array_key_exists('product_id', $model)) { // if model is not in error form
+
+
+
+
+            //--------------------------------------------
+            // hooks
+            //--------------------------------------------
+            Hooks::call("Ekom_decorateBoxModel", $model);
+
+
             //--------------------------------------------
             // NOW APPLYING DISCOUNT DYNAMICALLY (so that it's always synced with app rules)
             //--------------------------------------------
@@ -796,6 +800,7 @@ order by h.order asc
         }
 
 //        a(__FILE__);
+
         return $model;
     }
 
