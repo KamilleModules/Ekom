@@ -31,6 +31,7 @@ use Module\Ekom\Api\Layer\ProductCombinationLayer;
 use Module\Ekom\Api\Layer\ProductCommentLayer;
 use Module\Ekom\Api\Layer\ProductHelperLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
+use Module\Ekom\Api\Layer\SellerLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
 use Module\Ekom\Api\Layer\UserLayer;
@@ -437,6 +438,15 @@ and h.lang_id=$langId
     public function productLayer()
     {
         return $this->getLayer('productLayer');
+    }
+
+
+    /**
+     * @return SellerLayer
+     */
+    public function sellerLayer()
+    {
+        return $this->getLayer('sellerLayer');
     }
 
 

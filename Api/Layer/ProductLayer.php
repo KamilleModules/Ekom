@@ -50,6 +50,9 @@ where p.id=$productId
     public function insertTypeIfNotExist($name, $shopId = null)
     {
         $name = (string)$name;
+        if ('' === $name) {
+            $name = 'default';
+        }
         EkomApi::inst()->initWebContext();
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
 
@@ -261,6 +264,7 @@ t.name as product_type,
 s.price,
 s.quantity,
 s.active,
+se.name as seller,
 l.label,
 l.description,
 l.meta_title,
@@ -280,6 +284,7 @@ inner join ek_product_type t on t.id=p.product_type_id
 inner join ek_product_lang ll on ll.product_id=p.id
 inner join ek_shop_has_product s on s.product_id=p.id 
 inner join ek_shop_has_product_lang l on l.shop_id=s.shop_id and l.product_id=s.product_id
+inner join ek_seller se on se.id=s.seller_id
 
 where 
 l.lang_id=$langId
@@ -300,6 +305,7 @@ and p.product_card_id=$cardId
             "ek_shop_has_product_lang.create",
             "ek_shop_has_product_lang.update.$shopId",
             "ek_shop_has_product_lang.delete.$shopId",
+            "ek_seller",
         ]);
     }
 
@@ -319,6 +325,9 @@ and p.product_card_id=$cardId
             foreach ($productsInfo as $row) {
                 $productIds[] = $row['product_id'];
             }
+
+
+
 
             $rows = QuickPdo::fetchAll("
 select 
@@ -343,6 +352,7 @@ and product_id in (" . implode(', ', $productIds) . ")
 order by h.order asc         
          
 ");
+
 
 
             $productId2attr = [];
@@ -403,9 +413,8 @@ order by h.order asc
                         /**
                          * Take the list of attributes
                          */
-
-
                         $productsInfo = $this->getProductCardProductsWithAttributes($cardId, $shopId, $langId);
+
                         if (count($productsInfo) > 0) {
 
 
@@ -554,6 +563,8 @@ order by h.order asc
                                 "uriCard" => $cardUri,
                                 "defaultImage" => $defaultImage,
                                 "label" => $label,
+                                "seller" => $p['seller'],
+
                                 "label_escaped" => htmlspecialchars($label),
                                 "ref" => $p['reference'],
                                 "weight" => $p['weight'],
@@ -635,7 +646,6 @@ order by h.order asc
             }
 
 
-
             return $model;
 
 
@@ -676,8 +686,6 @@ order by h.order asc
 
 
         if (array_key_exists('product_id', $model)) { // if model is not in error form
-
-
 
 
             //--------------------------------------------

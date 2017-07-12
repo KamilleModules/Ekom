@@ -162,6 +162,7 @@ class ProductHelperLayer
         $apiCatHasCard = EkomApi::inst()->categoryHasProductCard();
 
 
+
         $data = array_replace([
             'meta_title' => "",
             'meta_description' => "",
@@ -171,6 +172,7 @@ class ProductHelperLayer
 
 
         $productTypeId = EkomApi::inst()->productLayer()->insertTypeIfNotExist($data['product_type']);
+        $sellerId = EkomApi::inst()->sellerLayer()->insertNameIfNotExist($data['seller']);
 
 
         if (null === $theCardId) {
@@ -224,6 +226,7 @@ class ProductHelperLayer
             "active" => "1",
             "_sale_price_without_tax" => "",
             "_sale_price_with_tax" => "",
+            "seller_id" => $sellerId,
         ]);
 
 

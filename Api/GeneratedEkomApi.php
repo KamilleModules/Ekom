@@ -47,6 +47,7 @@ use Module\Ekom\Api\Object\ProductHasFeature;
 use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductLang;
 use Module\Ekom\Api\Object\ProductType;
+use Module\Ekom\Api\Object\Seller;
 use Module\Ekom\Api\Object\Shop;
 use Module\Ekom\Api\Object\ShopConfiguration;
 use Module\Ekom\Api\Object\ShopHasAddress;
@@ -403,6 +404,13 @@ class GeneratedEkomApi extends XiaoApi
     public function productType()
     {
         return $this->getObject('productType');
+    }
+    /**
+     * @return Seller
+     */
+    public function seller()
+    {
+        return $this->getObject('seller');
     }
     /**
      * @return Shop
