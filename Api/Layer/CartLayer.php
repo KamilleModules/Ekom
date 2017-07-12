@@ -196,9 +196,11 @@ class CartLayer
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $productId = (string)$productId;
 
-
         if (false !== ($remainingQty = EkomApi::inst()->productLayer()->getProductQuantity($productId))) {
 
+
+
+            $remainingQty = (int)$remainingQty;
             $newQty = (int)$newQty;
             if ($newQty < 0) {
                 $newQty = 0;
@@ -207,10 +209,9 @@ class CartLayer
             $maxQty = $newQty;
             $acceptOutOfStockOrders = E::conf("acceptOutOfStockOrders", false);
 
-            if (false === $acceptOutOfStockOrders && $newQty > $remainingQty) {
+            if (false === $acceptOutOfStockOrders && $newQty > $remainingQty && -1 !== $remainingQty) {
                 $newQty = $remainingQty;
             }
-
 
             $alreadyExists = false;
             foreach ($_SESSION['ekom.cart'][$shopId]['items'] as $k => $item) {
@@ -227,6 +228,8 @@ class CartLayer
                     "id" => $productId,
                 ];
             }
+
+
             $this->writeToLocalStore();
 
 

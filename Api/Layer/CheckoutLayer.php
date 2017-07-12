@@ -6,7 +6,9 @@ namespace Module\Ekom\Api\Layer;
 use Authenticate\SessionUser\SessionUser;
 use Bat\SessionTool;
 use Core\Services\X;
+use Ingenico\Handler\IngenicoHandler;
 use Kamille\Architecture\Registry\ApplicationRegistry;
+use Kamille\Ling\Z;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\IncompleteOrderException;
@@ -239,6 +241,9 @@ class CheckoutLayer
                     $model["couponTotalSaving"] = $couponTotalSavingWithTax;
                     $model["rawCouponTotalSaving"] = $_couponTotalSavingWithTax;
                 }
+
+
+
                 return $model;
             }
         }
