@@ -288,6 +288,7 @@ and l.slug=:slug
      * - level: The current level of the node, starting at 0 and increasing
      * - children: array of children
      */
+
     public function getSubCategoriesByName($name, $maxDepth = -1)
     {
         EkomApi::inst()->initWebContext();
@@ -303,6 +304,7 @@ select
 cl.category_id,
 cl.label,
 cl.slug,
+cl.description,
 c.name
 
 from ek_category c 
@@ -345,6 +347,33 @@ and cl.lang_id=$langId
         ]);
     }
 
+    public function getSubCategoriesBySlug($slug, $maxDepth = -1)
+    {
+        EkomApi::inst()->initWebContext();
+        $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
+        $langId = (int)ApplicationRegistry::get("ekom.lang_id");
+
+        return A::cache()->get("Ekom.CategoryLayer.getSubCategoriesBySlug.$shopId.$langId.$slug.$maxDepth", function () use ($shopId, $maxDepth, $slug, $langId) {
+
+            $name = QuickPdo::fetch("select 
+c.name 
+from ek_category c
+inner join ek_category_lang cl on cl.category_id=c.id 
+where 
+c.shop_id=$shopId
+and cl.lang_id=$langId 
+and cl.slug=:slug
+", [
+                'slug' => $slug,
+            ], \PDO::FETCH_COLUMN);
+
+
+            return $this->getSubCategoriesByName($name, $maxDepth);
+        }, [
+            "ek_category",
+            "ek_category_lang",
+        ]);
+    }
 
     //--------------------------------------------
     //

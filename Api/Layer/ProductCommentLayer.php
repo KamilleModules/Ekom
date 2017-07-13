@@ -40,13 +40,23 @@ class ProductCommentLayer
         }
 
 
+        // rating on 100
+        $rating = (int)$data['rating'];
+        if ($rating < 0) {
+            $rating = 0;
+        }
+        if ($rating > 100) {
+            $rating = 100;
+        }
+
+
         $date = date('Y-m-d H:i:s');
         $commentId = QuickPdo::insert("ek_product_comment", [
             'shop_id' => $shopId,
             'product_id' => $productId,
             'user_id' => $userId,
             'date' => $date,
-            'rating' => $data['rating'],
+            'rating' => $rating,
             'useful_counter' => 0,
             'title' => $title,
             'comment' => $data['comment'],

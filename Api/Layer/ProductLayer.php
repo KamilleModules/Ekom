@@ -849,6 +849,7 @@ order by h.order asc
                 $model['errorTitle'] = "sqlRequestFailed";
                 $model['errorMessage'] = "the sql request failed unexpectedly, are you sure pdo is in exceptionMode?";
                 XLog::error("[Ekom module] - ProductLayer.getProductBoxModelByProductId: " . $model['errorMessage']);
+
             } catch (\Exception $e) { // suppose pdo is in exception mode
                 $model['errorCode'] = "exception";
                 $model['errorTitle'] = "Exception occurred";
@@ -885,6 +886,7 @@ order by h.order asc
             $productId = (int)$productId;
             try {
 
+
                 $cardId = EkomApi::inst()->product()->readColumn("product_card_id", [
                     ["id", "=", $productId],
                 ]);
@@ -893,8 +895,9 @@ order by h.order asc
                 }
                 $model['errorCode'] = "SqlRequestFailed";
                 $model['errorTitle'] = "sqlRequestFailed";
-                $model['errorMessage'] = "the sql request failed unexpectedly, are you sure pdo is in exceptionMode?";
+                $model['errorMessage'] = "the sql request failed unexpectedly, are you sure pdo is in exceptionMode? or are those phantom items not removed from your cart";
                 XLog::error("[Ekom module] - ProductLayer.getProductBoxModelByProductId: " . $model['errorMessage']);
+
             } catch (\Exception $e) { // suppose pdo is in exception mode
                 $model['errorCode'] = "exception";
                 $model['errorTitle'] = "Exception occurred";

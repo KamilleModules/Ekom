@@ -34,6 +34,7 @@ class BundleLayer
 
 
         EkomApi::inst()->cartLayer()->addItems($productId2Qty);
+        return $productId2Qty;
     }
 
     /**

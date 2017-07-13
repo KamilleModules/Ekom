@@ -93,7 +93,6 @@ class CartLayer
 
     public function addItems(array $productId2Qty)
     {
-        az(__FILE__ . ": addItems");
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
 
@@ -368,7 +367,6 @@ class CartLayer
         foreach ($items as $item) {
 
             $id = $item['id'];
-
 
             if (false !== ($it = $this->getCartItemInfo($id))) {
 

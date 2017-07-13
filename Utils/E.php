@@ -252,6 +252,18 @@ class E
     }
 
 
+    public static function getImgBaseUri()
+    {
+        /**
+         * Just in case you wonder:
+         * the default ekom's image directory for products, cards and categories
+         * is here:
+         *
+         *         /www/modules/Ekom/img
+         */
+        return '/modules/Ekom/img';
+    }
+
     //--------------------------------------------
     //
     //--------------------------------------------
