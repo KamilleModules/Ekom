@@ -143,6 +143,9 @@ class ProductHelperLayer
 
 
         $theCardId = (array_key_exists('card_id', $data)) ? (int)$data['card_id'] : null;
+        if (0 === $theCardId) {
+            $theCardId = null;
+        }
         $shopId = (int)$shopId;
         $langId = (int)$langId;
 
@@ -160,7 +163,6 @@ class ProductHelperLayer
         $apiProductAttributeValueLang = EkomApi::inst()->productAttributeValueLang();
         $apiAttributeLayer = EkomApi::inst()->attributeLayer();
         $apiCatHasCard = EkomApi::inst()->categoryHasProductCard();
-
 
 
         $data = array_replace([
