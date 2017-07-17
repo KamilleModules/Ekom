@@ -11,6 +11,7 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
+use Module\Ekom\Exception\EkomException;
 use QuickPdo\QuickPdo;
 
 
@@ -41,6 +42,21 @@ use QuickPdo\QuickPdo;
 class UserLayer
 {
 
+
+    /**
+     * @param array $info
+     *      - id: the user id
+     * @throws EkomException
+     * @return void
+     */
+    public function connectUser(array $info)
+    {
+        if (array_key_exists('id', $info)) {
+            SessionUser::connect(['id' => $info['id']]);
+        } else {
+            throw new EkomException("Id not found");
+        }
+    }
 
     public function getUserId()
     {

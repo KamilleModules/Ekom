@@ -511,6 +511,11 @@ class CartLayer
         }
 
 
+        //--------------------------------------------
+        // MODULES
+        //--------------------------------------------
+        Hooks::call("Ekom_CartLayer_decorate_mini_cart_model", $model);
+
         return $model;
     }
 

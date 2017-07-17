@@ -54,7 +54,8 @@ class LoginController extends EkomFrontController
                     $hash = $row['pass'];
                     if (true === password_verify($model['valuePass'], $hash)) {
 
-                        SessionUser::connect(['id' => $row['id']]);
+
+                        EkomApi::inst()->userLayer()->connectUser(['id' => $row['id']]);
 
 
 

@@ -24,10 +24,9 @@ use Module\Ekom\Api\Layer\DiscountLayer;
 use Module\Ekom\Api\Layer\FeatureLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
+use Module\Ekom\Api\Layer\PasswordLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
-use Module\Ekom\Api\Layer\ProductCardCombinationLayer;
 use Module\Ekom\Api\Layer\ProductCardLayer;
-use Module\Ekom\Api\Layer\ProductCombinationLayer;
 use Module\Ekom\Api\Layer\ProductCommentLayer;
 use Module\Ekom\Api\Layer\ProductHelperLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
@@ -395,6 +394,15 @@ and h.lang_id=$langId
     public function orderLayer()
     {
         return $this->getLayer('orderLayer');
+    }
+
+
+    /**
+     * @return PasswordLayer
+     */
+    public function passwordLayer()
+    {
+        return $this->getLayer('passwordLayer');
     }
 
 

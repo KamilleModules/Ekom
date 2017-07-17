@@ -29,6 +29,7 @@ use Module\Ekom\Api\Object\Order;
 use Module\Ekom\Api\Object\OrderHasOrderStatus;
 use Module\Ekom\Api\Object\OrderStatus;
 use Module\Ekom\Api\Object\OrderStatusLang;
+use Module\Ekom\Api\Object\PasswordRecoveryRequest;
 use Module\Ekom\Api\Object\PaymentMethod;
 use Module\Ekom\Api\Object\Product;
 use Module\Ekom\Api\Object\ProductAttribute;
@@ -278,6 +279,13 @@ class GeneratedEkomApi extends XiaoApi
     public function orderStatusLang()
     {
         return $this->getObject('orderStatusLang');
+    }
+    /**
+     * @return PasswordRecoveryRequest
+     */
+    public function passwordRecoveryRequest()
+    {
+        return $this->getObject('passwordRecoveryRequest');
     }
     /**
      * @return PaymentMethod
