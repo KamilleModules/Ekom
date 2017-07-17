@@ -12,6 +12,7 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 
@@ -330,6 +331,40 @@ and `type`='billing'
         } else {
             return $this->updateNewAddress($userId, $data, $addressId);
         }
+    }
+
+
+    /**
+     * Data should be filtered before hand, it's assumed to be sanitized.
+     *
+     */
+    public function createAccount(array $data)
+    {
+
+        $userModel = [
+            'shop_id' => ApplicationRegistry::get("ekom.shop_id"),
+            'email' => "",
+            'pass' => "",
+            'date_creation' => date('Y-m-d H:i:s'),
+            'mobile' => "",
+            'phone' => "",
+            'newsletter' => "0",
+            'active' => "1",
+        ];
+
+        if (array_key_exists('email', $data)) {
+            $userModel['email'] = $data['email'];
+        }
+        if (array_key_exists('pass', $data)) {
+            $userModel['pass'] = E::passEncrypt($data['pass']);
+        }
+        if (array_key_exists('newsletter', $data)) {
+            $userModel['newsletter'] = (int)$data['newsletter'];
+        }
+        EkomApi::inst()->user()->create($userModel);
+
+
+
     }
 
     private function updateNewAddress($userId, array $data, $addressId)
