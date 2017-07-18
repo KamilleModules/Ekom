@@ -33,6 +33,8 @@ use Module\Ekom\Api\Layer\ProductLayer;
 use Module\Ekom\Api\Layer\SellerLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
+use Module\Ekom\Api\Layer\UserGroupLayer;
+use Module\Ekom\Api\Layer\UserHasGroupLayer;
 use Module\Ekom\Api\Layer\UserLayer;
 use QuickPdo\QuickPdo;
 
@@ -473,6 +475,23 @@ and h.lang_id=$langId
     public function taxLayer()
     {
         return $this->getLayer('taxLayer');
+    }
+
+    /**
+     * @return UserGroupLayer
+     */
+    public function userGroupLayer()
+    {
+        return $this->getLayer('userGroupLayer');
+    }
+
+
+    /**
+     * @return UserHasGroupLayer
+     */
+    public function userHasGroupLayer()
+    {
+        return $this->getLayer('userHasGroupLayer');
     }
 
     /**

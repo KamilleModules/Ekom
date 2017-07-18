@@ -5,6 +5,8 @@ namespace Module\Ekom\Utils;
 
 
 use Authenticate\SessionUser\SessionUser;
+use Bat\SessionTool;
+use Bat\UriTool;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Core\Services\X;
@@ -29,6 +31,29 @@ class E
             return SessionUser::getValue("id");
         }
         throw new EkomApiException("The user is not connected");
+    }
+
+
+    /**
+     * pick up the referer from session once (and remove the corresponding session key)
+     */
+    public static function pickUpReferer()
+    {
+        $target = null;
+
+        SessionTool::start();
+        if (array_key_exists("ekom.referer", $_SESSION)) {
+            /**
+             * The http referer might be different but useful things, like:
+             * - the checkout page
+             */
+            $target = $_SESSION['ekom.referer'];
+            unset($_SESSION['ekom.referer']);
+
+        } else {
+            $target = UriTool::getWebsiteAbsoluteUrl();
+        }
+        return $target;
     }
 
     /**
@@ -180,6 +205,7 @@ class E
         if (is_array($params['to'])) {
             $expected = count($params['to']);
         }
+
         $res = $mail->to($params['to'])
             ->from(XConfig::get("Application.email.from"))
             ->subject($subject)
@@ -188,8 +214,6 @@ class E
             ->send();
 
         return ($res === $expected);
-
-
     }
 
     /**

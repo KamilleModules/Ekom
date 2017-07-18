@@ -7,6 +7,7 @@ namespace Module\Ekom\Api\Layer;
 use Authenticate\SessionUser\SessionUser;
 use Bat\ArrayTool;
 use Core\Services\A;
+use Core\Services\Hooks;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
@@ -14,6 +15,7 @@ use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
+use QuickPdo\QuickPdoExceptionTool;
 
 
 /**
@@ -337,34 +339,92 @@ and `type`='billing'
     /**
      * Data should be filtered before hand, it's assumed to be sanitized.
      *
+     * - userError: an array with the following entries:
+     *      - 0: code, an arbitrary code representing the error
+     *      - 1: msg, an error message written in english
+     *
+     *
+     * @return false|array
+     *              If it's an array, it's the hookData array,
+     *              containing the following:
+     *              - userId
+     *              - data
+     *              - ?groupId
+     *
+     *
      */
-    public function createAccount(array $data)
+    public function createAccount(array $data, &$userError = null)
     {
+        $hookData = [];
+        $ok = QuickPdo::transaction(function () use ($data, &$hookData) {
 
-        $userModel = [
-            'shop_id' => ApplicationRegistry::get("ekom.shop_id"),
-            'email' => "",
-            'pass' => "",
-            'date_creation' => date('Y-m-d H:i:s'),
-            'mobile' => "",
-            'phone' => "",
-            'newsletter' => "0",
-            'active' => "1",
-        ];
+            $shopId = ApplicationRegistry::get("ekom.shop_id");
 
-        if (array_key_exists('email', $data)) {
-            $userModel['email'] = $data['email'];
+
+            $userModel = [
+                'shop_id' => $shopId,
+                'email' => "",
+                'pass' => "",
+                'date_creation' => date('Y-m-d H:i:s'),
+                'mobile' => "",
+                'phone' => "",
+                'newsletter' => "0",
+                'active' => "1",
+            ];
+
+            if (array_key_exists('email', $data)) {
+                $userModel['email'] = $data['email'];
+            }
+            if (array_key_exists('phone', $data)) {
+                $userModel['phone'] = $data['phone'];
+            }
+            if (array_key_exists('pass', $data)) {
+                $userModel['pass'] = E::passEncrypt($data['pass']);
+            }
+            if (array_key_exists('newsletter', $data)) {
+                $userModel['newsletter'] = (!empty($data['newsletter'])) ? 1 : 0;
+            }
+
+
+            $userId = EkomApi::inst()->user()->create($userModel);
+
+            $hookData = [
+                "userId" => $userId,
+                "data" => $data,
+            ];
+
+            if (array_key_exists("group", $data)) {
+                $group = $data["group"];
+                $groupId = EkomApi::inst()->userGroupLayer()->createGroupIfNotExist([
+                    "name" => $group,
+                    "shop_id" => $shopId,
+                ]);
+                EkomApi::inst()->userHasGroupLayer()->bindUser2Group($userId, $groupId);
+                $hookData['groupId'] = $groupId;
+            }
+
+            Hooks::call("Ekom_createAccountAfter", $hookData);
+
+        }, function (\Exception $e) use (&$userError) {
+            if (QuickPdoExceptionTool::isDuplicateEntry($e)) {
+                $userError = [
+                    "duplicateEntry",
+                    "An user with this email already exist in our database",
+                ];
+            } else {
+                $userError = [
+                    "unknownException",
+                    "An error occurred",
+                ];
+            }
+            XLog::error("$e");
+
+        });
+
+        if(false===$ok){
+            return false;
         }
-        if (array_key_exists('pass', $data)) {
-            $userModel['pass'] = E::passEncrypt($data['pass']);
-        }
-        if (array_key_exists('newsletter', $data)) {
-            $userModel['newsletter'] = (int)$data['newsletter'];
-        }
-        EkomApi::inst()->user()->create($userModel);
-
-
-
+        return $hookData;
     }
 
     private function updateNewAddress($userId, array $data, $addressId)
