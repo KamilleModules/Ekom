@@ -19,8 +19,7 @@ class UserGroupLayer
     public function createGroupIfNotExist(array $data)
     {
 
-
-        $shopId = (int)$data['shopId'];
+        $shopId = (int)$data['shop_id'];
         $name = $data['name'];
 
 

@@ -358,6 +358,7 @@ and `type`='billing'
         $hookData = [];
         $ok = QuickPdo::transaction(function () use ($data, &$hookData) {
 
+            EkomApi::inst()->initWebContext();
             $shopId = ApplicationRegistry::get("ekom.shop_id");
 
 
