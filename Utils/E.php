@@ -17,7 +17,9 @@ use Kamille\Services\XConfig;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
+use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Notifier\EkomNotifier;
+use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
 use Umail\UmailInterface;
 
 class E
@@ -32,6 +34,7 @@ class E
         }
         throw new EkomApiException("The user is not connected");
     }
+
 
 
     /**
