@@ -7,6 +7,7 @@ namespace Module\Ekom\Api\Layer;
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use QuickPdo\QuickPdo;
 
 class CountryLayer
 {
@@ -33,4 +34,11 @@ class CountryLayer
         ]);
     }
 
+
+    public function getCountryIdByIso($iso)
+    {
+        return QuickPdo::fetch("select id from ek_country where iso_code=:iso", [
+            "iso" => $iso,
+        ], \PDO::FETCH_COLUMN);
+    }
 }

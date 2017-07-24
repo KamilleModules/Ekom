@@ -102,4 +102,9 @@ where s.id=$shopId
     }
 
 
+    public function allIds(){
+        return QuickPdo::fetchAll("select id from ek_shop", [], \PDO::FETCH_COLUMN);
+    }
+
+
 }

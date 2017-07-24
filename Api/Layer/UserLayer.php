@@ -47,6 +47,30 @@ class UserLayer
 
 
     /**
+     * Used to get the user account information
+     */
+    public function getAccountInfo($userId)
+    {
+        $groupId2Names = $this->getUserGroupNames($userId);
+        $info = $this->getUserInfo($userId);
+        $info['groups'] = $groupId2Names;
+        return $info;
+    }
+
+
+    public function userExistsByEmail($email)
+    {
+        $res = QuickPdo::fetch("select id from ek_user where email=:email", [
+            "email" => $email,
+        ]);
+        if (false === $res) {
+            return false;
+        }
+        return true;
+    }
+
+
+    /**
      * @param array $info
      *      - id: the user id
      * @throws EkomException
@@ -422,7 +446,7 @@ and `type`='billing'
 
         });
 
-        if(false===$ok){
+        if (false === $ok) {
             return false;
         }
         return $hookData;
@@ -803,6 +827,56 @@ order by h.`order` asc
         ]);
     }
 
+
+    public function getAddressList($userId, $langId = null)
+    {
+
+        if (null === $langId) {
+            EkomApi::inst()->initWebContext();
+            $langId = ApplicationRegistry::get("ekom.lang_id");
+        }
+        $userId = (int)$userId;
+        $langId = (int)$langId;
+
+        return A::cache()->get("Ekom.UserLayer.getAddressList.$langId.$userId", function () use ($userId, $langId) {
+
+
+            $rows = QuickPdo::fetchAll("
+select 
+a.id, 
+a.first_name, 
+a.last_name, 
+a.phone, 
+a.address, 
+a.city, 
+a.postcode, 
+a.supplement, 
+a.country_id, 
+cl.label as country,
+h.type,
+h.order
+
+
+from ek_address a 
+inner join ek_country_lang cl on cl.country_id=a.country_id
+inner join ek_user_has_address h on h.address_id=a.id 
+
+where 
+h.user_id=$userId
+and cl.lang_id=$langId
+        
+order by `order` asc        
+        
+        ");
+
+            return $rows;
+        }, [
+            'ek_address',
+            'ek_country_lang',
+            'ek_user_has_address',
+        ]);
+
+    }
 
 
 
