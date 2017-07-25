@@ -18,16 +18,16 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
             "address",
             "postcode",
             "city",
-            "country_id",
+            "country",
             "phone",
             "supplement",
         ]);
 
 
         $countries = EkomApi::inst()->countryLayer()->getCountryList();
-        $this->setOptions("country_id", $countries)
+        $this->setOptions("country", $countries)
             ->setNotHtmlSpecialChars([
-                'country_id',
+                'country',
             ])
             ->setValidationRules([
                 'first_name' => ["required"],
@@ -35,69 +35,10 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
                 'address' => ["required"],
                 'postcode' => ["required"],
                 'city' => ["required"],
-                'country_id' => ["required"],
+                'country' => ["required"],
                 'phone' => ["required"],
             ]);
 
 
-
-
     }
-
-
-
-
-
-
-//    protected function getBaseModel()
-//    {
-//        $countryId = (int)EkomApi::inst()->userLayer()->getUserPreferredCountry();
-//        return [
-//
-//            "nameFirstName" => "first_name",
-//            "nameLastName" => "last_name",
-//            "nameAddress" => "address",
-//            "namePostcode" => "postcode",
-//            "nameCity" => "city",
-//            "nameCountry" => "country_id",
-//            "namePhone" => "phone",
-//            "nameExtra" => "extra",
-//            "nameIsPreferred" => "is_preferred",
-//
-//
-//            "valueFirstName" => "",
-//            "valueLastName" => "",
-//            "valueAddress" => "",
-//            "valuePostcode" => "",
-//            "valueCity" => "",
-//            "valueCountry" => $countryId,
-//            "valuePhone" => "",
-//            "valueExtra" => "",
-//
-//
-//            "checkedIsPreferred" => "",
-//            //
-//            "errorFirstName" => "",
-//            "errorLastName" => "",
-//            "errorAddress" => "",
-//            "errorPostcode" => "",
-//            "errorCity" => "",
-//            "errorCountry" => "",
-//            "errorPhone" => "",
-//        ];
-//    }
-//
-//    protected function getField2Validators()
-//    {
-//        return [
-//            'firstName' => ['required'],
-//            'lastName' => ['required'],
-//            'address' => ['required'],
-//            'postcode' => ['required'],
-//            'city' => ['required'],
-//            'country' => ['required'],
-//            'phone' => ['required'],
-//        ];
-//    }
-
 }
