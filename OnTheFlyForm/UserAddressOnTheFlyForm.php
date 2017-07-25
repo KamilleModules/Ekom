@@ -18,16 +18,16 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
             "address",
             "postcode",
             "city",
-            "country",
+            "country_id",
             "phone",
             "supplement",
         ]);
 
 
         $countries = EkomApi::inst()->countryLayer()->getCountryList();
-        $this->setOptions("country", $countries)
+        $this->setOptions("country_id", $countries)
             ->setNotHtmlSpecialChars([
-                'country',
+                'country_id',
             ])
             ->setValidationRules([
                 'first_name' => ["required"],
@@ -35,7 +35,7 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
                 'address' => ["required"],
                 'postcode' => ["required"],
                 'city' => ["required"],
-                'country' => ["required"],
+                'country_id' => ["required"],
                 'phone' => ["required"],
             ]);
 

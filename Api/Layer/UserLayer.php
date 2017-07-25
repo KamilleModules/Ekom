@@ -502,7 +502,6 @@ and `type`='billing'
 
     private function createNewAddress($userId, array $data)
     {
-
         return QuickPdo::transaction(function () use ($userId, $data) {
             $userId = (int)$userId;
 
@@ -517,6 +516,7 @@ and `type`='billing'
                 "active" => "1",
                 "country_id" => 0,
             ]);
+
 
 
             $address = EkomApi::inst()->address()->create($addressData);
