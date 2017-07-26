@@ -28,7 +28,7 @@ class GeneratedDiscount extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'user_group_id' => null,
 			'currency_id' => null,
 			'date_start' => null,
@@ -37,8 +37,8 @@ class GeneratedDiscount extends TableCrudObject
 			'procedure_operand' => '',
 			'target' => '',
 			'shop_id' => 0,
-		], $data);
-
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
         if (0 === (int)$ret["user_group_id"]) {
             $ret["user_group_id"] = null;
@@ -52,6 +52,7 @@ class GeneratedDiscount extends TableCrudObject
         if (0 === (int)$ret["date_end"]) {
             $ret["date_end"] = null;
         }
+
 
         return $ret;
     }

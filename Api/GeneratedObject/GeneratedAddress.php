@@ -28,7 +28,7 @@ class GeneratedAddress extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'first_name' => '',
 			'last_name' => '',
 			'phone' => '',
@@ -38,7 +38,8 @@ class GeneratedAddress extends TableCrudObject
 			'supplement' => '',
 			'active' => 0,
 			'country_id' => 0,
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

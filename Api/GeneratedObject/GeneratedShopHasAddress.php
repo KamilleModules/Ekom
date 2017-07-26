@@ -28,12 +28,13 @@ class GeneratedShopHasAddress extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'shop_id' => 0,
 			'address_id' => 0,
 			'type' => '',
 			'order' => 0,
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

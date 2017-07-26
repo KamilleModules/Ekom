@@ -28,11 +28,12 @@ class GeneratedShopConfiguration extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'shop_id' => 0,
 			'key' => '',
 			'value' => '',
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

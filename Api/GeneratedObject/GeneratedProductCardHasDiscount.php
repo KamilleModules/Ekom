@@ -28,12 +28,13 @@ class GeneratedProductCardHasDiscount extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'product_card_id' => 0,
 			'discount_id' => 0,
 			'order_phase' => 0,
 			'active' => 0,
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

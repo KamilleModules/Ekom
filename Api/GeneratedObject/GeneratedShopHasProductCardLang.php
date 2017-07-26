@@ -28,7 +28,7 @@ class GeneratedShopHasProductCardLang extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'shop_id' => 0,
 			'product_card_id' => 0,
 			'lang_id' => 0,
@@ -38,7 +38,8 @@ class GeneratedShopHasProductCardLang extends TableCrudObject
 			'meta_title' => '',
 			'meta_description' => '',
 			'meta_keywords' => '',
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

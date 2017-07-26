@@ -28,10 +28,11 @@ class GeneratedCouponHasCartDiscount extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'coupon_id' => 0,
 			'cart_discount_id' => 0,
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

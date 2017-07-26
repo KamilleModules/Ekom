@@ -28,13 +28,14 @@ class GeneratedCoupon extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'code' => '',
 			'active' => 0,
 			'mode' => '',
 			'priority' => 0,
 			'shop_id' => 0,
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

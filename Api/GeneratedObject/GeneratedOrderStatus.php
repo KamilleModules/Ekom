@@ -28,11 +28,12 @@ class GeneratedOrderStatus extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'code' => '',
 			'color' => '',
 			'shop_id' => 0,
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

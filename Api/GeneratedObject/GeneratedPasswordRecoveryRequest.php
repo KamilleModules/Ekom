@@ -28,17 +28,18 @@ class GeneratedPasswordRecoveryRequest extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'user_id' => 0,
 			'date_created' => '',
 			'code' => '',
 			'date_used' => null,
-		], $data);
-
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
         if (0 === (int)$ret["date_used"]) {
             $ret["date_used"] = null;
         }
+
 
         return $ret;
     }

@@ -28,14 +28,15 @@ class GeneratedProductHasFeature extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'product_id' => 0,
 			'feature_id' => 0,
 			'shop_id' => 0,
 			'feature_value_id' => 0,
 			'position' => 0,
 			'technical_description' => '',
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

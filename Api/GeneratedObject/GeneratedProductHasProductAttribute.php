@@ -28,12 +28,13 @@ class GeneratedProductHasProductAttribute extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'product_id' => 0,
 			'product_attribute_id' => 0,
 			'product_attribute_value_id' => 0,
 			'order' => 0,
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

@@ -28,11 +28,12 @@ class GeneratedProductCardHasTaxGroup extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'shop_id' => 0,
 			'product_card_id' => 0,
 			'tax_group_id' => 0,
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

@@ -28,12 +28,13 @@ class GeneratedUserHasAddress extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'user_id' => 0,
 			'address_id' => 0,
 			'type' => '',
 			'order' => 0,
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

@@ -28,11 +28,12 @@ class GeneratedOrderStatusLang extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'order_status_id' => 0,
 			'lang_id' => 0,
 			'label' => '',
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

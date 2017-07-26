@@ -386,37 +386,26 @@ and `type`='billing'
             $shopId = ApplicationRegistry::get("ekom.shop_id");
 
 
-            $userModel = [
-                'shop_id' => $shopId,
-                'email' => "",
-                'pass' => "",
-                'date_creation' => date('Y-m-d H:i:s'),
-                'mobile' => "",
-                'phone' => "",
-                'newsletter' => "0",
-                'active' => "1",
-            ];
-
-            if (array_key_exists('email', $data)) {
-                $userModel['email'] = $data['email'];
-            }
-            if (array_key_exists('phone', $data)) {
-                $userModel['phone'] = $data['phone'];
-            }
-            if (array_key_exists('pass', $data)) {
-                $userModel['pass'] = E::passEncrypt($data['pass']);
-            }
-            if (array_key_exists('newsletter', $data)) {
-                $userModel['newsletter'] = (!empty($data['newsletter'])) ? 1 : 0;
-            }
+            /**
+             * Todo: let modules control this,
+             * for instance, the newsletter might be 1 in some cases,
+             * or active might be 0, ...
+             */
+            $data['shop_id'] = $shopId;
+            $data['active'] = 1;
+            $data['date_creation'] = date('Y-m-d H:i:s');
+            $data['newsletter'] = 0;
 
 
-            $userId = EkomApi::inst()->user()->create($userModel);
+
+            $userId = EkomApi::inst()->user()->create($data);
+
 
             $hookData = [
-                "userId" => $userId,
+                "user_id" => $userId,
                 "data" => $data,
             ];
+
 
             if (array_key_exists("group", $data)) {
                 $group = $data["group"];
@@ -427,8 +416,8 @@ and `type`='billing'
                 EkomApi::inst()->userHasGroupLayer()->bindUser2Group($userId, $groupId);
                 $hookData['groupId'] = $groupId;
             }
-
             Hooks::call("Ekom_createAccountAfter", $hookData);
+
 
         }, function (\Exception $e) use (&$userError) {
             if (QuickPdoExceptionTool::isDuplicateEntry($e)) {
@@ -516,7 +505,6 @@ and `type`='billing'
                 "active" => "1",
                 "country_id" => 0,
             ]);
-
 
 
             $address = EkomApi::inst()->address()->create($addressData);

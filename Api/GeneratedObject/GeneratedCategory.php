@@ -28,16 +28,17 @@ class GeneratedCategory extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'name' => '',
 			'category_id' => null,
 			'shop_id' => 0,
-		], $data);
-
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
         if (0 === (int)$ret["category_id"]) {
             $ret["category_id"] = null;
         }
+
 
         return $ret;
     }

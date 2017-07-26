@@ -28,11 +28,12 @@ class GeneratedFeatureValueLang extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'feature_value_id' => 0,
 			'lang_id' => 0,
 			'value' => '',
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

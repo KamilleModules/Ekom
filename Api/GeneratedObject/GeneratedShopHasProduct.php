@@ -28,7 +28,7 @@ class GeneratedShopHasProduct extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'shop_id' => 0,
 			'product_id' => 0,
 			'price' => null,
@@ -38,12 +38,13 @@ class GeneratedShopHasProduct extends TableCrudObject
 			'_sale_price_without_tax' => '',
 			'_sale_price_with_tax' => '',
 			'seller_id' => 0,
-		], $data);
-
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
         if (0 === (int)$ret["price"]) {
             $ret["price"] = null;
         }
+
 
         return $ret;
     }

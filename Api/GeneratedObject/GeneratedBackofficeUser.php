@@ -28,11 +28,12 @@ class GeneratedBackofficeUser extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'email' => '',
 			'pass' => '',
 			'lang_iso' => '',
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

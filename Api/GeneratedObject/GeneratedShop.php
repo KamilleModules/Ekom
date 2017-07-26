@@ -28,18 +28,19 @@ class GeneratedShop extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'label' => '',
 			'host' => '',
 			'lang_id' => null,
 			'currency_id' => 0,
 			'timezone_id' => 0,
-		], $data);
-
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
         if (0 === (int)$ret["lang_id"]) {
             $ret["lang_id"] = null;
         }
+
 
         return $ret;
     }

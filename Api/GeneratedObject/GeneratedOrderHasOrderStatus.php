@@ -28,11 +28,12 @@ class GeneratedOrderHasOrderStatus extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'order_id' => 0,
 			'order_status_id' => 0,
 			'date' => '',
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

@@ -28,12 +28,13 @@ class GeneratedShopHasPaymentMethod extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'shop_id' => 0,
 			'payment_method_id' => 0,
 			'order' => 0,
 			'configuration' => '',
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

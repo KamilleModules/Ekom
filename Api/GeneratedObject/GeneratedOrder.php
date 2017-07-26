@@ -28,7 +28,7 @@ class GeneratedOrder extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'user_id' => 0,
 			'reference' => '',
 			'date' => '',
@@ -38,7 +38,8 @@ class GeneratedOrder extends TableCrudObject
 			'shipping_address' => '',
 			'billing_address' => '',
 			'order_details' => '',
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

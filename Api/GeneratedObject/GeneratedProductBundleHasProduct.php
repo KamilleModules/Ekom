@@ -28,11 +28,12 @@ class GeneratedProductBundleHasProduct extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'product_bundle_id' => 0,
 			'product_id' => 0,
 			'quantity' => 0,
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

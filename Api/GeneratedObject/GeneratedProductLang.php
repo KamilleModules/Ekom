@@ -28,7 +28,7 @@ class GeneratedProductLang extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'product_id' => 0,
 			'lang_id' => 0,
 			'label' => '',
@@ -36,7 +36,8 @@ class GeneratedProductLang extends TableCrudObject
 			'meta_title' => '',
 			'meta_description' => '',
 			'meta_keywords' => '',
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

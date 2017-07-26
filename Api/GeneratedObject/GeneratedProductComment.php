@@ -28,7 +28,7 @@ class GeneratedProductComment extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'shop_id' => 0,
 			'product_id' => 0,
 			'user_id' => 0,
@@ -38,7 +38,8 @@ class GeneratedProductComment extends TableCrudObject
 			'title' => '',
 			'comment' => '',
 			'active' => 0,
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

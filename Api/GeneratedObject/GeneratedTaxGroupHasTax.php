@@ -28,12 +28,13 @@ class GeneratedTaxGroupHasTax extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'tax_group_id' => 0,
 			'tax_id' => 0,
 			'order' => 0,
 			'mode' => '',
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
 
 

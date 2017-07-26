@@ -28,7 +28,7 @@ class GeneratedUser extends TableCrudObject
     //--------------------------------------------
     protected function getCreateData(array $data)
     {
-        $ret = array_replace([
+        $base = [
 			'shop_id' => 0,
 			'email' => '',
 			'pass' => '',
@@ -39,9 +39,15 @@ class GeneratedUser extends TableCrudObject
 			'mobile' => '',
 			'phone' => '',
 			'newsletter' => 0,
+			'gender' => 0,
+			'birthday' => null,
 			'active' => 0,
-		], $data);
+		];
+        $ret = array_replace($base, array_intersect_key($data, $base));
 
+        if (0 === (int)$ret["birthday"]) {
+            $ret["birthday"] = null;
+        }
 
 
         return $ret;
