@@ -5,6 +5,7 @@ namespace Module\Ekom\OnTheFlyForm;
 
 
 use Module\Ekom\Api\EkomApi;
+use OnTheFlyForm\DataAdaptor\DataAdaptor;
 use OnTheFlyForm\OnTheFlyForm;
 
 class UserAddressOnTheFlyForm extends OnTheFlyForm
@@ -21,6 +22,8 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
             "country",
             "phone",
             "supplement",
+            "is_default_shipping_address",
+            "is_default_billing_address",
         ]);
 
 
@@ -28,6 +31,10 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
         $this->setOptions("country", $countries)
             ->setNotHtmlSpecialChars([
                 'country',
+            ])
+            ->setSingleCheckboxes([
+                "is_default_shipping_address",
+                "is_default_billing_address",
             ])
             ->setValidationRules([
                 'first_name' => ["required"],
@@ -37,7 +44,11 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
                 'city' => ["required"],
                 'country' => ["required"],
                 'phone' => ["required"],
-            ]);
+            ])
+            ->setOutputDataAdaptor(DataAdaptor::createByCallback(function (array $data) {
+                $data['country_id'] = $data['country'];
+                return $data;
+            }));
 
 
     }

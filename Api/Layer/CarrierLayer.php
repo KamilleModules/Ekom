@@ -150,7 +150,7 @@ where c.name=:zename
         $shippingAddress = null;
         if (true === SessionUser::isConnected()) {
             $userId = SessionUser::getValue('id');
-            $shippingAddress = EkomApi::inst()->userLayer()->getPreferredShippingAddress($userId);
+            $shippingAddress = EkomApi::inst()->userAddressLayer()->getDefaultShippingAddress($userId);
             if (false === $shippingAddress) { // the user is connected but doesn't have a shipping address yet
                 $shippingAddress = null;
             }

@@ -34,6 +34,7 @@ use Module\Ekom\Api\Layer\ProductTypeLayer;
 use Module\Ekom\Api\Layer\SellerLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
+use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Api\Layer\UserGroupLayer;
 use Module\Ekom\Api\Layer\UserHasGroupLayer;
 use Module\Ekom\Api\Layer\UserLayer;
@@ -502,6 +503,15 @@ and h.lang_id=$langId
     {
         return $this->getLayer('userHasGroupLayer');
     }
+
+    /**
+     * @return UserAddressLayer
+     */
+    public function userAddressLayer()
+    {
+        return $this->getLayer('userAddressLayer');
+    }
+
 
     /**
      * @return UserLayer

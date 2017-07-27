@@ -41,7 +41,6 @@ class CheckoutLayer
     public function getOrderModel()
     {
 
-
         $checkoutMode = E::conf("checkoutMode");
         if (SessionUser::isConnected()) {
 
@@ -50,6 +49,9 @@ class CheckoutLayer
 
 
                 $api = EkomApi::inst();
+                $api->initWebContext();
+                $langId = (int)ApplicationRegistry::get("ekom.lang_id");
+
 
                 // start collecting order data
                 $this->initOrderModel();
@@ -68,6 +70,7 @@ class CheckoutLayer
 
 
                 $userLayer = $api->userLayer();
+                $userAddressLayer = $api->userAddressLayer();
                 $carrierLayer = $api->carrierLayer();
                 $couponLayer = $api->couponLayer();
                 $cartLayer = $api->cartLayer();
@@ -75,14 +78,25 @@ class CheckoutLayer
 
 
                 $userId = SessionUser::getValue("id");
-                $shippingAddresses = $userLayer->getUserShippingAddresses($userId);
+                $addresses = $userAddressLayer->getUserAddresses($userId, $langId);
 
 
                 /**
                  * false|addressModel
                  */
-                $billingAddress = $userLayer->getUserBillingAddressById($userId, $billingAddressId);
-                $shippingAddress = $userLayer->getUserShippingAddressById($userId, $shippingAddressId);
+                $billingAddress = false;
+                $shippingAddress = false;
+
+                foreach ($addresses as $address) {
+                    if ((int)$billingAddressId === (int)$address['address_id']) {
+                        $billingAddress = $address;
+                    }
+                    if ((int)$shippingAddress === (int)$address['address_id']) {
+                        $shippingAddress = $address;
+                    }
+                }
+
+
                 $countryId = $userLayer->getUserPreferredCountry();
 
 
@@ -163,7 +177,7 @@ class CheckoutLayer
                     "isB2B" => $cartModel['isB2B'],
                     "billingAddress" => $billingAddress, // or false
                     "shippingAddress" => $shippingAddress, // or false
-                    "shippingAddresses" => $shippingAddresses,
+                    "shippingAddresses" => $addresses,
                     "selectedShippingAddressId" => $shippingAddressId,
                     "defaultCountry" => $countryId,
                     "shippingAddressFormModel" => $form->getModel(),
@@ -241,7 +255,6 @@ class CheckoutLayer
                     $model["couponTotalSaving"] = $couponTotalSavingWithTax;
                     $model["rawCouponTotalSaving"] = $_couponTotalSavingWithTax;
                 }
-
 
 
                 return $model;
@@ -397,7 +410,8 @@ class CheckoutLayer
                 if (array_key_exists("saveAsDefault", $options) && true === (bool)$options['saveAsDefault']) {
                     switch ($key) {
                         case 'shipping_address_id':
-                            EkomApi::inst()->userLayer()->setPreferredShippingAddressId($value);
+                            $userId = E::getUserId();
+                            EkomApi::inst()->userAddressLayer()->setDefaultShippingAddress($value, $userId);
                             break;
                         default:
                             throw new \Exception("Unknown key: $key");
@@ -431,18 +445,22 @@ class CheckoutLayer
                  *
                  *
                  */
-                $userLayer = EkomApi::inst()->userLayer();
-                $userId = $userLayer->getUserId();
-                $billingAddressId = $userLayer->getUserBillingAddressId($userId);
-                if (false === $billingAddressId) { // the user might not have a billing address yet
-                    $billingAddressId = null;
+                $userAddressLayer = EkomApi::inst()->userAddressLayer();
+                $userId = E::getUserId();
+                $billingAddress = $userAddressLayer->getDefaultBillingAddress($userId);
+                $shippingAddress = $userAddressLayer->getDefaultShippingAddress($userId);
+
+
+                $shippingAddressId = null;
+                if (false !== $shippingAddress) {
+                    $shippingAddressId = $shippingAddress['address_id'];
                 }
 
-                $shippingAddressId = $userLayer->getPreferredShippingAddressId($userId);
-                if (false === $shippingAddressId) { // the user might not have a shipping address yet
-                    $shippingAddressId = null;
-                }
 
+                $billingAddressId = null;
+                if (false !== $billingAddress) {
+                    $billingAddressId = $billingAddress['address_id'];
+                }
 
                 // choose default carrier if none is set
                 $carrierId = null;

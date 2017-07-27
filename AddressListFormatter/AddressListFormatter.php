@@ -35,32 +35,13 @@ class AddressListFormatter implements AddressListFormatterInterface
 
         // note, rows are ordered by "order asc" per definition
         foreach ($rows as $row) {
-            $type = $row['type'];
-
-            $isBillingDefault = false;
-            $isShippingDefault = false;
-
-            if ('shipping' === $type) {
-                if (null === $shippingDefault) {
-                    $shippingDefault = true;
-                    $isShippingDefault = true;
-                }
-            } elseif ('billing' === $type) {
-                if (null === $billingDefault) {
-                    $billingDefault = true;
-                    $isBillingDefault = true;
-                }
-            } else {
-                throw new EkomException("Unknown address type: ");
-            }
-
 
             $row['title'] = ucfirst($row['first_name']) . " " . ucfirst($row['last_name']);
             $row['address_line_1'] = $row['address'];
             $row['address_line_2'] = ucfirst($row['city']) . ', ' . $row['postcode'];
             $row['address_line_3'] = $row['country'];
-            $row['is_shipping_default'] = $isShippingDefault;
-            $row['is_billing_default'] = $isBillingDefault;
+            $row['is_shipping_default'] = (bool)$row['is_default_shipping_address'];
+            $row['is_billing_default'] = (bool)$row['is_default_billing_address'];
             $ret[] = $row;
 
         }

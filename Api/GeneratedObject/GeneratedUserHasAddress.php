@@ -31,8 +31,9 @@ class GeneratedUserHasAddress extends TableCrudObject
         $base = [
 			'user_id' => 0,
 			'address_id' => 0,
-			'type' => '',
 			'order' => 0,
+			'is_default_shipping_address' => 0,
+			'is_default_billing_address' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

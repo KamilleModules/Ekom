@@ -163,7 +163,7 @@ Here are the ekomJsApi public methods:
                                         onSuccess ( data )
                                             With: 
                                                 - data.addresses: The result of the 
-                                                        userLayer->getUserShippingAddresses( userId ) method, which is 
+                                                        userLayer->getUserAddresses( userId ) method, which is 
                                                         an array of addressModel.
                                                         Each addressModel has the following structure:
                                                         
