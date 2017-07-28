@@ -1832,7 +1832,7 @@ $userGroupB2C = $api->userGroup()->create([
 $userLing = $api->user()->create([
     'shop_id' => $shopEurope,
     'email' => "ling",
-    'pass' => E::passEncrypt("poupou"),
+    'pass' => EkomApi::inst()->passwordLayer()->passEncrypt("poupou"),
     'date_creation' => "2017-05-28 09:49:44",
     'mobile' => "0612457865",
     'phone' => "0247609841",
@@ -1850,7 +1850,7 @@ $api->userHasUserGroup()->create([
 $userLingUsa = $api->user()->create([
     'shop_id' => $shopUsa,
     'email' => "ling",
-    'pass' => E::passEncrypt("poupou"),
+    'pass' => EkomApi::inst()->passwordLayer()->passEncrypt("poupou"),
     'date_creation' => "2017-05-28 09:49:44",
     'mobile' => "0612457865",
     'phone' => "0247609841",

@@ -120,8 +120,39 @@ order by h.`order` asc
     {
         $userId = (int)$userId;
         $addressId = (int)$addressId;
-        if (false !== ($row = QuickPdo::fetch("select * from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
+        if (false !== ($row = QuickPdo::fetch("select 
+is_default_shipping_address, 
+is_default_billing_address 
+from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
+
+
             EkomApi::inst()->address()->delete(["id" => $addressId]);
+            /**
+             * If the deleted address was the default shipping or billing address,
+             * we transfer this default state to another address (if there is one remaining),
+             * so that there is always a default billing and shipping address.
+             */
+            if (
+                '1' === $row['is_default_shipping_address'] ||
+                '1' === $row['is_default_billing_address']
+            ) {
+                
+                if (false !== ($otherAddressId = $this->getFirstUserAddressId($userId))) {
+                    $updateData = [];
+                    if ('1' === $row['is_default_shipping_address']) {
+                        $updateData['is_default_shipping_address'] = 1;
+                    }
+                    if ('1' === $row['is_default_billing_address']) {
+                        $updateData['is_default_billing_address'] = 1;
+                    }
+
+                    EkomApi::inst()->userHasAddress()->update($updateData, [
+                        'user_id' => $userId,
+                        'address_id' => $otherAddressId,
+                    ]);
+                }
+
+            }
         }
     }
 
@@ -364,5 +395,12 @@ and `type`=:zetype
         ", [
             "zetype" => $type,
         ]);
+    }
+
+
+    private function getFirstUserAddressId($userId)
+    {
+        $userId = (int)$userId;
+        return QuickPdo::fetch("select address_id from ek_user_has_address where user_id=$userId order by `order` asc", [], \PDO::FETCH_COLUMN);
     }
 }

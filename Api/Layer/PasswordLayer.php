@@ -12,7 +12,20 @@ class PasswordLayer
 {
 
 
+    /**
+     * Return whether or not the given password corresponds to the given hash
+     *
+     * @return bool
+     */
+    public function passwordVerify($password, $hash)
+    {
+        return (true === password_verify($password, $hash));
+    }
 
+
+    public function passEncrypt($password){
+        return password_hash($password, PASSWORD_DEFAULT);
+    }
 
     /**
      * @return array|false, false if the code is not valid or expired, or already used.
@@ -39,8 +52,6 @@ and date_created > '$maxDateTime'
         ", [
             'code' => $code,
         ]);
-
-
     }
 
 

@@ -113,12 +113,6 @@ class E
         return A::link($routeId, $params, $absolute, $https);
     }
 
-    public static function passEncrypt($pass)
-    {
-        return password_hash($pass, PASSWORD_DEFAULT);
-    }
-
-
     /**
      * Sometimes, price get multiplied by a rate (for instance tax rate),
      * and all the sudden it starts having more than 2 decimals,

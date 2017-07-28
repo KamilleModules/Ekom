@@ -19,7 +19,7 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
             "address",
             "postcode",
             "city",
-            "country",
+            "country_id",
             "phone",
             "supplement",
             "is_default_shipping_address",
@@ -28,9 +28,9 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
 
 
         $countries = EkomApi::inst()->countryLayer()->getCountryList();
-        $this->setOptions("country", $countries)
+        $this->setOptions("country_id", $countries)
             ->setNotHtmlSpecialChars([
-                'country',
+                'country_id',
             ])
             ->setSingleCheckboxes([
                 "is_default_shipping_address",
@@ -42,13 +42,9 @@ class UserAddressOnTheFlyForm extends OnTheFlyForm
                 'address' => ["required"],
                 'postcode' => ["required"],
                 'city' => ["required"],
-                'country' => ["required"],
+                'country_id' => ["required"],
                 'phone' => ["required"],
-            ])
-            ->setOutputDataAdaptor(DataAdaptor::createByCallback(function (array $data) {
-                $data['country_id'] = $data['country'];
-                return $data;
-            }));
+            ]);
 
 
     }

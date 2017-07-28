@@ -52,13 +52,10 @@ class LoginController extends EkomFrontController
             ) {
                 if ('1' === $row['active']) {
                     $hash = $row['pass'];
-                    if (true === password_verify($model['valuePass'], $hash)) {
+                    if (true === EkomApi::inst()->passwordLayer()->passwordVerify($model['valuePass'], $hash)) {
 
 
                         EkomApi::inst()->userLayer()->connectUser(['id' => $row['id']]);
-
-
-
 
 
                         return RedirectResponse::create(UriTool::getWebsiteAbsoluteUrl());

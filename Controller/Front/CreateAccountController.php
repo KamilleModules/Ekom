@@ -92,7 +92,7 @@ class CreateAccountController extends EkomFrontController
                         EkomApi::inst()->user()->create([
                             'shop_id' => ApplicationRegistry::get("ekom.shop_id"),
                             'email' => $model['valueEmail'],
-                            'pass' => E::passEncrypt($model["valuePass"]),
+                            'pass' => EkomApi::inst()->passwordLayer()->passEncrypt($model["valuePass"]),
                             'date_creation' => date('Y-m-d H:i:s'),
                             'mobile' => "",
                             'phone' => "",

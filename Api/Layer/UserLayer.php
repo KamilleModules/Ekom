@@ -91,17 +91,17 @@ class UserLayer
     //--------------------------------------------
     /**
      * Used to get the user account (view/template) information
+     * @return false|array
      */
     public function getAccountInfo($userId)
     {
         $groupId2Names = $this->getUserGroupNames($userId);
-        $info = $this->getUserInfo($userId);
-        $info['groups'] = $groupId2Names;
-        return $info;
+        if (false !== ($info = $this->getUserInfo($userId))) {
+            $info['groups'] = $groupId2Names;
+            return $info;
+        }
+        return false;
     }
-
-
-
 
 
     /**
@@ -208,7 +208,6 @@ class UserLayer
     }
 
 
-
     public function getUserGroupIds($userId)
     {
         return A::cache()->get("Ekom.UserLayer.getUserGroupIds.$userId", function () use ($userId) {
@@ -259,10 +258,6 @@ where id=$userId
             "ek_user.delete.$userId",
         ]);
     }
-
-
-
-
 
 
 }
