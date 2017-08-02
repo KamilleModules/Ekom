@@ -35,6 +35,16 @@ class E
         throw new EkomApiException("The user is not connected");
     }
 
+    /**
+     * This should be the only method used to check whether or not the ekom customer
+     * is connected or not.
+     * (because the implementation could change in the future)
+     * Todo: remove SessionUser::isConnected instances found in the ekom scope...
+     */
+    public static function customerIsConnected()
+    {
+        return SessionUser::isConnected();
+    }
 
 
     /**
