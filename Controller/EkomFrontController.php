@@ -11,6 +11,7 @@ use Core\Services\Hooks;
 use Kamille\Architecture\Response\Web\RedirectResponse;
 use Kamille\Utils\Laws\Config\LawsConfig;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Utils\E;
 
 
@@ -56,7 +57,7 @@ class EkomFrontController extends ApplicationController
 
 
         if (true === $this->setSessionReferer) {
-            $_SESSION['ekom.referer'] = UriTool::uri(null, [], true, true);
+            EkomSession::set("referer", UriTool::uri(null, [], true, true));
         }
 
 
@@ -74,7 +75,7 @@ class EkomFrontController extends ApplicationController
 
     protected function requiresConnectedUser()
     {
-        $_SESSION['ekom.referer'] = UriTool::uri(null, [], true, true);
+        EkomSession::set("referer", UriTool::uri(null, [], true, true));
         $link = E::link("Ekom_login", [], true);
         return RedirectResponse::create($link);
     }

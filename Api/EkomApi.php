@@ -18,6 +18,7 @@ use Module\Ekom\Api\Layer\CheckoutLayer;
 use Module\Ekom\Api\Layer\CommentLayer;
 use Module\Ekom\Api\Layer\ConditionLayer;
 use Module\Ekom\Api\Layer\ConfigLayer;
+use Module\Ekom\Api\Layer\ConnexionLayer;
 use Module\Ekom\Api\Layer\CountryLayer;
 use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\DiscountLayer;
@@ -38,6 +39,7 @@ use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Api\Layer\UserGroupLayer;
 use Module\Ekom\Api\Layer\UserHasGroupLayer;
 use Module\Ekom\Api\Layer\UserLayer;
+use Module\Ekom\Session\EkomSession;
 use QuickPdo\QuickPdo;
 
 
@@ -86,9 +88,10 @@ class EkomApi extends GeneratedEkomApi
      *
      * It creates the following variables in session if they don't already exist.
      *
-     * - ekom.front
-     * ----- lang_id
-     * ----- currency_id
+     * - ekom
+     * ----- front
+     * --------- lang_id
+     * --------- currency_id
      *
      * Those variables are then passed to the ApplicationRegistry as:
      *
@@ -150,9 +153,10 @@ class EkomApi extends GeneratedEkomApi
                 $timezone = $shopRow['timezone'];
 
 
-                if (array_key_exists("ekom.front", $_SESSION)) {
-                    $langId = $_SESSION['ekom.front']['lang_id'];
-                    $currencyId = $_SESSION['ekom.front']['currency_id'];
+                $frontVars = EkomSession::get("front", false);
+                if (false !== $frontVars) {
+                    $langId = $frontVars['lang_id'];
+                    $currencyId = $frontVars['currency_id'];
                 } else {
                     /**
                      * the user has no session yet, let's create one for him.
@@ -174,10 +178,10 @@ class EkomApi extends GeneratedEkomApi
                             }
                         }
                     }
-                    $_SESSION['ekom.front'] = [
+                    EkomSession::set('front', [
                         'lang_id' => $langId,
                         'currency_id' => $currencyId,
-                    ];
+                    ]);
                 }
 
 
@@ -350,6 +354,14 @@ and h.lang_id=$langId
     public function configLayer()
     {
         return $this->getLayer('configLayer');
+    }
+
+    /**
+     * @return ConnexionLayer
+     */
+    public function connexionLayer()
+    {
+        return $this->getLayer('connexionLayer');
     }
 
     /**

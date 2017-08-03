@@ -19,6 +19,7 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Notifier\EkomNotifier;
+use Module\Ekom\Session\EkomSession;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
 use Umail\UmailInterface;
 
@@ -29,10 +30,7 @@ class E
 
     public static function getUserId()
     {
-        if (SessionUser::isConnected()) {
-            return SessionUser::getValue("id");
-        }
-        throw new EkomApiException("The user is not connected");
+        return EkomApi::inst()->connexionLayer()->getUserId(false);
     }
 
     /**
@@ -41,9 +39,9 @@ class E
      * (because the implementation could change in the future)
      * Todo: remove SessionUser::isConnected instances found in the ekom scope...
      */
-    public static function customerIsConnected()
+    public static function userIsConnected()
     {
-        return SessionUser::isConnected();
+        return EkomApi::inst()->connexionLayer()->isConnected();
     }
 
 
@@ -52,16 +50,15 @@ class E
      */
     public static function pickUpReferer()
     {
-        $target = null;
+        $target = EkomSession::get("referer");
 
-        SessionTool::start();
-        if (array_key_exists("ekom.referer", $_SESSION)) {
+
+        if (null !== $target) {
             /**
              * The http referer might be different but useful things, like:
              * - the checkout page
              */
-            $target = $_SESSION['ekom.referer'];
-            unset($_SESSION['ekom.referer']);
+            EkomSession::remove('referer');
 
         } else {
             $target = UriTool::getWebsiteAbsoluteUrl();

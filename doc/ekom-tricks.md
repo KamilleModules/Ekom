@@ -21,11 +21,11 @@ instance, if you are on the checkout page, the user must be connected so that we
 access her addresses).
 
 
-The login controller (LoginController) will listen and clean the session variable: $_SESSION\[ekom.referer].
+The login controller (LoginController) will listen and clean the ekom session variable: referer (EkomSession::get(referer)).
 
 
 So, basically, you just need to redirect to the user to the LoginController (Ekom_login route),
-and just before you do so, set the $_SESSION\[ekom.referer] to the current url value.
+and just before you do so, set the ekom session variable referer to the current url value.
 That's it.
 
 Upon successful completion, the LoginController will clean that variable and redirect the user
@@ -35,7 +35,7 @@ back to you.
 Relevant code snippet:
 
 ```php
-$_SESSION['ekom.referer'] = UriTool::getWebsiteAbsoluteUrl();
+EkomSession::set("referer", UriTool::getWebsiteAbsoluteUrl());
 $link = E::link("Ekom_login", [], true);
 return RedirectResponse::create($link);
 ```
