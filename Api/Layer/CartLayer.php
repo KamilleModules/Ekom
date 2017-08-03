@@ -34,9 +34,6 @@ class CartLayer
 {
 
 
-    public static $cartKey = 'ekom.cart';
-
-
     /**
      * @var CartLocalStore
      */
@@ -58,7 +55,7 @@ class CartLayer
 //        $this->initSessionCart();
 //        $shopId = ApplicationRegistry::get("ekom.shop_id");
 //        $ret = [];
-//        foreach ($_SESSION[CartLayer::$cartKey][$shopId]['items'] as $id => $item) {
+//        foreach ($_SESSION['ekom']['cart'][$shopId]['items'] as $id => $item) {
 //            $ret[$id] = $item['quantity'];
 //        }
 //        return $ret;
@@ -68,8 +65,8 @@ class CartLayer
 //    {
 //        $this->initSessionCart();
 //        $shopId = ApplicationRegistry::get("ekom.shop_id");
-//        if (array_key_exists($productId, $_SESSION[CartLayer::$cartKey][$shopId]['items'])) {
-//            return $_SESSION[CartLayer::$cartKey][$shopId]['items'][$productId]['quantity'];
+//        if (array_key_exists($productId, $_SESSION['ekom']['cart'][$shopId]['items'])) {
+//            return $_SESSION['ekom']['cart'][$shopId]['items'][$productId]['quantity'];
 //        }
 //        return $default;
 //    }
@@ -79,7 +76,7 @@ class CartLayer
         $productId = (int)$productId;
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $items = $_SESSION[CartLayer::$cartKey][$shopId]['items'];
+        $items = $_SESSION['ekom']['cart'][$shopId]['items'];
         foreach ($items as $item) {
             if ((int)$item['id'] === $productId) {
                 if (
@@ -104,16 +101,16 @@ class CartLayer
 
             $productId = (string)$productId;
             $alreadyExists = false;
-            foreach ($_SESSION[CartLayer::$cartKey][$shopId]['items'] as $k => $item) {
+            foreach ($_SESSION['ekom']['cart'][$shopId]['items'] as $k => $item) {
                 if ((string)$item['id'] === $productId) {
-                    $_SESSION[CartLayer::$cartKey][$shopId]['items'][$k]['quantity'] += $qty;
+                    $_SESSION['ekom']['cart'][$shopId]['items'][$k]['quantity'] += $qty;
                     $alreadyExists = true;
                     break;
                 }
             }
 
             if (false === $alreadyExists) {
-                $_SESSION[CartLayer::$cartKey][$shopId]['items'][] = [
+                $_SESSION['ekom']['cart'][$shopId]['items'][] = [
                     "quantity" => $qty,
                     "id" => $productId,
                 ];
@@ -150,9 +147,9 @@ class CartLayer
 
 
             $alreadyExists = false;
-            foreach ($_SESSION[CartLayer::$cartKey][$shopId]['items'] as $k => $item) {
+            foreach ($_SESSION['ekom']['cart'][$shopId]['items'] as $k => $item) {
                 if ((string)$item['id'] === $productId) {
-                    $_SESSION[CartLayer::$cartKey][$shopId]['items'][$k]['quantity'] += $qty;
+                    $_SESSION['ekom']['cart'][$shopId]['items'][$k]['quantity'] += $qty;
                     $alreadyExists = true;
                     break;
                 }
@@ -169,7 +166,7 @@ class CartLayer
                     $arr['extraArgs'] = $extraArgs;
                 }
 
-                $_SESSION[CartLayer::$cartKey][$shopId]['items'][] = $arr;
+                $_SESSION['ekom']['cart'][$shopId]['items'][] = $arr;
             }
         }
 
@@ -182,9 +179,9 @@ class CartLayer
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $productId = (string)$productId;
-        foreach ($_SESSION[CartLayer::$cartKey][$shopId]['items'] as $k => $item) {
+        foreach ($_SESSION['ekom']['cart'][$shopId]['items'] as $k => $item) {
             if ((string)$item['id'] === $productId) {
-                unset($_SESSION[CartLayer::$cartKey][$shopId]['items'][$k]);
+                unset($_SESSION['ekom']['cart'][$shopId]['items'][$k]);
                 break;
             }
         }
@@ -232,16 +229,16 @@ class CartLayer
             }
 
             $alreadyExists = false;
-            foreach ($_SESSION[CartLayer::$cartKey][$shopId]['items'] as $k => $item) {
+            foreach ($_SESSION['ekom']['cart'][$shopId]['items'] as $k => $item) {
                 if ((string)$item['id'] === $productId) {
-                    $_SESSION[CartLayer::$cartKey][$shopId]['items'][$k]['quantity'] = $newQty;
+                    $_SESSION['ekom']['cart'][$shopId]['items'][$k]['quantity'] = $newQty;
                     $alreadyExists = true;
                     break;
                 }
             }
 
             if (false === $alreadyExists) {
-                $_SESSION[CartLayer::$cartKey][$shopId]['items'][] = [
+                $_SESSION['ekom']['cart'][$shopId]['items'][] = [
                     "quantity" => $newQty,
                     "id" => $productId,
                 ];
@@ -269,11 +266,17 @@ class CartLayer
         if (null !== ($userId = SessionUser::getValue('id'))) {
             EkomApi::inst()->initWebContext();
             $shopId = ApplicationRegistry::get("ekom.shop_id");
-            if (false === array_key_exists(CartLayer::$cartKey, $_SESSION) || false === array_key_exists($shopId, $_SESSION[CartLayer::$cartKey])) {
+
+            if (false === array_key_exists('ekom', $_SESSION)) {
+                $_SESSION['ekom'] = [];
+            }
+
+
+            if (false === array_key_exists('cart', $_SESSION['ekom']) || false === array_key_exists($shopId, $_SESSION['ekom']['cart'])) {
                 // the user doesn't have a session cart yet, we create it from the localStorage if any.
 
                 $userCart = $this->getCartLocalStore()->getUserCart($userId, $shopId);
-                $_SESSION[CartLayer::$cartKey][$shopId] = $userCart;
+                $_SESSION['ekom']['cart'][$shopId] = $userCart;
 
             } else {
                 // the user already has a cart in session, she will use it, we don't need to do anything
@@ -302,14 +305,14 @@ class CartLayer
 //    {
 //        $this->initSessionCart();
 //        $shopId = ApplicationRegistry::get("ekom.shop_id");
-//        return $_SESSION[CartLayer::$cartKey][$shopId]['coupons'];
+//        return $_SESSION['ekom']['cart'][$shopId]['coupons'];
 //    }
 
     public function getCouponBag()
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        return $_SESSION[CartLayer::$cartKey][$shopId]['coupons'];
+        return $_SESSION['ekom']['cart'][$shopId]['coupons'];
     }
 
 
@@ -321,21 +324,21 @@ class CartLayer
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $_SESSION[CartLayer::$cartKey][$shopId]['coupons'] = $bag;
+        $_SESSION['ekom']['cart'][$shopId]['coupons'] = $bag;
         return $this;
     }
 
 
     public function clean()
     {
-        $_SESSION[CartLayer::$cartKey] = [];
+        $_SESSION['ekom']['cart'] = [];
     }
 
     public function getContext()
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        return $_SESSION[CartLayer::$cartKey][$shopId];
+        return $_SESSION['ekom']['cart'][$shopId];
     }
 
 
@@ -347,10 +350,10 @@ class CartLayer
     {
         EkomApi::inst()->initWebContext();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        if (false === array_key_exists(CartLayer::$cartKey, $_SESSION)) {
-            $_SESSION[CartLayer::$cartKey] = [];
+        if (false === array_key_exists('cart', $_SESSION)) {
+            $_SESSION['ekom']['cart'] = [];
         }
-        if (false === array_key_exists($shopId, $_SESSION[CartLayer::$cartKey])) {
+        if (false === array_key_exists($shopId, $_SESSION['ekom']['cart'])) {
 
             $defaultCart = [
                 'items' => [],
@@ -358,7 +361,7 @@ class CartLayer
             ];
 
             Hooks::call("Ekom_cart_decorateDefaultCart", $defaultCart);
-            $_SESSION[CartLayer::$cartKey][$shopId] = $defaultCart;
+            $_SESSION['ekom']['cart'][$shopId] = $defaultCart;
         }
     }
 
@@ -381,9 +384,8 @@ class CartLayer
         $linesTotalWithTax = 0;
 
         if (null === $items) {
-            $items = $_SESSION[CartLayer::$cartKey][$shopId]['items'];
+            $items = $_SESSION['ekom']['cart'][$shopId]['items'];
         }
-
 
 
         $isB2b = ('b2b' === EkomApi::inst()->configLayer()->getBusinessType()) ? true : false;
@@ -672,7 +674,7 @@ and p.lang_id=$langId
         if (true === SessionUser::isConnected()) {
             $shopId = ApplicationRegistry::get("ekom.shop_id");
             if (null !== ($userId = SessionUser::getValue('id'))) {
-                $this->getCartLocalStore()->saveUserCart($userId, $shopId, $_SESSION[CartLayer::$cartKey][$shopId]);
+                $this->getCartLocalStore()->saveUserCart($userId, $shopId, $_SESSION['ekom']['cart'][$shopId]);
             } else {
                 XLog::error("[Ekom module] - CartLayer: in shop#$shopId, this user doesn't have an id: " . ArrayToStringTool::toPhpArray($_SESSION));
             }

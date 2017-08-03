@@ -7,9 +7,9 @@ namespace Module\Ekom\Session;
 use Bat\SessionTool;
 
 /**
- * The intent is that EVERY session variable created by the ekom module is created
- * via this class, which basically creates ONE ekom namespace (so that ekom is a good neighbour
- * to other modules)
+ * This is a helper class, the goal being to put all ekom related session variables
+ * under the namespace ekom.
+ * Note: you can use this helper class if it helps you, or anything else.
  */
 class EkomSession
 {

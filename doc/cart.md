@@ -301,22 +301,23 @@ So, php session it is.
    
 What about the session data structure?
 
-I suggest: same as the customSystem, but changing the key of items to ekom.cart (since
+I suggest: same as the customSystem, but changing the key of items to ekom cart (since
 sessions can be shared with multiple modules):
 
    
 ```txt
-- ekom.cart:
------ $shopId:
---------- items:
-------------- 0:
------------------ quantity: 5
------------------ id: 650
-------------- 1:
------------------ quantity: 1
------------------ id: 12
-------------- ...
---------- coupons: array of valid coupon ids
+- ekom
+----- cart:
+--------- $shopId:
+------------- items:
+----------------- 0:
+--------------------- quantity: 5
+--------------------- id: 650
+----------------- 1:
+--------------------- quantity: 1
+--------------------- id: 12
+----------------- ...
+------------- coupons: array of valid coupon ids
 ```   
    
 

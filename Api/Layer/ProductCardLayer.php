@@ -33,7 +33,7 @@ where shop_id=$shopId
     }
 
 
-    public function getProductCardsByCategory($categoryId, $isB2b, ListModifierCircle $circle = null, $shopId = null, $langId = null)
+    public function getProductCardsByCategory($categoryId, $isB2b, ListModifierCircle $circle = null, $shopId = null, $langId = null, &$nbTotalItems = 0)
     {
         EkomApi::inst()->initWebContext();
         $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
@@ -42,7 +42,7 @@ where shop_id=$shopId
         $catIds = EkomApi::inst()->categoryLayer()->getDescendantCategoryIdTree($categoryId);
 
 
-        return A::cache()->get("Ekom.ProductCardLayer.getProductCardsByCategory.$shopId.$langId.$categoryId.$circle", function () use ($circle, $catIds, $langId, $shopId) {
+        $ret = A::cache()->get("Ekom.ProductCardLayer.getProductCardsByCategory.$shopId.$langId.$categoryId.$isB2b.$circle", function () use ($circle, $catIds, $langId, $shopId) {
 
 
 //            $rows = QuickPdo::fetchAll("
@@ -69,6 +69,8 @@ where shop_id=$shopId
             $mod = $circle->getRequestModifier();
             $searchItems = $mod->getSearchItems();
             $sortItems = $mod->getSortItems();
+            $limitInfo = $mod->getLimit();
+
 
             $c = 0;
             foreach ($sortItems as $sortItem => $dir) {
@@ -203,13 +205,23 @@ group by chc.product_card_id
 
 $sTheOrder
         
+        
+        
         ";
 
             EkomDebug::$debug = $query;
 
 
             $rows = QuickPdo::fetchAll($query, $markers);
-//            a(count($rows));
+            $nbTotalItems = count($rows);
+
+
+            if (null !== $limitInfo) {
+                list($offset, $length) = $limitInfo;
+                $rows = array_slice($rows, $offset, $length);
+            }
+
+
 //            az($query);
 
             /**
@@ -228,7 +240,7 @@ $sTheOrder
 //            RequestModifier2RowsGeneratorAdaptorUtil::decorate($gen, $circle);
 //            $ret = $gen->getRows();
 
-            return $ret;
+            return [$nbTotalItems, $ret];
 
         }, [
             "ek_category_has_product_card",
@@ -246,6 +258,10 @@ $sTheOrder
             "ek_shop_has_product_card.delete.$shopId",
             "ek_shop_has_product_card.update.$shopId",
         ]);
+
+
+        list($nbTotalItems, $return) = $ret;
+        return $return;
     }
 
     public function setTaxGroup($cardId, $taxGroupId, $shopId = null)
@@ -258,7 +274,6 @@ $sTheOrder
             "tax_group_id" => $taxGroupId,
         ]);
     }
-
 
 
 }
