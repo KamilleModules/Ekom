@@ -33,6 +33,13 @@ class E
         return EkomApi::inst()->connexionLayer()->getUserId(false);
     }
 
+    /**
+     * Return true if it's b2b, false otherwise
+     */
+    public static function isB2b()
+    {
+        return ('b2b' === EkomApi::inst()->configLayer()->getBusinessType()) ? true : false;
+    }
 
     public static function getShopId()
     {

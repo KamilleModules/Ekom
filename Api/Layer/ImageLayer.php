@@ -49,6 +49,10 @@ class ImageLayer
      *      the images for a product, combined with the images of the container product card.
      *      It returns a displayCollection (see return forms below).
      *
+     * - product
+     *      the images for a product.
+     *      It returns a displayCollection (see return forms below).
+     *
      *
      *
      *
@@ -60,6 +64,8 @@ class ImageLayer
      *                  then the id is an array containing the following:
      *                      - 0: product_id, or array of product_id
      *                      - 1: product_card_id
+     *          - product,
+     *                  then the id is a string representing the product id
      *
      *
      *
@@ -127,6 +133,9 @@ class ImageLayer
 
                 $this->parseCollectionByIds($ret, $productIds, "products", "product");
                 $this->parseCollectionByIds($ret, [$cardId], "cards", "card");
+                break;
+            case 'product':
+                $this->parseCollectionByIds($ret, [$id], "products", "product");
                 break;
             default:
                 break;
