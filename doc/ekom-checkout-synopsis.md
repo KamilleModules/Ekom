@@ -135,7 +135,7 @@ Here is our session model.
 SingleAddress order model
 ----------------------------
 
-- ekom.order.singleAddress
+- (ekom.)order.singleAddress
 
 (the items are all the items in the cart, see ekom.cart for more details)
 

@@ -12,6 +12,7 @@ use Kamille\Ling\Z;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\IncompleteOrderException;
+use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Status\Action\EkomStatusAction;
 use Module\Ekom\Utils\E;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
@@ -58,7 +59,8 @@ class CheckoutLayer
 
 
                 // taking data out of sections
-                $a = $_SESSION['ekom.order.singleAddress'];
+                $a = EkomSession::get('order.singleAddress');
+//                $a = $_SESSION['ekom.order.singleAddress'];
 
                 $billingAddressId = $a["billing_address_id"];
                 $shippingAddressId = $a["shipping_address_id"];
@@ -153,7 +155,7 @@ class CheckoutLayer
                 }
 
 
-                $currentStep = $_SESSION['ekom.order.singleAddress']["current_step"];
+                $currentStep = $a["current_step"];
 
 
                 $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
@@ -289,9 +291,17 @@ class CheckoutLayer
                 $model = $this->getOrderModel();
                 $this->forReal = false;
 
+
+                // tmp
+                $model['paymentMethod'] = "creditCard";
+
+
                 if (null === $model['paymentMethod']) {
                     throw new IncompleteOrderException("Incomplete order: missing paymentMethod");
                 }
+
+
+
 
                 $ret = QuickPdo::transaction(function () use ($model, $userId, $cleanOnSuccess) {
 
@@ -328,6 +338,10 @@ class CheckoutLayer
                     unset($details['currentStep']);
                     unset($details['paymentMethodId']);
                     unset($details['paymentMethodOptions']);
+
+                    a("l");
+                    a(__FILE__);
+                    az($model);
 
 
                     if (false !== ($orderId = EkomApi::inst()->order()->create([
@@ -374,7 +388,7 @@ class CheckoutLayer
 
     public function cleanSessionOrder()
     {
-        unset($_SESSION['ekom.order.singleAddress']);
+        EkomSession::remove("order.singleAddress");
     }
 
 
@@ -390,14 +404,17 @@ class CheckoutLayer
     private function setSessionValue($key, $value, array $options = null)
     {
         if ('singleAddress' === E::conf("checkoutMode")) {
+
+            $a = EkomSession::get("order.singleAddress");
+
             switch ($key) {
                 case 'shipping_address_id':
-                    $_SESSION['ekom.order.singleAddress']["shipping_address_id"] = $value;
+                    $a["shipping_address_id"] = $value;
                     break;
                 case 'payment_method':
                     list($id, $paymentMethodOptions) = $value;
-                    $_SESSION['ekom.order.singleAddress']["payment_method_id"] = $id;
-                    $_SESSION['ekom.order.singleAddress']["payment_method_options"] = $paymentMethodOptions;
+                    $a["payment_method_id"] = $id;
+                    $a["payment_method_options"] = $paymentMethodOptions;
                     break;
                 default:
                     break;
@@ -405,7 +422,7 @@ class CheckoutLayer
 
             if (null !== $options) {
                 if (array_key_exists("marker", $options) && null !== $options['marker']) {
-                    $_SESSION['ekom.order.singleAddress']["current_step"] = $options["marker"];
+                    $a["current_step"] = $options["marker"];
                 }
                 if (array_key_exists("saveAsDefault", $options) && true === (bool)$options['saveAsDefault']) {
                     switch ($key) {
@@ -419,6 +436,9 @@ class CheckoutLayer
                     }
                 }
             }
+
+            EkomSession::set("order.singleAddress", $a);
+
         } else {
             throw new \Exception("Not implemented yet");
         }
@@ -429,19 +449,20 @@ class CheckoutLayer
         SessionTool::start();
 
         if ('singleAddress' === E::conf("checkoutMode")) {
-            if (false === array_key_exists("ekom.order.singleAddress", $_SESSION)) {
+            if (false === EkomSession::has("order.singleAddress")) {
                 /**
                  *
                  * class-modules/Ekom/doc/ekom-checkout-synopsis.md
                  *
                  *
-                 * - ekom.order.singleAddress
-                 * ----- billing_address_id
-                 * ----- shipping_address_id
-                 * ----- carrier_id
-                 * ----- ?carrier_options array of key => value, depending on the carrier (read relevant carrier doc for more info)
-                 * ----- payment_method_id
-                 * ----- ?payment_method_options: array of key => value, depending on the payment method (read relevant payment method doc for more info)
+                 * - ekom
+                 * ----- order.singleAddress
+                 * --------- billing_address_id
+                 * --------- shipping_address_id
+                 * --------- carrier_id
+                 * --------- ?carrier_options array of key => value, depending on the carrier (read relevant carrier doc for more info)
+                 * --------- payment_method_id
+                 * --------- ?payment_method_options: array of key => value, depending on the payment method (read relevant payment method doc for more info)
                  *
                  *
                  */
@@ -469,14 +490,14 @@ class CheckoutLayer
                 }
 
 
-                $_SESSION['ekom.order.singleAddress'] = [
+                EkomSession::set('order.singleAddress', [
                     "billing_address_id" => $billingAddressId,
                     "shipping_address_id" => $shippingAddressId,
                     "carrier_id" => $carrierId,
                     "payment_method_id" => null,
                     "payment_method_options" => null,
                     "current_step" => 0,
-                ];
+                ]);
             }
         } else {
             throw new \Exception("Not implemented yed");

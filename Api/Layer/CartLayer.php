@@ -350,9 +350,14 @@ class CartLayer
     {
         EkomApi::inst()->initWebContext();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        if (false === array_key_exists('cart', $_SESSION)) {
+        if (
+            false === array_key_exists('ekom', $_SESSION) ||
+            false === array_key_exists('cart', $_SESSION['ekom'])
+        ) {
             $_SESSION['ekom']['cart'] = [];
         }
+
+
         if (false === array_key_exists($shopId, $_SESSION['ekom']['cart'])) {
 
             $defaultCart = [
