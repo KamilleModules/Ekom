@@ -33,6 +33,13 @@ class E
         return EkomApi::inst()->connexionLayer()->getUserId(false);
     }
 
+
+    public static function getShopId()
+    {
+        EkomApi::inst()->initWebContext();
+        return (int)ApplicationRegistry::get("ekom.shop_id");
+    }
+
     /**
      * This should be the only method used to check whether or not the ekom customer
      * is connected or not.
