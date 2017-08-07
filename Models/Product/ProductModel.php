@@ -6,12 +6,22 @@ namespace Module\Ekom\Models\Product;
 
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
-use Module\Ekom\Models\AttributeList\AttributeListModel;
+use Module\Ekom\Models\Product\AttributeList\AttributeListModel;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 
 /**
+ *
+ * //--------------------------------------------
+ * // DISCLAIMER
+ * //--------------------------------------------
+ * This class has been abandoned.
+ * It's not because it's a bad idea, but rather because I didn't have the time
+ * to implement it.
+ * Feel free to continue my work if you think it's useful.
+ *
+ *
  *
  * Note: prices depend on b2b|b2c
  */
@@ -191,6 +201,7 @@ and shpl.lang_id=$langId
 "))) {
 
             // product
+            $this->id = $productId;
             $this->reference = $row['reference'];
             $this->weight = $row['weight'];
             $this->originalPrice = (null !== $row['default_price']) ? $row['default_price'] : $row['price'];
@@ -223,33 +234,20 @@ and shpl.lang_id=$langId
             $this->attributes = AttributeListModel::createByProductId($productId, $langId);
 
 
-
-
-
-
-
-            $defaultImage = "";
-            $images = EkomApi::inst()->imageLayer()->getImages("product", $productId);
+            //--------------------------------------------
+            // IMAGES
+            //--------------------------------------------
+            list($defaultImage, $images) = EkomApi::inst()->imageLayer()->getImagesInfo("product", $productId, true);
+            $this->defaultImage = $defaultImage;
             $this->images = $images;
 
 
-            a("lp");
-            a($images);
-            a("-default");
+            //--------------------------------------------
+            // DISCOUNTS
+            //--------------------------------------------
+
+
             az($this);
-
-            if ($images) {
-                $imageFileNames = array_keys($images);
-                $defaultImage = $imageFileNames[0];
-                foreach ($imageFileNames as $s) {
-                    if (false !== strpos($s, '-default')) {
-                        $defaultImage = $s;
-                    }
-                }
-            }
-            $this->defaultImage = $defaultImage;
-
-
 
 
             /**

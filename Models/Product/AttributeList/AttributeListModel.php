@@ -1,12 +1,13 @@
 <?php
 
 
-namespace Module\Ekom\Models\AttributeList;
+namespace Module\Ekom\Models\Product\AttributeList;
 
 
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
-use Module\Ekom\Models\Attribute\AttributeModel;
+use Module\Ekom\Models\Iterator\IteratorTrait;
+use Module\Ekom\Models\Product\Attribute\AttributeModel;
 use QuickPdo\QuickPdo;
 
 
@@ -14,6 +15,7 @@ use QuickPdo\QuickPdo;
 class AttributeListModel implements \Iterator
 {
 
+    use IteratorTrait;
     private $myArray;
 
 
@@ -71,46 +73,6 @@ order by h.order asc
         return new static($arr);
     }
 
-
-
-
-
-
-
-
-
-    //--------------------------------------------
-    // Iterator
-    //--------------------------------------------
-    public function __construct($givenArray)
-    {
-        $this->myArray = $givenArray;
-    }
-
-    public function rewind()
-    {
-        return reset($this->myArray);
-    }
-
-    public function current()
-    {
-        return current($this->myArray);
-    }
-
-    public function key()
-    {
-        return key($this->myArray);
-    }
-
-    public function next()
-    {
-        return next($this->myArray);
-    }
-
-    public function valid()
-    {
-        return key($this->myArray) !== null;
-    }
 
 
 }

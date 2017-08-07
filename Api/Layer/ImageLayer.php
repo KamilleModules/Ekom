@@ -119,7 +119,7 @@ class ImageLayer
      * @return array of images uris
      *
      */
-    public function getImages($type, $id)
+    public function getImages($type, $id, $ignoreSkippable = true)
     {
 
         $ret = [];
@@ -131,11 +131,11 @@ class ImageLayer
                     $productIds = [$productIds];
                 }
 
-                $this->parseCollectionByIds($ret, $productIds, "products", "product");
-                $this->parseCollectionByIds($ret, [$cardId], "cards", "card");
+                $this->parseCollectionByIds($ret, $productIds, "products", "product", $ignoreSkippable);
+                $this->parseCollectionByIds($ret, [$cardId], "cards", "card", $ignoreSkippable);
                 break;
             case 'product':
-                $this->parseCollectionByIds($ret, [$id], "products", "product");
+                $this->parseCollectionByIds($ret, [$id], "products", "product", $ignoreSkippable);
                 break;
             default:
                 break;
@@ -143,6 +143,29 @@ class ImageLayer
         return $ret;
     }
 
+    /**
+     * Like getImages, but removes entry starting with _, and return the default image too.
+     *
+     * @return array:
+     *          - 0: string, defaultImageIdentifier.
+     *                      If empty string, means the displayCollection is empty
+     *          - 1: array, displayCollection, as defined in getImages
+     */
+    public function getImagesInfo($type, $id, $ignoreSkippable)
+    {
+        $defaultImage = "";
+        $images = $this->getImages($type, $id, $ignoreSkippable);
+        if ($images) {
+
+            $defaultImage = key($images);
+            foreach ($images as $identifier => $arr) {
+                if (false !== strpos($identifier, '-default')) {
+                    $defaultImage = $identifier;
+                }
+            }
+        }
+        return [$defaultImage, $images];
+    }
 
     /**
      * @param $path , src to the original image to copy
@@ -226,7 +249,7 @@ class ImageLayer
         return true;
     }
 
-    private function parseCollectionByIds(array &$ret, array $ids, $type, $identifierPrefix)
+    private function parseCollectionByIds(array &$ret, array $ids, $type, $identifierPrefix, $ignoreSkippable = true)
     {
         $imgDir = $this->getImagesDir();
         $baseUri = $this->getImagesUriPrefix();
@@ -237,6 +260,9 @@ class ImageLayer
                 $imgs = YorgDirScannerTool::getFilesWithExtension($dirPath, ['jpg', 'jpeg'], false, false, false);
                 foreach ($imgs as $img) {
                     $baseName = basename($img);
+                    if (true === $ignoreSkippable && 0 === strpos($baseName, '_')) {
+                        continue;
+                    }
                     $identifier = "$identifierPrefix-$itemId." . $baseName;
                     $ret[$identifier] = [
                         "thumb" => $baseUri . "/$type/$hash/thumb/" . $baseName,

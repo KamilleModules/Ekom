@@ -137,7 +137,7 @@ SingleAddress order model
 
 - (ekom.)order.singleAddress
 
-(the items are all the items in the cart, see ekom.cart for more details)
+(the items are all the items in the cart, see ekom-cart for more details)
 
 ----- billing_address_id
 ----- shipping_address_id

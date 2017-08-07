@@ -327,8 +327,6 @@ and p.product_card_id=$cardId
             }
 
 
-
-
             $rows = QuickPdo::fetchAll("
 select 
 h.product_id,
@@ -352,7 +350,6 @@ and product_id in (" . implode(', ', $productIds) . ")
 order by h.order asc         
          
 ");
-
 
 
             $productId2attr = [];
@@ -427,21 +424,10 @@ order by h.order asc
                             }
 
 
-                            $defaultImage = "";
-                            $images = $api->imageLayer()->getImages("productBox", [
+                            list($defaultImage, $images) = $api->imageLayer()->getImagesInfo("productBox", [
                                 $productId,
                                 $cardId,
-                            ]);
-
-                            if ($images) {
-                                $imageFileNames = array_keys($images);
-                                $defaultImage = $imageFileNames[0];
-                                foreach ($imageFileNames as $s) {
-                                    if (false !== strpos($s, '-default')) {
-                                        $defaultImage = $s;
-                                    }
-                                }
-                            }
+                            ], true);
 
 
                             /**

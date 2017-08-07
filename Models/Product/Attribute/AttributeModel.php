@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Module\Ekom\Models\Attribute;
+namespace Module\Ekom\Models\Product\Attribute;
 
 
 class AttributeModel
