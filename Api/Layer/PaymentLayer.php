@@ -16,6 +16,32 @@ use QuickPdo\QuickPdo;
 class PaymentLayer
 {
 
+
+    public function shopHasPaymentMethod($shopId, $id)
+    {
+        $shopId = (int)$shopId;
+        $id = (int)$id;
+        if (false !== QuickPdo::fetch("
+select shop_id 
+from ek_shop_has_payment_method
+where shop_id=$shopId and payment_method_id=$id
+        ")) {
+            return true;
+        }
+        return false;
+    }
+
+
+    public function getDefaultPaymentMethodId($userId)
+    {
+        if (false !== ($row = EkomApi::inst()->orderLayer()->getLastOrderByUserId($userId))) {
+            az(__FILE__);
+        }
+        return false;
+    }
+
+
+
 //    public function getShopPaymentMethodId2Names($shopId = null)
 //    {
 //        if (null === $shopId) {

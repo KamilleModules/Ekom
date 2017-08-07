@@ -25,6 +25,19 @@ class OrderLayer
     }
 
 
+    public function getLastOrderInfoByUserId($userId)
+    {
+        $userId = (int)$userId;
+        if (false !== ($row = QuickPdo::fetch("
+select * from ek_order where user_id=$userId
+order by `date` desc        
+        "))) {
+            $this->unserializeRow($row);
+            return $row;
+        }
+        return false;
+    }
+
     public function addOrderStatusByEkomAction($orderId, $ekomAction)
     {
 
@@ -58,11 +71,7 @@ class OrderLayer
             $row = QuickPdo::fetch("
 select * from ek_order where id=$id and user_id=$userId        
         ");
-            $row['user_info'] = unserialize($row['user_info']);
-            $row['shop_info'] = unserialize($row['shop_info']);
-            $row['shipping_address'] = unserialize($row['shipping_address']);
-            $row['billing_address'] = unserialize($row['billing_address']);
-            $row['order_details'] = unserialize($row['order_details']);
+            $this->unserializeRow($row);
             return $row;
         }, [
             "ek_order.delete.$id",
@@ -159,4 +168,13 @@ where `date` = CURDATE()
         ]);
     }
 
+
+    private function unserializeRow(array &$row)
+    {
+        $row['user_info'] = unserialize($row['user_info']);
+        $row['shop_info'] = unserialize($row['shop_info']);
+        $row['shipping_address'] = unserialize($row['shipping_address']);
+        $row['billing_address'] = unserialize($row['billing_address']);
+        $row['order_details'] = unserialize($row['order_details']);
+    }
 }

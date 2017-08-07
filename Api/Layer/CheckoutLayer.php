@@ -68,7 +68,8 @@ class CheckoutLayer
                 $paymentMethodId = $a["payment_method_id"];
                 $paymentMethodOptions = $a["payment_method_options"];
 
-                $carrierStep = $a["current_step"];
+
+
 
 
                 $userLayer = $api->userLayer();
@@ -93,11 +94,10 @@ class CheckoutLayer
                     if ((int)$billingAddressId === (int)$address['address_id']) {
                         $billingAddress = $address;
                     }
-                    if ((int)$shippingAddress === (int)$address['address_id']) {
+                    if ((int)$shippingAddressId === (int)$address['address_id']) {
                         $shippingAddress = $address;
                     }
                 }
-
 
                 $countryId = $userLayer->getUserPreferredCountry();
 
@@ -115,6 +115,7 @@ class CheckoutLayer
                     $shippingCosts['rawTotalShippingCost'] = 0;
                     $shippingCosts['totalShippingCost'] = '--'; // means not set for templates
                     $shippingCosts['sections'] = [];
+                    $shippingCosts['notHandled'] = [];
                 } else {
                     $shippingCosts = $carrierLayer->calculateShippingCostByCarrierId($carrierId, $productInfos, $shippingAddress);
                     $shippingCosts['rawTotalShippingCost'] = $shippingCosts['totalShippingCost'];
@@ -155,7 +156,7 @@ class CheckoutLayer
                 }
 
 
-                $currentStep = $a["current_step"];
+//                $currentStep = $a["current_step"];
 
 
                 $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
@@ -185,7 +186,7 @@ class CheckoutLayer
                     "shippingAddressFormModel" => $form->getModel(),
                     "useSingleCarrier" => $hasCarrierChoice,
                     "paymentMethodBlocks" => $paymentMethodBlocks,
-                    "currentStep" => $currentStep,
+//                    "currentStep" => $currentStep,
                     //
                     "orderSectionSubtotalWithoutTax" => $orderSectionSubtotalWithoutTax,
                     "rawOrderSectionSubtotalWithoutTax" => $_orderSectionSubtotalWithoutTax,

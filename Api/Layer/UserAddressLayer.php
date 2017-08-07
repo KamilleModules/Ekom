@@ -47,6 +47,20 @@ class UserAddressLayer
 {
 
 
+    public function userOwnsAddress($userId, $id)
+    {
+        $id = (int)$id;
+        $userId = (int)$userId;
+        if (false !== QuickPdo::fetch("
+select user_id from ek_user_has_address
+where user_id=$userId 
+and address_id=$id
+")) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Return an array of user addresses.
      * Each address is an addressModel (see top of this document)
@@ -136,7 +150,7 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
                 '1' === $row['is_default_shipping_address'] ||
                 '1' === $row['is_default_billing_address']
             ) {
-                
+
                 if (false !== ($otherAddressId = $this->getFirstUserAddressId($userId))) {
                     $updateData = [];
                     if ('1' === $row['is_default_shipping_address']) {

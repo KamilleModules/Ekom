@@ -298,6 +298,11 @@ class CartLayer
     }
 
 
+    public function getTotalWeight()
+    {
+        $model = $this->getCartModel();
+        return $model['totalWeight'];
+    }
 
 
 
@@ -376,6 +381,8 @@ class CartLayer
             $useEstimateShippingCosts = true;
             $items = null;
         } else {
+            Hooks::call("Ekom_service_cartAddItem_decorateModelOptions", $options); // ? are you sure?
+
             $useEstimateShippingCosts = (array_key_exists("useEstimateShippingCosts", $options) && true === $options['useEstimateShippingCosts']);
             $items = (array_key_exists('items', $options)) ? $options["items"] : null;
         }
@@ -385,6 +392,7 @@ class CartLayer
         $model = [];
         $modelItems = [];
         $totalQty = 0;
+        $totalWeight = 0;
         $linesTotalWithoutTax = 0;
         $linesTotalWithTax = 0;
 
@@ -397,6 +405,7 @@ class CartLayer
         //--------------------------------------------
         // CALCULATING LINE PRICES AND TOTAL
         //--------------------------------------------
+
         foreach ($items as $item) {
 
             $id = $item['id'];
@@ -404,12 +413,14 @@ class CartLayer
             if (false !== ($it = $this->getCartItemInfo($id))) {
 
                 $qty = $item['quantity'];
+                $weight = $it['weight'];
 
 
                 if (false === array_key_exists('errorCode', $it)) {
 
                     $it['quantity'] = $qty;
                     $totalQty += $qty;
+                    $totalWeight += $weight * $qty;
 
 //                $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
 //                $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
@@ -448,6 +459,8 @@ class CartLayer
             }
         }
 
+        $totalWeight = round($totalWeight, 2);
+
 //        echo '<hr>';
 //        az($items);
 
@@ -456,6 +469,7 @@ class CartLayer
 
         $model['isB2B'] = $isB2b;
         $model['totalQuantity'] = $totalQty;
+        $model['totalWeight'] = $totalWeight;
         $model['items'] = $modelItems;
 //        $model['linesTotalWithoutTax'] = E::price($linesTotalWithoutTax);
 //        $model['linesTotalWithTax'] = E::price($linesTotalWithTax);
@@ -548,6 +562,7 @@ class CartLayer
         // MODULES
         //--------------------------------------------
         Hooks::call("Ekom_CartLayer_decorate_mini_cart_model", $model);
+//        Hooks::call("Ekom_service_cartAddItem_decorateOutput", $model); // obsolete?
 
         return $model;
     }

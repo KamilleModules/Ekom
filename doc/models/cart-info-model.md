@@ -10,6 +10,7 @@ CartInfo
                         See the ekom coin model figure related to display cart to see what I mean.
                         
     - totalQuantity: sum of items.quantity
+    - totalWeight: sum of items.weight
     - items: array of items, each item being an array with the following elements:
             - product_id: int, the id of the product
             - stock_quantity: int, the quantity available for this product and this shop (shop_has_product.quantity)

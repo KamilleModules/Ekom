@@ -41,8 +41,8 @@ Some steps might be added, some other removed, the order modified, etc...
 
 
 Then, the model info are retrieved from that slim model.
-Those model info can include things like the payment method preferences for the connected user for instance,
-or the details of the address, etc...
+Those model info can include things like the payment method preferences for the connected user for instance
+(which favorite credit card for instance), or the details of the address, etc...
 
 
 As we've said just above, the session contains the preferences or user choices.
@@ -55,7 +55,8 @@ to be completed.
 
 However, when ekom provides default values (and it sure tries to provide a maximum of default values
 as to help the user with the task of fulfilling the form), the template cannot possibly know
-whether the number is a default value, or the value overridden by the user.
+whether the number is a default value, or the value overridden by the user (edit: 2017-08-07, this
+is actually not true, we can know the provenance of the value).
 
 Therefore, the template must keep track of the checkout steps for itself.
 

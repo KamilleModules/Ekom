@@ -253,10 +253,10 @@ class E
 
             $host = ApplicationRegistry::get('ekom.host');
             $ciso = strtolower(ApplicationRegistry::get('ekom.currency_iso'));
-
+            $shopId = ApplicationRegistry::get("ekom.shop_id");
 
             // host contextual file
-            $f = ApplicationParameters::get("app_dir") . "/config/modules/Ekom/shop/$host.conf.php";
+            $f = ApplicationParameters::get("app_dir") . "/config/modules/Ekom/shop/$shopId.conf.php";
             if (file_exists($f)) {
                 $conf = [];
                 include $f;
@@ -268,7 +268,7 @@ class E
             }
 
             // host-currency contextual file
-            $f = ApplicationParameters::get("app_dir") . "/config/modules/Ekom/shop/$host/currency/$ciso.conf.php";
+            $f = ApplicationParameters::get("app_dir") . "/config/modules/Ekom/shop/$shopId/currency/$ciso.conf.php";
             if (file_exists($f)) {
                 $conf = [];
                 include $f;
