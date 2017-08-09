@@ -377,6 +377,7 @@ class CartLayer
 
     private function doGetCartModel(array $options = null)
     {
+
         if (null === $options) {
             $useEstimateShippingCosts = true;
             $items = null;
@@ -405,7 +406,6 @@ class CartLayer
         //--------------------------------------------
         // CALCULATING LINE PRICES AND TOTAL
         //--------------------------------------------
-
         foreach ($items as $item) {
 
             $id = $item['id'];
@@ -489,7 +489,7 @@ class CartLayer
 
 
         //--------------------------------------------
-        // adding/rechecking coupons
+        // ADDING/RECHECKING COUPONS
         //--------------------------------------------
         $couponApi = EkomApi::inst()->couponLayer();
         $validCoupons = [];

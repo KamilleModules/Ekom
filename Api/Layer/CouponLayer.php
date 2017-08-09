@@ -238,7 +238,6 @@ class CouponLayer
             $originalPriceWithTax = $priceWithTax;
             $coupons = [];
             foreach ($couponBag as $id) {
-
                 $info = $this->getCouponInfo($id, true);
                 $coupon = [
                     'label' => $info['label'],
@@ -253,6 +252,7 @@ class CouponLayer
                             $tempWithTax = $priceWithTax;
 
                             foreach ($discounts as $k => $discount) {
+
 
                                 $_discount = [];
                                 $old = $price;

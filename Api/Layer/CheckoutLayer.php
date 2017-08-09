@@ -128,6 +128,8 @@ class CheckoutLayer
                 $_orderSectionSubtotalWithTax = $cartModel['rawCartTotalWithTax'] + $shippingCosts['rawTotalShippingCost'];
                 $validCoupons = [];
                 $data = [];// cartItems?
+
+
                 $details = $couponLayer->applyCouponBag($_orderSectionSubtotalWithoutTax, $_orderSectionSubtotalWithTax, "afterShipping", $cartLayer->getCouponBag(), $validCoupons, $data);
                 $_orderSectionTotalWithoutTax = $details['rawDiscountPrice'];
                 $_orderSectionTotalWithTax = $details['rawDiscountPriceWithTax'];
@@ -165,8 +167,8 @@ class CheckoutLayer
 
 
                 $_couponTotalSavingWithoutTax = 0;
-                $_couponTotalSavingWithoutTax += $cartModel['rawTotalSavingWithoutTax'];
-                $_couponTotalSavingWithoutTax += $details['rawTotalSaving'];
+                $_couponTotalSavingWithoutTax += $cartModel['rawTotalSavingWithoutTax']; // target:beforeShipping
+                $_couponTotalSavingWithoutTax += $details['rawTotalSaving']; // target:afterShipping
                 $couponTotalSavingWithoutTax = E::price(-$_couponTotalSavingWithoutTax);
 
                 $_couponTotalSavingWithTax = 0;

@@ -11,6 +11,7 @@ use Core\Services\X;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use ListParams\ListParamsInterface;
+use ListParams\Model\QueryDecorator;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
@@ -142,33 +143,73 @@ select id, reference, `date`, order_details from ek_order where user_id=$userId
      *
      *
      */
-    public function getUserAccountOrderItems(ListParamsInterface $params = null)
+    public function getUserAccountOrderItems($userId, ListParamsInterface $params = null)
     {
+        $userId = (int)$userId;
 
+        $q = "select id, reference, `date`, order_details from ek_order where user_id=$userId";
+        $q2 = "select count(*) as count from ek_order where user_id=$userId";
 
-        $q = "select id, reference from ek_order";
-        $q2 = "select count(*) as count from ek_order";
 
         $markers = [];
         QueryDecorator::create()
             ->setAllowedSearchFields([
-                'date',
+                'id',
                 'reference',
+                'date',
             ])
             ->setAllowedSortFields([
                 'id',
+                'reference',
                 'date',
             ])
             ->decorate($q, $q2, $markers, $params);
 
-
         $nbTotalItems = QuickPdo::fetch($q2, $markers, \PDO::FETCH_COLUMN);
         $params->setTotalNumberOfItems($nbTotalItems); // provide the nbTotalItems for the view
-
         $rows = QuickPdo::fetchAll($q, $markers);
-        // hooks decorate rows?
-        return $rows;
 
+
+
+
+
+        $ret = [];
+        foreach ($rows as $k => $row) {
+
+//                $rows[$k]['user_info'] = unserialize($row['user_info']);
+//                $rows[$k]['shop_info'] = unserialize($row['shop_info']);
+//                $rows[$k]['shipping_address'] = unserialize($row['shipping_address']);
+//                $rows[$k]['billing_address'] = unserialize($row['billing_address']);
+            $details = unserialize($row['order_details']);
+//                az($details);
+            $products = [];
+            $section = $details['orderSections']['sections'][0];
+            $pInfo = $section['productsInfo'];
+            foreach ($pInfo as $p) {
+                $products[] = [
+                    "label" => $p['label'],
+                    "ref" => $p['ref'],
+                    "seller" => $p['seller'],
+                    "uri" => $p['uri_card_with_ref'],
+                    "quantity" => $p['quantity'],
+                    "linePrice" => $p['linePrice'],
+                    "image" => $p['image'],
+                ];
+            }
+
+
+            $ret[] = [
+                "id" => $row['id'],
+                "ref" => $row['reference'],
+                "date" => $row['date'],
+                "orderGrandTotal" => $details['orderGrandTotal'],
+                "products" => $products,
+            ];
+
+
+        }
+        // hooks decorate rows?
+        return $ret;
 
     }
 

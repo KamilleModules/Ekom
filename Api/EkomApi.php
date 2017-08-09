@@ -25,6 +25,7 @@ use Module\Ekom\Api\Layer\DiscountLayer;
 use Module\Ekom\Api\Layer\FeatureLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
 use Module\Ekom\Api\Layer\InvoicesLayer;
+use Module\Ekom\Api\Layer\ListBundleLayer;
 use Module\Ekom\Api\Layer\OrderBuilderLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\PasswordLayer;
@@ -413,6 +414,14 @@ and h.lang_id=$langId
     public function invoicesLayer()
     {
         return $this->getLayer('invoicesLayer');
+    }
+
+    /**
+     * @return ListBundleLayer
+     */
+    public function listBundleLayer()
+    {
+        return $this->getLayer('listBundleLayer');
     }
 
     /**
