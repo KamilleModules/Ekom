@@ -10,6 +10,7 @@ use Core\Services\A;
 use Core\Services\X;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
+use ListParams\ListParamsInterface;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
@@ -134,6 +135,42 @@ select id, reference, `date`, order_details from ek_order where user_id=$userId
         throw new \Exception("Not implemented yet with checkoutMode " . E::conf("checkoutMode"));
     }
 
+
+    /**
+     * model for userAccountOrderItem:
+     *
+     *
+     *
+     */
+    public function getUserAccountOrderItems(ListParamsInterface $params = null)
+    {
+
+
+        $q = "select id, reference from ek_order";
+        $q2 = "select count(*) as count from ek_order";
+
+        $markers = [];
+        QueryDecorator::create()
+            ->setAllowedSearchFields([
+                'date',
+                'reference',
+            ])
+            ->setAllowedSortFields([
+                'id',
+                'date',
+            ])
+            ->decorate($q, $q2, $markers, $params);
+
+
+        $nbTotalItems = QuickPdo::fetch($q2, $markers, \PDO::FETCH_COLUMN);
+        $params->setTotalNumberOfItems($nbTotalItems); // provide the nbTotalItems for the view
+
+        $rows = QuickPdo::fetchAll($q, $markers);
+        // hooks decorate rows?
+        return $rows;
+
+
+    }
 
 
 
