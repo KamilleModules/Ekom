@@ -347,59 +347,16 @@ class CartLayer
     }
 
 
-
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    private function initSessionCart()
+    public function getCartModelByItems(array $items, $useEstimateShippingCosts = true)
     {
-        EkomApi::inst()->initWebContext();
-        $shopId = ApplicationRegistry::get("ekom.shop_id");
-        if (
-            false === array_key_exists('ekom', $_SESSION) ||
-            false === array_key_exists('cart', $_SESSION['ekom'])
-        ) {
-            $_SESSION['ekom']['cart'] = [];
-        }
-
-
-        if (false === array_key_exists($shopId, $_SESSION['ekom']['cart'])) {
-
-            $defaultCart = [
-                'items' => [],
-                'coupons' => [],
-            ];
-
-            Hooks::call("Ekom_cart_decorateDefaultCart", $defaultCart);
-            $_SESSION['ekom']['cart'][$shopId] = $defaultCart;
-        }
-    }
-
-    private function doGetCartModel(array $options = null)
-    {
-
-        if (null === $options) {
-            $useEstimateShippingCosts = true;
-            $items = null;
-        } else {
-            Hooks::call("Ekom_service_cartAddItem_decorateModelOptions", $options); // ? are you sure?
-
-            $useEstimateShippingCosts = (array_key_exists("useEstimateShippingCosts", $options) && true === $options['useEstimateShippingCosts']);
-            $items = (array_key_exists('items', $options)) ? $options["items"] : null;
-        }
 
         $this->initSessionCart();
-        $shopId = ApplicationRegistry::get("ekom.shop_id");
         $model = [];
         $modelItems = [];
         $totalQty = 0;
         $totalWeight = 0;
         $linesTotalWithoutTax = 0;
         $linesTotalWithTax = 0;
-
-        if (null === $items) {
-            $items = $_SESSION['ekom']['cart'][$shopId]['items'];
-        }
 
 
         $isB2b = ('b2b' === EkomApi::inst()->configLayer()->getBusinessType()) ? true : false;
@@ -456,7 +413,7 @@ class CartLayer
 
                     $modelItems[] = $it;
                 } else {
-                    XLog::error("[Ekom module] - CartLayer.doGetCartModel: errorCode: " . $it['errorCode'] . ", msg: " . $it['errorMessage']);
+                    XLog::error("[Ekom module] - CartLayer.getCartModelByItems: errorCode: " . $it['errorCode'] . ", msg: " . $it['errorMessage']);
                 }
             }
         }
@@ -569,6 +526,64 @@ class CartLayer
         return $model;
     }
 
+
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    private function initSessionCart()
+    {
+        EkomApi::inst()->initWebContext();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+        if (
+            false === array_key_exists('ekom', $_SESSION) ||
+            false === array_key_exists('cart', $_SESSION['ekom'])
+        ) {
+            $_SESSION['ekom']['cart'] = [];
+        }
+
+
+        if (false === array_key_exists($shopId, $_SESSION['ekom']['cart'])) {
+
+            $defaultCart = [
+                'items' => [],
+                'coupons' => [],
+            ];
+
+            Hooks::call("Ekom_cart_decorateDefaultCart", $defaultCart);
+            $_SESSION['ekom']['cart'][$shopId] = $defaultCart;
+        }
+    }
+
+
+    private function doGetCartModel(array $options = null)
+    {
+
+        if (null === $options) {
+            $useEstimateShippingCosts = true;
+            $items = null;
+        } else {
+            Hooks::call("Ekom_service_cartAddItem_decorateModelOptions", $options); // ? are you sure?
+
+            $useEstimateShippingCosts = (array_key_exists("useEstimateShippingCosts", $options) && true === $options['useEstimateShippingCosts']);
+            $items = (array_key_exists('items', $options)) ? $options["items"] : null;
+        }
+
+        $this->initSessionCart();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+        if (null === $items) {
+            $items = $_SESSION['ekom']['cart'][$shopId]['items'];
+        }
+
+        return $this->getCartModelByItems($items, $useEstimateShippingCosts);
+    }
+
+
+    /**
+     * @param $pId : int, the product id
+     * @return array: the cartItem model
+     */
     private function getCartItemInfo($pId)
     {
         $pId = (int)$pId;
@@ -578,7 +593,7 @@ class CartLayer
         return A::cache()->get("Module.Ekom.Api.Layer.CartLayer.getCartItemInfo.$shopId.$langId.$pId", function () use ($pId, $shopId, $langId) {
 
 
-            $b = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($pId, $shopId, $langId, true);
+            $b = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($pId, $shopId, $langId);
             if (array_key_exists('errorCode', $b)) {
                 XLog::error("[Ekom module] - CartLayer.getCartItemInfo: product not found or request failed with product id: $pId");
                 return $b;
@@ -620,8 +635,10 @@ and p.lang_id=$langId
                         if ('1' === $val['selected']) {
                             $zeAttr[] = [
                                 "attribute_id" => $info['attribute_id'],
+                                "name" => $name,
                                 "label" => $info['label'],
                                 "value" => $val['value'],
+                                "value_label" => $val['value_label'],
                             ];
                             break;
                         }
@@ -652,7 +669,7 @@ and p.lang_id=$langId
                     'uri_card_with_ref' => E::link("Ekom_productCardRef", ['slug' => $cardSlug, 'ref' => $b["ref"]]),
                     'product_card_id' => $productCardId,
                     'attributes' => $zeAttr,
-                    'attributeDetails' => $zeAttr,
+//                    'attributeDetails' => $zeAttr,
                     'price' => $b['price'],
                     'rawPrice' => $b['rawPrice'],
                     'salePrice' => $b['salePrice'],

@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 
 use Authenticate\SessionUser\SessionUser;
 use Module\Ekom\Api\Exception\EkomApiException;
+use Module\Ekom\Api\Exception\UserNotConnectedException;
 use Module\Ekom\Utils\E;
 
 class ConnexionLayer
@@ -35,7 +36,7 @@ class ConnexionLayer
             return SessionUser::getValue("id");
         }
         if (false === $default) {
-            throw new EkomApiException("The user is not connected");
+            throw new UserNotConnectedException("The user is not connected");
         }
         return $default;
     }

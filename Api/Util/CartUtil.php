@@ -4,6 +4,7 @@
 namespace Module\Ekom\Api\Util;
 
 
+use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
 
 class CartUtil
@@ -44,5 +45,6 @@ class CartUtil
         }
         return $ret;
     }
+
 
 }

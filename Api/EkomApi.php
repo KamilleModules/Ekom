@@ -42,6 +42,7 @@ use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Api\Layer\UserGroupLayer;
 use Module\Ekom\Api\Layer\UserHasGroupLayer;
 use Module\Ekom\Api\Layer\UserLayer;
+use Module\Ekom\Api\Layer\WishListLayer;
 use Module\Ekom\Session\EkomSession;
 use QuickPdo\QuickPdo;
 
@@ -560,6 +561,14 @@ and h.lang_id=$langId
     public function userLayer()
     {
         return $this->getLayer('userLayer');
+    }
+
+    /**
+     * @return WishListLayer
+     */
+    public function wishListLayer()
+    {
+        return $this->getLayer('wishListLayer');
     }
 
 

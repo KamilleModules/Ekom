@@ -11,6 +11,7 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Exception\IncompleteOrderException;
 use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Status\Action\EkomStatusAction;
@@ -60,16 +61,12 @@ class CheckoutLayer
 
                 // taking data out of sections
                 $a = EkomSession::get('order.singleAddress');
-//                $a = $_SESSION['ekom.order.singleAddress'];
 
                 $billingAddressId = $a["billing_address_id"];
                 $shippingAddressId = $a["shipping_address_id"];
                 $carrierId = $a["carrier_id"];
                 $paymentMethodId = $a["payment_method_id"];
                 $paymentMethodOptions = $a["payment_method_options"];
-
-
-
 
 
                 $userLayer = $api->userLayer();
@@ -89,7 +86,6 @@ class CheckoutLayer
                  */
                 $billingAddress = false;
                 $shippingAddress = false;
-
                 foreach ($addresses as $address) {
                     if ((int)$billingAddressId === (int)$address['address_id']) {
                         $billingAddress = $address;
@@ -98,6 +94,7 @@ class CheckoutLayer
                         $shippingAddress = $address;
                     }
                 }
+
 
                 $countryId = $userLayer->getUserPreferredCountry();
 
@@ -280,111 +277,125 @@ class CheckoutLayer
     }
 
 
+    /**
+     * Used by EkomEstimate module
+     */
+    public function getPlaceOrderInfo()
+    {
+
+        $checkoutMode = E::conf("checkoutMode");
+        if ('singleAddress' === $checkoutMode) {
+
+            EkomApi::inst()->initWebContext();
+
+            $userId = EkomApi::inst()->userLayer()->getUserId();
+            $this->forReal = true;
+            $model = $this->getOrderModel();
+            $this->forReal = false;
+
+
+            // tmp
+            $model['paymentMethod'] = "creditCard";
+
+
+            if (null === $model['paymentMethod']) {
+                throw new IncompleteOrderException("Incomplete order: missing paymentMethod");
+            }
+
+
+            $userLayer = EkomApi::inst()->userLayer();
+            $shopLayer = EkomApi::inst()->shopLayer();
+
+
+            $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
+
+
+            $userGroups = $userLayer->getUserGroupNames($userId);
+            $userInfo = $userLayer->getUserInfo($userId);
+            $userInfo['groups'] = $userGroups;
+
+
+            $shopInfo = $shopLayer->getShopInfoById($shopId);
+            $shopAddress = $shopLayer->getShopPhysicalAddress($shopId);
+            $shopInfo['address'] = $shopAddress;
+
+
+            $invoiceAddress = $model['shippingAddress'];
+            $billingAddress = $model['billingAddress'];
+
+            $details = $model;
+            unset($details['checkoutMode']);
+            unset($details['billingAddress']);
+            unset($details['shippingAddress']);
+            unset($details['shippingAddresses']);
+            unset($details['selectedShippingAddressId']);
+            unset($details['defaultCountry']);
+            unset($details['shippingAddressFormModel']);
+            unset($details['useSingleCarrier']);
+            unset($details['paymentMethodBlocks']);
+            unset($details['currentStep']);
+            unset($details['paymentMethodId']);
+            unset($details['paymentMethodOptions']);
+
+            return [
+                'user_id' => $userId,
+                'reference' => EkomApi::inst()->orderLayer()->getUniqueReference(),
+                'date' => date("Y-m-d H:i:s"),
+                'tracking_number' => $model['orderSections']['sections'][0]['trackingNumber'],
+                'user_info' => serialize($userInfo),
+                'shop_info' => serialize($shopInfo),
+                'shipping_address' => serialize($invoiceAddress),
+                'billing_address' => serialize($billingAddress),
+                'order_details' => serialize($details),
+            ];
+
+        } else {
+            throw new EkomApiException("Unknown mode: $checkoutMode");
+        }
+    }
+
+
     public function placeOrder($cleanOnSuccess = true)
     {
         try {
 
-            $checkoutMode = E::conf("checkoutMode");
-            if ('singleAddress' === $checkoutMode) {
+            $ret = QuickPdo::transaction(function () use ($cleanOnSuccess) {
 
-                EkomApi::inst()->initWebContext();
+                $info = $this->getPlaceOrderInfo();
 
-                $userId = EkomApi::inst()->userLayer()->getUserId();
-                $this->forReal = true;
-                $model = $this->getOrderModel();
-                $this->forReal = false;
-
-
-                // tmp
-                $model['paymentMethod'] = "creditCard";
-
-
-                if (null === $model['paymentMethod']) {
-                    throw new IncompleteOrderException("Incomplete order: missing paymentMethod");
-                }
+                if (false !== ($orderId = EkomApi::inst()->order()->create([
+                        'user_id' => $info['user_id'],
+                        'reference' => $info['reference'],
+                        'date' => $info['date'],
+                        'tracking_number' => $info['tracking_number'],
+                        'user_info' => $info['user_info'],
+                        'shop_info' => $info['shop_info'],
+                        'shipping_address' => $info['shipping_address'],
+                        'billing_address' => $info['billing_address'],
+                        'order_details' => $info['order_details'],
+                    ]))
+                ) {
 
 
+                    EkomApi::inst()->orderLayer()->addOrderStatusByEkomAction($orderId, EkomStatusAction::ACTION_ORDER_PLACED);
 
-
-                $ret = QuickPdo::transaction(function () use ($model, $userId, $cleanOnSuccess) {
-
-                    $userLayer = EkomApi::inst()->userLayer();
-                    $shopLayer = EkomApi::inst()->shopLayer();
-
-
-                    $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
-
-
-                    $userGroups = $userLayer->getUserGroupNames($userId);
-                    $userInfo = $userLayer->getUserInfo($userId);
-                    $userInfo['groups'] = $userGroups;
-
-
-                    $shopInfo = $shopLayer->getShopInfoById($shopId);
-                    $shopAddress = $shopLayer->getShopPhysicalAddress($shopId);
-                    $shopInfo['address'] = $shopAddress;
-
-
-                    $invoiceAddress = $model['shippingAddress'];
-                    $billingAddress = $model['billingAddress'];
-
-                    $details = $model;
-                    unset($details['checkoutMode']);
-                    unset($details['billingAddress']);
-                    unset($details['shippingAddress']);
-                    unset($details['shippingAddresses']);
-                    unset($details['selectedShippingAddressId']);
-                    unset($details['defaultCountry']);
-                    unset($details['shippingAddressFormModel']);
-                    unset($details['useSingleCarrier']);
-                    unset($details['paymentMethodBlocks']);
-                    unset($details['currentStep']);
-                    unset($details['paymentMethodId']);
-                    unset($details['paymentMethodOptions']);
-
-                    a("l");
-                    a(__FILE__);
-                    az($model);
-
-
-                    if (false !== ($orderId = EkomApi::inst()->order()->create([
-                            'user_id' => $userId,
-                            'reference' => EkomApi::inst()->orderLayer()->getUniqueReference(),
-                            'date' => date("Y-m-d H:i:s"),
-                            'tracking_number' => $model['orderSections']['sections'][0]['trackingNumber'],
-                            'user_info' => serialize($userInfo),
-                            'shop_info' => serialize($shopInfo),
-                            'shipping_address' => serialize($invoiceAddress),
-                            'billing_address' => serialize($billingAddress),
-                            'order_details' => serialize($details),
-                        ]))
-                    ) {
-
-
-                        EkomApi::inst()->orderLayer()->addOrderStatusByEkomAction($orderId, EkomStatusAction::ACTION_ORDER_PLACED);
-
-
-                        if (true === $cleanOnSuccess) {
-                            EkomApi::inst()->cartLayer()->clean();
-                            $this->cleanSessionOrder();
-                            $_SESSION['ekom.order.last'] = $orderId;
-                        }
+                    if (true === $cleanOnSuccess) {
+                        EkomApi::inst()->cartLayer()->clean();
+                        $this->cleanSessionOrder();
+                        $_SESSION['ekom.order.last'] = $orderId;
                     }
-                    return false;
+                }
+                return false;
 
-                }, function (\Exception $e) {
-                    XLog::error("[Ekom module] - CheckoutLayer: $e");
-                });
+            }, function (\Exception $e) {
+                XLog::error("[Ekom module] - CheckoutLayer: $e");
+            });
 
-
-                return $ret;
-
-            }
+            return $ret;
 
         } catch (IncompleteOrderException $e) {
             XLog::error("[Ekom module] - CheckoutLayer: $e");
         }
-
         return false;
     }
 
