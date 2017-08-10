@@ -353,6 +353,7 @@ order by h.order asc
 
 
             $productId2attr = [];
+
             foreach ($rows as $row) {
                 $pid = $row['product_id'];
                 unset($row['product_id']);
@@ -393,7 +394,6 @@ order by h.order asc
 
         $isB2b = ('b2b' === EkomApi::inst()->configLayer()->getBusinessType()) ? true : false;
 
-
         $iIsB2b = (int)$isB2b;
         $api = EkomApi::inst();
 
@@ -411,6 +411,7 @@ order by h.order asc
                          * Take the list of attributes
                          */
                         $productsInfo = $this->getProductCardProductsWithAttributes($cardId, $shopId, $langId);
+
 
                         if (count($productsInfo) > 0) {
 

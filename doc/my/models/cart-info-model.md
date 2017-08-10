@@ -56,6 +56,7 @@ CartInfo
             - rawSalePriceWithoutTax: the unformatted version of the sale price without tax (not intended to be displayed)
             - rawSalePriceWithTax: the unformatted version of the sale price with tax (not intended to be displayed)
             - rawSalePrice: the unformatted version of the sale price, either with or without tax, based on ekom rules (not intended to be displayed)
+            - rawLinePrice: the unformatted version of the line price, either with or without tax, based on ekom rules (not intended to be displayed)
             
     - linesTotalWithoutTax: string: the formatted total without taxes applied, and without (estimated?) shipping costs
                             (priceWithoutTax x quantity).

@@ -441,8 +441,10 @@ class CartLayer
                     $it['rawLinePriceWithTax'] = $linePriceWithTax;
 
                     if (true === $isB2b) {
+                        $it['rawLinePrice'] = $it['rawLinePriceWithoutTax'];
                         $it['linePrice'] = $it['linePriceWithoutTax'];
                     } else {
+                        $it['rawLinePrice'] = $it['rawLinePriceWithTax'];
                         $it['linePrice'] = $it['linePriceWithTax'];
                     }
 
