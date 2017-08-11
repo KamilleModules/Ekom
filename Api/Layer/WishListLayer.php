@@ -70,8 +70,12 @@ class WishListLayer
     {
         if (null === $userId) {
             EkomApi::inst()->initWebContext();
-            $userId = E::getUserId();
+            $userId = E::getUserId(null);
+            if (null === $userId) {
+                return 0;
+            }
         }
+
         return QuickPdo::fetch("select count(*) as count from ek_user_has_product where user_id=$userId", [], \PDO::FETCH_COLUMN);
     }
 }

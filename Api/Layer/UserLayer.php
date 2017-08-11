@@ -224,6 +224,19 @@ class UserLayer
         ]);
     }
 
+    public function hasGroup($groupName, $userId = null)
+    {
+        if (null === $userId) {
+            $userId = E::getUserId(null);
+            if (null === $userId) {
+                return false;
+            }
+        }
+        $groups = $this->getUserGroupNames($userId);
+        return in_array($groupName, $groups);
+    }
+
+
     public function getUserGroupNames($userId)
     {
         return A::cache()->get("Ekom.UserLayer.getUserGroupNames.$userId", function () use ($userId) {

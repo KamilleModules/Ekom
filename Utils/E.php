@@ -28,9 +28,18 @@ class E
 
     private static $conf = null;
 
-    public static function getUserId()
+    /**
+     * Return the userId, or a default value, or throws an exception.
+     *
+     * @param mixed $default ,
+     *                  define the behaviour if the user is not connected:
+     *                  - false: throws an exception
+     *                  - any other value: the default value to return
+     * @return bool|null
+     */
+    public static function getUserId($default = false)
     {
-        return EkomApi::inst()->connexionLayer()->getUserId(false);
+        return EkomApi::inst()->connexionLayer()->getUserId($default);
     }
 
     /**
@@ -38,7 +47,8 @@ class E
      */
     public static function isB2b()
     {
-        return ('b2b' === EkomApi::inst()->configLayer()->getBusinessType()) ? true : false;
+        return EkomApi::inst()->userLayer()->hasGroup("b2b");
+//        return ('b2b' === EkomApi::inst()->configLayer()->getBusinessType()) ? true : false; // old code
     }
 
     public static function getShopId()

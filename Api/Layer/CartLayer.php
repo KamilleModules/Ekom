@@ -121,6 +121,14 @@ class CartLayer
         $this->writeToLocalStore();
     }
 
+    public function getItems()
+    {
+        $this->initSessionCart();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+        return $_SESSION['ekom']['cart'][$shopId]['items'];
+    }
+
+
     public function addItem($qty, $productId, array $extraArgs = [])
     {
 
@@ -347,7 +355,7 @@ class CartLayer
     }
 
 
-    public function getCartModelByItems(array $items, $useEstimateShippingCosts = true)
+    public function getCartModelByItems(array $items, $useEstimateShippingCosts = true, $couponBag = null)
     {
 
         $this->initSessionCart();
@@ -359,7 +367,7 @@ class CartLayer
         $linesTotalWithTax = 0;
 
 
-        $isB2b = ('b2b' === EkomApi::inst()->configLayer()->getBusinessType()) ? true : false;
+        $isB2b = E::isB2b();
         //--------------------------------------------
         // CALCULATING LINE PRICES AND TOTAL
         //--------------------------------------------
@@ -453,8 +461,11 @@ class CartLayer
         $couponApi = EkomApi::inst()->couponLayer();
         $validCoupons = [];
 
+        if (null === $couponBag) {
+            $couponBag = $this->getCouponBag();
+        }
 
-        $details = $couponApi->applyCouponBag($linesTotalWithoutTax, $linesTotalWithTax, "beforeShipping", $this->getCouponBag(), $validCoupons);
+        $details = $couponApi->applyCouponBag($linesTotalWithoutTax, $linesTotalWithTax, "beforeShipping", $couponBag, $validCoupons);
 //        EkomApi::inst()->cartLayer()->setCouponBag($validCoupons);
 
         $cartTotalRaw = $details['rawDiscountPrice'];

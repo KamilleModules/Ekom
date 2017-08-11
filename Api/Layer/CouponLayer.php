@@ -17,6 +17,80 @@ use QuickPdo\QuickPdo;
 
 class CouponLayer
 {
+
+
+    /**
+     *
+     * Adds a coupon to the given cart.
+     * This is a shortcut method used by json/api service.
+     *
+     *
+     *
+     *
+     * @param $code
+     * @param $cartLayer ,
+     *              a cartLayer object, this means an object containing at least
+     *              the following methods:
+     *                  - getCouponBag
+     *                  - setCouponBag
+     * @return array:
+     *          - type: error|confirm|success
+     *                      - error: an error occurred, it can be displayed to a gui user.
+     *                                  The error texts are in the errors property.
+     *                      - confirm: the confirm message --stored in the message property--
+     *                                      should be displayed to the user. This can be overridden
+     *                                      by setting the force flag to true.
+     *                      - success: the coupon has been added. A success message is available in the
+     *                                      message property.
+     *          - ?errors: array, an array of error texts (only if type=error)
+     *          - ?message: string, the confirm message to display (only if type=confirm|success)
+     *          - ?model: array, the cart model (only if type=success)
+     *
+     */
+    public function addCouponByCode($code, $cartLayer = null, $force = false)
+    {
+
+        if (null === $cartLayer) {
+            $cartLayer = EkomApi::inst()->cartLayer();
+        }
+        $force = (bool)$force;
+        if (false !== ($row = $this->getCouponInfoByCode($code))) {
+            $mode = $row['mode'];
+            if (0 === $force && ('unique' === $mode || '' === $mode)) {
+                $out = [
+                    'type' => 'confirm',
+                    'message' => "The coupon with code $code will remove the other coupons in your cart, are you sure this is what you want?",
+                ];
+            } else {
+                $errors = [];
+                $mode = null;
+                $test = $this->tryAddCouponByCode($code, $errors, $mode, $cartLayer);
+                if (true === $test) {
+                    $out = [
+                        'type' => 'success',
+                        'model' => $cartLayer->getCartModel(),
+                        'message' => "The coupon with code $code has been successfully added",
+                    ];
+
+                } else {
+                    $out = [
+                        'type' => 'error',
+                        'errors' => $errors,
+                    ];
+                }
+            }
+        } else {
+            $out = [
+                'type' => 'error',
+                'errors' => [
+                    "The coupon with code $code doesn't exist"
+                ],
+            ];
+        }
+        return $out;
+    }
+
+
     public function testCouponConditionsByCode($code, array $data = [], &$errors = [])
     {
 
@@ -51,10 +125,14 @@ class CouponLayer
      *
      * @return bool, whether or not the coupon was added
      */
-    public function tryAddCouponByCode($code, &$errors = null, &$mode = null)
+    public function tryAddCouponByCode($code, &$errors = null, &$mode = null, $cartLayer = null)
     {
 
-        $couponBag = EkomApi::inst()->cartLayer()->getCouponBag();
+        if (null === $cartLayer) {
+            $cartLayer = EkomApi::inst()->cartLayer();
+        }
+        $couponBag = $cartLayer->getCouponBag();
+
 
         // does the coupon conditions validates?
         $errors = [];
@@ -67,7 +145,7 @@ class CouponLayer
             if (false !== ($row = $this->getCouponInfoByCode($code))) {
                 if (true === $this->mergeToBag($row['id'], $couponBag, $errors)) {
                     $mode = $row['mode'];
-                    EkomApi::inst()->cartLayer()->setCouponBag($couponBag);
+                    $cartLayer->setCouponBag($couponBag);
                     return true;
                 } else {
                     return false;
@@ -80,11 +158,14 @@ class CouponLayer
         return $ok;
     }
 
-    public function removeCouponByIndex($index)
+    public function removeCouponByIndex($index, $cartLayer = null)
     {
-        $couponBag = EkomApi::inst()->cartLayer()->getCouponBag();
+        if (null === $cartLayer) {
+            $cartLayer = EkomApi::inst()->cartLayer();
+        }
+        $couponBag = $cartLayer->getCouponBag();
         unset($couponBag[$index]);
-        EkomApi::inst()->cartLayer()->setCouponBag($couponBag);
+        $cartLayer->setCouponBag($couponBag);
     }
 
 
