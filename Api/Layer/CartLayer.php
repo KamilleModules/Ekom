@@ -129,6 +129,26 @@ class CartLayer
     }
 
 
+    public function setCartContent(array $cart, $shopId = null)
+    {
+        $this->initSessionCart();
+        if (null === $shopId) {
+            $shopId = ApplicationRegistry::get("ekom.shop_id");
+        }
+        $_SESSION['ekom']['cart'][$shopId] = $cart;
+        $this->writeToLocalStore();
+    }
+
+    public function getCartContent($shopId = null)
+    {
+        $this->initSessionCart();
+        if (null === $shopId) {
+            $shopId = ApplicationRegistry::get("ekom.shop_id");
+        }
+        return $_SESSION['ekom']['cart'][$shopId];
+    }
+
+
     public function addItem($qty, $productId, array $extraArgs = [])
     {
 
@@ -659,10 +679,12 @@ and p.lang_id=$langId
 
                 $mainImage = "";
                 $imageSmall = "";
+
                 if (count($b['images']) > 0) {
-                    $arr = current($b['images']);
-                    $mainImage = $arr['thumb']; // small?
-                    $imageSmall = $arr['small']; // small?
+                    $defaultImage = $b['defaultImage'];
+                    $imgs = $b['images'][$defaultImage];
+                    $mainImage = $imgs['thumb']; // small?
+                    $imageSmall = $imgs['small']; // small?
                 }
 
 
