@@ -4,35 +4,10 @@
 namespace Module\Ekom\Utils\OrderBuilder;
 
 
-use Module\Ekom\Session\EkomSession;
-use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\OrderBuilder\Step\OrderBuilderStepInterface;
 
-/**
- * This class stores step data and step states into the session.
- * It looks like this:
- *
- * SESSION:
- *  - $sessionName:
- *      - states:
- *          - $stepName: $state
- *          - $stepName: $state
- *          - ...
- *      - data:
- *          - $stepName: $data
- *          - $stepName: $data
- *          - ...
- *
- *
- *
- *
- *
- * Note: with this implementation, all steps MUST BE registered BEFORE other any useful method
- * can be used.
- *
- *
- */
-class OrderBuilder implements OrderBuilderInterface
+
+class OrderBuilder
 {
 
     /**
@@ -40,14 +15,11 @@ class OrderBuilder implements OrderBuilderInterface
      */
     protected $steps;
     protected $context;
-    private $sessionName;
 
 
     public function __construct()
     {
         $this->steps = [];
-        $shopId = E::getShopId();
-        $this->sessionName = 'order-builder-' . $shopId;
         $this->context = null;
     }
 
@@ -68,13 +40,6 @@ class OrderBuilder implements OrderBuilderInterface
         return $this;
     }
 
-    public function setStepData($step, $data)
-    {
-        $all = $this->getSessionData();
-        $all[$step] = $data;
-        return $this;
-    }
-
     public function getOrderModel() // override me
     {
         return [];
@@ -83,115 +48,74 @@ class OrderBuilder implements OrderBuilderInterface
 
     public function getStepsInfo()
     {
-        $this->initSession();
         $ret = [];
-        $model = null;
-        $states = $this->getSessionStates();
         $activeFound = false;
-        $context = $this->getContext();
+        $model = null;
+        $activeId = null;
+        $userStep = $this->getUserStep();
+
+        // parse the steps
+        foreach ($this->steps as $id => $step) {
+            if (
+                false === $activeFound &&
+                false === $step->isDone()
+            ) {
+                $activeFound = true;
+                $model = $step->listen();
+                $activeId = $id;
+                if (true === $step->isDone()) {
+                    $activeFound = false;
+                }
+            }
+        }
 
 
-        //--------------------------------------------
-        // Default algorithm for states
-        //--------------------------------------------
-        $newStates = [];
-        foreach ($states as $id => $state) {
-            /**
-             * @var $step OrderBuilderStepInterface
-             */
-            $step = $this->steps[$id];
-            if (true === $step->isRelevant($context)) {
+        // compile information for the view
+        foreach ($this->steps as $id => $step) {
 
 
-                if (false === $activeFound) {
-                    if (
-                    in_array($state, ['active', 'inactive'])
-                    ) {
-                        $state = 'active';
-                        $activeFound = true;
-
-                        $justDone = false;
-                        $model = $step->process($context, $justDone);
-                        if (true === $justDone) {
-                            $activeFound = false;
-                            $state = "done";
-                        }
-                    }
+            if (null === $userStep) {
+                if ($activeId === $id) {
+                    $state = 'active';
                 } else {
-                    if (!in_array($state, ['done'])) {
+                    if (true === $step->isDone()) {
+                        $state = 'done';
+                    } else {
                         $state = 'inactive';
                     }
                 }
-            } else {
-                $state = 'irrelevant';
             }
-            $newStates[$id] = $state;
-        }
+            else{
+                if ($userStep === $id) {
+                    $state = 'active';
+                } else {
+                    if (true === $step->isDone()) {
+                        $state = 'done';
+                    } else {
+                        $state = 'inactive';
+                    }
+                }
+            }
 
-
-        //--------------------------------------------
-        // The user can navigate steps back/forth
-        //--------------------------------------------
-        /**
-         * Note: the user can only go back/forth to done steps.
-         */
-        $step = $this->getUserStep();
-        if(null!==$step){
-
-        }
-
-
-        //--------------------------------------------
-        // assembling data
-        //--------------------------------------------
-        foreach ($newStates as $id => $state) {
             $Id = ucfirst($id);
             $ret['id' . $Id] = $id;
             $ret['state' . $Id] = $state;
         }
-        $all = EkomSession::get($this->sessionName, []);
-        $all['states'] = $newStates;
-        EkomSession::set($this->sessionName, $all);
-
-
         $ret['model'] = $model;
         return $ret;
     }
 
-    public function clean()
-    {
-        $this->initSession();
-        EkomSession::remove($this->sessionName);
-        return $this;
-    }
 
     public function isCompleted()
     {
-        $states = $this->getSessionStates();
-        foreach ($states as $id => $state) {
-            if (!in_array($state, ['done', 'irrelevant'])) {
+        foreach ($this->steps as $id => $step) {
+            if (false === $step->isDone()) {
                 return false;
             }
         }
         return true;
     }
 
-
-
-
-
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    protected function getSessionData()
-    {
-        $this->initSession();
-        $all = EkomSession::get($this->sessionName, []);
-        if (array_key_exists('data', $all)) {
-            return $all['data'];
-        }
-        return null;
-    }
 
     /**
      * @return null|string, the step called manually by the user
@@ -204,37 +128,5 @@ class OrderBuilder implements OrderBuilderInterface
         return null;
     }
 
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    private function initSession()
-    {
-        if (false === EkomSession::has($this->sessionName)) {
-            $conf = [
-                'states' => [],
-                'data' => [],
-            ];
 
-            $context = $this->context;
-            foreach ($this->steps as $id => $step) {
-//                if (false === $step->isRelevant($context)) {
-//                    $state = 'irrelevant';
-//                } else {
-//                    $state = 'inactive';
-//                }
-                $state = 'inactive';
-                $conf['states'][$id] = $state;
-                $conf['data'][$id] = null;
-            }
-
-            EkomSession::set($this->sessionName, $conf);
-        }
-    }
-
-    private function getSessionStates()
-    {
-        $this->initSession();
-        $all = EkomSession::get($this->sessionName, []);
-        return $all['states'];
-    }
 }

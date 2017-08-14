@@ -25,7 +25,17 @@ interface OrderBuilderInterface
      * Step data is persistent (it's usually stored in session).
      * It helps keeping track of which step we are currently in.
      */
-    public function setStepData($step, $data);
+    public function setStepData($step, array $data);
+
+    /**
+     * @param $step
+     * @return array, the data for this step.
+     *              The data, if present, should be used as the default
+     *              values for the step (when an user steps back/forth).
+     *              If the data doesn't exist yet, an empty array is returned.
+     *
+     */
+    public function getStepData($step);
 
     /**
      * @return array,

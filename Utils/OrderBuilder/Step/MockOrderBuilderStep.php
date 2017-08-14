@@ -4,6 +4,8 @@
 namespace Module\Ekom\Utils\OrderBuilder\Step;
 
 
+use Module\Ekom\Utils\OrderBuilder\OrderBuilderInterface;
+
 class MockOrderBuilderStep implements OrderBuilderStepInterface
 {
 
@@ -22,7 +24,7 @@ class MockOrderBuilderStep implements OrderBuilderStepInterface
         return new static();
     }
 
-    public function process($context, &$justDone = false)
+    public function process(OrderBuilderInterface $builder, &$justDone = false, array $stepData = [])
     {
         if (array_key_exists($this->identifier, $_POST)) {
             $justDone = true;

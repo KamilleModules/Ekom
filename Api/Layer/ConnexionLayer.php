@@ -50,6 +50,8 @@ class ConnexionLayer
      *
      *
      * @param null $response , if not null, the Response where the user should be redirected.
+     *                  This also can be interpreted as the signal that the form has been
+     *                  successfully posted.
      * @return array, an OnTheFlyForm model
      */
     public function handleLoginForm(&$response = null)

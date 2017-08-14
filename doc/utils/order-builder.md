@@ -13,6 +13,16 @@ and hence this documentation.
 
 
 
+Basically, with the OrderBuilder, we are building an order.
+The order data is split across different forms, each form
+is provided by a step.
+
+The data of the different forms is stored in session. 
+
+
+
+
+
 The actors
 =============
 
@@ -51,7 +61,10 @@ of the OrderBuilder, the step to be executed is:
 
 - THE FIRST STEP WHICH STATE IS NOT DONE (discarded steps excluded)
 
-That's how the orderBuilder knows which step is the current one.            
+That's how the orderBuilder knows which step is the current one.   
+
+
+Also, the user can manuallt go back to a previous step with state done.         
         
 
 
@@ -62,9 +75,11 @@ The process method
 The process method is part of the Step class.
 
 The process method is the trickiest part of this system, because
-it serves two purposes:
+it serves multiple purposes:
 
 - check that the step has just been done NOW
+- if so, set useful form data to a persistent memory,
+            so that those values can be re-used later.
 - returns the model of the step (for the View)
 
 

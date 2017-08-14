@@ -185,7 +185,7 @@ where c.name=:zename
                 $carriers = $this->getCarrierInstancesByShop($shopId);
             }
 
-
+            a($carriers);
             //--------------------------------------------
             // CALCULATING THE COSTS
             //--------------------------------------------

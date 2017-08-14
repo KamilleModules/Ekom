@@ -67,10 +67,13 @@ and address_id=$id
      *
      *
      */
-    public function getUserAddresses($userId, $langId = null)
+    public function getUserAddresses($userId = null, $langId = null)
     {
 
         EkomApi::inst()->initWebContext();
+        if (null === $userId) {
+            $userId = E::getUserId();
+        }
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
 
         $userId = (int)$userId;
@@ -247,7 +250,7 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
     /**
      * @return false|array
      */
-    public function getDefaultShippingAddress($userId, $langId = null)
+    public function getDefaultShippingAddress($userId = null, $langId = null)
     {
         return $this->getDefaultAddress($userId, 'shipping', $langId);
     }
@@ -255,7 +258,7 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
     /**
      * @return false|array
      */
-    public function getDefaultBillingAddress($userId, $langId = null)
+    public function getDefaultBillingAddress($userId = null, $langId = null)
     {
         return $this->getDefaultAddress($userId, 'billing', $langId);
     }

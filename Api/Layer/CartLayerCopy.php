@@ -30,7 +30,7 @@ use QuickPdo\QuickPdo;
  *
  *
  */
-class CartLayer
+class CartLayerCopy
 {
 
 

@@ -92,6 +92,11 @@ CartInfo
                             - linesTotalWithTax
                             - linesTotalWithTaxAndShipping
     
+    
+    
+    
+    
+    
     // work in progress...
     - carrierSections: array with the following structure:
             - sections: array of carrierName => sectionInfo, each sectionInfo is an array with the following structure:
