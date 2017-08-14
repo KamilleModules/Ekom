@@ -678,13 +678,20 @@ and p.lang_id=$langId
 
 
                 $mainImage = "";
+                $imageThumb = "";
                 $imageSmall = "";
+                $imageMedium = "";
+                $imageLarge = "";
 
                 if (count($b['images']) > 0) {
                     $defaultImage = $b['defaultImage'];
                     $imgs = $b['images'][$defaultImage];
-                    $mainImage = $imgs['thumb']; // small?
-                    $imageSmall = $imgs['small']; // small?
+                    $imageThumb = $imgs['thumb'];
+                    $imageSmall = $imgs['small'];
+                    $imageMedium = $imgs['medium'];
+                    $imageLarge = $imgs['large'];
+                    //
+                    $mainImage = $imgs['thumb'];
                 }
 
 
@@ -714,7 +721,10 @@ and p.lang_id=$langId
 //                    'salePriceWithTax' => $b['salePriceWithTax'],
 //                    'salePriceWithoutTax' => $b['salePriceWithoutTax'],
                     'image' => $mainImage,
+                    'imageThumb' => $imageThumb,
                     'imageSmall' => $imageSmall,
+                    'imageMedium' => $imageMedium,
+                    'imageLarge' => $imageLarge,
 
                     'stockType' => $b['stockType'],
                     'stockText' => $b['stockText'],
