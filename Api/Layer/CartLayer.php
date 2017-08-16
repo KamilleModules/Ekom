@@ -43,6 +43,19 @@ class CartLayer
     private $_miniCartModel; // cache
 
 
+    public function __construct()
+    {
+        /**
+         * array, each entry having the following structure
+         *      - 0: options
+         *      - 1: cartModel
+         *
+         * If the options match, then use the cartModel
+         */
+        $this->_cartModel = [];
+    }
+
+
     /**
      *
      * This method was created to give js a mean to access session data (the
@@ -536,7 +549,6 @@ class CartLayer
             $allShippingCosts = $carrierGroups['totalShippingCost'];
 
 
-
             $model['estimatedTotalShippingCost'] = E::price($allShippingCosts);
             $model['estimatedOrderGrandTotalWithoutTax'] = E::price($cartTotalRaw + $allShippingCosts);
             $model['estimatedOrderGrandTotalWithTax'] = E::price($cartTotalRawWithTax + $allShippingCosts);
@@ -592,6 +604,19 @@ class CartLayer
     private function doGetCartModel(array $options = null)
     {
 
+        /**
+         * Note: maybe the cache should be different for mini and not mini cart model.
+         * But in the current implementation, those are the same...
+         */
+        // cache?
+        foreach ($this->_cartModel as $item) {
+            list($_options, $_model) = $item;
+            if ($_options === $options) {
+                return $_model;
+            }
+        }
+
+
         if (null === $options) {
             $useEstimateShippingCosts = true;
             $items = null;
@@ -608,7 +633,12 @@ class CartLayer
             $items = $_SESSION['ekom']['cart'][$shopId]['items'];
         }
 
-        return $this->getCartModelByItems($items, $useEstimateShippingCosts);
+        $ret = $this->getCartModelByItems($items, $useEstimateShippingCosts);
+
+        // cache for next time
+        $this->_cartModel[] = [$options, $ret];
+
+        return $ret;
     }
 
 

@@ -12,21 +12,21 @@ class AddressListAjaxRenderer
         return new static();
     }
 
-    public function render(array $m)
+    public function render(array $addresses)
     {
         ?>
         <div class="choose-address-ajax">
             <div class="title">Choisissez une adresse</div>
             <div class="address-list">
-                <?php for ($i = 1; $i <= 3; $i++): ?>
-                    <div class="item">
-                        <div class="address-info">
-                            <label for="choose-address-6">TRAVAIL</label>
-                            <div class="line-1">5, impasse de la fleur</div>
-                            <div class="line-2">37190 SACHÉ</div>
+                <?php foreach ($addresses as $a): ?>
+                    <div class="item ajax-address-li-trigger" data-id="<?php echo $a['address_id']; ?>">
+                        <div class="address-info ajax-address-li-trigger">
+                            <label class="ajax-address-li-trigger" for="choose-address-<?php echo $a['address_id']; ?>"><?php echo $a['fName']; ?></label>
+                            <div class="line-1 ajax-address-li-trigger"><?php echo $a['address']; ?></div>
+                            <div class="line-2 ajax-address-li-trigger"><?php echo $a['postcode'] . ' ' . $a['city']; ?></div>
                         </div>
                     </div>
-                <?php endfor; ?>
+                <?php endforeach; ?>
             </div>
         </div>
         <?php

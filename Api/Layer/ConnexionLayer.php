@@ -33,6 +33,12 @@ class ConnexionLayer
         return SessionUser::isConnected();
     }
 
+    public function disconnect()
+    {
+        $destroyCookie = false;
+        SessionUser::disconnect($destroyCookie);
+    }
+
     public function getUserId($default = false)
     {
         if (SessionUser::isConnected()) {

@@ -4,10 +4,25 @@
 namespace Module\Ekom\Utils\OrderBuilder\Step;
 
 
+use Module\Ekom\Utils\OrderBuilder\OrderBuilderInterface;
+
 interface OrderBuilderStepInterface
 {
-    public function isDone();
+    /**
+     * @return bool, whether or not the step is considered done
+     */
+//    public function isDone(OrderBuilderInterface $builder);
 
 
-    public function listen();
+    /**
+     * @return mixed, depends on isDone
+     *          - if isDone is false, return an array (the form model)
+     *          - if isDone is true, doesn't need to return anything
+     */
+    public function listen(OrderBuilderInterface $builder, &$isDone = false);
+
+    /**
+     * Clean the step data so that the step becomes "not done".
+     */
+    public function clean();
 }

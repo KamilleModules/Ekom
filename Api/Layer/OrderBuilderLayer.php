@@ -21,6 +21,10 @@ use QuickPdo\QuickPdo;
 
 
 /**
+ *
+ * @todo-ling
+ * DEPRECATED: REMOVE
+ *
  * This class might become the new OrderLayer in the future.
  *
  * See implementation notes: class-modules/Ekom/doc/implementation-notes/OrderBuilderLayer.md

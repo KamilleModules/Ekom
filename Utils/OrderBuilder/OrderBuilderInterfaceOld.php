@@ -11,7 +11,7 @@ use Module\Ekom\Utils\OrderBuilder\Step\OrderBuilderStepInterface;
  * This object is a helper for creating an order in ekom.
  * See the documentation in order-builder.md (in ekom doc).
  */
-interface OrderBuilderInterface
+interface OrderBuilderInterfaceOld
 {
 
     public function getContext();
@@ -21,22 +21,21 @@ interface OrderBuilderInterface
     public function registerStep($id, OrderBuilderStepInterface $step);
 
 
-
     /**
      * Step data is persistent (it's usually stored in session).
      * It helps keeping track of which step we are currently in.
      */
-//    public function setStepData($step, array $data);
-//
-//    /**
-//     * @param $step
-//     * @return array, the data for this step.
-//     *              The data, if present, should be used as the default
-//     *              values for the step (when an user steps back/forth).
-//     *              If the data doesn't exist yet, an empty array is returned.
-//     *
-//     */
-//    public function getStepData($step);
+    public function setStepData($step, array $data);
+
+    /**
+     * @param $step
+     * @return array, the data for this step.
+     *              The data, if present, should be used as the default
+     *              values for the step (when an user steps back/forth).
+     *              If the data doesn't exist yet, an empty array is returned.
+     *
+     */
+    public function getStepData($step);
 
     /**
      * @return array,
@@ -53,11 +52,11 @@ interface OrderBuilderInterface
      *
      */
     public function getStepsInfo();
-//
-//    /**
-//     * Clean all persistent data pertaining to this OrderBuilder instance
-//     */
-//    public function clean();
+
+    /**
+     * Clean all persistent data pertaining to this OrderBuilder instance
+     */
+    public function clean();
 
     /**
      * @return bool, whether or not all (non irrelevant) steps have the "done" state

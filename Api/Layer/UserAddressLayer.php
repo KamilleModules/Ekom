@@ -61,6 +61,45 @@ and address_id=$id
         return false;
     }
 
+
+    /**
+     *
+     * This method is used during the checkout phase.
+     * See ShippingOrderBuilderStep.
+     *
+     * @param $billingAddressId
+     * @param $shippingAddressId
+     * @param null $userId
+     * @param null $langId
+     * @return array:
+     *              - 0: billingAddress
+     *              - 1: shippingAddress
+     *              - 2: allAddresses
+     */
+    public function getUserBillingShippingAndAddresses($billingAddressId, $shippingAddressId, $userId = null, $langId = null)
+    {
+
+        $addresses = EkomApi::inst()->userAddressLayer()->getUserAddresses();
+        $billingAddress = null;
+        $shippingAddress = null;
+        foreach ($addresses as $address) {
+            if ((int)$billingAddressId === (int)$address['address_id']) {
+                $billingAddress = $address;
+            }
+            if ((int)$shippingAddressId === (int)$address['address_id']) {
+                $shippingAddress = $address;
+            }
+        }
+        if (null === $billingAddress) {
+            $billingAddress = $this->getDefaultBillingAddress($userId, $langId);
+        }
+        if (null === $shippingAddress) {
+            $shippingAddress = $this->getDefaultShippingAddress($userId, $langId);
+        }
+        return [$billingAddress, $shippingAddress, $addresses];
+    }
+
+
     /**
      * Return an array of user addresses.
      * Each address is an addressModel (see top of this document)

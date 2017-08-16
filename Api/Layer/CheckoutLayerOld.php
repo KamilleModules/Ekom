@@ -20,7 +20,7 @@ use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
 use QuickPdo\QuickPdo;
 
 
-class CheckoutLayer
+class CheckoutLayerOld
 {
 
     /**
@@ -64,7 +64,7 @@ class CheckoutLayer
 
                 $billingAddressId = $a["billing_address_id"];
                 $shippingAddressId = $a["shipping_address_id"];
-                $carrierName = $a["carrier_name"];
+                $carrierId = $a["carrier_id"];
                 $paymentMethodId = $a["payment_method_id"];
                 $paymentMethodOptions = $a["payment_method_options"];
 
@@ -114,7 +114,7 @@ class CheckoutLayer
                     $shippingCosts['sections'] = [];
                     $shippingCosts['notHandled'] = [];
                 } else {
-                    $shippingCosts = $carrierLayer->calculateShippingCostByCarrierName($carrierName, $productInfos, $shippingAddress);
+                    $shippingCosts = $carrierLayer->calculateShippingCostByCarrierId($carrierId, $productInfos, $shippingAddress);
                     $shippingCosts['rawTotalShippingCost'] = $shippingCosts['totalShippingCost'];
                     $shippingCosts['totalShippingCost'] = E::price($shippingCosts['rawTotalShippingCost']);
                 }
@@ -146,7 +146,7 @@ class CheckoutLayer
                  * @var $provider OnTheFlyFormProviderInterface
                  */
                 $provider = X::get("Core_OnTheFlyFormProvider");
-//                $form = $provider->getForm("Ekom", "UserAddress");
+                $form = $provider->getForm("Ekom", "UserAddress");
                 $hasCarrierChoice = $carrierLayer->useSingleCarrier();
                 $paymentMethodBlocks = $paymentLayer->getShopPaymentMethodBlockModels(null, $paymentMethodId, $paymentMethodOptions);
                 $paymentMethod = null;
@@ -182,7 +182,7 @@ class CheckoutLayer
                     "shippingAddresses" => $addresses,
                     "selectedShippingAddressId" => $shippingAddressId,
                     "defaultCountry" => $countryId,
-//                    "shippingAddressFormModel" => $form->getModel(),
+                    "shippingAddressFormModel" => $form->getModel(),
                     "useSingleCarrier" => $hasCarrierChoice,
                     "paymentMethodBlocks" => $paymentMethodBlocks,
 //                    "currentStep" => $currentStep,
@@ -259,7 +259,6 @@ class CheckoutLayer
                 }
 
 
-                ksort($model);
                 return $model;
             }
         }
@@ -267,80 +266,14 @@ class CheckoutLayer
     }
 
 
-    public function setShippingAddressId($id)
+    public function setShippingAddressId($id, array $options = null)
     {
-//        $this->setSessionValue("shipping_address_id", $id, $options); // old amazon style
-        $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['shipping_address_id'] = $id;
-    }
-
-
-    /**
-     * A general comment pertaining to the order, not to a specific address.
-     */
-    public function setShippingComment($comment)
-    {
-        $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['shipping_comment'] = $comment;
-    }
-
-
-    public function setBillingAddressId($id)
-    {
-        $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['billing_address_id'] = $id;
-    }
-
-    public function setShippingAndBillingAreSynced($bool)
-    {
-
-        $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['shipping_billing_synced'] = $bool;
-        if (true === $bool) {
-            $_SESSION['ekom']['order.singleAddress']['billing_address_id'] = $_SESSION['ekom']['order.singleAddress']['shipping_address_id'];
-        }
-    }
-
-
-    public function setShippingAndBillingAddressId($id)
-    {
-        $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['shipping_address_id'] = $id;
-        $_SESSION['ekom']['order.singleAddress']['billing_address_id'] = $id;
+        $this->setSessionValue("shipping_address_id", $id, $options);
     }
 
     public function setPaymentMethod($id, array $paymentMethodOptions = [], array $options = null)
     {
         $this->setSessionValue("payment_method", [$id, $paymentMethodOptions], $options);
-    }
-
-
-    /**
-     * @return array
-     *          - billing_address_id: int|null,
-     *                                  null if the user has no address
-     *                                  int if the user has at least one address
-     *          - shipping_address_id: int|null, same logic as billing_address
-     *          - carrier_id: int|null, the carrier id chosen by the user, or a default carrier id otherwise,
-     *                              or null if there is no carrier at all (should not happen).
-     *
-     */
-    public function getShippingInfo()
-    {
-        $this->initOrderModel();
-        $a = EkomSession::get('order.singleAddress');
-        $ret = [];
-        $ret["billing_address_id"] = $a["billing_address_id"];
-        $ret["shipping_address_id"] = $a["shipping_address_id"];
-        $ret["carrier_name"] = $a["carrier_name"];
-        $ret["shipping_billing_synced"] = $a["shipping_billing_synced"];
-        return $ret;
-    }
-
-    public function setCarrierName($name)
-    {
-        $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['carrier_name'] = $name;
     }
 
 
@@ -473,18 +406,6 @@ class CheckoutLayer
     }
 
 
-    /**
-     * Helps the cart finding out whether or not an order is being placed.
-     * This helps the cart to decide whether or not the shipping info coming
-     * from the checkout page should be used to compute the shipping cost.
-     *
-     */
-    public function hasCurrentSessionOrder()
-    {
-        return EkomSession::has("order.singleAddress");
-    }
-
-
     //--------------------------------------------
     //
     //--------------------------------------------
@@ -554,11 +475,8 @@ class CheckoutLayer
                  * --------- shipping_address_id
                  * --------- carrier_id
                  * --------- ?carrier_options array of key => value, depending on the carrier (read relevant carrier doc for more info)
-                 * --------- shipping_comment: a general comment pertaining to the order (not to a particular address)
                  * --------- payment_method_id
                  * --------- ?payment_method_options: array of key => value, depending on the payment method (read relevant payment method doc for more info)
-                 * --------- shipping_billing_synced: bool, whether or not the shipping and billing address shall be synced.
-                 *                                      Note: you might not need this option, depending on your view
                  *
                  *
                  */
@@ -579,20 +497,20 @@ class CheckoutLayer
                     $billingAddressId = $billingAddress['address_id'];
                 }
 
-                // choose default carrier
-                $carrierName = null;
-                if (false !== ($name = EkomApi::inst()->carrierLayer()->getDefaultCarrierName())) {
-                    $carrierName = $name;
+                // choose default carrier if none is set
+                $carrierId = null;
+                if (false !== ($id = EkomApi::inst()->carrierLayer()->getDefaultCarrierId())) {
+                    $carrierId = $id;
                 }
+
 
                 EkomSession::set('order.singleAddress', [
                     "billing_address_id" => $billingAddressId,
                     "shipping_address_id" => $shippingAddressId,
-                    "carrier_name" => $carrierName,
+                    "carrier_id" => $carrierId,
                     "payment_method_id" => null,
                     "payment_method_options" => null,
-                    "shipping_billing_synced" => false,
-                    "shipping_comment" => "",
+                    "current_step" => 0,
                 ]);
             }
         } else {

@@ -36,25 +36,28 @@ class CarrierLayer
     }
 
 
-    /**
-     * @return false|int
-     */
-    public function getDefaultCarrierId()
+    public function getDefaultCarrierName()
     {
 
         if (true === $this->useSingleCarrier()) {
-            if (false !== ($id = $this->getSingleCarrierId())) {
-                return $id;
+            if (false !== ($info = $this->getSingleCarrier())) {
+                return $info[0];
             }
         } else {
+            /**
+             * If there is a choice, we take the first choice available
+             * Note: the algorithm could be improved.
+             */
             EkomApi::inst()->initWebContext();
             $shopId = ApplicationRegistry::get("ekom.shop_id");
-            $carriers = $this->getCarrierInstancesByShop($shopId);
-            foreach ($carriers as $name => $carrier) {
-                return $this->getCarrierIdByName($name);
+            $carriers = $this->getCarriersByShop($shopId);
+            if (count($carriers) > 0) {
+                return current($carriers);
+            } else {
+                XLog::error("[Ekom module] - CarrierLayer: no carrier found at all for shop $shopId");
             }
         }
-        return false;
+        return null;
     }
 
 
@@ -124,6 +127,9 @@ where c.name=:zename
      * - product_id: int, the product id
      * - weight: float, the product weight
      *
+     * Note: if you pass the cart model items as the productInfos, it should work...
+     *
+     *
      *
      * @return false|array with the following structure:
      *          - sections: array of carrierName => sectionInfo, each sectionInfo is an array with the following structure:
@@ -142,57 +148,101 @@ where c.name=:zename
          * To estimate the shipping cost,
          * we need amongst other things a shipping address and the shop address (maybe not used but we provide it anyway).
          *
-         * If the user is connected and has a shipping address, we use her shipping address.
-         * If the user is connected and has no shipping address, or if the user is not connected, we use the shop address.
-         * If the shop has no address, we cannot estimate the shipping costs, and return false, but that's a configuration error and it will be logged.
+         *
+         * First, we check whether or not the user is filling the checkout form.
+         * If so, we can use the user's choices.
+         * If not, we use the following default algorithm:
+         *      - If the user is connected and has a shipping address, we use her shipping address.
+         *      - If the user is connected and has no shipping address, or if the user is not connected, we use the shop address.
+         *      - If the shop has no address, we cannot estimate the shipping costs, and return false, but that's a configuration error and it will be logged.
          *
          */
-        $shippingAddress = null;
-        if (true === SessionUser::isConnected()) {
-            $userId = SessionUser::getValue('id');
-            $shippingAddress = EkomApi::inst()->userAddressLayer()->getDefaultShippingAddress($userId);
-            if (false === $shippingAddress) { // the user is connected but doesn't have a shipping address yet
-                $shippingAddress = null;
-            }
-        }
+        $checkoutLayer = EkomApi::inst()->checkoutLayer();
+
 
         $shopAddress = EkomApi::inst()->shopLayer()->getShopPhysicalAddress();
         if (false === $shopAddress) {
             $msg = "[Ekom module] - CarrierLayer.estimateShippingCosts: ekom config error, shop address is not defined";
             XLog::error($msg);
+            /**
+             * Note: for now I don't throw exception because maybe the carrier instance doesn't need the shop address
+             * to do its job.
+             */
             $shopAddress = null;
         }
+        $shippingAddress = null;
+        $carriers = [];
 
-        if (null === $shippingAddress) { // if we cannot get the address from the user, we try the shop address
-            $shippingAddress = $shopAddress;
+
+        if (true === E::userIsConnected()) {
+
+            if (true === $checkoutLayer->hasCurrentSessionOrder()) {
+                $shippingInfo = $checkoutLayer->getShippingInfo();
+                if (null !== $shippingInfo['carrier_name']) {
+
+                    EkomApi::inst()->initWebContext();
+                    $shopId = ApplicationRegistry::get("ekom.shop_id");
+                    $userId = E::getUserId();
+
+                    $carrierName = $shippingInfo['carrier_name'];
+                    $shipping_address_id = $shippingInfo['shipping_address_id'];
+                    $shippingAddress = EkomApi::inst()->userAddressLayer()->getUserAddressById($userId, $shipping_address_id);
+
+                    $instance = $this->getCarrierByName($carrierName);
+                    $carriers[$carrierName] = $instance;
+
+                }
+            }
         }
 
 
-        if (null !== $shippingAddress) { // the shipping address is set, we can estimate the shipping costs
-
-            /**
-             * We have to deal with the carriers choices that the shop has made
-             */
-            $carriers = [];
-            if (true === EkomApi::inst()->carrierLayer()->useSingleCarrier()) {
-                if (false !== ($carrierInfo = $this->getSingleCarrier())) {
-                    list($carrierName, $carrier) = $carrierInfo;
-                    $carriers[$carrierName] = $carrier;
+        /**
+         * No sensible info found, apply the default algorithm
+         */
+        if (null === $shippingAddress) {
+            if (true === SessionUser::isConnected()) {
+                $userId = SessionUser::getValue('id');
+                $shippingAddress = EkomApi::inst()->userAddressLayer()->getDefaultShippingAddress($userId);
+                if (false === $shippingAddress) { // the user is connected but doesn't have a shipping address yet
+                    $shippingAddress = null;
                 }
-            } else { // the user has the choice, so we will take all shop available carriers to do our estimate
-                EkomApi::inst()->initWebContext();
-                $shopId = ApplicationRegistry::get("ekom.shop_id");
-                $carriers = $this->getCarrierInstancesByShop($shopId);
             }
 
-            a($carriers);
-            //--------------------------------------------
-            // CALCULATING THE COSTS
-            //--------------------------------------------
-            return $this->calculateShippingCostsByCarriers($carriers, $productInfos, $shopAddress, $shippingAddress);
+
+            if (null === $shippingAddress) { // if we cannot get the address from the user, we try the shop address
+                $shippingAddress = $shopAddress;
+            }
+
+
+            if (null !== $shippingAddress) { // the shipping address is set, we can estimate the shipping costs
+
+                /**
+                 * We have to deal with the carriers choices that the shop has made
+                 */
+
+                if (true === EkomApi::inst()->carrierLayer()->useSingleCarrier()) {
+                    if (false !== ($carrierInfo = $this->getSingleCarrier())) {
+                        list($carrierName, $carrier) = $carrierInfo;
+                        $carriers[$carrierName] = $carrier;
+                    }
+                } else { // the user has the choice, so we will take all shop available carriers to do our estimate
+                    EkomApi::inst()->initWebContext();
+                    $shopId = ApplicationRegistry::get("ekom.shop_id");
+                    $carriers = $this->getCarrierInstancesByShop($shopId);
+                }
+
+
+            }
+
 
         }
-        return false; // we don't have a shipping address
+
+
+        //--------------------------------------------
+        // CALCULATING THE COSTS
+        //--------------------------------------------
+        return $this->calculateShippingCostsByCarriers($carriers, $productInfos, $shopAddress, $shippingAddress);
+
     }
 
 
@@ -203,7 +253,7 @@ where c.name=:zename
      * @param array $productInfos : same as estimateShippingCosts
      * @return false|array, same as estimateShippingCosts
      */
-    public function calculateShippingCostByCarrierId($carrierId, array $productInfos, array $shippingAddress)
+    public function calculateShippingCostByCarrierName($carrierName, array $productInfos, array $shippingAddress, $forReal = true)
     {
 
 
@@ -221,29 +271,26 @@ where c.name=:zename
         EkomApi::inst()->initWebContext();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $rows = $this->getCarriersByShop($shopId);
+
         /**
          * @var $coll CarrierCollection
          */
         $coll = X::get("Ekom_getCarrierCollection");
         $carriers = [];
-        if (array_key_exists($carrierId, $rows)) {
-            $name = $rows[$carrierId];
-            if (false !== ($instance = $coll->getCarrier($name))) {
-                $carriers[$name] = $instance;
+        if (false !== array_search($carrierName, $rows)) {
+            if (false !== ($instance = $coll->getCarrier($carrierName))) {
+                $carriers[$carrierName] = $instance;
+                return $this->calculateShippingCostsByCarriers($carriers, $productInfos, $shopAddress, $shippingAddress, $forReal);
             } else {
-                XLog::error("[Ekom module] - CarrierLayer.calculateShippingCostByCarrierId, cannot find carrier instance with name: $name");
+                $msg = "[Ekom module] - CarrierLayer.calculateShippingCostByCarrierId, cannot find carrier instance with name: $carrierName";
+                XLog::error($msg);
+                throw new EkomApiException($msg);
             }
         } else {
-            XLog::error("[Ekom module] - CarrierLayer.calculateShippingCostByCarrierId, carrier not found with id $carrierId");
+            $msg = "[Ekom module] - CarrierLayer.calculateShippingCostByCarrierId, carrier not found with name $carrierName";
+            XLog::error($msg);
+            throw new EkomApiException($msg);
         }
-
-        //--------------------------------------------
-        // CALCULATING THE COSTS
-        //--------------------------------------------
-        if (count($carriers) > 0) {
-            return $this->calculateShippingCostsByCarriers($carriers, $productInfos, $shopAddress, $shippingAddress);
-        }
-        return false;
     }
 
 
@@ -299,6 +346,91 @@ order by h.priority asc
         return $ret;
     }
 
+    /**
+     *
+     * This method is used during the checkout process, where you want to display
+     * a list of all available carriers to the user, along with some useful information such as
+     * the estimated delivery date and the price of the order
+     *
+     * @param $productInfos, same as estimateShippingCosts
+     * @return array of carrierName => carrierInfo
+     *          - carrierInfo: array:
+     *              - name: the carrierName
+     *              - shippingCost:
+     *              - rawShippingCost:
+     *              - estimatedDeliveryDate:
+     *              - carrierLabel:
+     *              - productsInfo: handled products info **
+     *              - notHandled:  not handled products info **
+     *              - trackingNumber:
+     *
+     *
+     *              ** product info depends on the given productInfos argument.
+     *
+     *
+     *
+     */
+    public function getAllCarriersShippingCost(array $productInfos, array $shippingAddress)
+    {
+
+        $shopId = E::getShopId();
+        $carriers = $this->getCarrierInstancesByShop($shopId);
+
+
+        $shopAddress = EkomApi::inst()->shopLayer()->getShopPhysicalAddress();
+        if (false === $shopAddress) {
+            $msg = "[Ekom module] - CarrierLayer.getAllCarriersShippingCost: ekom config error, shop address is not defined";
+            XLog::error($msg);
+            $shopAddress = null;
+        }
+
+
+        $sections = [];
+        foreach ($carriers as $name => $carrier) {
+            /**
+             * @var $carrier CarrierInterface
+             */
+            $handledProductsInfo = [];
+            $notHandled = [];
+            $rejected = [];
+            $info = $carrier->handleOrder([
+                'forReal' => false, // this is just an estimation
+                'products' => $productInfos,
+                'shopAddress' => $shopAddress,
+                'shippingAddress' => $shippingAddress,
+            ], $rejected);
+            $shippingCost = $info["shipping_cost"];
+
+
+            $trackingNumber = "";
+            if (array_key_exists("tracking_number", $info)) {
+                $trackingNumber = $info['tracking_number'];
+            }
+
+            $estimatedDeliveryDate = (array_key_exists('estimated_delivery_date', $info)) ? $info['estimated_delivery_date'] : null;
+
+            foreach ($productInfos as $id => $info) {
+                if (true === in_array($id, $rejected, true)) {
+                    $notHandled[$id] = $info;
+                } else {
+                    $handledProductsInfo[$id] = $info;
+                }
+            }
+
+
+            $sections[$name] = [
+                'name' => $name,
+                'shippingCost' => E::price($shippingCost),
+                'rawShippingCost' => $shippingCost,
+                'estimatedDeliveryDate' => $estimatedDeliveryDate,
+                "carrierLabel" => $carrier->getLabel(),
+                'productsInfo' => $handledProductsInfo,
+                'trackingNumber' => $trackingNumber,
+                'notHandled' => $notHandled,
+            ];
+        }
+        return $sections;
+    }
 
     //--------------------------------------------
     //
@@ -337,8 +469,32 @@ order by h.priority asc
         return false;
     }
 
+    private function getCarrierInfoById($carrierId, $shopId)
+    {
+        $rows = $this->getCarriersByShop($shopId);
 
-    private function calculateShippingCostsByCarriers(array $carriers, array $productInfos, $shopAddress, $shippingAddress)
+        /**
+         * @var $coll CarrierCollection
+         */
+        $coll = X::get("Ekom_getCarrierCollection");
+        if (array_key_exists($carrierId, $rows)) {
+            $name = $rows[$carrierId];
+            if (false !== ($instance = $coll->getCarrier($name))) {
+                return [$name, $instance];
+            } else {
+                $msg = "[Ekom module] - CarrierLayer: carrier $name found in database, but not as a class in the fileSystem";
+                XLog::error($msg);
+                throw new EkomApiException($msg);
+            }
+        } else {
+            $msg = "[Ekom module] - CarrierLayer: cannot find carrier with id $carrierId";
+            XLog::error($msg);
+            throw new EkomApiException($msg);
+        }
+    }
+
+
+    private function calculateShippingCostsByCarriers(array $carriers, array $productInfos, $shopAddress, $shippingAddress, $forReal = true)
     {
         $sections = [];
         $totalShippingCost = 0;
@@ -348,7 +504,7 @@ order by h.priority asc
              */
             $rejected = [];
             $info = $carrier->handleOrder([
-                'forReal' => true,
+                'forReal' => $forReal,
                 'products' => $productInfos,
                 'shopAddress' => $shopAddress,
                 'shippingAddress' => $shippingAddress,
@@ -402,6 +558,9 @@ order by h.priority asc
             'totalShippingCost' => $totalShippingCost,
         ];
     }
+
+
+
 
     private function getCarrierNameById($id)
     {
