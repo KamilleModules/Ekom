@@ -4,6 +4,9 @@
 namespace Module\Ekom\PaymentMethodHandler;
 
 
+/**
+ * @todo-ling: deprecated in favor of PaymentMethodConfig?
+ */
 interface PaymentMethodHandlerInterface
 {
     /**

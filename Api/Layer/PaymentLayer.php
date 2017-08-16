@@ -9,6 +9,8 @@ use Core\Services\A;
 use Core\Services\X;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\PaymentMethodConfig\Collection\PaymentMethodConfigCollection;
+use Module\Ekom\PaymentMethodConfig\Collection\PaymentMethodConfigCollectionInterface;
 use Module\Ekom\PaymentMethodHandler\Collection\PaymentMethodHandlerCollectionInterface;
 use Module\Ekom\PaymentMethodHandler\PaymentMethodHandlerInterface;
 use QuickPdo\QuickPdo;
@@ -76,6 +78,9 @@ where shop_id=$shopId and payment_method_id=$id
 
 
     /**
+     * @todo-ling: every block model related code is deprecated...,
+     * and replaced by PaymentConfig
+     *
      * @param $id , paymentMethod id
      * @param array $options
      */
@@ -102,6 +107,50 @@ where shop_id=$shopId and payment_method_id=$id
         return false;
     }
 
+
+    /**
+     * @return array
+     *              - name => [
+     *                  - id: the payment method id
+     *                  - (all properties of payment config)
+     *              ]
+     */
+    public function getPaymentMethodConfigs()
+    {
+        $ret = [];
+        /**
+         * @var $coll PaymentMethodConfigCollectionInterface
+         */
+        $coll = X::get("Ekom_getPaymentMethodConfigCollection");
+        $all = $coll->all();
+        $name2Ids = $this->getPaymentMethodName2Ids();
+        foreach ($all as $name => $item) {
+            $ret[$name] = $item->getConfig();
+            $ret[$name]['id'] = $name2Ids[$name];
+        }
+        return $ret;
+    }
+
+
+    /**
+     * @return array|false, false if there is no payment method in the shop
+     *      - id
+     *      - name
+     *      - configuration (array)
+     */
+    public function getDefaultPaymentMethod($shopId = null)
+    {
+        $allMethods = $this->getShopPaymentMethods($shopId);
+        if (count($allMethods) > 0) {
+            $row = current($allMethods);
+            return [
+                'id' => $row['id'],
+                'name' => $row['name'],
+                'configuration' => unserialize($row['configuration']),
+            ];
+        }
+        return false;
+    }
 
     /**
      *
@@ -177,6 +226,21 @@ where shop_id=$shopId and payment_method_id=$id
         return $ret;
     }
 
+
+    public function getPaymentMethods($shopId = null)
+    {
+        return $this->getShopPaymentMethods($shopId);
+    }
+
+    public function getPaymentMethodName2Ids($shopId = null)
+    {
+        $ret = [];
+        $methods = $this->getShopPaymentMethods($shopId);
+        foreach ($methods as $method) {
+            $ret[$method['name']] = $method['id'];
+        }
+        return $ret;
+    }
 
 
 

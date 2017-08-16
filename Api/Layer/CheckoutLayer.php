@@ -309,10 +309,22 @@ class CheckoutLayer
         $_SESSION['ekom']['order.singleAddress']['billing_address_id'] = $id;
     }
 
-    public function setPaymentMethod($id, array $paymentMethodOptions = [], array $options = null)
+    public function setPaymentMethod($id, array $paymentMethodOptions = [])
     {
-        $this->setSessionValue("payment_method", [$id, $paymentMethodOptions], $options);
+        $this->initOrderModel();
+        $_SESSION['ekom']['order.singleAddress']['payment_method_id'] = $id;
+        $_SESSION['ekom']['order.singleAddress']['payment_method_options'] = $paymentMethodOptions;
     }
+
+//    /**
+//     * If you use this method, it is assumed that your payment_method_options is an array.
+//     * (usually, this should be the case)
+//     */
+//    public function setPaymentOptionProperty($key, $value)
+//    {
+//        $this->initOrderModel();
+//        $_SESSION['ekom']['order.singleAddress']['payment_method_options'][$key] = $value;
+//    }
 
 
     /**
@@ -334,6 +346,24 @@ class CheckoutLayer
         $ret["shipping_address_id"] = $a["shipping_address_id"];
         $ret["carrier_name"] = $a["carrier_name"];
         $ret["shipping_billing_synced"] = $a["shipping_billing_synced"];
+        return $ret;
+    }
+
+
+    /**
+     * @return array
+     *          - payment_method_id: int|null
+     *          - payment_method_options: array
+     *
+     */
+    public function getPaymentInfo()
+    {
+        $this->initOrderModel();
+        $a = EkomSession::get('order.singleAddress');
+        $ret = [
+            'payment_method_id' => $a['payment_method_id'],
+            'payment_method_options' => $a['payment_method_options'],
+        ];
         return $ret;
     }
 
@@ -585,14 +615,24 @@ class CheckoutLayer
                     $carrierName = $name;
                 }
 
+                $paymentMethod = null;
+                $paymentMethodOptions = null;
+                if (false !== ($row = EkomApi::inst()->paymentLayer()->getDefaultPaymentMethod())) {
+                    $paymentMethod = $row['id'];
+                    $paymentMethodOptions = $row['configuration'];
+                }
+
+
                 EkomSession::set('order.singleAddress', [
+                    //
                     "billing_address_id" => $billingAddressId,
                     "shipping_address_id" => $shippingAddressId,
                     "carrier_name" => $carrierName,
-                    "payment_method_id" => null,
-                    "payment_method_options" => null,
                     "shipping_billing_synced" => false,
                     "shipping_comment" => "",
+                    //
+                    "payment_method_id" => $paymentMethod,
+                    "payment_method_options" => $paymentMethodOptions,
                 ]);
             }
         } else {
