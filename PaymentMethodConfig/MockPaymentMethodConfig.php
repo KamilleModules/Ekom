@@ -8,6 +8,13 @@ class MockPaymentMethodConfig implements PaymentMethodConfigInterface
 {
 
     private $config;
+    private $defaultOptions;
+
+
+    public function __construct()
+    {
+        $this->defaultOptions = [];
+    }
 
 
     public static function create()
@@ -22,6 +29,18 @@ class MockPaymentMethodConfig implements PaymentMethodConfigInterface
     }
 
     /**
+     * @param callable|array $defaultOptions ,
+     *              the callable must return an array
+     * @return $this
+     */
+    public function setDefaultOptions($defaultOptions)
+    {
+        $this->defaultOptions = $defaultOptions;
+        return $this;
+    }
+
+
+    /**
      * @return mixed
      */
     public function getConfig()
@@ -33,6 +52,18 @@ class MockPaymentMethodConfig implements PaymentMethodConfigInterface
         }
         // error?
         return [];
+    }
+
+    public function getDefaultOptions($configuration = null)
+    {
+        $ret = $this->defaultOptions;
+        if (is_callable($ret)) {
+            $ret = call_user_func($ret, $configuration);
+        }
+        if (is_array($configuration)) {
+            $ret = array_merge($ret, $configuration);
+        }
+        return $ret;
     }
 
 

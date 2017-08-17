@@ -5,6 +5,7 @@ namespace Module\Ekom\Api\Layer;
 
 use Authenticate\SessionUser\SessionUser;
 use Bat\SessionTool;
+use Core\Services\Hooks;
 use Core\Services\X;
 use Ingenico\Handler\IngenicoHandler;
 use Kamille\Architecture\Registry\ApplicationRegistry;
@@ -64,6 +65,7 @@ class CheckoutLayer
 
                 $billingAddressId = $a["billing_address_id"];
                 $shippingAddressId = $a["shipping_address_id"];
+                $shippingComment = $a["shipping_comment"];
                 $carrierName = $a["carrier_name"];
                 $paymentMethodId = $a["payment_method_id"];
                 $paymentMethodOptions = $a["payment_method_options"];
@@ -179,6 +181,7 @@ class CheckoutLayer
                     "isB2B" => $cartModel['isB2B'],
                     "billingAddress" => $billingAddress, // or false
                     "shippingAddress" => $shippingAddress, // or false
+                    "shippingComment" => $shippingComment,
                     "shippingAddresses" => $addresses,
                     "selectedShippingAddressId" => $shippingAddressId,
                     "defaultCountry" => $countryId,
@@ -456,9 +459,18 @@ class CheckoutLayer
     {
         try {
 
+
+
+            $paymentInfo = $this->getPaymentInfo();
+            az($paymentInfo);
+
+
+
+
             $ret = QuickPdo::transaction(function () use ($cleanOnSuccess) {
 
                 $info = $this->getPlaceOrderInfo();
+            az($info);
 
                 if (false !== ($orderId = EkomApi::inst()->order()->create([
                         'user_id' => $info['user_id'],
@@ -477,9 +489,14 @@ class CheckoutLayer
                     EkomApi::inst()->orderLayer()->addOrderStatusByEkomAction($orderId, EkomStatusAction::ACTION_ORDER_PLACED);
 
                     if (true === $cleanOnSuccess) {
+
                         EkomApi::inst()->cartLayer()->clean();
                         $this->cleanSessionOrder();
-                        $_SESSION['ekom.order.last'] = $orderId;
+                        EkomApi::inst()->orderBuilderLayer()->get('ekom')->clean();
+                        EkomSession::set("order.last", $orderId);
+                        Hooks::call("Ekom_onPlaceOrderCleanedAfter");
+
+
                     }
                 }
                 return false;
@@ -618,6 +635,14 @@ class CheckoutLayer
                 $paymentMethod = null;
                 $paymentMethodOptions = null;
                 if (false !== ($row = EkomApi::inst()->paymentLayer()->getDefaultPaymentMethod())) {
+
+                    /**
+                     * todo: use the PaymentMethodConfig.getDefaultOptions ?
+                     */
+                    $name = $row['name'];
+                    X::get("Ekom_getPaymentMethodConfigCollection");
+                    az(__FILE__);
+
                     $paymentMethod = $row['id'];
                     $paymentMethodOptions = $row['configuration'];
                 }
@@ -634,6 +659,7 @@ class CheckoutLayer
                     "payment_method_id" => $paymentMethod,
                     "payment_method_options" => $paymentMethodOptions,
                 ]);
+
             }
         } else {
             throw new \Exception("Not implemented yed");

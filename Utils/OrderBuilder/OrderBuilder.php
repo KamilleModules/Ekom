@@ -15,24 +15,18 @@ class OrderBuilder implements OrderBuilderInterface
      * @var OrderBuilderStepInterface[]
      */
     protected $steps;
-    protected $context;
+    protected $sessionName;
 
 
     public function __construct()
     {
         $this->steps = [];
-        $this->context = null;
+        $this->sessionName = "order-builder-steps";
     }
 
     public static function create()
     {
         return new static();
-    }
-
-
-    public function getContext()
-    {
-        return $this->context;
     }
 
 
@@ -64,11 +58,17 @@ class OrderBuilder implements OrderBuilderInterface
 
         $activeId = null;
         $userStep = $this->getUserStep();
-        $sessionSteps = EkomSession::get("order-builder-steps", []);
+        $sessionSteps = EkomSession::get($this->sessionName, []);
 
 
         // parse the steps
         foreach ($this->steps as $id => $step) {
+
+
+            if (false === $step->isRelevant()) {
+                continue;
+            }
+
             if (null === $userStep) {
                 /**
                  * Leave done alone,
@@ -104,14 +104,19 @@ class OrderBuilder implements OrderBuilderInterface
 
         // compile information for the view
         foreach ($this->steps as $id => $step) {
-
-            if ($activeId === $id) {
-                $state = 'active';
+            if (false === $step->isRelevant()) {
+                $state = 'irrelevant';
             } else {
-                if (true === $this->stepIsDone($id, $sessionSteps)) {
-                    $state = 'done';
+
+
+                if ($activeId === $id) {
+                    $state = 'active';
                 } else {
-                    $state = 'inactive';
+                    if (true === $this->stepIsDone($id, $sessionSteps)) {
+                        $state = 'done';
+                    } else {
+                        $state = 'inactive';
+                    }
                 }
             }
 
@@ -126,7 +131,7 @@ class OrderBuilder implements OrderBuilderInterface
 
     public function isCompleted()
     {
-        $sessionSteps = EkomSession::get("order-builder-steps", []);
+        $sessionSteps = EkomSession::get($this->sessionName, []);
         foreach ($this->steps as $id => $step) {
             if (false === $this->stepIsDone($id, $sessionSteps)) {
                 return false;
@@ -162,17 +167,17 @@ class OrderBuilder implements OrderBuilderInterface
 
     private function handleDone($id, $done)
     {
-        $sessionSteps = EkomSession::get("order-builder-steps", []);
+        $sessionSteps = EkomSession::get($this->sessionName, []);
         if (true === $done) {
             $sessionSteps[$id] = true;
-            EkomSession::set("order-builder-steps", $sessionSteps);
+            EkomSession::set($this->sessionName, $sessionSteps);
         }
         return $sessionSteps;
     }
 
     private function cleanStepsDone()
     {
-        EkomSession::remove("order-builder-steps");
+        EkomSession::remove($this->sessionName);
     }
 
 }

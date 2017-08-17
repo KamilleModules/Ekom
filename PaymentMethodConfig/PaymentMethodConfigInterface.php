@@ -30,4 +30,20 @@ interface PaymentMethodConfigInterface
      * @return array
      */
     public function getConfig();
+
+    /**
+     *
+     * Parse the configuration from the database and returns a reliable set of default options.
+     * An option is an something that the user must configure in order to place a successful order.
+     *
+     * NOTE THAT IF AN OPTION IS BADLY CONFIGURED, THE PLACEORDER METHOD SHALL FAIL !!
+     *
+     * In fact, this method ensures that the database configuration is ok, and if not provides fallback options.
+     *
+     *
+     * @param $configuration , the configuration data stored in the database (ek_shop_has_payment_method).
+     * @return array of key => value representing the default options to use for this payment method.
+     *
+     */
+    public function getDefaultOptions($configuration = null);
 }

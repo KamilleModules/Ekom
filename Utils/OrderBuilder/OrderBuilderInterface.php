@@ -14,7 +14,7 @@ use Module\Ekom\Utils\OrderBuilder\Step\OrderBuilderStepInterface;
 interface OrderBuilderInterface
 {
 
-    public function getContext();
+//    public function getContext();
 
     public function getOrderModel();
 
@@ -57,7 +57,7 @@ interface OrderBuilderInterface
 //    /**
 //     * Clean all persistent data pertaining to this OrderBuilder instance
 //     */
-//    public function clean();
+    public function clean();
 
     /**
      * @return bool, whether or not all (non irrelevant) steps have the "done" state
