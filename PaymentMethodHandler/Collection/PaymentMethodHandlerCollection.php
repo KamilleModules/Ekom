@@ -4,17 +4,17 @@
 namespace Module\Ekom\PaymentMethodHandler\Collection;
 
 
-
+use Module\Ekom\Exception\EkomException;
 use Module\Ekom\PaymentMethodHandler\PaymentMethodHandlerInterface;
 
 class PaymentMethodHandlerCollection implements PaymentMethodHandlerCollectionInterface
 {
 
-    private $paymentMethodHandlers;
+    private $configs;
 
     public function __construct()
     {
-        $this->paymentMethodHandlers = [];
+        $this->configs = [];
     }
 
     public static function create()
@@ -23,29 +23,30 @@ class PaymentMethodHandlerCollection implements PaymentMethodHandlerCollectionIn
     }
 
 
-    public function addPaymentMethodHandler($name, PaymentMethodHandlerInterface $handler)
+    public function setPaymentMethodHandler($name, PaymentMethodHandlerInterface $handler)
     {
-        $this->paymentMethodHandlers[$name] = $handler;
+        $this->configs[$name] = $handler;
         return $this;
     }
 
     //--------------------------------------------
     //
     //--------------------------------------------
-    /**
-     * @param $name
-     * @return PaymentMethodHandlerInterface|false
-     */
-    public function getPaymentMethodHandler($name)
-    {
-        if (array_key_exists($name, $this->paymentMethodHandlers)) {
-            return $this->paymentMethodHandlers[$name];
-        }
-        return false;
-    }
-
     public function all()
     {
-        return $this->paymentMethodHandlers;
+        return $this->configs;
     }
+
+    public function get($name, $throwEx = true, $default = null)
+    {
+        if (array_key_exists($name, $this->configs)) {
+            return $this->configs[$name];
+        }
+        if (true === $throwEx) {
+            throw new EkomException("PaymentMethodHandler object not found with name: $name");
+        }
+        return $default;
+    }
+
+
 }

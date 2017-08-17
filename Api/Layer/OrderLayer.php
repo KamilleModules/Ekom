@@ -14,6 +14,7 @@ use ListParams\ListParamsInterface;
 use ListParams\Model\QueryDecorator;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
+use Module\Ekom\Utils\ReferenceProvider;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
 use QuickPdo\QuickPdo;
 
@@ -23,7 +24,11 @@ class OrderLayer
 
     public function getUniqueReference()
     {
-        return date('Ymd-His') . '-' . sprintf('%04s', ($this->countOrders() + 1));
+        /**
+         * @var $refProvider ReferenceProvider
+         */
+        $refProvider = X::get("Ekom_ReferenceProvider");
+        return $refProvider->getNewReference();
     }
 
 
@@ -170,9 +175,6 @@ select id, reference, `date`, order_details from ek_order where user_id=$userId
         $rows = QuickPdo::fetchAll($q, $markers);
 
 
-
-
-
         $ret = [];
         foreach ($rows as $k => $row) {
 
@@ -214,22 +216,23 @@ select id, reference, `date`, order_details from ek_order where user_id=$userId
     }
 
 
-
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    private function countOrders()
+    public function countUserOrders($userId)
     {
         $ret = 0;
+        $userId = (int)$userId;
         if (false !== ($row = QuickPdo::fetch("
 select count(*) as count from ek_order 
-where `date` = CURDATE()        
+where user_id=$userId        
         "))
         ) {
             $ret = (int)$row['count'];
         }
         return $ret;
     }
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
 
     public function getCode2Ids($shopId)
     {

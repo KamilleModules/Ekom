@@ -1,14 +1,15 @@
 <?php
 
 
-namespace Module\Ekom\PaymentMethodConfig;
+namespace Module\Ekom\PaymentMethodHandler;
 
 
-class MockPaymentMethodConfig implements PaymentMethodConfigInterface
+class MockPaymentMethodHandler implements PaymentMethodHandlerInterface
 {
 
     private $config;
     private $defaultOptions;
+    private $payCallback;
 
 
     public function __construct()
@@ -27,6 +28,13 @@ class MockPaymentMethodConfig implements PaymentMethodConfigInterface
         $this->config = $config;
         return $this;
     }
+
+    public function setPayCallback(callable $payCallback)
+    {
+        $this->payCallback = $payCallback;
+        return $this;
+    }
+
 
     /**
      * @param callable|array $defaultOptions ,
@@ -64,6 +72,14 @@ class MockPaymentMethodConfig implements PaymentMethodConfigInterface
             $ret = array_merge($ret, $configuration);
         }
         return $ret;
+    }
+
+    public function pay(array $extendedOrderModel)
+    {
+        if (is_callable($this->payCallback)) {
+            return call_user_func($this->payCallback, $extendedOrderModel);
+        }
+        return [];
     }
 
 

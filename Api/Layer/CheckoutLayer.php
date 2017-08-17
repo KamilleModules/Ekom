@@ -14,6 +14,8 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Exception\IncompleteOrderException;
+use Module\Ekom\Exception\EkomException;
+use Module\Ekom\PaymentMethodHandler\Collection\PaymentMethodHandlerCollectionInterface;
 use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Status\Action\EkomStatusAction;
 use Module\Ekom\Utils\E;
@@ -67,8 +69,18 @@ class CheckoutLayer
                 $shippingAddressId = $a["shipping_address_id"];
                 $shippingComment = $a["shipping_comment"];
                 $carrierName = $a["carrier_name"];
+
+
                 $paymentMethodId = $a["payment_method_id"];
                 $paymentMethodOptions = $a["payment_method_options"];
+
+                // throws an exception if the payment method doesn't exist, because
+                // this probably is a hack (or probably not?)
+                $paymentMethodName = EkomApi::inst()->paymentLayer()->getPaymentMethodNameById($paymentMethodId);
+                if (false === $paymentMethodName) {
+                    $msg = "No payment method name found with id: $paymentMethodId";
+                    throw new EkomException($msg);
+                }
 
 
                 $userLayer = $api->userLayer();
@@ -76,7 +88,6 @@ class CheckoutLayer
                 $carrierLayer = $api->carrierLayer();
                 $couponLayer = $api->couponLayer();
                 $cartLayer = $api->cartLayer();
-                $paymentLayer = $api->paymentLayer();
 
 
                 $userId = SessionUser::getValue("id");
@@ -150,11 +161,13 @@ class CheckoutLayer
                 $provider = X::get("Core_OnTheFlyFormProvider");
 //                $form = $provider->getForm("Ekom", "UserAddress");
                 $hasCarrierChoice = $carrierLayer->useSingleCarrier();
-                $paymentMethodBlocks = $paymentLayer->getShopPaymentMethodBlockModels(null, $paymentMethodId, $paymentMethodOptions);
-                $paymentMethod = null;
-                if (null !== $paymentMethodId) {
-                    $paymentMethod = $paymentLayer->getConfiguredPaymentBlockModel($paymentMethodId, $paymentMethodOptions);
-                }
+
+
+//                $paymentMethodBlocks = $paymentLayer->getShopPaymentMethodBlockModels(null, $paymentMethodId, $paymentMethodOptions);
+//                $paymentMethod = null;
+//                if (null !== $paymentMethodId) {
+//                    $paymentMethod = $paymentLayer->getConfiguredPaymentBlockModel($paymentMethodId, $paymentMethodOptions);
+//                }
 
 
 //                $currentStep = $a["current_step"];
@@ -187,7 +200,7 @@ class CheckoutLayer
                     "defaultCountry" => $countryId,
 //                    "shippingAddressFormModel" => $form->getModel(),
                     "useSingleCarrier" => $hasCarrierChoice,
-                    "paymentMethodBlocks" => $paymentMethodBlocks,
+//                    "paymentMethodBlocks" => $paymentMethodBlocks,
 //                    "currentStep" => $currentStep,
                     //
                     "orderSectionSubtotalWithoutTax" => $orderSectionSubtotalWithoutTax,
@@ -217,7 +230,7 @@ class CheckoutLayer
 
                     "paymentMethodId" => $paymentMethodId,
                     "paymentMethodOptions" => $paymentMethodOptions,
-                    "paymentMethod" => $paymentMethod, // or null
+                    "paymentMethodName" => $paymentMethodName,
                     "orderSections" => $shippingCosts,
                     //
                     "taxAmount" => $cartModel['taxAmount'],
@@ -370,6 +383,13 @@ class CheckoutLayer
         return $ret;
     }
 
+    public function setPaymentMethodFeedback(array $feedBack)
+    {
+        $this->initOrderModel();
+        $_SESSION['ekom']['order.singleAddress']['payment_method_feedback'] = $feedBack;
+    }
+
+
     public function setCarrierName($name)
     {
         $this->initOrderModel();
@@ -378,9 +398,10 @@ class CheckoutLayer
 
 
     /**
-     * Used by EkomEstimate module
+     * $additionalOrderDetails: allow to pass payment transaction feedback info.
+     *          If the pay_id key is found, it will be used as the pay_identifier.
      */
-    public function getPlaceOrderInfo()
+    public function getPlaceOrderInfo($reference = null, array $additionalOrderDetails = [])
     {
 
         $checkoutMode = E::conf("checkoutMode");
@@ -394,11 +415,7 @@ class CheckoutLayer
             $this->forReal = false;
 
 
-            // tmp
-            $model['paymentMethod'] = "creditCard";
-
-
-            if (null === $model['paymentMethod']) {
+            if (false === array_key_exists('paymentMethodName', $model) || null === $model['paymentMethodName']) {
                 throw new IncompleteOrderException("Incomplete order: missing paymentMethod");
             }
 
@@ -422,8 +439,11 @@ class CheckoutLayer
 
             $invoiceAddress = $model['shippingAddress'];
             $billingAddress = $model['billingAddress'];
+            $payIdentifier = array_key_exists('pay_id', $additionalOrderDetails) ? $additionalOrderDetails['pay_id'] : null;
 
-            $details = $model;
+
+            $details = array_merge($model, $additionalOrderDetails);
+
             unset($details['checkoutMode']);
             unset($details['billingAddress']);
             unset($details['shippingAddress']);
@@ -434,13 +454,19 @@ class CheckoutLayer
             unset($details['useSingleCarrier']);
             unset($details['paymentMethodBlocks']);
             unset($details['currentStep']);
-            unset($details['paymentMethodId']);
-            unset($details['paymentMethodOptions']);
+//            unset($details['paymentMethodId']);
+//            unset($details['paymentMethodOptions']);
+
+
+            if (null === $reference) {
+                $reference = EkomApi::inst()->orderLayer()->getUniqueReference();
+            }
 
             return [
                 'user_id' => $userId,
-                'reference' => EkomApi::inst()->orderLayer()->getUniqueReference(),
+                'reference' => $reference,
                 'date' => date("Y-m-d H:i:s"),
+                'pay_identifier' => $payIdentifier,
                 'tracking_number' => $model['orderSections']['sections'][0]['trackingNumber'],
                 'user_info' => serialize($userInfo),
                 'shop_info' => serialize($shopInfo),
@@ -455,27 +481,27 @@ class CheckoutLayer
     }
 
 
-    public function placeOrder($cleanOnSuccess = true)
+    /**
+     * @param null $reference
+     * @param array $additionalOrderDetails , see get getPlaceOrderInfo for more details
+     * @param bool $cleanOnSuccess
+     * @return bool
+     */
+    public function placeOrder($reference = null, array $additionalOrderDetails = [], $cleanOnSuccess = true)
     {
         try {
 
 
+            $ret = QuickPdo::transaction(function () use ($cleanOnSuccess, $reference, $additionalOrderDetails) {
 
-            $paymentInfo = $this->getPaymentInfo();
-            az($paymentInfo);
+                $info = $this->getPlaceOrderInfo($reference, $additionalOrderDetails);
 
-
-
-
-            $ret = QuickPdo::transaction(function () use ($cleanOnSuccess) {
-
-                $info = $this->getPlaceOrderInfo();
-            az($info);
 
                 if (false !== ($orderId = EkomApi::inst()->order()->create([
                         'user_id' => $info['user_id'],
                         'reference' => $info['reference'],
                         'date' => $info['date'],
+                        'pay_identifier' => (string)$info['pay_identifier'],
                         'tracking_number' => $info['tracking_number'],
                         'user_info' => $info['user_info'],
                         'shop_info' => $info['shop_info'],
@@ -588,6 +614,7 @@ class CheckoutLayer
     {
         SessionTool::start();
 
+
         if ('singleAddress' === E::conf("checkoutMode")) {
             if (false === EkomSession::has("order.singleAddress")) {
                 /**
@@ -602,10 +629,14 @@ class CheckoutLayer
                  * --------- carrier_id
                  * --------- ?carrier_options array of key => value, depending on the carrier (read relevant carrier doc for more info)
                  * --------- shipping_comment: a general comment pertaining to the order (not to a particular address)
-                 * --------- payment_method_id
-                 * --------- ?payment_method_options: array of key => value, depending on the payment method (read relevant payment method doc for more info)
                  * --------- shipping_billing_synced: bool, whether or not the shipping and billing address shall be synced.
                  *                                      Note: you might not need this option, depending on your view
+                 * --------- payment_method_id
+                 * --------- payment_method_options: array of key => value, depending on the payment method (read relevant payment method doc for more info)
+                 * --------- payment_method_feedback: array containing the following data:
+                 *                                      - ?pay_id: a pay identifier used to identify the payment
+                 *                                              might not be used by all PaymentMethodHandlers
+                 *                                      - ...other things, depending on the PaymentMethodHandler
                  *
                  *
                  */
@@ -634,17 +665,19 @@ class CheckoutLayer
 
                 $paymentMethod = null;
                 $paymentMethodOptions = null;
+                $paymentMethodFeedback = null;
                 if (false !== ($row = EkomApi::inst()->paymentLayer()->getDefaultPaymentMethod())) {
 
+                    $paymentMethod = $row['id'];
                     /**
-                     * todo: use the PaymentMethodConfig.getDefaultOptions ?
+                     * We choose the default options from the model (mvc)
                      */
                     $name = $row['name'];
-                    X::get("Ekom_getPaymentMethodConfigCollection");
-                    az(__FILE__);
-
-                    $paymentMethod = $row['id'];
-                    $paymentMethodOptions = $row['configuration'];
+                    /**
+                     * @var $col PaymentMethodHandlerCollectionInterface
+                     */
+                    $col = X::get("Ekom_getPaymentMethodHandlerCollection");
+                    $paymentMethodOptions = $col->get($name)->getDefaultOptions($row['configuration']);
                 }
 
 
@@ -658,6 +691,7 @@ class CheckoutLayer
                     //
                     "payment_method_id" => $paymentMethod,
                     "payment_method_options" => $paymentMethodOptions,
+                    "payment_method_feedback" => $paymentMethodFeedback,
                 ]);
 
             }

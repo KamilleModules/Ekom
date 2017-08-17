@@ -4,13 +4,13 @@
 namespace Module\Ekom\Api\Layer;
 
 
+use ArrayToString\ArrayToStringTool;
 use Authenticate\SessionUser\SessionUser;
 use Core\Services\A;
 use Core\Services\X;
 use Kamille\Architecture\Registry\ApplicationRegistry;
+use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
-use Module\Ekom\PaymentMethodConfig\Collection\PaymentMethodConfigCollection;
-use Module\Ekom\PaymentMethodConfig\Collection\PaymentMethodConfigCollectionInterface;
 use Module\Ekom\PaymentMethodHandler\Collection\PaymentMethodHandlerCollectionInterface;
 use Module\Ekom\PaymentMethodHandler\PaymentMethodHandlerInterface;
 use QuickPdo\QuickPdo;
@@ -115,18 +115,22 @@ where shop_id=$shopId and payment_method_id=$id
      *                  - (all properties of payment config)
      *              ]
      */
-    public function getPaymentMethodConfigs()
+    public function getPaymentMethodHandlers()
     {
         $ret = [];
         /**
-         * @var $coll PaymentMethodConfigCollectionInterface
+         * @var $coll PaymentMethodHandlerCollectionInterface
          */
-        $coll = X::get("Ekom_getPaymentMethodConfigCollection");
+        $coll = X::get("Ekom_getPaymentMethodHandlerCollection");
         $all = $coll->all();
         $name2Ids = $this->getPaymentMethodName2Ids();
         foreach ($all as $name => $item) {
             $ret[$name] = $item->getConfig();
+            if(!array_key_exists($name, $name2Ids)){
+                XLog::error("[Ekom module] - name $name doesn't exist in this shop: " . ArrayToStringTool::toPhpArray($name2Ids));
+            }
             $ret[$name]['id'] = $name2Ids[$name];
+
         }
         return $ret;
     }
@@ -185,6 +189,7 @@ where shop_id=$shopId and payment_method_id=$id
             $name = $row['name'];
             if (array_key_exists($name, $all)) {
                 $handler = $all[$name];
+                throw new \Exception("kk");
                 $arr = $handler->getPaymentMethodBlockModel($paymentMethodOptions);
 
                 if (null === $paymentMethodId) {
@@ -240,6 +245,18 @@ where shop_id=$shopId and payment_method_id=$id
             $ret[$method['name']] = $method['id'];
         }
         return $ret;
+    }
+
+
+    public function getPaymentMethodNameById($id, $shopId = null)
+    {
+        $methods = $this->getShopPaymentMethods($shopId);
+        foreach ($methods as $method) {
+            if ((int)$method['id'] === (int)$id) {
+                return $method['name'];
+            }
+        }
+        return false;
     }
 
 

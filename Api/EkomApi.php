@@ -9,6 +9,7 @@ use Http4All\Header\AcceptLanguageHelper;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
 use Kamille\Services\XLog;
+use Module\Ekom\Api\Layer\AjaxHandlerLayer;
 use Module\Ekom\Api\Layer\AttributeLayer;
 use Module\Ekom\Api\Layer\BundleLayer;
 use Module\Ekom\Api\Layer\CarrierLayer;
@@ -285,6 +286,14 @@ and h.lang_id=$langId
     //--------------------------------------------
     //
     //--------------------------------------------
+    /**
+     * @return AjaxHandlerLayer
+     */
+    public function ajaxHandlerLayer()
+    {
+        return $this->getLayer('ajaxHandlerLayer');
+    }
+
     /**
      * @return AttributeLayer
      */

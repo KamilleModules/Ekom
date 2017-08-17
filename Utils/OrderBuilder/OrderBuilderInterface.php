@@ -13,10 +13,10 @@ use Module\Ekom\Utils\OrderBuilder\Step\OrderBuilderStepInterface;
  */
 interface OrderBuilderInterface
 {
-
-//    public function getContext();
-
-    public function getOrderModel();
+//
+////    public function getContext();
+//
+//    public function getOrderModel();
 
     public function registerStep($id, OrderBuilderStepInterface $step);
 
@@ -62,6 +62,6 @@ interface OrderBuilderInterface
     /**
      * @return bool, whether or not all (non irrelevant) steps have the "done" state
      */
-    public function isCompleted();
+//    public function isCompleted();
 
 }
