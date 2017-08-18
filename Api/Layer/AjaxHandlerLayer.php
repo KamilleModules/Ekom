@@ -104,4 +104,11 @@ class AjaxHandlerLayer
     }
 
 
+    /**
+     * @return CheckoutLayer
+     */
+    public function getCheckoutLayer()
+    {
+        return X::get("Ekom_CheckoutLayerProvider")->getCheckoutLayer();
+    }
 }

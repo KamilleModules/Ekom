@@ -26,15 +26,13 @@ use QuickPdo\QuickPdo;
 class CheckoutLayer
 {
 
-    /**
-     * Whether or not carrier will allow communication with external apis.
-     * Is only used once when the order is placed for good.
-     */
-    private $forReal;
+    protected $sessionName;
+    private $_cartLayer;
+
 
     public function __construct()
     {
-        $this->forReal = false;
+        $this->sessionName = 'order.singleAddress';
     }
 
 
@@ -63,7 +61,7 @@ class CheckoutLayer
 
 
                 // taking data out of sections
-                $a = EkomSession::get('order.singleAddress');
+                $a = EkomSession::get($this->sessionName);
 
                 $billingAddressId = $a["billing_address_id"];
                 $shippingAddressId = $a["shipping_address_id"];
@@ -87,7 +85,7 @@ class CheckoutLayer
                 $userAddressLayer = $api->userAddressLayer();
                 $carrierLayer = $api->carrierLayer();
                 $couponLayer = $api->couponLayer();
-                $cartLayer = $api->cartLayer();
+                $cartLayer = $this->getCartLayer();
 
 
                 $userId = SessionUser::getValue("id");
@@ -112,7 +110,7 @@ class CheckoutLayer
                 $countryId = $userLayer->getUserPreferredCountry();
 
 
-                $cartModel = EkomApi::inst()->cartLayer()->getCartModel([
+                $cartModel = $cartLayer->getCartModel([
                     'useEstimateShippingCosts' => false,
                 ]);
 
@@ -173,7 +171,7 @@ class CheckoutLayer
 //                $currentStep = $a["current_step"];
 
 
-                $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
+                $cartModel = $cartLayer->getCartModel();
 
                 $isB2b = $cartModel['isB2B'];
 
@@ -287,7 +285,7 @@ class CheckoutLayer
     {
 //        $this->setSessionValue("shipping_address_id", $id, $options); // old amazon style
         $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['shipping_address_id'] = $id;
+        $_SESSION['ekom'][$this->sessionName]['shipping_address_id'] = $id;
     }
 
 
@@ -297,23 +295,23 @@ class CheckoutLayer
     public function setShippingComment($comment)
     {
         $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['shipping_comment'] = $comment;
+        $_SESSION['ekom'][$this->sessionName]['shipping_comment'] = $comment;
     }
 
 
     public function setBillingAddressId($id)
     {
         $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['billing_address_id'] = $id;
+        $_SESSION['ekom'][$this->sessionName]['billing_address_id'] = $id;
     }
 
     public function setShippingAndBillingAreSynced($bool)
     {
 
         $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['shipping_billing_synced'] = $bool;
+        $_SESSION['ekom'][$this->sessionName]['shipping_billing_synced'] = $bool;
         if (true === $bool) {
-            $_SESSION['ekom']['order.singleAddress']['billing_address_id'] = $_SESSION['ekom']['order.singleAddress']['shipping_address_id'];
+            $_SESSION['ekom'][$this->sessionName]['billing_address_id'] = $_SESSION['ekom'][$this->sessionName]['shipping_address_id'];
         }
     }
 
@@ -321,15 +319,15 @@ class CheckoutLayer
     public function setShippingAndBillingAddressId($id)
     {
         $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['shipping_address_id'] = $id;
-        $_SESSION['ekom']['order.singleAddress']['billing_address_id'] = $id;
+        $_SESSION['ekom'][$this->sessionName]['shipping_address_id'] = $id;
+        $_SESSION['ekom'][$this->sessionName]['billing_address_id'] = $id;
     }
 
     public function setPaymentMethod($id, array $paymentMethodOptions = [])
     {
         $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['payment_method_id'] = $id;
-        $_SESSION['ekom']['order.singleAddress']['payment_method_options'] = $paymentMethodOptions;
+        $_SESSION['ekom'][$this->sessionName]['payment_method_id'] = $id;
+        $_SESSION['ekom'][$this->sessionName]['payment_method_options'] = $paymentMethodOptions;
     }
 
 //    /**
@@ -339,7 +337,7 @@ class CheckoutLayer
 //    public function setPaymentOptionProperty($key, $value)
 //    {
 //        $this->initOrderModel();
-//        $_SESSION['ekom']['order.singleAddress']['payment_method_options'][$key] = $value;
+//        $_SESSION['ekom'][$this->sessionName]['payment_method_options'][$key] = $value;
 //    }
 
 
@@ -356,7 +354,7 @@ class CheckoutLayer
     public function getShippingInfo()
     {
         $this->initOrderModel();
-        $a = EkomSession::get('order.singleAddress');
+        $a = EkomSession::get($this->sessionName);
         $ret = [];
         $ret["billing_address_id"] = $a["billing_address_id"];
         $ret["shipping_address_id"] = $a["shipping_address_id"];
@@ -375,7 +373,7 @@ class CheckoutLayer
     public function getPaymentInfo()
     {
         $this->initOrderModel();
-        $a = EkomSession::get('order.singleAddress');
+        $a = EkomSession::get($this->sessionName);
         $ret = [
             'payment_method_id' => $a['payment_method_id'],
             'payment_method_options' => $a['payment_method_options'],
@@ -386,14 +384,14 @@ class CheckoutLayer
     public function setPaymentMethodFeedback(array $feedBack)
     {
         $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['payment_method_feedback'] = $feedBack;
+        $_SESSION['ekom'][$this->sessionName]['payment_method_feedback'] = $feedBack;
     }
 
 
     public function setCarrierName($name)
     {
         $this->initOrderModel();
-        $_SESSION['ekom']['order.singleAddress']['carrier_name'] = $name;
+        $_SESSION['ekom'][$this->sessionName]['carrier_name'] = $name;
     }
 
 
@@ -410,9 +408,7 @@ class CheckoutLayer
             EkomApi::inst()->initWebContext();
 
             $userId = EkomApi::inst()->userLayer()->getUserId();
-            $this->forReal = true;
             $model = $this->getOrderModel();
-            $this->forReal = false;
 
 
             if (false === array_key_exists('paymentMethodName', $model) || null === $model['paymentMethodName']) {
@@ -542,7 +538,7 @@ class CheckoutLayer
 
     public function cleanSessionOrder()
     {
-        EkomSession::remove("order.singleAddress");
+        EkomSession::remove($this->sessionName);
     }
 
 
@@ -554,60 +550,29 @@ class CheckoutLayer
      */
     public function hasCurrentSessionOrder()
     {
-        return EkomSession::has("order.singleAddress");
+        return EkomSession::has($this->sessionName);
     }
 
 
     //--------------------------------------------
     //
     //--------------------------------------------
-    private function getCurrentStep()
+    protected function doGetCartLayer()
     {
-
+        return EkomApi::inst()->cartLayer();
     }
 
 
-    private function setSessionValue($key, $value, array $options = null)
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    private function getCartLayer()
     {
-        if ('singleAddress' === E::conf("checkoutMode")) {
+        if (null === $this->_cartLayer) {
+            $this->_cartLayer = $this->doGetCartLayer();
 
-            $a = EkomSession::get("order.singleAddress");
-
-            switch ($key) {
-                case 'shipping_address_id':
-                    $a["shipping_address_id"] = $value;
-                    break;
-                case 'payment_method':
-                    list($id, $paymentMethodOptions) = $value;
-                    $a["payment_method_id"] = $id;
-                    $a["payment_method_options"] = $paymentMethodOptions;
-                    break;
-                default:
-                    break;
-            }
-
-            if (null !== $options) {
-                if (array_key_exists("marker", $options) && null !== $options['marker']) {
-                    $a["current_step"] = $options["marker"];
-                }
-                if (array_key_exists("saveAsDefault", $options) && true === (bool)$options['saveAsDefault']) {
-                    switch ($key) {
-                        case 'shipping_address_id':
-                            $userId = E::getUserId();
-                            EkomApi::inst()->userAddressLayer()->setDefaultShippingAddress($value, $userId);
-                            break;
-                        default:
-                            throw new \Exception("Unknown key: $key");
-                            break;
-                    }
-                }
-            }
-
-            EkomSession::set("order.singleAddress", $a);
-
-        } else {
-            throw new \Exception("Not implemented yet");
         }
+        return $this->_cartLayer;
     }
 
     private function initOrderModel()
@@ -616,7 +581,7 @@ class CheckoutLayer
 
 
         if ('singleAddress' === E::conf("checkoutMode")) {
-            if (false === EkomSession::has("order.singleAddress")) {
+            if (false === EkomSession::has($this->sessionName)) {
                 /**
                  *
                  * class-modules/Ekom/doc/ekom-checkout-synopsis.md
@@ -681,7 +646,7 @@ class CheckoutLayer
                 }
 
 
-                EkomSession::set('order.singleAddress', [
+                EkomSession::set($this->sessionName, [
                     //
                     "billing_address_id" => $billingAddressId,
                     "shipping_address_id" => $shippingAddressId,

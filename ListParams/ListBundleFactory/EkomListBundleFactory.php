@@ -7,6 +7,7 @@ namespace Module\Ekom\ListParams\ListBundleFactory;
 use ListParams\Controller\InfoFrame;
 use ListParams\Controller\PaginationFrame;
 use ListParams\Controller\SortFrame;
+use ListParams\ListBundle\LingListBundle;
 use ListParams\ListBundle\ListBundle;
 use ListParams\ListBundle\ListBundleInterface;
 use ListParams\ListBundleFactory\ListBundleFactoryInterface;
@@ -67,23 +68,7 @@ class EkomListBundleFactory implements ListBundleFactoryInterface
                 break;
         }
         if (null !== $items) {
-            $list = ListBundle::create()->setItems($items);
-
-            if (null !== $params) {
-                $list->setListParams($params);
-            }
-
-            if (null !== $pagination) {
-                $list->setPagination($pagination);
-            }
-
-            if (null !== $sort) {
-                $list->setSort($sort);
-            }
-
-            $list->setInfo(InfoFrame::create($params));
-
-            return $list;
+            return LingListBundle::createByItems($items, $params, $pagination, $sort);
         }
         throw new \Exception("unknown ListBundle: $identifier");
     }
