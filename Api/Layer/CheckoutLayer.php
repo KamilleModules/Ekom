@@ -27,12 +27,16 @@ class CheckoutLayer
 {
 
     protected $sessionName;
+    protected $usePayment;
+    protected $uniqueReferenceType;
     private $_cartLayer;
 
 
     public function __construct()
     {
         $this->sessionName = 'order.singleAddress';
+        $this->uniqueReferenceType = 'ekom';
+        $this->usePayment = true;
     }
 
 
@@ -411,8 +415,10 @@ class CheckoutLayer
             $model = $this->getOrderModel();
 
 
-            if (false === array_key_exists('paymentMethodName', $model) || null === $model['paymentMethodName']) {
-                throw new IncompleteOrderException("Incomplete order: missing paymentMethod");
+            if (true === $this->usePayment) {
+                if (false === array_key_exists('paymentMethodName', $model) || null === $model['paymentMethodName']) {
+                    throw new IncompleteOrderException("Incomplete order: missing paymentMethod");
+                }
             }
 
 
@@ -455,7 +461,7 @@ class CheckoutLayer
 
 
             if (null === $reference) {
-                $reference = EkomApi::inst()->orderLayer()->getUniqueReference();
+                $reference = EkomApi::inst()->orderLayer()->getUniqueReference($this->uniqueReferenceType);
             }
 
             return [
@@ -493,33 +499,8 @@ class CheckoutLayer
                 $info = $this->getPlaceOrderInfo($reference, $additionalOrderDetails);
 
 
-                if (false !== ($orderId = EkomApi::inst()->order()->create([
-                        'user_id' => $info['user_id'],
-                        'reference' => $info['reference'],
-                        'date' => $info['date'],
-                        'pay_identifier' => (string)$info['pay_identifier'],
-                        'tracking_number' => $info['tracking_number'],
-                        'user_info' => $info['user_info'],
-                        'shop_info' => $info['shop_info'],
-                        'shipping_address' => $info['shipping_address'],
-                        'billing_address' => $info['billing_address'],
-                        'order_details' => $info['order_details'],
-                    ]))
-                ) {
-
-
-                    EkomApi::inst()->orderLayer()->addOrderStatusByEkomAction($orderId, EkomStatusAction::ACTION_ORDER_PLACED);
-
-                    if (true === $cleanOnSuccess) {
-
-                        EkomApi::inst()->cartLayer()->clean();
-                        $this->cleanSessionOrder();
-                        EkomApi::inst()->orderBuilderLayer()->get('ekom')->clean();
-                        EkomSession::set("order.last", $orderId);
-                        Hooks::call("Ekom_onPlaceOrderCleanedAfter");
-
-
-                    }
+                if (false !== ($orderId = $this->placeOrderByInfo($info))) {
+                    $this->onPlaceOrderSuccessAfter($orderId, $cleanOnSuccess);
                 }
                 return false;
 
@@ -562,6 +543,42 @@ class CheckoutLayer
         return EkomApi::inst()->cartLayer();
     }
 
+
+    /**
+     * @param array $info
+     * @return false|int
+     * @throws \Exception
+     */
+    protected function placeOrderByInfo(array $info)
+    {
+        return EkomApi::inst()->order()->create([
+            'user_id' => $info['user_id'],
+            'reference' => $info['reference'],
+            'date' => $info['date'],
+            'pay_identifier' => (string)$info['pay_identifier'],
+            'tracking_number' => $info['tracking_number'],
+            'user_info' => $info['user_info'],
+            'shop_info' => $info['shop_info'],
+            'shipping_address' => $info['shipping_address'],
+            'billing_address' => $info['billing_address'],
+            'order_details' => $info['order_details'],
+        ]);
+    }
+
+    protected function onPlaceOrderSuccessAfter($orderId, $cleanOnSuccess = true)
+    {
+
+        EkomApi::inst()->orderLayer()->addOrderStatusByEkomAction($orderId, EkomStatusAction::ACTION_ORDER_PLACED);
+
+        if (true === $cleanOnSuccess) {
+            $this->doGetCartLayer()->clean();
+            $this->cleanSessionOrder();
+
+            EkomApi::inst()->orderBuilderLayer()->get('ekom')->clean();
+            EkomSession::set("order.last", $orderId);
+            Hooks::call("Ekom_onPlaceOrderCleanedAfter");
+        }
+    }
 
     //--------------------------------------------
     //

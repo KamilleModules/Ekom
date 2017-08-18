@@ -58,6 +58,9 @@ class OrderBuilder implements OrderBuilderInterface
 
         $activeId = null;
         $userStep = $this->getUserStep();
+
+        $this->onUserStepAfter($userStep);
+
         $sessionSteps = EkomSession::get($this->sessionName, []);
 
 
@@ -153,6 +156,12 @@ class OrderBuilder implements OrderBuilderInterface
             return $_POST['step'];
         }
         return null;
+    }
+
+
+    protected function onUserStepAfter(&$step)
+    {
+
     }
 
 

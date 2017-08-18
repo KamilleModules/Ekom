@@ -12,21 +12,20 @@ class ReferenceProvider
     /**
      * a callable that creates a unique reference
      */
-    private $callback;
+    private $callbacks;
 
 
-    public function getNewReference()
+    public function getNewReference($type = null)
     {
-
-        if (null !== $this->callback) {
-            return call_user_func($this->callback);
+        if (array_key_exists($type, $this->callbacks)) {
+            return call_user_func($this->callbacks[$type]);
         }
         return date('Ymd-His') . '-' . sprintf('%04s', (EkomApi::inst()->orderLayer()->countOrders() + 1));
     }
 
-    public function setCallback(callable $callback)
+    public function setCallback($type, callable $callback)
     {
-        $this->callback = $callback;
+        $this->callbacks[$type] = $callback;
         return $this;
     }
 

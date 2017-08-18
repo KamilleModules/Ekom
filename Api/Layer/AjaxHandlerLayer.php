@@ -7,6 +7,7 @@ namespace Module\Ekom\Api\Layer;
 use Core\Services\X;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\CheckoutLayerProvider\CheckoutLayerProvider;
 use Module\Ekom\PaymentMethodHandler\Collection\PaymentMethodHandlerCollectionInterface;
 
 /**
@@ -49,7 +50,7 @@ class AjaxHandlerLayer
         $out = [];
 
         try {
-            $checkoutLayer = EkomApi::inst()->checkoutLayer();
+            $checkoutLayer = $this->getCheckoutLayer();
             $reference = EkomApi::inst()->orderLayer()->getUniqueReference();
 
 
@@ -109,6 +110,10 @@ class AjaxHandlerLayer
      */
     public function getCheckoutLayer()
     {
-        return X::get("Ekom_CheckoutLayerProvider")->getCheckoutLayer();
+        /**
+         * @var $provider CheckoutLayerProvider
+         */
+        $provider = X::get("Ekom_CheckoutLayerProvider");
+        return $provider->getCheckoutLayer();
     }
 }

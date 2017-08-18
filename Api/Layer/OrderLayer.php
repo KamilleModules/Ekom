@@ -22,13 +22,13 @@ class OrderLayer
 {
 
 
-    public function getUniqueReference()
+    public function getUniqueReference($type = 'ekom')
     {
         /**
          * @var $refProvider ReferenceProvider
          */
         $refProvider = X::get("Ekom_ReferenceProvider");
-        return $refProvider->getNewReference();
+        return $refProvider->getNewReference($type);
     }
 
 
