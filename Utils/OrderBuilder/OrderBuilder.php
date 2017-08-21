@@ -59,6 +59,18 @@ class OrderBuilder implements OrderBuilderInterface
         $activeId = null;
         $userStep = $this->getUserStep();
 
+
+        /**
+         * @see OrderBuilderStepInterface for more explanations.
+         */
+        if (null !== $userStep) {
+            foreach ($this->steps as $id => $step) {
+                $step->fixStep($userStep);
+                if (null === $userStep) {
+                    break;
+                }
+            }
+        }
         $this->onUserStepAfter($userStep);
 
         $sessionSteps = EkomSession::get($this->sessionName, []);
