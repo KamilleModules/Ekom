@@ -55,5 +55,5 @@ interface OrderBuilderStepInterface
      *
      *
      */
-    public function fixStep(&$step);
+//    public function fixStep(&$step);
 }
