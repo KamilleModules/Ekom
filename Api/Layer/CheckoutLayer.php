@@ -445,7 +445,12 @@ class CheckoutLayer
             $payIdentifier = array_key_exists('pay_id', $additionalOrderDetails) ? $additionalOrderDetails['pay_id'] : null;
 
 
-            $details = array_merge($model, $additionalOrderDetails);
+
+            $paymentDetails = EkomApi::inst()->paymentLayer()->getPaymentDetails($model['paymentMethodName'], $model['paymentMethodOptions']);
+            $details = $model;
+            $details['payment_details'] = $paymentDetails;
+            $details['transaction_feedback'] = $additionalOrderDetails;
+
 
             unset($details['checkoutMode']);
             unset($details['billingAddress']);

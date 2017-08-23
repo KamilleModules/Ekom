@@ -90,49 +90,53 @@ select * from ek_order where id=$id and user_id=$userId
     /**
      * Used to display the orders in the front user account.
      */
-    public function getUserOrderSummaries($userId)
+    public function getUserOrderSummaries($userId, ListParamsInterface $params = null)
     {
         if ("singleAddress" === E::conf("checkoutMode")) {
 
 
             $userId = (int)$userId;
 
-            return A::cache()->get("Ekom.OrderLayer.getUserOrderSummaries.$userId", function () use ($userId) {
+            return A::cache()->get("Ekom.OrderLayer.getUserOrderSummaries.$userId", function () use ($userId, $params) {
 
-                $rows = QuickPdo::fetchAll("
-select id, reference, `date`, order_details from ek_order where user_id=$userId
-order by date desc        
-        ");
+
+                $q1 = "select id, reference, `date`, user_info, shipping_address, billing_address, order_details from ek_order where user_id=$userId";
+                $q2 = "select count(*) as count from ek_order where user_id=$userId";
+
+
+                $markers = [];
+                if (null !== $params) {
+                    $nbTotalItems = QuickPdo::fetch($q2, $markers, \PDO::FETCH_COLUMN);
+                    $params->setTotalNumberOfItems($nbTotalItems); // provide the nbTotalItems for the view
+                }
+                QueryDecorator::create()
+                    ->setDefaultNipp(3)
+                    ->setDefaultSort('date', 'desc')
+                    ->setAllowedSortFields([
+                        'id',
+                        'reference',
+                        'date',
+                    ])
+                    ->decorate($q1, $q2, $markers, $params);
+
+
+                $rows = QuickPdo::fetchAll($q1);
                 $ret = [];
                 foreach ($rows as $k => $row) {
-
-//                $rows[$k]['user_info'] = unserialize($row['user_info']);
-//                $rows[$k]['shop_info'] = unserialize($row['shop_info']);
-//                $rows[$k]['shipping_address'] = unserialize($row['shipping_address']);
-//                $rows[$k]['billing_address'] = unserialize($row['billing_address']);
                     $details = unserialize($row['order_details']);
-//                az($details);
-                    $products = [];
                     $section = $details['orderSections']['sections'][0];
-                    $pInfo = $section['productsInfo'];
-                    foreach ($pInfo as $p) {
-                        $products[] = [
-                            "label" => $p['label'],
-                            "ref" => $p['ref'],
-                            "uri" => $p['uri_card_with_ref'],
-                            "quantity" => $p['quantity'],
-                            "linePrice" => $p['linePrice'],
-                            "image" => $p['image'],
-                        ];
-                    }
-
 
                     $ret[] = [
                         "id" => $row['id'],
                         "ref" => $row['reference'],
                         "date" => $row['date'],
                         "orderGrandTotal" => $details['orderGrandTotal'],
-                        "products" => $products,
+                        "paymentMethodName" => $details['paymentMethodName'],
+                        "payment_details" => $details['payment_details'],
+                        "shipping_address" => unserialize($row['shipping_address']),
+                        "billing_address" => unserialize($row['billing_address']),
+                        "user_info" => unserialize($row['user_info']),
+                        "section" => $section,
                     ];
 
 

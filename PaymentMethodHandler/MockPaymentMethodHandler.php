@@ -10,6 +10,7 @@ class MockPaymentMethodHandler implements PaymentMethodHandlerInterface
     private $config;
     private $defaultOptions;
     private $payCallback;
+    private $paymentDetailsCallback;
 
 
     public function __construct()
@@ -32,6 +33,12 @@ class MockPaymentMethodHandler implements PaymentMethodHandlerInterface
     public function setPayCallback(callable $payCallback)
     {
         $this->payCallback = $payCallback;
+        return $this;
+    }
+
+    public function setPaymentDetailsCallback(callable $fn)
+    {
+        $this->paymentDetailsCallback = $fn;
         return $this;
     }
 
@@ -78,6 +85,14 @@ class MockPaymentMethodHandler implements PaymentMethodHandlerInterface
     {
         if (is_callable($this->payCallback)) {
             return call_user_func($this->payCallback, $extendedOrderModel);
+        }
+        return [];
+    }
+
+    public function getPaymentDetails(array $userOptions)
+    {
+        if (is_callable($this->paymentDetailsCallback)) {
+            return call_user_func($this->paymentDetailsCallback, $userOptions);
         }
         return [];
     }

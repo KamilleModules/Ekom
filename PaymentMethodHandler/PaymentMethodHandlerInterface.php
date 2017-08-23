@@ -97,4 +97,18 @@ interface PaymentMethodHandlerInterface
      *
      */
     public function pay(array $extendedOrderModel);
+
+
+    /**
+     * When an order is placed, we keep user payment details in the database
+     * (typically, which card did she use, things like that).
+     * That's what this method return: enough info so that we can tell what payment options were used
+     * for placing the order.
+     *
+     * The given userOptions argument is basically the user's version of the return of the getDefaultOptions method.
+     *
+     * The output of this method is provided and defined by the concrete implementation.
+     *
+     */
+    public function getPaymentDetails(array $userOptions);
 }
