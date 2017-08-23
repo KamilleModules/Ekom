@@ -19,6 +19,7 @@ use Module\Ekom\PaymentMethodHandler\Collection\PaymentMethodHandlerCollectionIn
 use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Status\Action\EkomStatusAction;
 use Module\Ekom\Utils\E;
+use Module\ThisApp\Ekom\Utils\CheckoutPage\CheckoutPageUtil;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
 use QuickPdo\QuickPdo;
 
@@ -574,7 +575,8 @@ class CheckoutLayer
             $this->doGetCartLayer()->clean();
             $this->cleanSessionOrder();
 
-            EkomApi::inst()->orderBuilderLayer()->get('ekom')->clean();
+//            EkomApi::inst()->orderBuilderLayer()->get('ekom')->clean();
+
             EkomSession::set("order.last", $orderId);
             Hooks::call("Ekom_onPlaceOrderCleanedAfter");
         }

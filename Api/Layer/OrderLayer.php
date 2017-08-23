@@ -87,6 +87,9 @@ select * from ek_order where id=$id and user_id=$userId
     }
 
 
+    /**
+     * Used to display the orders in the front user account.
+     */
     public function getUserOrderSummaries($userId)
     {
         if ("singleAddress" === E::conf("checkoutMode")) {
@@ -97,7 +100,8 @@ select * from ek_order where id=$id and user_id=$userId
             return A::cache()->get("Ekom.OrderLayer.getUserOrderSummaries.$userId", function () use ($userId) {
 
                 $rows = QuickPdo::fetchAll("
-select id, reference, `date`, order_details from ek_order where user_id=$userId        
+select id, reference, `date`, order_details from ek_order where user_id=$userId
+order by date desc        
         ");
                 $ret = [];
                 foreach ($rows as $k => $row) {
