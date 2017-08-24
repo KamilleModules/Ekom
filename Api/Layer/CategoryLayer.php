@@ -16,6 +16,61 @@ class CategoryLayer
 {
 
 
+    public function collectProductIdsByCategoryName(array &$ids, $categoryName, $maxNumber = 7, $shopId = null)
+    {
+        if (null === $shopId) {
+            $shopId = E::getShopId();
+        }
+        $shopId = (int)$shopId;
+        $maxNumber = (int)$maxNumber;
+
+
+        $catIds = [];
+        $this->collectCategoryIdTreeByCategoryName($catIds, $categoryName, $shopId);
+        if ($catIds) {
+
+            $c = 0;
+            while (null !== ($catId = array_shift($catIds))) {
+
+                /**
+                 * @todo-ling: Code not tested, can it enter this block and do an infinite loop?
+                 */
+                if ($c++ > 20) {
+                    throw new \Exception("Unexpected infinite loop");
+                }
+
+
+                $newIds = QuickPdo::fetchAll("
+select shpc.product_id from ek_shop_has_product_card shpc 
+inner join ek_category_has_product_card chpc on chpc.product_card_id=shpc.product_card_id
+inner join ek_category c on c.id=chpc.category_id 
+
+where 
+c.id=$catId
+and c.shop_id=$shopId 
+and shpc.active=1
+and shpc.shop_id=$shopId 
+
+
+limit 0, $maxNumber
+
+        
+        ", [], \PDO::FETCH_COLUMN);
+
+
+                foreach ($newIds as $id) {
+                    $ids[] = $id;
+                    $maxNumber--;
+                    if ($maxNumber <= 0) {
+                        break 2;
+                    }
+                }
+
+            }
+        }
+    }
+
+
     public function countProductCards($categoryId)
     {
         $catIds = [$categoryId];
@@ -166,6 +221,57 @@ where category_id in (" . implode(", ", $catIds) . ")
                 ],
             ];
         }
+    }
+
+
+    /**
+     * This method return the id of the category and parent categories.
+     */
+    public function collectCategoryIdTreeByCategoryId(array &$ids, $categoryId, $shopId = null)
+    {
+        $api = EkomApi::inst();
+        if (null === $shopId) {
+            $shopId = E::getShopId();
+        }
+
+        return A::cache()->get("Ekom.CategoryLayer.getCategoryIdTreeByCategoryId.$shopId.$categoryId", function () use ($api, $shopId, $categoryId, &$ids) {
+
+            $ids[] = $categoryId;
+            $parentCatId = EkomApi::inst()->category()->readColumn("category_id", [
+                ["id", "=", $categoryId],
+            ]);
+            if (null !== $parentCatId) {
+                $this->collectCategoryIdTreeByCategoryId($ids, $parentCatId, $shopId);
+            }
+        }, [
+            'ek_product',
+            'ek_category',
+        ]);
+    }
+
+
+    /**
+     * This method return the id of the category and parent categories.
+     */
+    public function collectCategoryIdTreeByCategoryName(array &$ids, $categoryName, $shopId = null)
+    {
+        $api = EkomApi::inst();
+        if (null === $shopId) {
+            $shopId = E::getShopId();
+        }
+
+        return A::cache()->get("Ekom.CategoryLayer.getCategoryIdTreeByCategoryId.$shopId.$categoryName", function () use ($api, $shopId, $categoryName, &$ids) {
+
+            $id = EkomApi::inst()->category()->readColumn("id", [
+                ["name", "=", $categoryName],
+            ]);
+            if (false !== $id) {
+                $this->collectCategoryIdTreeByCategoryId($ids, $id, $shopId);
+            }
+        }, [
+            'ek_product',
+            'ek_category',
+        ]);
     }
 
 

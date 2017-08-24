@@ -21,7 +21,7 @@ use Module\Ekom\Utils\E;
 use Module\EkomCardCombination\Api\EkomCardCombinationApi;
 use QuickPdo\QuickPdo;
 
-class ProductLayer
+class ProductLayerOld
 {
 
     public function getProductTypeById($productId)
@@ -425,29 +425,10 @@ order by h.order asc
                             }
 
 
-
-                            //--------------------------------------------
-                            // IMAGES
-                            //--------------------------------------------
                             list($defaultImage, $images) = $api->imageLayer()->getImagesInfo("productBox", [
                                 $productId,
                                 $cardId,
                             ], true);
-
-                            $imageThumb = "";
-                            $imageSmall = "";
-                            $imageMedium = "";
-                            $imageLarge = "";
-                            if($defaultImage){
-                                $imageThumb = $images[$defaultImage]['thumb'];
-                                $imageSmall = $images[$defaultImage]['small'];
-                                $imageMedium = $images[$defaultImage]['medium'];
-                                $imageLarge = $images[$defaultImage]['large'];
-                            }
-
-
-
-
 
 
                             /**
@@ -533,9 +514,11 @@ order by h.order asc
                             $taxRatio = $_priceWithTax / $_price;
 
 
+                            $_price = E::trimPrice($_price);
                             $_priceWithTax = E::trimPrice($_priceWithTax);
                             $_priceWithoutTax = E::trimPrice($_priceWithoutTax);
 
+                            $price = E::price($_price);
                             $priceWithTax = E::price($_priceWithTax);
                             $priceWithoutTax = E::price($_priceWithoutTax);
 
@@ -580,10 +563,10 @@ order by h.order asc
                                 "quantity" => (int)$p['quantity'],
                                 "images" => $images,
                                 "defaultImage" => $defaultImage,
-                                "imageThumb" => $imageThumb,
-                                "imageSmall" => $imageSmall,
-                                "imageMedium" => $imageMedium,
-                                "imageLarge" => $imageLarge,
+                                "imageThumb" => $images[$defaultImage]['thumb'],
+                                "imageSmall" => $images[$defaultImage]['small'],
+                                "imageMedium" => $images[$defaultImage]['medium'],
+                                "imageLarge" => $images[$defaultImage]['large'],
 
                                 "uriCard" => $cardUri,
                                 "label" => $label,
@@ -605,10 +588,12 @@ order by h.order asc
                                 "stockText" => $stockText,
 
 
-                                "priceWithTax" => $priceWithTax,
-                                "priceWithoutTax" => $priceWithoutTax,
-                                "rawPriceWithTax" => $_priceWithTax,
-                                "rawPriceWithoutTax" => $_priceWithoutTax,
+                                "price" => $price,
+//                                "priceWithTax" => $priceWithTax,
+//                                "priceWithoutTax" => $priceWithoutTax,
+                                "rawPrice" => $_price,
+//                                "rawPriceWithTax" => $_priceWithTax,
+//                                "rawPriceWithoutTax" => $_priceWithoutTax,
 
 
 //                                "taxDetails" => $taxDetails, // see TaxLayer.applyTaxesToPrice for more details
@@ -720,10 +705,6 @@ order by h.order asc
             Hooks::call("Ekom_decorateBoxModel", $model);
 
 
-            $_priceWithTax = $model['rawPriceWithTax'];
-            $_priceWithoutTax = $model['rawPriceWithoutTax'];
-
-
             //--------------------------------------------
             // NOW APPLYING DISCOUNT DYNAMICALLY (so that it's always synced with app rules)
             //--------------------------------------------
@@ -743,62 +724,96 @@ order by h.order asc
              */
             $layerDiscount = $api->discountLayer();
             $discounts = $layerDiscount->getDiscountsByProductId($model['product_id'], $shopId, $langId);
+
+
+            $_price = $model['rawPrice'];
+
+//            if (true === $isB2b) {
+//                $_price = $model['rawPrice'];
+//            } else {
+//                $_price = $model['rawPriceWithTax'];
+//            }
+
+            $_discountedPrice = $_price;
             $badges = [];
-            /**
-             * note that in this algorithm, the discount for the withTax price
-             * is applied on the WithTax price directly (see my note on algorithms in
-             * class-modules/Ekom/doc/my/thoughts/things-i-discovered-with-prices.md)
-             */
-            $salePrices = $layerDiscount->applyDiscountsToPrice($discounts, [
-                $_priceWithTax,
-                $_priceWithoutTax,
-            ], $badges);
+            $atLeastOneDiscountApplied = false;
+            foreach ($discounts as $d) {
+                $t = false;
+                $operand = $d['procedure_operand'];
+                $target = $d['target']; // implicit/ignored for now with ekom order model4
 
-            list($_salePriceWithTax, $_salePriceWithoutTax) = $salePrices;
-
-
-            $_salePriceWithTax = E::trimPrice($_salePriceWithTax);
-            $_salePriceWithoutTax = E::trimPrice($_salePriceWithoutTax);
-            $salePriceWithTax = E::price($_salePriceWithTax);
-            $salePriceWithoutTax = E::price($_salePriceWithoutTax);
-            $model['rawSalePriceWithTax'] = $_salePriceWithTax;
-            $model['rawSalePriceWithoutTax'] = $_salePriceWithoutTax;
-            $model['salePriceWithTax'] = $salePriceWithTax;
-            $model['salePriceWithoutTax'] = $salePriceWithoutTax;
-
-
-            $model['badgeDetails'] = $badges;
-            $model['hasDiscount'] = (count($badges) > 0);
-
-            if (true === $isB2b) {
-                $diff = $_priceWithoutTax - $_salePriceWithoutTax;
-                $diffPercent = $diff / $_priceWithoutTax * 100;
-            } else {
-                $diff = $_priceWithTax - $_salePriceWithTax;
-                $diffPercent = $diff / $_priceWithTax * 100;
+                $_discountedPrice = $layerDiscount->applyDiscountToPrice($d, $_discountedPrice, $t);
+                if (false !== $t) {
+                    $badges[] = [
+                        "type" => $d['procedure_type'],
+                        "value" => $operand,
+                        "label" => $d['label'],
+                    ];
+                    $atLeastOneDiscountApplied = true;
+                }
             }
-            $model['savingPercent'] = E::trimPercent($diffPercent);
-            $model['savingAmount'] = E::price($diff);
+
+            $_discountedPrice = E::trimPrice($_discountedPrice);
+
+            $model['rawDiscountedPriceWithoutTax'] = $_discountedPrice;
+            $model['discountedPriceWithoutTax'] = E::price($_discountedPrice);
+
+
             //--------------------------------------------
             //
             //--------------------------------------------
+            $model['hasDiscount'] = $atLeastOneDiscountApplied;
+            $model['badgeDetails'] = $badges;
+
+
+            $diff = $_price - $_discountedPrice;
+            $diffPercent = $diff / $_price * 100;
+
+
+            $model['savingPercent'] = E::trimPercent($diffPercent);
+            $model['savingAmount'] = E::price($diff);
 
             $model['isB2B'] = $isB2b;
 
 
+            // remove private
+//            unset($model["_taxes"]);
+
+
             //--------------------------------------------
-            // NOW SETTING DEFAULT PRICES
+            // NOW COMPUTING TAX
+            //--------------------------------------------
+            $_discountedPriceWithTax = null;
+            $taxDetails = [];
+            $taxes = [];
+
+            $taxLayer = $api->taxLayer();
+            $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
+            $_discountedPriceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_discountedPrice, $taxDetails);
+            $_discountedPriceWithTax = E::trimPrice($_discountedPriceWithTax);
+
+            $model['rawDiscountedPriceWithTax'] = $_discountedPriceWithTax;
+            $model['discountedPriceWithTax'] = E::price($_discountedPriceWithTax);
+            $model['taxDetails'] = $taxDetails;
+
+
+            $model['salePriceWithoutTax'] = $model['discountedPriceWithoutTax'];
+            $model['salePriceWithTax'] = $model['discountedPriceWithTax'];
+            $model['rawSalePriceWithoutTax'] = $_discountedPrice;
+            $model['rawSalePriceWithTax'] = $_discountedPriceWithTax;
+
+
+            //--------------------------------------------
+            // NOW GIVING SALE PRICE TO THE TEMPLATES
             //--------------------------------------------
             if (true === $isB2b) {
-                $model['price'] = $model['priceWithoutTax'];
-                $model['rawPrice'] = $model['rawPriceWithoutTax'];
+                $model['discountedPrice'] = $model['discountedPriceWithoutTax'];
                 $model['salePrice'] = $model['salePriceWithoutTax'];
-                $model['rawSalePrice'] = $model['rawSalePriceWithoutTax'];
+                $model['rawSalePrice'] = $_discountedPrice;
             } else {
-                $model['price'] = $model['priceWithTax'];
-                $model['rawPrice'] = $model['rawPriceWithTax'];
+                $model['discountedPrice'] = $model['discountedPriceWithTax'];
                 $model['salePrice'] = $model['salePriceWithTax'];
-                $model['rawSalePrice'] = $model['rawSalePriceWithTax'];
+                $model['rawSalePrice'] = $_discountedPriceWithTax;
             }
 
         }

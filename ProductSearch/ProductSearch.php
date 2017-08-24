@@ -87,6 +87,7 @@ group by b.reference
 
 
             $ret = [];
+            $c=0;
             foreach ($rows as $row) {
 
                 $cardSlug = ('' !== $row['card_slug']) ? $row['card_slug'] : $row['card_default_slug'];
@@ -113,6 +114,7 @@ group by b.reference
 
                 $ret[] = [
                     'value' => $value,
+                    'pokemon' => "pokepou" . $c++,
                     'data' => E::link("Ekom_productCardRef", ['slug' => $cardSlug, 'ref' => $row["reference"]]),
                 ];
             }

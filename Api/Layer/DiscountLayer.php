@@ -76,10 +76,47 @@ where shop_id=$shopId
 
 
     /**
+     * If badges is fed, this means that the price has been modified,
+     * if still empty after the call to this function,
+     * this means the price has not been modified.
+     */
+    public function applyDiscountsToPrice(array $discounts, $price, array &$badges = [])
+    {
+        $layerDiscount = EkomApi::inst()->discountLayer();
+
+        $atLeastOneDiscountApplied = false;
+        foreach ($discounts as $d) {
+            $t = false;
+            $operand = $d['procedure_operand'];
+            $target = $d['target']; // implicit/ignored for now with ekom order model4
+
+            $price = $layerDiscount->applyDiscountToPrice($d, $price, $t);
+            if (false !== $t) {
+                $badges[] = [
+                    "type" => $d['procedure_type'],
+                    "value" => $operand,
+                    "label" => $d['label'],
+                ];
+                $atLeastOneDiscountApplied = true;
+            }
+        }
+        return $price;
+    }
+
+
+    /**
      * Apply discount to price and return the discounted price.
      *
      * Reminder, this method should be called dynamically and should not be cached (unless you know
      * exactly what you are doing: we have user connexion state, dates, maybe other things...)
+     *
+     *
+     * @param array $discount
+     * @param $price , float or array of float
+     * @param bool $atLeastOneDiscountApplied
+     * @return float|array of floats
+     *              The price, or an array of prices (if the $price argument was passed
+     *              as an array)
      */
     public function applyDiscountToPrice(array $discount, $price, &$atLeastOneDiscountApplied = false)
     {
@@ -135,22 +172,17 @@ where shop_id=$shopId
         //--------------------------------------------
         // APPLY PROCEDURE ON TARGET
         //--------------------------------------------
-        $operand = $discount['procedure_operand'];
-        switch ($discount['procedure_type']) {
-            case 'amount':
-                $price -= $operand;
-                $atLeastOneDiscountApplied = true;
-                break;
-            case 'percent':
-                $atLeastOneDiscountApplied = true;
-                $price -= ($operand * $price) / 100;
-                break;
-            default:
-                XLog::error("[Ekom module] - DiscountLayer: unknown procedure type: " . $discount['procedure_type']);
-                break;
+        if (is_array($price)) {
+            $ret = [];
+            foreach ($price as $k => $p) {
+                $ret[$k] = $this->applyDiscountInfoToPrice($p, $discount);
+            }
+            return $ret;
+        } else {
+            return $this->applyDiscountInfoToPrice($price, $discount);
         }
-        return $price;
     }
+
 
     /**
      * Return the discounts to potentially (if the condition matches) apply to a given product, ordered by ascending order_phase.
@@ -339,6 +371,26 @@ and l.lang_id=$langId
                 $ret[$discount['order_phase']] = $discount;
             }
         }
+    }
+
+
+    private function applyDiscountInfoToPrice($price, $discountInfo, &$atLeastOneDiscountApplied = false)
+    {
+        $operand = $discountInfo['procedure_operand'];
+        switch ($discountInfo['procedure_type']) {
+            case 'amount':
+                $price -= $operand;
+                $atLeastOneDiscountApplied = true;
+                break;
+            case 'percent':
+                $atLeastOneDiscountApplied = true;
+                $price -= ($operand * $price) / 100;
+                break;
+            default:
+                XLog::error("[Ekom module] - DiscountLayer: unknown procedure type: " . $discountInfo['procedure_type']);
+                break;
+        }
+        return $price;
     }
 
 }

@@ -420,8 +420,8 @@ class CartLayer
 
 //                $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
 //                $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
-                    $linePriceWithoutTax = $qty * $it['rawDiscountedPriceWithoutTax'];
-                    $linePriceWithTax = $qty * $it['rawDiscountedPriceWithTax'];
+                    $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
+                    $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
 
 //                $linesTotalWithoutTax += $linePriceWithoutTax;
 //                $linesTotalWithTax += $linePriceWithTax;
@@ -756,10 +756,6 @@ and p.lang_id=$langId
                     'rawPrice' => $b['rawPrice'],
                     'salePrice' => $b['salePrice'],
                     'rawSalePrice' => $b['rawSalePrice'],
-                    'discountedPriceWithoutTax' => $b['discountedPriceWithoutTax'],
-                    'rawDiscountedPriceWithoutTax' => $b['rawDiscountedPriceWithoutTax'],
-                    'discountedPriceWithTax' => $b['discountedPriceWithTax'],
-                    'rawDiscountedPriceWithTax' => $b['rawDiscountedPriceWithTax'],
 //                    'salePriceWithTax' => $b['salePriceWithTax'],
 //                    'salePriceWithoutTax' => $b['salePriceWithoutTax'],
                     'image' => $mainImage,
