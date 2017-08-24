@@ -476,6 +476,9 @@ order by h.order asc
                             $metaKeywords = $this->getMetaKeywords($p, $row, $label, $description);
 
 
+                            //--------------------------------------------
+                            // STOCK
+                            //--------------------------------------------
                             $stockType = "stockAvailable";
                             $stockText = "in stock";
                             if (0 === (int)$p['quantity']) {
@@ -484,10 +487,16 @@ order by h.order asc
                             }
 
 
+                            //--------------------------------------------
+                            // PRICE
+                            //--------------------------------------------
                             $_price = $p['price'];
                             if (null === $_price) {
                                 $_price = $p['default_price'];
                             }
+
+
+                            a($_price);
 
                             // initializing values for merged b2b/b2c array
 //                            $_priceWithTax = null;
@@ -495,17 +504,19 @@ order by h.order asc
 //                            $taxes = [];
 
 
+                            //--------------------------------------------
+                            // TAXES
+                            //--------------------------------------------
                             // get taxes, for both modes (b2b, b2b), just in case the template need the info
-//                            $taxLayer = $api->taxLayer();
-//                            $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
-//                            $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_price, $taxDetails);
+                            $taxLayer = $api->taxLayer();
+                            $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
+                            $taxDetails = [];
+                            $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_price, $taxDetails);
+                            $taxRatio = $_priceWithTax / $_price;
 
 
                             $_price = E::trimPrice($_price);
-//                            $_priceWithTax = E::trimPrice($_priceWithTax);
-
                             $price = E::price($_price);
-//                            $priceWithTax = E::price($_priceWithTax);
 
 
                             $cardSlug = ("" !== $row['slug']) ? $row['slug'] : $row['default_slug'];
@@ -547,8 +558,13 @@ order by h.order asc
                                 "product_type" => $p['product_type'],
                                 "quantity" => (int)$p['quantity'],
                                 "images" => $images,
-                                "uriCard" => $cardUri,
                                 "defaultImage" => $defaultImage,
+                                "imageThumb" => $images[$defaultImage]['thumb'],
+                                "imageSmall" => $images[$defaultImage]['small'],
+                                "imageMedium" => $images[$defaultImage]['medium'],
+                                "imageLarge" => $images[$defaultImage]['large'],
+
+                                "uriCard" => $cardUri,
                                 "label" => $label,
                                 "seller" => $p['seller'],
 

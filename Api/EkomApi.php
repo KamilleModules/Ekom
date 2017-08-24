@@ -33,8 +33,10 @@ use Module\Ekom\Api\Layer\PasswordLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
 use Module\Ekom\Api\Layer\ProductCardLayer;
 use Module\Ekom\Api\Layer\ProductCommentLayer;
+use Module\Ekom\Api\Layer\ProductGroupLayer;
 use Module\Ekom\Api\Layer\ProductHelperLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
+use Module\Ekom\Api\Layer\ProductSelectionLayer;
 use Module\Ekom\Api\Layer\ProductTypeLayer;
 use Module\Ekom\Api\Layer\SellerLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
@@ -486,6 +488,14 @@ and h.lang_id=$langId
         return $this->getLayer('productCommentLayer');
     }
 
+    /**
+     * @return ProductGroupLayer
+     */
+    public function productGroupLayer()
+    {
+        return $this->getLayer('productGroupLayer');
+    }
+
 
     /**
      * @return ProductHelperLayer
@@ -501,6 +511,15 @@ and h.lang_id=$langId
     public function productLayer()
     {
         return $this->getLayer('productLayer');
+    }
+
+
+    /**
+     * @return ProductSelectionLayer
+     */
+    public function productSelectionLayer()
+    {
+        return $this->getLayer('productSelectionLayer');
     }
 
     /**
