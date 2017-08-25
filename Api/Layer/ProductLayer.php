@@ -413,6 +413,7 @@ order by h.order asc
                         $productsInfo = $this->getProductCardProductsWithAttributes($cardId, $shopId, $langId);
 
 
+
                         if (count($productsInfo) > 0) {
 
 
@@ -567,6 +568,13 @@ order by h.order asc
                                 $attr = $attrModelGen->generate($productsInfo, $productId);
                             }
                             $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $productId);
+                            $attrSelection = $p['attributes'];
+                            $attrStringArr = [];
+                            foreach($attrSelection as $item){
+                                $attrStringArr[] = $item['value_label'];
+                            }
+                            $attrString = implode(' | ', $attrStringArr);
+
 
                             //--------------------------------------------
                             // rating
@@ -588,6 +596,7 @@ order by h.order asc
                                 "uriCard" => $cardUri,
                                 "label" => $label,
                                 "seller" => $p['seller'],
+
 
                                 "label_escaped" => htmlspecialchars($label),
                                 "ref" => $p['reference'],
@@ -612,6 +621,8 @@ order by h.order asc
 
 
 //                                "taxDetails" => $taxDetails, // see TaxLayer.applyTaxesToPrice for more details
+                                "attributesString" => $attrString,
+                                "attributesSelection" => $attrSelection,
                                 "attributes" => $attr,
                                 // rating
                                 "rating_amount" => $ratingInfo['average'], // percent

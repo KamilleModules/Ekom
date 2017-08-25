@@ -40,5 +40,16 @@ abstract class AbstractProductSearch implements ProductSearchInterface
         return $this->doGetResults($query);
     }
 
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    protected function decorate($string, $query)
+    {
+        $pattern = '!' . str_replace(' ', '|', $query) . '!i';
+        return preg_replace($pattern, "<b>\\0</b>", $string);
+    }
+
+
 }
 
