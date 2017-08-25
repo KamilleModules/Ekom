@@ -425,7 +425,6 @@ order by h.order asc
                             }
 
 
-
                             //--------------------------------------------
                             // IMAGES
                             //--------------------------------------------
@@ -438,16 +437,12 @@ order by h.order asc
                             $imageSmall = "";
                             $imageMedium = "";
                             $imageLarge = "";
-                            if($defaultImage){
+                            if ($defaultImage) {
                                 $imageThumb = $images[$defaultImage]['thumb'];
                                 $imageSmall = $images[$defaultImage]['small'];
                                 $imageMedium = $images[$defaultImage]['medium'];
                                 $imageLarge = $images[$defaultImage]['large'];
                             }
-
-
-
-
 
 
                             /**
@@ -530,7 +525,12 @@ order by h.order asc
                             $taxDetails = [];
                             $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_price, $taxDetails);
                             $_priceWithoutTax = $_price;
-                            $taxRatio = $_priceWithTax / $_price;
+                            if (0.0 !== (float)$_price) {
+                                $taxRatio = $_priceWithTax / $_price;
+                            } else {
+                                $taxRatio = 1;
+                                XLog::error("[Ekom module] - ProductLayer: division by zero with product $productId, card $cardId");
+                            }
 
 
                             $_priceWithTax = E::trimPrice($_priceWithTax);
@@ -772,10 +772,18 @@ order by h.order asc
 
             if (true === $isB2b) {
                 $diff = $_priceWithoutTax - $_salePriceWithoutTax;
-                $diffPercent = $diff / $_priceWithoutTax * 100;
+                if (0.0 !== (float)$_priceWithoutTax) {
+                    $diffPercent = $diff / $_priceWithoutTax * 100;
+                } else {
+                    $diffPercent = 0;
+                }
             } else {
                 $diff = $_priceWithTax - $_salePriceWithTax;
-                $diffPercent = $diff / $_priceWithTax * 100;
+                if (0.0 !== (float)$_priceWithTax) {
+                    $diffPercent = $diff / $_priceWithTax * 100;
+                } else {
+                    $diffPercent = 0;
+                }
             }
             $model['savingPercent'] = E::trimPercent($diffPercent);
             $model['savingAmount'] = E::price($diff);

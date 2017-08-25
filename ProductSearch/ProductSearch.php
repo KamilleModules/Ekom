@@ -12,13 +12,9 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
-class ProductSearch implements ProductSearchInterface
+class ProductSearch extends AbstractProductSearch
 {
 
-    public static function create()
-    {
-        return new static();
-    }
 
     /**
      * @param $query
@@ -27,19 +23,13 @@ class ProductSearch implements ProductSearchInterface
      *          - data: the uri to the product or product card
      *
      */
-    public function getResults($query = "")
+    protected function doGetResults($query)
     {
 
 
         EkomApi::inst()->initWebContext();
         $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
         $langId = (int)ApplicationRegistry::get("ekom.lang_id");
-
-        $query = StringTool::removeAccents($query);
-        $query = FileSystemTool::noEscalating($query);
-        $query = strtolower($query);
-
-
 
 
         return A::cache()->get("Ekom.ProductSearch.getResults.$shopId.$langId.$query", function () use ($query, $shopId, $langId) {
@@ -87,7 +77,7 @@ group by b.reference
 
 
             $ret = [];
-            $c=0;
+            $c = 0;
             foreach ($rows as $row) {
 
                 $cardSlug = ('' !== $row['card_slug']) ? $row['card_slug'] : $row['card_default_slug'];
