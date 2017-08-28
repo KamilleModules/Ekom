@@ -21,7 +21,7 @@ class ProductSelectionLayer
         }
         $shopId = (int)$shopId;
 
-        return A::cache()->get("ProductSelectionLayer.getProductBoxModelsByGroup.$shopId.$productGroupName", function () use ($productGroupName, $shopId) {
+        return A::cache()->get("Ekom.ProductSelectionLayer.getProductBoxModelsByGroup.$shopId.$productGroupName", function () use ($productGroupName, $shopId) {
             $ids = EkomApi::inst()->productGroupLayer()->getProductIdsByGroup($productGroupName, $shopId);
             return $this->getBoxesByIds($ids, $shopId);
         }, [
