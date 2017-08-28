@@ -11,6 +11,7 @@ use Kamille\Ling\Z;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\Layer\AjaxHandlerLayer;
 use Module\Ekom\Api\Layer\AttributeLayer;
+use Module\Ekom\Api\Layer\BreadcrumbsLayer;
 use Module\Ekom\Api\Layer\BundleLayer;
 use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
@@ -36,6 +37,7 @@ use Module\Ekom\Api\Layer\ProductCommentLayer;
 use Module\Ekom\Api\Layer\ProductGroupLayer;
 use Module\Ekom\Api\Layer\ProductHelperLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
+use Module\Ekom\Api\Layer\ProductPageLayer;
 use Module\Ekom\Api\Layer\ProductSelectionLayer;
 use Module\Ekom\Api\Layer\ProductTypeLayer;
 use Module\Ekom\Api\Layer\RelatedProductLayer;
@@ -306,6 +308,14 @@ and h.lang_id=$langId
     }
 
     /**
+     * @return BreadcrumbsLayer
+     */
+    public function breadcrumbsLayer()
+    {
+        return $this->getLayer('breadcrumbsLayer');
+    }
+
+    /**
      * @return BundleLayer
      */
     public function bundleLayer()
@@ -362,14 +372,6 @@ and h.lang_id=$langId
     public function conditionLayer()
     {
         return $this->getLayer('conditionLayer');
-    }
-
-    /**
-     * @return ConfigLayer
-     */
-    public function configLayer()
-    {
-        return $this->getLayer('configLayer');
     }
 
     /**
@@ -513,6 +515,7 @@ and h.lang_id=$langId
     {
         return $this->getLayer('productLayer');
     }
+
 
 
     /**

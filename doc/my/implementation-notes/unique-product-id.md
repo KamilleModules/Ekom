@@ -11,7 +11,7 @@ But then, modules can bring their own types to accommodate their needs.
 They would do so when the default type is not enough anymore, it doesn't fulfill their requirements.
 
 
-For instance, the training_product type, brought by the TrainingProducts module,
+For instance, the training_product type, brought by the EkomTrainingProducts module,
 allow us to create training products, which extend a regular product with new characteristics,
 such as the date when the training event occurs, and the location where it occurs.
 

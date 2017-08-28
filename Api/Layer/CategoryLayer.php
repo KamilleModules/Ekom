@@ -73,13 +73,13 @@ limit 0, $maxNumber
 
     public function countProductCards($categoryId)
     {
-        $catIds = [$categoryId];
-        $this->doCollectDescendants($categoryId, $catIds);
-        $catIds = array_unique($catIds);
 
 
-        return A::cache()->get("Ekom.CategoryLayer.countProductCards.$categoryId", function () use ($catIds) {
+        return A::cache()->get("Ekom.CategoryLayer.countProductCards.$categoryId", function () use ($categoryId) {
 
+            $catIds = [$categoryId];
+            $this->doCollectDescendants($categoryId, $catIds);
+            $catIds = array_unique($catIds);
 
             return QuickPdo::fetch("
 select count(product_card_id) as nb from ek_category_has_product_card
@@ -166,61 +166,6 @@ where category_id in (" . implode(", ", $catIds) . ")
         });
 
         return $idCat;
-    }
-
-    /**
-     * This breadcrumbs method returns breadcrumbs based on the uri.
-     *
-     * In ekom, we usually provide a variable via the registry, this variable
-     * allows us to know the type of ekom page we are displaying.
-     *
-     * For instance, on a product card page, we can use the ekom.cardId registry variable.
-     *
-     */
-    public function getBreadCrumbs()
-    {
-
-        /**
-         * Where are we?
-         * Are we on:
-         *
-         * - a product card page?
-         */
-        //--------------------------------------------
-        // PRODUCT CARD
-        //--------------------------------------------
-        $cardId = ApplicationRegistry::get("ekom.cardId");
-        if (null !== $cardId) {
-
-            $tree = $this->getCategoryTreeByProductCardId($cardId);
-            $tree = array_reverse($tree);
-
-            // convert tree to breadcrumb "model"
-            $bc = [];
-            foreach ($tree as $item) {
-                $label = $item['label'];
-                $bc[] = [
-                    "link" => E::link("Ekom_category", ['slug' => $item['slug']]),
-                    "title" => "Go to " . $label,
-                    "label" => $label,
-                ];
-            }
-            return $bc;
-        } else {
-
-            return [
-                [
-                    "link" => "#",
-                    "title" => "Go to home",
-                    "label" => "Home",
-                ],
-                [
-                    "link" => "#",
-                    "title" => "product not found",
-                    "label" => "Product not found",
-                ],
-            ];
-        }
     }
 
 
@@ -481,13 +426,10 @@ and cl.slug=:slug
         ]);
     }
 
-    //--------------------------------------------
-    //
-    //--------------------------------------------
     /**
      * @return array of categories, or false
      */
-    private function getCategoryTreeByProductCardId($cardId, $shopId = null, $langId = null) // might be promoted to public someday
+    public function getCategoryTreeByProductCardId($cardId, $shopId = null, $langId = null) // might be promoted to public someday
     {
         $api = EkomApi::inst();
         $api->initWebContext();
@@ -531,6 +473,11 @@ where c.id=$categoryId and c.category_id!=$categoryId and c.shop_id=$shopId and 
             'ek_category_lang',
         ]);
     }
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+
 
     private function doCollectDescendants($categoryId, array &$ret, array &$leafIds = [])
     {

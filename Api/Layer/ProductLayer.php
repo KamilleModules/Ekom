@@ -24,6 +24,7 @@ use QuickPdo\QuickPdo;
 class ProductLayer
 {
 
+
     public function getProductTypeById($productId)
     {
 
@@ -392,7 +393,8 @@ order by h.order asc
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
 
-        $isB2b = ('b2b' === EkomApi::inst()->configLayer()->getBusinessType()) ? true : false;
+        $isB2b = E::isB2b();
+
 
         $iIsB2b = (int)$isB2b;
         $api = EkomApi::inst();
@@ -411,7 +413,6 @@ order by h.order asc
                          * Take the list of attributes
                          */
                         $productsInfo = $this->getProductCardProductsWithAttributes($cardId, $shopId, $langId);
-
 
 
                         if (count($productsInfo) > 0) {
@@ -494,12 +495,7 @@ order by h.order asc
                             //--------------------------------------------
                             // STOCK
                             //--------------------------------------------
-                            $stockType = "stockAvailable";
-                            $stockText = "in stock";
-                            if (0 === (int)$p['quantity']) {
-                                $stockType = "outOfStock";
-                                $stockText = $p['out_of_stock_text'];
-                            }
+                            $outOfStockText = $p['out_of_stock_text'];
 
 
                             //--------------------------------------------
@@ -570,7 +566,7 @@ order by h.order asc
                             $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $productId);
                             $attrSelection = $p['attributes'];
                             $attrStringArr = [];
-                            foreach($attrSelection as $item){
+                            foreach ($attrSelection as $item) {
                                 $attrStringArr[] = $item['value_label'];
                             }
                             $attrString = implode(' | ', $attrStringArr);
@@ -583,6 +579,7 @@ order by h.order asc
 
 
                             $boxConf = [
+                                "card_id" => (int)$cardId,
                                 "product_id" => (int)$productId,
                                 "product_type" => $p['product_type'],
                                 "quantity" => (int)$p['quantity'],
@@ -610,8 +607,7 @@ order by h.order asc
                                  * Is used by the widget to assign visual cues (for instance success color) to the stockText
                                  * List of available types will be defined later.
                                  */
-                                "stockType" => $stockType,
-                                "stockText" => $stockText,
+                                "outOfStockText" => $outOfStockText,
 
 
                                 "priceWithTax" => $priceWithTax,
@@ -635,21 +631,13 @@ order by h.order asc
 
                                 // card combination
                                 //--------------------------------------------
-                                // EXTENSION: SPECIFIC TO SOME PLUGINS
-                                // consider using namespace_varName notation
-                                //--------------------------------------------
-                                // video
-                                "video_sources" => [
-                                    "/video/Larz Rocking Leaderfit Paris 2017 Step V2.mp4" => "video/mp4",
-                                ],
-                                //--------------------------------------------
                                 // PRIVATE, are removed before the result is returned
                                 //--------------------------------------------
 //                                "_taxes" => $taxes,
                             ];
 
-
                             $model = $boxConf;
+                            Hooks::call("Ekom_decorateBoxModelCacheable", $model);
 
 
                         } else {
@@ -726,10 +714,9 @@ order by h.order asc
 
 
             //--------------------------------------------
-            // hooks
+            // DYNAMIC PART: (could not be part of the cache, unless you know exactly what you are doing)
             //--------------------------------------------
             Hooks::call("Ekom_decorateBoxModel", $model);
-
 
             $_priceWithTax = $model['rawPriceWithTax'];
             $_priceWithoutTax = $model['rawPriceWithoutTax'];
@@ -820,6 +807,16 @@ order by h.order asc
                 $model['rawSalePrice'] = $model['rawSalePriceWithTax'];
             }
 
+
+            //--------------------------------------------
+            // MISCELLANEOUS
+            //--------------------------------------------
+            /**
+             * The cart quantity for the given product
+             */
+            $cartQty = EkomApi::inst()->cartLayer()->getQuantity($model['product_id']);
+            $model['cartQuantity'] = $cartQty;
+
         }
 
 //        a(__FILE__);
@@ -827,17 +824,24 @@ order by h.order asc
         return $model;
     }
 
-    public function getProductBoxModel()
-    {
-        $cardId = ApplicationRegistry::get("ekom.cardId");
-        $ref = ApplicationRegistry::get("ekom.productRef");
-        if (null === $ref) {
-            return EkomApi::inst()->productLayer()->getProductBoxModelByCardId($cardId);
-        } else {
-            return EkomApi::inst()->productLayer()->getProductBoxModelByProductRef($ref);
-        }
-    }
+//    public function getProductBoxModel()
+//    {
+//        $cardId = ApplicationRegistry::get("ekom.cardId");
+//        $ref = ApplicationRegistry::get("ekom.productRef");
+//        if (null === $ref) {
+//            return EkomApi::inst()->productLayer()->getProductBoxModelByCardId($cardId);
+//        } else {
+//            return EkomApi::inst()->productLayer()->getProductBoxModelByProductRef($ref);
+//        }
+//    }
 
+
+    public function getProductIdByRef($ref)
+    {
+        return QuickPdo::fetch("select id from ek_product where reference=:ref", [
+            'ref' => $ref,
+        ], \PDO::FETCH_COLUMN);
+    }
 
     //--------------------------------------------
     //
@@ -846,11 +850,12 @@ order by h.order asc
     {
         EkomApi::inst()->initWebContext();
 
+        $b2b = (int)E::isB2b();
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
 
 
-        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$shopId.$langId.$productRef", function () use ($productRef, $shopId, $langId) {
+        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$shopId.$langId.$productRef.$b2b", function () use ($productRef, $shopId, $langId) {
             try {
                 $row = EkomApi::inst()->product()->readOne([
                     'where' => [

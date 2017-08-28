@@ -48,7 +48,7 @@ class E
     public static function isB2b()
     {
         return EkomApi::inst()->userLayer()->hasGroup("b2b");
-//        return ('b2b' === EkomApi::inst()->configLayer()->getBusinessType()) ? true : false; // old code
+
     }
 
     public static function getShopId()

@@ -32,7 +32,8 @@ class ProductSelectionLayer
     }
 
 
-    public function getProductBoxModelsByRelatedId($cardId, $shopId=null){
+    public function getProductBoxModelsByRelatedId($cardId, $shopId = null)
+    {
         if (null === $shopId) {
             $shopId = E::getShopId();
         }
@@ -50,7 +51,8 @@ class ProductSelectionLayer
     }
 
 
-    public function getProductBoxModelsByLastVisited($userId, $shopId=null){
+    public function getProductBoxModelsByLastVisited($userId, $shopId = null)
+    {
         return A::cache()->get("ProductSelectionLayer.getProductBoxModelsByLastVisited.$shopId.$userId", function () use ($userId, $shopId) {
 
             /**
@@ -66,10 +68,11 @@ class ProductSelectionLayer
     }
 
 
-    public function getProductBoxModelsByAnyInCategoryAndUp($categoryName, $shopId=null){
+    public function getProductBoxModelsByAnyInCategoryAndUp($categoryName, $shopId = null)
+    {
         return A::cache()->get("ProductSelectionLayer.getProductBoxModelsByAnyInCategoryAndUp.$shopId.$categoryName", function () use ($categoryName, $shopId) {
 
-            $ids=[];
+            $ids = [];
             EkomApi::inst()->categoryLayer()->collectProductIdsByCategoryName($ids, $categoryName, 10);
             return $this->getBoxesByIds($ids, $shopId);
 
@@ -79,10 +82,8 @@ class ProductSelectionLayer
         ]);
     }
 
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    private function getBoxesByIds(array $ids, $shopId){
+    public function getBoxesByIds(array $ids, $shopId)
+    {
         $ret = [];
         $pLayer = EkomApi::inst()->productLayer();
         foreach ($ids as $id) {
@@ -90,6 +91,9 @@ class ProductSelectionLayer
         }
         return $ret;
     }
+    //--------------------------------------------
+    //
+    //--------------------------------------------
 
 }
 

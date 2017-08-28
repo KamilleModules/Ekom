@@ -151,6 +151,19 @@ class CartLayer
     }
 
 
+    public function getQuantity($productId)
+    {
+        $items = $this->getItems();
+        $productId = (int)$productId;
+        foreach ($items as $item) {
+            if ((int)$item['id'] === $productId) {
+                return $item['quantity'];
+            }
+        }
+        return 0;
+    }
+
+
     public function setCartContent(array $cart, $shopId = null)
     {
         $this->initSessionCart();
@@ -763,9 +776,7 @@ and p.lang_id=$langId
                     'imageSmall' => $imageSmall,
                     'imageMedium' => $imageMedium,
                     'imageLarge' => $imageLarge,
-
-                    'stockType' => $b['stockType'],
-                    'stockText' => $b['stockText'],
+                    'outOfStockText' => $b['outOfStockText'],
                     'taxDetails' => $b['taxDetails'],
 
 //                    'rawSalePriceWithoutTax' => $b['rawSalePriceWithoutTax'],
@@ -788,8 +799,6 @@ and p.lang_id=$langId
             "ekomApi.image.productCard",
         ]);
     }
-
-
 
 
     /**
