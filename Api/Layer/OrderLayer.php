@@ -125,6 +125,7 @@ select * from ek_order where id=$id and user_id=$userId
                 foreach ($rows as $k => $row) {
                     $details = unserialize($row['order_details']);
                     $section = $details['orderSections']['sections'][0];
+                    $paymentDetails = (array_key_exists('payment_details', $details)) ? $details['payment_details'] : [];
 
                     $ret[] = [
                         "id" => $row['id'],
@@ -132,7 +133,7 @@ select * from ek_order where id=$id and user_id=$userId
                         "date" => $row['date'],
                         "orderGrandTotal" => $details['orderGrandTotal'],
                         "paymentMethodName" => $details['paymentMethodName'],
-                        "payment_details" => $details['payment_details'],
+                        "payment_details" => $paymentDetails,
                         "shipping_address" => unserialize($row['shipping_address']),
                         "billing_address" => unserialize($row['billing_address']),
                         "user_info" => unserialize($row['user_info']),
