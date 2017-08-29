@@ -496,6 +496,11 @@ order by h.order asc
                             // STOCK
                             //--------------------------------------------
                             $outOfStockText = $p['out_of_stock_text'];
+                            $quantity = $p['quantity'];
+                            $isInStock = true; // isInStock handles qty=-1, it's a helper for the view
+                            if(0 === (int)$quantity){
+                                $isInStock = false;
+                            }
 
 
                             //--------------------------------------------
@@ -582,7 +587,8 @@ order by h.order asc
                                 "card_id" => (int)$cardId,
                                 "product_id" => (int)$productId,
                                 "product_type" => $p['product_type'],
-                                "quantity" => (int)$p['quantity'],
+                                "quantity" => (int)$quantity,
+                                "is_in_stock" => $isInStock,
                                 "images" => $images,
                                 "defaultImage" => $defaultImage,
                                 "imageThumb" => $imageThumb,
