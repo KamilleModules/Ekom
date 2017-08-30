@@ -276,4 +276,21 @@ $sTheOrder
     }
 
 
+    /**
+     * Clean records in ek_product_card that have no correspondence in the ek_product_card_lang table.
+     */
+    public function cleanGhostRecords(array &$deletedIds = [])
+    {
+        $cLayer = EkomApi::inst()->productCard();
+        $ids = QuickPdo::fetchAll("select id from ek_product_card", [], \PDO::FETCH_COLUMN);
+        foreach ($ids as $id) {
+            if (false === QuickPdo::fetch("select lang_id from ek_product_card_lang where product_card_id=$id")) {
+                $cLayer->delete([
+                    'id' => $id,
+                ]);
+                $deletedIds[] = $id;
+            }
+        }
+    }
+
 }

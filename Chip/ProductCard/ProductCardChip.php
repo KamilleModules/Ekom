@@ -3,49 +3,49 @@
 
 namespace Module\Ekom\Chip\ProductCard;
 
-use Module\Ekom\Api\EkomApi;
-use Module\Ekom\Chip\ChipConfig;
-use Module\Ekom\Chip\Exception\ChipException;
+use Module\Ekom\Chip\Product\ProductChip;
+use Module\Ekom\Chip\ShopProductCard\ShopProductCardChip;
 
 
 /**
- *
- *
- *
- *
  * - ek_product_card
  * - ek_product_card_lang
- * - ek_shop_has_product_card
- * - ek_shop_has_product_card_lang
- * - ?ek_category_has_product_card
  */
 class ProductCardChip
 {
 
-    /**
-     * @todo-ling: the ek_shop_has_product_card table REQUIRES a product!!
-     */
-    private $shopId; // mandatory
-    private $langId; // mandatory
+    private $lang_id; // mandatory
     private $label; // mandatory
     private $description;
     private $slug; // mandatory
-    private $metaTitle;
-    private $metaDescription;
-    private $metaKeywords;
-    private $categoryId;
-    private $active; // bool=true: active for this shop?
+    private $meta_title;
+    private $meta_description;
+    private $meta_keywords;
 
     /**
      * @var ProductChip[]
      */
     private $products;
 
+    /**
+     * @var ShopProductCardChip
+     */
+    private $shopProductCard;
+    private $category; // the category name
+
 
     public function __construct()
     {
-        $this->langId = ChipConfig::DEFAULT_LANG_ISO;
-        $this->active = true;
+        $this->lang_id = null;
+        $this->label = null;
+        $this->description = '';
+        $this->slug = null;
+        $this->meta_title = '';
+        $this->meta_description = '';
+        $this->meta_keywords = '';
+        $this->products = [];
+        $this->shopProductCard = null;
+        $this->category = null;
     }
 
 
@@ -55,44 +55,21 @@ class ProductCardChip
     }
 
     /**
-     * @return mixed
-     */
-    public function getShopId()
-    {
-        return $this->shopId;
-    }
-
-    public function setShopId($shopId)
-    {
-        $this->shopId = $shopId;
-        return $this;
-    }
-
-    /**
-     * @return string
+     * @return null
      */
     public function getLangId()
     {
-        return $this->langId;
+        return $this->lang_id;
     }
 
-    public function setLangId($langId)
+    public function setLangId($lang_id)
     {
-        $this->langId = $langId;
-        return $this;
-    }
-
-    public function setLangIdByIso($iso)
-    {
-        $this->langId = EkomApi::inst()->langLayer()->getLangIdByIso($iso);
-        if (false === $this->langId) {
-            throw new ChipException("langId not found with iso $iso");
-        }
+        $this->lang_id = $lang_id;
         return $this;
     }
 
     /**
-     * @return mixed
+     * @return null
      */
     public function getLabel()
     {
@@ -106,7 +83,7 @@ class ProductCardChip
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getDescription()
     {
@@ -120,7 +97,7 @@ class ProductCardChip
     }
 
     /**
-     * @return mixed
+     * @return null
      */
     public function getSlug()
     {
@@ -134,84 +111,94 @@ class ProductCardChip
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getMetaTitle()
     {
-        return $this->metaTitle;
+        return $this->meta_title;
     }
 
-    public function setMetaTitle($metaTitle)
+    public function setMetaTitle($meta_title)
     {
-        $this->metaTitle = $metaTitle;
+        $this->meta_title = $meta_title;
         return $this;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getMetaDescription()
     {
-        return $this->metaDescription;
+        return $this->meta_description;
     }
 
-    public function setMetaDescription($metaDescription)
+    public function setMetaDescription($meta_description)
     {
-        $this->metaDescription = $metaDescription;
+        $this->meta_description = $meta_description;
         return $this;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getMetaKeywords()
     {
-        return $this->metaKeywords;
+        return $this->meta_keywords;
     }
 
-    public function setMetaKeywords($metaKeywords)
+    public function setMetaKeywords($meta_keywords)
     {
-        $this->metaKeywords = $metaKeywords;
+        $this->meta_keywords = $meta_keywords;
+        return $this;
+    }
+
+
+    /**
+     * @return ProductChip[]
+     */
+    public function getProducts()
+    {
+        return $this->products;
+    }
+
+    public function setProducts($products)
+    {
+        $this->products = $products;
+        return $this;
+    }
+
+    public function addProduct(ProductChip $product)
+    {
+        $this->products[] = $product;
         return $this;
     }
 
     /**
-     * @return mixed
+     * @return ShopProductCardChip
      */
-    public function getCategoryId()
+    public function getShopProductCard()
     {
-        return $this->categoryId;
+        return $this->shopProductCard;
     }
 
-    public function setCategoryId($categoryId)
+    public function setShopProductCard(ShopProductCardChip $shopProductCard)
     {
-        $this->categoryId = $categoryId;
-        return $this;
-    }
-
-    public function setCategoryIdByName($categoryName)
-    {
-        $this->categoryId = EkomApi::inst()->categoryLayer()->getCategoryIdByName($categoryName);
-        if (false === $this->categoryId) {
-            throw new ChipException("category not found with name $categoryName");
-        }
+        $this->shopProductCard = $shopProductCard;
         return $this;
     }
 
     /**
-     * @return bool
+     * @return null
      */
-    public function isActive()
+    public function getCategory()
     {
-        return $this->active;
+        return $this->category;
     }
 
-    public function setActive($active)
+    public function setCategory($category)
     {
-        $this->active = $active;
+        $this->category = $category;
         return $this;
     }
-
-
 
 }

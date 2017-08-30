@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 class SellerLayer
@@ -38,8 +39,10 @@ and h.shop_id=$shopId
      */
     public function insertNameIfNotExist($name, $shopId = null)
     {
-        EkomApi::inst()->initWebContext();
-        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+        if (null === $shopId) {
+            $shopId = E::getShopId();
+        }
+        $shopId = (int)$shopId;
 
         $id = QuickPdo::fetch("select 
 id 
@@ -55,6 +58,11 @@ and shop_id=$shopId", [
             ]);
         }
         return (int)$id;
+    }
+
+    public function getIdByName($name, $shopId = null)
+    {
+        return self::insertNameIfNotExist($name, $shopId);
     }
 
 }
