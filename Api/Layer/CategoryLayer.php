@@ -16,6 +16,11 @@ class CategoryLayer
 {
 
 
+    public function getCategoryIdByName($name)
+    {
+        return QuickPdo::fetch("select id from ek_category where name=:name", ['name' => $name], \PDO::FETCH_COLUMN);
+    }
+
     public function collectProductIdsByCategoryName(array &$ids, $categoryName, $maxNumber = 7, $shopId = null)
     {
         if (null === $shopId) {
