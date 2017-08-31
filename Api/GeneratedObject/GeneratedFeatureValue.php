@@ -20,6 +20,7 @@ class GeneratedFeatureValue extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_feature_value";
+        $this->primaryKey = ['id'];
     }
 
 

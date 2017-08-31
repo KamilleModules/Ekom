@@ -20,6 +20,7 @@ class GeneratedLang extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_lang";
+        $this->primaryKey = ['id'];
     }
 
 

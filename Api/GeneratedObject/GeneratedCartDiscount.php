@@ -20,6 +20,7 @@ class GeneratedCartDiscount extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_cart_discount";
+        $this->primaryKey = ['id'];
     }
 
 

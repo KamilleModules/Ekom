@@ -20,6 +20,7 @@ class GeneratedCategoryHasDiscount extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_category_has_discount";
+        $this->primaryKey = ['category_id', 'discount_id'];
     }
 
 

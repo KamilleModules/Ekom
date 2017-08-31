@@ -20,6 +20,7 @@ class GeneratedUser extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_user";
+        $this->primaryKey = ['id'];
     }
 
 

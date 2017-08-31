@@ -20,6 +20,7 @@ class GeneratedSeller extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_seller";
+        $this->primaryKey = ['id'];
     }
 
 

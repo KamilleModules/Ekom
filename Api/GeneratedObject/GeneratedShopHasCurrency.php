@@ -20,6 +20,7 @@ class GeneratedShopHasCurrency extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_shop_has_currency";
+        $this->primaryKey = ['shop_id', 'currency_id'];
     }
 
 

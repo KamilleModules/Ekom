@@ -20,6 +20,7 @@ class GeneratedProductComment extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_product_comment";
+        $this->primaryKey = ['id'];
     }
 
 

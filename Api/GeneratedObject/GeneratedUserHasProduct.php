@@ -20,6 +20,7 @@ class GeneratedUserHasProduct extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_user_has_product";
+        $this->primaryKey = ['user_id', 'product_id'];
     }
 
 

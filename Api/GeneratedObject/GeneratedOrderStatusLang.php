@@ -20,6 +20,7 @@ class GeneratedOrderStatusLang extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_order_status_lang";
+        $this->primaryKey = ['order_status_id', 'lang_id'];
     }
 
 

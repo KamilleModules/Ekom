@@ -20,6 +20,7 @@ class GeneratedFeatureLang extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_feature_lang";
+        $this->primaryKey = ['lang_id', 'feature_id'];
     }
 
 

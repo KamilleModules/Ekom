@@ -20,6 +20,7 @@ class GeneratedProductCard extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_product_card";
+        $this->primaryKey = ['id'];
     }
 
 

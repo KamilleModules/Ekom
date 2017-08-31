@@ -20,6 +20,7 @@ class GeneratedOrder extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_order";
+        $this->primaryKey = ['id'];
     }
 
 

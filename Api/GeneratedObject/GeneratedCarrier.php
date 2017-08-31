@@ -20,6 +20,7 @@ class GeneratedCarrier extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_carrier";
+        $this->primaryKey = ['id'];
     }
 
 

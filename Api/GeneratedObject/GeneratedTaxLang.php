@@ -20,6 +20,7 @@ class GeneratedTaxLang extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_tax_lang";
+        $this->primaryKey = ['tax_id', 'lang_id'];
     }
 
 

@@ -20,6 +20,7 @@ class GeneratedShopHasAddress extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_shop_has_address";
+        $this->primaryKey = ['id'];
     }
 
 

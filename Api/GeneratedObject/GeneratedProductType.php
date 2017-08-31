@@ -20,6 +20,7 @@ class GeneratedProductType extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_product_type";
+        $this->primaryKey = ['id'];
     }
 
 

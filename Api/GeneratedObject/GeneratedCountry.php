@@ -20,6 +20,7 @@ class GeneratedCountry extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_country";
+        $this->primaryKey = ['id'];
     }
 
 

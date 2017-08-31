@@ -20,6 +20,7 @@ class GeneratedShopHasLang extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_shop_has_lang";
+        $this->primaryKey = ['shop_id', 'lang_id'];
     }
 
 

@@ -20,6 +20,7 @@ class GeneratedCurrency extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_currency";
+        $this->primaryKey = ['id'];
     }
 
 

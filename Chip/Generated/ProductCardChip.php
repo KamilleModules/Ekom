@@ -1,51 +1,47 @@
 <?php
 
 
-namespace Module\Ekom\Chip\ProductCard;
-
-use Module\Ekom\Chip\Product\ProductChip;
-use Module\Ekom\Chip\ShopProductCard\ShopProductCardChip;
+namespace Module\Ekom\Chip\Generated;
 
 
-/**
- * - ek_product_card
- * - ek_product_card_lang
- */
+
+
 class ProductCardChip
 {
 
-    private $lang_id; // mandatory
-    private $label; // mandatory
+    private $lang_id;
+    private $label;
     private $description;
-    private $slug; // mandatory
+    private $slug;
     private $meta_title;
     private $meta_description;
     private $meta_keywords;
-
     /**
-     * @var ProductChip[]
-     */
+    * @var ShopProductCardChip
+    */
+    private $shop_product_card;
+    private $category;
+    /**
+    * @var ProductChip[]
+    */
     private $products;
 
-    /**
-     * @var ShopProductCardChip
-     */
-    private $shopProductCard;
-    private $category; // the category name
 
 
     public function __construct()
     {
-        $this->lang_id = null;
-        $this->label = null;
+        $this->lang_id = 0;
+        $this->label = '';
         $this->description = '';
-        $this->slug = null;
+        $this->slug = '';
         $this->meta_title = '';
         $this->meta_description = '';
         $this->meta_keywords = '';
-        $this->products = [];
-        $this->shopProductCard = null;
-        $this->category = null;
+        $this->shop_product_card = NULL;
+        $this->category = NULL;
+        $this->products = array (
+);
+
     }
 
 
@@ -54,9 +50,7 @@ class ProductCardChip
         return new static();
     }
 
-    /**
-     * @return null
-     */
+    
     public function getLangId()
     {
         return $this->lang_id;
@@ -68,9 +62,6 @@ class ProductCardChip
         return $this;
     }
 
-    /**
-     * @return null
-     */
     public function getLabel()
     {
         return $this->label;
@@ -82,9 +73,6 @@ class ProductCardChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getDescription()
     {
         return $this->description;
@@ -96,9 +84,6 @@ class ProductCardChip
         return $this;
     }
 
-    /**
-     * @return null
-     */
     public function getSlug()
     {
         return $this->slug;
@@ -110,9 +95,6 @@ class ProductCardChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getMetaTitle()
     {
         return $this->meta_title;
@@ -124,9 +106,6 @@ class ProductCardChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getMetaDescription()
     {
         return $this->meta_description;
@@ -138,9 +117,6 @@ class ProductCardChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getMetaKeywords()
     {
         return $this->meta_keywords;
@@ -152,44 +128,20 @@ class ProductCardChip
         return $this;
     }
 
-
     /**
-     * @return ProductChip[]
-     */
-    public function getProducts()
-    {
-        return $this->products;
-    }
-
-    public function setProducts($products)
-    {
-        $this->products = $products;
-        return $this;
-    }
-
-    public function addProduct(ProductChip $product)
-    {
-        $this->products[] = $product;
-        return $this;
-    }
-
-    /**
-     * @return ShopProductCardChip
-     */
+    * @return ShopProductCardChip
+    */
     public function getShopProductCard()
     {
-        return $this->shopProductCard;
+        return $this->shop_product_card;
     }
 
-    public function setShopProductCard(ShopProductCardChip $shopProductCard)
+    public function setShopProductCard(ShopProductCardChip $shop_product_card)
     {
-        $this->shopProductCard = $shopProductCard;
+        $this->shop_product_card = $shop_product_card;
         return $this;
     }
 
-    /**
-     * @return null
-     */
     public function getCategory()
     {
         return $this->category;
@@ -200,5 +152,22 @@ class ProductCardChip
         $this->category = $category;
         return $this;
     }
+
+    /**
+    * @return ProductChip[]
+    */
+    public function getProducts()
+    {
+        return $this->products;
+    }
+
+    public function addProduct(ProductChip $product)
+    {
+        $this->products[] = $product;
+        return $this;
+    }
+
+
+
 
 }

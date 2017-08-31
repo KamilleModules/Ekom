@@ -20,6 +20,7 @@ class GeneratedPaymentMethod extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_payment_method";
+        $this->primaryKey = ['id'];
     }
 
 

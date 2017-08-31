@@ -20,6 +20,7 @@ class GeneratedProductCardHasTaxGroup extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_product_card_has_tax_group";
+        $this->primaryKey = ['shop_id', 'product_card_id'];
     }
 
 

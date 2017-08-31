@@ -20,6 +20,7 @@ class GeneratedProductHasProductAttribute extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_product_has_product_attribute";
+        $this->primaryKey = ['product_id', 'product_attribute_id', 'product_attribute_value_id'];
     }
 
 

@@ -20,6 +20,7 @@ class GeneratedProductCardLang extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_product_card_lang";
+        $this->primaryKey = ['product_card_id', 'lang_id'];
     }
 
 

@@ -15,9 +15,10 @@ class ProductCardLangLayer
             ]));
     }
 
-    public function getInfoBySlug($slug)
+    public function getInfoBySlug($slug, $langId)
     {
-        return QuickPdo::fetch("select * from ek_product_card_lang where slug=:slug", [
+        $langId = (int)$langId;
+        return QuickPdo::fetch("select * from ek_product_card_lang where slug=:slug and lang_id=$langId", [
             'slug' => $slug,
         ]);
     }

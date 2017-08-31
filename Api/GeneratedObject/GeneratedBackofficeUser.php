@@ -20,6 +20,7 @@ class GeneratedBackofficeUser extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_backoffice_user";
+        $this->primaryKey = ['id'];
     }
 
 

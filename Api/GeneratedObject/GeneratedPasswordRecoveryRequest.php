@@ -20,6 +20,7 @@ class GeneratedPasswordRecoveryRequest extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_password_recovery_request";
+        $this->primaryKey = ['id'];
     }
 
 

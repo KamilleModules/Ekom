@@ -1,49 +1,44 @@
 <?php
 
 
-namespace Module\Ekom\Chip\ShopProduct;
+namespace Module\Ekom\Chip\Generated;
 
 
-/**
- *
- * - ek_shop_has_product
- * - ek_shop_has_product_lang
- * - ek_seller
- *
- * This is a ProductChip extension.
- *
- *
- */
+
+
 class ShopProductChip
 {
 
+    private $shop_id;
     private $price;
     private $wholesale_price;
     private $quantity;
     private $active;
     private $_sale_price_without_tax;
     private $_sale_price_with_tax;
-    private $seller; // mandatory
-
+    private $seller;
+    private $lang_id;
     private $label;
     private $description;
     private $slug;
     private $out_of_stock_text;
-
     private $meta_title;
     private $meta_description;
     private $meta_keywords;
 
 
+
     public function __construct()
     {
+        $this->shop_id = 0;
         $this->price = NULL;
         $this->wholesale_price = 0;
         $this->quantity = 0;
-        $this->active = 1;
+        $this->active = 0;
         $this->_sale_price_without_tax = 0;
         $this->_sale_price_with_tax = 0;
-        $this->seller = null;
+        $this->seller = NULL;
+        $this->lang_id = 0;
         $this->label = '';
         $this->description = '';
         $this->slug = '';
@@ -51,6 +46,7 @@ class ShopProductChip
         $this->meta_title = '';
         $this->meta_description = '';
         $this->meta_keywords = '';
+
     }
 
 
@@ -59,9 +55,18 @@ class ShopProductChip
         return new static();
     }
 
-    /**
-     * @return null
-     */
+    
+    public function getShopId()
+    {
+        return $this->shop_id;
+    }
+
+    public function setShopId($shop_id)
+    {
+        $this->shop_id = $shop_id;
+        return $this;
+    }
+
     public function getPrice()
     {
         return $this->price;
@@ -73,9 +78,6 @@ class ShopProductChip
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getWholesalePrice()
     {
         return $this->wholesale_price;
@@ -87,9 +89,6 @@ class ShopProductChip
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getQuantity()
     {
         return $this->quantity;
@@ -101,9 +100,6 @@ class ShopProductChip
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getActive()
     {
         return $this->active;
@@ -115,37 +111,28 @@ class ShopProductChip
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getSalePriceWithoutTax()
     {
         return $this->_sale_price_without_tax;
     }
 
-    public function setSalePriceWithoutTax($sale_price_without_tax)
+    public function setSalePriceWithoutTax($_sale_price_without_tax)
     {
-        $this->_sale_price_without_tax = $sale_price_without_tax;
+        $this->_sale_price_without_tax = $_sale_price_without_tax;
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getSalePriceWithTax()
     {
         return $this->_sale_price_with_tax;
     }
 
-    public function setSalePriceWithTax($sale_price_with_tax)
+    public function setSalePriceWithTax($_sale_price_with_tax)
     {
-        $this->_sale_price_with_tax = $sale_price_with_tax;
+        $this->_sale_price_with_tax = $_sale_price_with_tax;
         return $this;
     }
 
-    /**
-     * @return null
-     */
     public function getSeller()
     {
         return $this->seller;
@@ -157,9 +144,17 @@ class ShopProductChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
+    public function getLangId()
+    {
+        return $this->lang_id;
+    }
+
+    public function setLangId($lang_id)
+    {
+        $this->lang_id = $lang_id;
+        return $this;
+    }
+
     public function getLabel()
     {
         return $this->label;
@@ -171,9 +166,6 @@ class ShopProductChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getDescription()
     {
         return $this->description;
@@ -185,9 +177,6 @@ class ShopProductChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getSlug()
     {
         return $this->slug;
@@ -199,9 +188,6 @@ class ShopProductChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getOutOfStockText()
     {
         return $this->out_of_stock_text;
@@ -213,9 +199,6 @@ class ShopProductChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getMetaTitle()
     {
         return $this->meta_title;
@@ -227,9 +210,6 @@ class ShopProductChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getMetaDescription()
     {
         return $this->meta_description;
@@ -241,9 +221,6 @@ class ShopProductChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getMetaKeywords()
     {
         return $this->meta_keywords;
@@ -254,6 +231,8 @@ class ShopProductChip
         $this->meta_keywords = $meta_keywords;
         return $this;
     }
+
+
 
 
 }

@@ -20,6 +20,7 @@ class GeneratedProductAttributeValueLang extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_product_attribute_value_lang";
+        $this->primaryKey = ['product_attribute_value_id', 'lang_id'];
     }
 
 

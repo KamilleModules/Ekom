@@ -20,6 +20,7 @@ class GeneratedCouponLang extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_coupon_lang";
+        $this->primaryKey = ['lang_id', 'coupon_id'];
     }
 
 

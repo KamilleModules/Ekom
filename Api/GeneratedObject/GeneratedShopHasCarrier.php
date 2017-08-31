@@ -20,6 +20,7 @@ class GeneratedShopHasCarrier extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_shop_has_carrier";
+        $this->primaryKey = ['shop_id', 'carrier_id'];
     }
 
 

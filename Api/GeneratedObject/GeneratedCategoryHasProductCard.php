@@ -20,6 +20,7 @@ class GeneratedCategoryHasProductCard extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_category_has_product_card";
+        $this->primaryKey = ['category_id', 'product_card_id'];
     }
 
 

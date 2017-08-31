@@ -20,6 +20,7 @@ class GeneratedCategory extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_category";
+        $this->primaryKey = ['id'];
     }
 
 

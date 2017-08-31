@@ -20,6 +20,7 @@ class GeneratedProductBundleHasProduct extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_product_bundle_has_product";
+        $this->primaryKey = ['product_bundle_id', 'product_id'];
     }
 
 

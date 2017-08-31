@@ -20,6 +20,7 @@ class GeneratedUserHasUserGroup extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_user_has_user_group";
+        $this->primaryKey = ['user_id', 'user_group_id'];
     }
 
 

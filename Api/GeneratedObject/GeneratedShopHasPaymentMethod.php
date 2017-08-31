@@ -20,6 +20,7 @@ class GeneratedShopHasPaymentMethod extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_shop_has_payment_method";
+        $this->primaryKey = ['shop_id', 'payment_method_id'];
     }
 
 

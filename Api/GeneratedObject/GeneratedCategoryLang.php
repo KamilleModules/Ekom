@@ -20,6 +20,7 @@ class GeneratedCategoryLang extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_category_lang";
+        $this->primaryKey = ['lang_id', 'category_id'];
     }
 
 

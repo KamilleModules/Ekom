@@ -1,30 +1,21 @@
 <?php
 
 
-namespace Module\Ekom\Chip\ShopProductCard;
+namespace Module\Ekom\Chip\Generated;
 
 
-/**
- *
- * - ek_shop_has_product_card
- * - ek_shop_has_product_card_lang
- *
- *
- * This is an extension for the ProductCardShip.
- *
- */
+
+
 class ShopProductCardChip
 {
 
-    private $shopId; // mandatory
-    private $active;
+    private $shop_id;
     /**
-     * the activeRef helps the processor to define the
-     * ek_shop_has_product_card.active field.
-     * Note: it could be defined by other means (activeProductId, activeProductChip...)
-     * if we wanted to.
-     */
-    private $activeRef; // mandatory
+    * @var ProductChip
+    */
+    private $activeProduct;
+    private $active;
+    private $lang_id;
     private $label;
     private $slug;
     private $description;
@@ -33,11 +24,13 @@ class ShopProductCardChip
     private $meta_keywords;
 
 
+
     public function __construct()
     {
+        $this->shop_id = 0;
+        $this->activeProduct = NULL;
         $this->active = 0;
-        $this->shopId = null;
-        $this->activeRef = null;
+        $this->lang_id = 0;
         $this->label = '';
         $this->slug = '';
         $this->description = '';
@@ -53,10 +46,32 @@ class ShopProductCardChip
         return new static();
     }
 
+    
+    public function getShopId()
+    {
+        return $this->shop_id;
+    }
+
+    public function setShopId($shop_id)
+    {
+        $this->shop_id = $shop_id;
+        return $this;
+    }
 
     /**
-     * @return int
-     */
+    * @return ProductChip
+    */
+    public function getActiveProduct()
+    {
+        return $this->activeProduct;
+    }
+
+    public function setActiveProduct(ProductChip $activeProduct)
+    {
+        $this->activeProduct = $activeProduct;
+        return $this;
+    }
+
     public function getActive()
     {
         return $this->active;
@@ -68,9 +83,17 @@ class ShopProductCardChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
+    public function getLangId()
+    {
+        return $this->lang_id;
+    }
+
+    public function setLangId($lang_id)
+    {
+        $this->lang_id = $lang_id;
+        return $this;
+    }
+
     public function getLabel()
     {
         return $this->label;
@@ -82,9 +105,6 @@ class ShopProductCardChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getSlug()
     {
         return $this->slug;
@@ -96,9 +116,6 @@ class ShopProductCardChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getDescription()
     {
         return $this->description;
@@ -110,9 +127,6 @@ class ShopProductCardChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getMetaTitle()
     {
         return $this->meta_title;
@@ -124,9 +138,6 @@ class ShopProductCardChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getMetaDescription()
     {
         return $this->meta_description;
@@ -138,9 +149,6 @@ class ShopProductCardChip
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getMetaKeywords()
     {
         return $this->meta_keywords;
@@ -152,33 +160,7 @@ class ShopProductCardChip
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getActiveRef()
-    {
-        return $this->activeRef;
-    }
 
-    public function setActiveRef($activeRef)
-    {
-        $this->activeRef = $activeRef;
-        return $this;
-    }
-
-    /**
-     * @return null
-     */
-    public function getShopId()
-    {
-        return $this->shopId;
-    }
-
-    public function setShopId($shopId)
-    {
-        $this->shopId = $shopId;
-        return $this;
-    }
 
 
 }

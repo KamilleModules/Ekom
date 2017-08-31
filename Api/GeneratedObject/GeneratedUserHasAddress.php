@@ -20,6 +20,7 @@ class GeneratedUserHasAddress extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_user_has_address";
+        $this->primaryKey = ['user_id', 'address_id'];
     }
 
 

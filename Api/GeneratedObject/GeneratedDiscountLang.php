@@ -20,6 +20,7 @@ class GeneratedDiscountLang extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_discount_lang";
+        $this->primaryKey = ['discount_id', 'lang_id'];
     }
 
 

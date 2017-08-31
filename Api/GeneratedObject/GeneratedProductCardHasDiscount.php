@@ -20,6 +20,7 @@ class GeneratedProductCardHasDiscount extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_product_card_has_discount";
+        $this->primaryKey = ['product_card_id', 'discount_id'];
     }
 
 

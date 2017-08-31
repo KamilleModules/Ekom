@@ -20,6 +20,7 @@ class GeneratedTaxGroupHasTax extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_tax_group_has_tax";
+        $this->primaryKey = ['tax_group_id', 'tax_id'];
     }
 
 

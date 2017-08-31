@@ -20,6 +20,7 @@ class GeneratedDiscount extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_discount";
+        $this->primaryKey = ['id'];
     }
 
 
