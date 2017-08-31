@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Module\Ekom\Chip\ShopProduct;
+namespace Module\Ekom\Chip\Country;
 
 
 class CountryChip
