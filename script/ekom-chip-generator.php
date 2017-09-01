@@ -68,4 +68,15 @@ $builder->newChip('shopProductCard', ChipDescription::create()
 
 
 
+$builder->newChip('country', ChipDescription::create()
+    ->setTables([
+        'ek_country',
+    ])
+    ->setIgnoreColumns([
+        'id',
+    ])
+);
+
+
+
 
