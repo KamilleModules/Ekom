@@ -5,6 +5,7 @@ namespace Module\Ekom\Utils;
 
 
 use Authenticate\SessionUser\SessionUser;
+use Bat\CaseTool;
 use Bat\SessionTool;
 use Bat\UriTool;
 use Core\Services\A;
@@ -48,7 +49,10 @@ class E
     public static function isB2b()
     {
         return EkomApi::inst()->userLayer()->hasGroup("b2b");
+    }
 
+    public static function slugify($word){
+        return CaseTool::toDog($word);
     }
 
     public static function getShopId()
