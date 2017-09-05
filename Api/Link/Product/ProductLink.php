@@ -100,7 +100,7 @@ class ProductLink
                  * so we save the card (and the bound cardLang in turn)
                  */
                 $r = [];
-                $idCard=$cardLang->save($r);
+                $idCard = $cardLang->save($r);
                 $this->saveResult($r, $results);
             } else {
                 /**
@@ -126,7 +126,7 @@ class ProductLink
              * @var $product ProductObject
              */
             list($product, $attr, $value) = $productInfo;
-            $r=[];
+            $r = [];
             a("save product, cardId=$idCard");
             $product->setProductCardId($idCard);
             $product->save($r);
