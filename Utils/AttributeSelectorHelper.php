@@ -5,6 +5,7 @@ namespace Module\Ekom\Utils;
 
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Util\UriUtil;
 
 
 /**
@@ -292,7 +293,7 @@ class AttributeSelectorHelper
                      * Note: for now I believe it will only work if the product has only one attribute (I'm in a rush sorry)...
                      */
                     $productUri = E::link("Ekom_productCardRef", ['slug' => $info['cardSlug'], 'ref' => $info['ref']]);
-                    $productAjaxUri = E::link("Ekom_ajaxApi") . "?action=getProductInfo&id=" . $_productId;
+                    $productAjaxUri = UriUtil::getProductBoxBaseAjaxUri($_productId);
                     $attributes[$k]['productUri'] = $productUri;
                     $attributes[$k]['getProductInfoAjaxUri'] = $productAjaxUri;
                 }

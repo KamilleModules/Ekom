@@ -43,6 +43,20 @@ class E
         return EkomApi::inst()->connexionLayer()->getUserId($default);
     }
 
+
+    /**
+     * @return \Localys\LocalysInterface
+     */
+    public static function localys(){
+        /**
+         * I personally use this _l function that I find handy.
+         * This should be the one place where you change the localys invocation
+         * if you need it.
+         * (i.e. all modules call E::localys, not _l)
+         */
+        return _l();
+    }
+
     /**
      * Return true if it's b2b, false otherwise
      */

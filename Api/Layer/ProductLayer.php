@@ -569,6 +569,7 @@ order by h.order asc
 
                                 $attr = $attrModelGen->generate($productsInfo, $productId);
                             }
+
                             $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $productId);
                             $attrSelection = $p['attributes'];
                             $attrStringArr = [];
