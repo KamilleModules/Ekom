@@ -4,162 +4,426 @@
 namespace Module\Ekom\Api\Link\Product;
 
 
+use Bat\CaseTool;
+use Module\Ekom\Utils\Api\EkomApiLink;
+use QuickPdo\QuickPdo;
+use SaveOrmObject\Object\Ek\CategoryHasProductCardObject;
 use SaveOrmObject\Object\Ek\CategoryObject;
+use SaveOrmObject\Object\Ek\LangObject;
+use SaveOrmObject\Object\Ek\ProductAttributeLangObject;
 use SaveOrmObject\Object\Ek\ProductAttributeObject;
+use SaveOrmObject\Object\Ek\ProductAttributeValueLangObject;
 use SaveOrmObject\Object\Ek\ProductAttributeValueObject;
+use SaveOrmObject\Object\Ek\ProductCardLangObject;
 use SaveOrmObject\Object\Ek\ProductCardObject;
+use SaveOrmObject\Object\Ek\ProductHasProductAttributeObject;
+use SaveOrmObject\Object\Ek\ProductLangObject;
 use SaveOrmObject\Object\Ek\ProductObject;
+use SaveOrmObject\Object\Ek\ProductTypeObject;
+use SaveOrmObject\Object\Ek\SellerObject;
+use SaveOrmObject\Object\Ek\ShopHasProductCardLangObject;
 use SaveOrmObject\Object\Ek\ShopHasProductCardObject;
+use SaveOrmObject\Object\Ek\ShopHasProductLangObject;
 use SaveOrmObject\Object\Ek\ShopHasProductObject;
 
-class ProductLink
+class ProductLink extends EkomApiLink
 {
 
 
-    private $products;
     /**
-     * @var ProductCardObject
+     * @param array $data
+     *
+     * - shop_id
+     * - product_card_id
+     * - lang
+     * //
+     * - ?label
+     * - slug
+     * - ?description
+     * - ?meta_title
+     * - ?meta_description
+     * - ?meta_keywords
+     * - product_id
+     * - ?active
+     *
+     * @return array
      */
-    private $card;
-    private $shopHasProduct;
-
-
-    public function __construct()
+    public function saveShopProductCard(array $data, array &$results = [])
     {
-        $this->card = null; // mandatory
-        $this->products = []; // at least one
-        $this->shopHasProduct = null;
+        $mandatories = [
+            'shop_id',
+            'product_card_id',
+            'lang',
+            'slug',
+            'product_id',
+        ];
+        $this->handleMissing($mandatories, $data);
+
+
+        $shop_id = $data['shop_id'];
+        $product_card_id = $data['product_card_id'];
+        $lang = $data['lang'];
+        $slug = $data['slug'];
+        $product_id = $data['product_id'];
+
+        $label = $this->get('label', $data);
+        $description = $this->get('description', $data);
+        $metaTitle = $this->get('meta_title', $data);
+        $metaDescription = $this->get('meta_description', $data);
+        $metaKeywords = $this->get('meta_keywords', $data);
+        $active = $this->get('active', $data);
+
+
+        $lang = $this->getLangObject($lang);
+
+        $r = [];
+
+        ShopHasProductCardObject::createByShopIdProductCardId($shop_id, $product_card_id)
+            ->setProductId($product_id)
+            ->setActive($active)
+            ->createShopHasProductCardLang(ShopHasProductCardLangObject::createByShopIdProductCardIdLangId($shop_id, $product_card_id, $lang->getId())
+                ->setLabel($label)
+                ->setSlug($slug)
+                ->setDescription($description)
+                ->setMetaTitle($metaTitle)
+                ->setMetaDescription($metaDescription)
+                ->setMetaKeywords($metaKeywords)
+            )
+            ->save($r);
+        $results = array_merge($results, $r);
+
+        return $results;
     }
 
 
-    public static function create()
+    /**
+     * @param array $data
+     *
+     * - lang
+     * - label
+     * - ?description
+     * - slug
+     * - ?meta_title
+     * - ?meta_description
+     * - ?meta_keywords
+     *
+     * //
+     * - shop_id: required only if categories is not empty
+     * - ?categories: array of category names
+     *
+     * @return array
+     */
+    public function savePhysicalProductCard(array $data, array &$results = [])
     {
-        return new static();
-    }
-
-    public function setCard(ProductCardObject $card)
-    {
-        $this->card = $card;
-        return $this;
-    }
-
-    public function addProduct(ProductObject $product, ProductAttributeObject $attr = null, ProductAttributeValueObject $value = null)
-    {
-        $this->products[] = [$product, $attr, $value];
-        return $this;
-    }
-
-    public function bindToShop(ShopHasProductObject $has)
-    {
-
-        return $this;
-    }
-
-    public function bindCardToCategory(CategoryObject $category)
-    {
-
-        return $this;
-    }
-
-    public function bindCardToShop(ShopHasProductCardObject $has)
-    {
-
-        return $this;
-    }
-
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    public function save(array &$results = [])
-    {
-        $this->check();
+        $mandatories = [
+            'lang',
+            'label',
+            'slug',
+        ];
 
 
-        //--------------------------------------------
-        // CARD - CARD_LANG
-        //--------------------------------------------
-        /**
-         * Saving card and cardLang, BUT,
-         * We don't want to create another card for nothing.
-         * So, if the card doesn't need to be created, you'll have this:
-         * array(1) {
-         *      ["ek_product_card_lang"] => array(2) {
-         *          ["product_card_id"] => string(4) "3554"
-         *          ["lang_id"] => string(1) "1"
-         *      }
-         * }
-         */
-        $idCard = null;
-        $cardLang = $this->card->getProductCardLang();
-        if (null !== $cardLang) {
+        $categories = $this->get('categories', $data, []);
+        if ($categories) {
+            $mandatories[] = 'shop_id';
+        }
 
-            $idCard = $cardLang->getProductCardId();
-            if (null === $idCard) {
-                /**
-                 * The product card doesn't have the cardId set yet,
-                 * so we save the card (and the bound cardLang in turn)
-                 */
+
+        $this->handleMissing($mandatories, $data);
+
+
+        $lang = $data['lang'];
+        $label = $data['label'];
+        $slug = $data['slug'];
+
+        $description = $this->get('description', $data);
+        $metaTitle = $this->get('meta_title', $data);
+        $metaDescription = $this->get('meta_description', $data);
+        $metaKeywords = $this->get('meta_keywords', $data);
+        $shop_id = $this->get('shop_id', $data, null);
+
+        $lang = $this->getLangObject($lang);
+
+
+        $pcl = ProductCardLangObject::createBySlugLangId($slug, $lang->getId());
+        $idProductCard = $pcl->getProductCardId();
+        if (null === $idProductCard) {
+            $idProductCard = ProductCardObject::create()->save();
+        }
+        $results['product_card'] = $idProductCard;
+        $r = [];
+        $pcl
+            ->setProductCardId($idProductCard)
+            ->setLang($lang)
+            ->setLabel($label)
+            ->setDescription($description)
+            ->setSlug($slug)
+            ->setMetaTitle($metaTitle)
+            ->setMetaDescription($metaDescription)
+            ->setMetaKeywords($metaKeywords)
+            ->save($r);
+        $results = array_merge($results, $r);
+
+
+        if ($categories) {
+            $rCats = [];
+            $rChc = [];
+            // first remove all categories links
+            QuickPdo::delete("ek_category_has_product_card", [
+                ['product_card_id', '=', $idProductCard],
+            ]);
+
+
+            // then create & bind all categories
+            foreach ($categories as $category) {
+                $idCategory = CategoryObject::createByNameShopId($category, $shop_id)
+                    ->save();
+                $rCats[] = $idCategory;
+
                 $r = [];
-                $idCard = $cardLang->save($r);
-                $this->saveResult($r, $results);
-            } else {
-                /**
-                 * cardId is already set
-                 */
-                $r = [];
-                $cardLang->save($r);
-                $this->saveResult($r, $results);
-                $idCard = $cardLang->getProductCardId();
+                CategoryHasProductCardObject::create()
+                    ->setCategoryId($idCategory)
+                    ->setProductCardId($idProductCard)
+                    ->save($r);
+                $rChc[] = $r;
             }
-        } else {
-            $r = [];
-            $idCard = $this->card->save($r);
-            $this->saveResult($r, $results);
+            $results['ek_category'] = $rCats;
+            $results['ek_category_has_product_card'] = $rChc;
         }
 
 
-        //--------------------------------------------
-        // PRODUCT - PRODUCT_LANG - PRODUCT ATTRIBUTES
-        //--------------------------------------------
-        foreach ($this->products as $productInfo) {
-            /**
-             * @var $product ProductObject
-             */
-            list($product, $attr, $value) = $productInfo;
-            $r = [];
-            a("save product, cardId=$idCard");
-            $product->setProductCardId($idCard);
-            $product->save($r);
-            $this->saveResult($r, $results);
+        return $results;
+    }
+
+
+    /**
+     * @param array $data
+     *
+     * - shop_id
+     * - product_id
+     * //
+     * - ?price: int|null
+     * - ?wholesale_price: int=0
+     * - quantity
+     * - ?active: 0
+     * - ?_sale_price_without_tax: decimal=0.0
+     * - ?_sale_price_with_tax: decimal=0.0
+     * - seller: str, name of the seller
+     * - product_type: str, name of the product type
+     * //
+     * - lang
+     * - label
+     * - ?description
+     * - ?slug
+     * - ?out_of_stock_text
+     * - ?meta_title
+     * - ?meta_description
+     * - ?meta_keywords
+     *
+     * @return array
+     */
+    public function saveShopProduct(array $data, array &$results = [])
+    {
+        $mandatories = [
+            'shop_id',
+            'product_id',
+            //
+            'quantity',
+            'seller',
+            'product_type',
+            'lang',
+            'label',
+        ];
+        $this->handleMissing($mandatories, $data);
+
+
+        $shop_id = $data['shop_id'];
+        $product_id = $data['product_id'];
+        //
+        $quantity = $data['quantity'];
+        $seller = $data['seller'];
+        $product_type = $data['product_type'];
+        $lang = $data['lang'];
+        $label = $data['label'];
+
+        $price = $this->get('price', $data, null);
+        $wholeSalePrice = $this->get('wholesale_price', $data, 0);
+        $active = $this->get('active', $data, 0);
+        $salePriceWithoutTax = $this->get('_sale_price_without_tax', $data);
+        $salePriceWithTax = $this->get('_sale_price_with_tax', $data);
+        $description = $this->get('description', $data);
+        $slug = $this->get('slug', $data);
+        $outOfStockText = $this->get('out_of_stock_text', $data);
+        $metaTitle = $this->get('meta_title', $data);
+        $metaDescription = $this->get('meta_description', $data);
+        $metaKeywords = $this->get('meta_keywords', $data);
+
+        $lang = $this->getLangObject($lang);
+
+
+        $r = [];
+        ShopHasProductObject::createByShopIdProductId($shop_id, $product_id)
+            ->setPrice($price)
+            ->setWholesalePrice($wholeSalePrice)
+            ->setQuantity($quantity)
+            ->setActive($active)
+            ->setSalePriceWithoutTax($salePriceWithoutTax)
+            ->setSalePriceWithTax($salePriceWithTax)
+            ->setSeller(SellerObject::createByNameShopId($seller, $shop_id))
+            ->setProductType(ProductTypeObject::createByNameShopId($product_type, $shop_id))
+            ->createShopHasProductLang(ShopHasProductLangObject::createUpdate()
+                ->setLang($lang)
+                ->setLabel($label)
+                ->setDescription($description)
+                ->setSlug($slug)
+                ->setOutOfStockText($outOfStockText)
+                ->setMetaTitle($metaTitle)
+                ->setMetaDescription($metaDescription)
+                ->setMetaKeywords($metaKeywords)
+            )
+            ->save($r);
+
+        $results = $r;
+        return $results;
+    }
+
+
+    /**
+     *
+     * @param array $data
+     *
+     *
+     * //----- physical product
+     *
+     * - ?cardId: if not set, one will be created
+     * - reference *
+     * - weight
+     * - price
+     *
+     * //----- physical product description
+     * - lang: 3 letter iso code
+     * - label
+     * - ?description
+     * - ?meta_title
+     * - ?meta_description
+     * - ?meta_keywords
+     *
+     * //
+     * - ?attributes:
+     *      - :
+     *          - nameLabel
+     *          - valueLabel
+     *          - ?name (default=based on label version)
+     *          - ?value (default=based on label version)
+     *
+     * @return int, the id of the created product
+     */
+    public function savePhysicalProduct(array $data, array &$results = [])
+    {
+        $mandatories = [
+            'lang',
+            'reference',
+            'weight',
+            'price',
+        ];
+        $this->handleMissing($mandatories, $data);
+
+        $lang = $data['lang'];
+        $reference = $data['reference'];
+        $weight = $data['weight'];
+        $price = $data['price'];
+        $label = $this->get('label', $data);
+        $description = $this->get('description', $data);
+        $metaTitle = $this->get('meta_title', $data);
+        $metaDescription = $this->get('meta_description', $data);
+        $metaKeywords = $this->get('meta_keywords', $data);
+        $attributes = $this->get('attributes', $data, []);
+        $cardId = $this->get('cardId', $data, null);
+
+
+        $product = ProductObject::createByReference($reference);
+
+
+        $lang = $this->getLangObject($lang);
+
+
+        if (null === $cardId) {
+            $cardId = $product->getProductCardId();
+            if (null === $cardId) {
+                $cardId = ProductCardObject::create()->save();
+            }
         }
-        a($idCard);
+        $results['ek_product_card'] = $cardId;
+
+        $product
+            ->setProductCardId($cardId)
+            ->setWeight($weight)
+            ->setPrice($price)
+            ->createProductLang(ProductLangObject::createUpdate()
+                ->setLang($lang)
+                ->setLabel($label)
+                ->setDescription($description)
+                ->setMetaTitle($metaTitle)
+                ->setMetaDescription($metaDescription)
+                ->setMetaKeywords($metaKeywords)
+            );
+        $r = [];
+        $idProduct = $product->save($r);
+        $results = array_merge($results, $r);
 
 
+        if ($attributes) {
+
+
+            foreach ($attributes as $attribute) {
+                list($nameLabel, $valueLabel) = $attribute;
+
+                if (array_key_exists(2, $attribute)) {
+                    $name = $attribute[2];
+                } else {
+                    $name = $this->toIdentifier($nameLabel);
+                }
+
+                if (array_key_exists(3, $attribute)) {
+                    $value = $attribute[3];
+                } else {
+                    $value = $this->toIdentifier($valueLabel);
+                }
+
+
+                $r = [];
+                ProductHasProductAttributeObject::createUpdate()
+                    ->setProductId($idProduct)
+                    ->setProductAttribute(ProductAttributeObject::createByName($name)
+                        ->createProductAttributeLang(ProductAttributeLangObject::createUpdate()
+                            ->setLang($lang)
+                            ->setName($nameLabel)
+                        )
+                    )
+                    ->setProductAttributeValue(ProductAttributeValueObject::createByValue($value)
+                        ->createProductAttributeValueLang(ProductAttributeValueLangObject::createUpdate()
+                            ->setLang($lang)
+                            ->setValue($valueLabel)
+                        )
+                    )
+                    ->save($r);
+                $results['attributes'][] = $r;
+            }
+        }
+
+        return $idProduct;
     }
 
 
     //--------------------------------------------
     //
     //--------------------------------------------
-    protected function error($msg)
+    private function toIdentifier($word)
     {
-        throw new \Exception($msg);
-    }
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    private function check()
-    {
-        if (null === $this->card) {
-            $this->error("The card must be set");
-        }
-        if (empty($this->products)) {
-            $this->error("At least one product must be added");
-        }
+        return CaseTool::toDog($word);
     }
 
-    private function saveResult(array $r, array &$allSavedResults)
+    private function getLangObject($lang)
     {
-        $allSavedResults = array_merge($allSavedResults, $r);
+        return LangObject::createByIsoCode($lang);
     }
 }

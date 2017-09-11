@@ -51,14 +51,27 @@ class E
         return EkomApi::inst()->userLayer()->hasGroup("b2b");
     }
 
-    public static function slugify($word){
+    public static function slugify($word)
+    {
         return CaseTool::toDog($word);
     }
 
-    public static function getShopId()
+    public static function getShopId($shopId = null)
     {
+        if (null !== $shopId) {
+            return (int)$shopId;
+        }
         EkomApi::inst()->initWebContext();
         return (int)ApplicationRegistry::get("ekom.shop_id");
+    }
+
+    public static function getLangId($langId = null)
+    {
+        if (null !== $langId) {
+            return (int)$langId;
+        }
+        EkomApi::inst()->initWebContext();
+        return (int)ApplicationRegistry::get("ekom.lang_id");
     }
 
     /**

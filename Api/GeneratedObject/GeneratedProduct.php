@@ -34,7 +34,6 @@ class GeneratedProduct extends TableCrudObject
 			'weight' => '',
 			'price' => '',
 			'product_card_id' => 0,
-			'product_type_id' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

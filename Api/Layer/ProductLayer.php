@@ -25,23 +25,24 @@ class ProductLayer
 {
 
 
-    public function getProductTypeById($productId)
+    public function getProductTypeById($productId, $shopId = null)
     {
 
         $productId = (int)$productId;
+        $shopId = E::getShopId($shopId);
 
-        return A::cache()->get("Ekom.ProductLayer.getProductTypeById.$productId", function () use ($productId) {
+        return A::cache()->get("Ekom.ProductLayer.getProductTypeById.$shopId.$productId", function () use ($productId, $shopId) {
 
             return QuickPdo::fetch("
 select t.name
 from ek_product_type t 
-inner join ek_product p on p.product_type_id=t.id
-where p.id=$productId
+inner join ek_shop_has_product h on h.product_type_id=t.id 
+where h.shop_id=$shopId and h.product_id=$productId
 ", [], \PDO::FETCH_COLUMN);
 
         }, [
             "ek_product_type",
-            "ek_product",
+            "ek_shop_has_product",
         ]);
     }
 
@@ -281,9 +282,9 @@ l.slug
 
 
 from ek_product p
-inner join ek_product_type t on t.id=p.product_type_id
 inner join ek_product_lang ll on ll.product_id=p.id
 inner join ek_shop_has_product s on s.product_id=p.id 
+inner join ek_product_type t on t.id=s.product_type_id
 inner join ek_shop_has_product_lang l on l.shop_id=s.shop_id and l.product_id=s.product_id
 inner join ek_seller se on se.id=s.seller_id
 
@@ -498,7 +499,7 @@ order by h.order asc
                             $outOfStockText = $p['out_of_stock_text'];
                             $quantity = $p['quantity'];
                             $isInStock = true; // isInStock handles qty=-1, it's a helper for the view
-                            if(0 === (int)$quantity){
+                            if (0 === (int)$quantity) {
                                 $isInStock = false;
                             }
 

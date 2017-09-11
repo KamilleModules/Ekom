@@ -39,6 +39,7 @@ class GeneratedShopHasProduct extends TableCrudObject
 			'_sale_price_without_tax' => '',
 			'_sale_price_with_tax' => '',
 			'seller_id' => 0,
+			'product_type_id' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
