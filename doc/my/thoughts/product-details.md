@@ -66,3 +66,72 @@ In order to do so, we have many implementation choices: $_GET, $_POST, $_SESSION
 is $_GET, because then we can fully control the product page from the uri: it's cleaner as in more transparent to the user.
 
 
+
+
+
+
+Implementation guidelines
+===========================
+
+As I'm creating the EkomEvents module, specific for my company's application,
+I'm writing this memo as a guideline for my future self and friends, as to what steps need to be done in order
+to implement a "complex" product.
+
+
+Basically, follows the natural flow of things as if you were the customer.
+ 
+
+- do the productBox (gui) first: the customer sees the product box page first
+- then do the cart: the item that the customer put in the cart must appear correctly in the cart
+
+
+
+
+The product box page
+-----------------------
+- start with the product box (gui):
+    - extend the ProductBoxRenderer (see EventProductBoxRenderer)
+    - the only constraints are:
+        - (recommendation) any option can be triggered via the uri
+        - when you press the addToCart button, it adds the necessary details, use the following js code:
+        
+```js 
+api.on('productBox.collectDetails', function (details) {
+    //... extend details here as necessary
+});
+```        
+
+
+Another trick you can use is the refresh-trigger trick (ProductBoxRenderer):
+
+
+```php
+// code from class-modules/EkomEvents/Api/Layer/EventLayer.php
+
+$baseUri = UriUtil::getProductBoxBaseAjaxUri($productId);
+$uri = UriTool::uri($baseUri, ['dy' => $tmpDays], false);
+
+```
+
+```html
+<!-- when the user clicks a refresh trigger, the productBox api automatically refreshes the page  -->
+<div class="refresh-trigger" data-ajax="<?php echo $uri; ?>"></div>
+```
+
+
+
+The cart
+---------
+
+
+                
+
+
+
+
+
+
+
+
+
+

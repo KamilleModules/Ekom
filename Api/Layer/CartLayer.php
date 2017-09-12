@@ -184,6 +184,10 @@ class CartLayer
     }
 
 
+    /**
+     * @todo-ling: consider that extraArgs comes from post or get (the user),
+     * and might be very heavy, don't you want to limit the size of extraArgs?
+     */
     public function addItem($qty, $productId, array $extraArgs = [])
     {
 
@@ -192,7 +196,9 @@ class CartLayer
 
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $this->sanitizeExtraArgs($extraArgs);
+
+
+//        $this->sanitizeExtraArgs($extraArgs);
 
 
         $alreadyExists = false;
@@ -822,16 +828,16 @@ and p.lang_id=$langId
 //        return $o->getUniqueProductId($productId, $complementaryId);
 //    }
 
-    private function sanitizeExtraArgs(array &$extraArgs)
-    {
-        $allowedExtraArgs = [];
-        Hooks::call("Ekom_feedCartAllowedExtraArgs", $allowedExtraArgs);
-        foreach ($extraArgs as $k => $v) {
-            if (false === array_key_exists($k, $allowedExtraArgs)) {
-                unset($extraArgs, $k);
-            }
-        }
-    }
+//    private function sanitizeExtraArgs(array &$extraArgs)
+//    {
+//        $allowedExtraArgs = ['details'];
+//        Hooks::call("Ekom_feedCartAllowedExtraArgs", $allowedExtraArgs);
+//        foreach ($extraArgs as $k => $v) {
+//            if (false === array_key_exists($k, $allowedExtraArgs)) {
+//                unset($extraArgs, $k);
+//            }
+//        }
+//    }
 
 
 }
