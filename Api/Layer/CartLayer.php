@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 
 use ArrayToString\ArrayToStringTool;
 use Authenticate\SessionUser\SessionUser;
+use Bat\UriTool;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Kamille\Architecture\Registry\ApplicationRegistry;
@@ -93,14 +94,14 @@ class CartLayer
 //        return $default;
 //    }
 
-    public function getItemsExtraArgs($productId, $argName, $default = null)
+    public function getItemsExtraArgs($productIdentity, $argName, $default = null)
     {
-        $productId = (int)$productId;
+        $productIdentity = (int)$productIdentity;
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $items = $_SESSION['ekom'][$this->sessionName][$shopId]['items'];
         foreach ($items as $item) {
-            if ((int)$item['id'] === $productId) {
+            if ((int)$item['id'] === $productIdentity) {
                 if (
                     array_key_exists("extraArgs", $item) &&
                     array_key_exists($argName, $item['extraArgs'])
@@ -114,6 +115,10 @@ class CartLayer
     }
 
 
+    /**
+     * @deprecated
+     * Note: this method doesn't work for product with details
+     */
     public function addItems(array $productId2Qty)
     {
         $this->initSessionCart();
@@ -151,12 +156,12 @@ class CartLayer
     }
 
 
-    public function getQuantity($productId)
+    public function getQuantity($productIdentity)
     {
         $items = $this->getItems();
-        $productId = (int)$productId;
+        $productIdentity = (int)$productIdentity;
         foreach ($items as $item) {
-            if ((int)$item['id'] === $productId) {
+            if ((int)$item['id'] === $productIdentity) {
                 return $item['quantity'];
             }
         }
@@ -187,15 +192,30 @@ class CartLayer
     /**
      * @todo-ling: consider that extraArgs comes from post or get (the user),
      * and might be very heavy, don't you want to limit the size of extraArgs?
+     *
+     *
+     * This system recognizes the following keys:
+     *
+     * - id
+     * - quantity
+     * - ?details
+     *
+     * The idea behind extraArgs is to extend this system in the future.
+     * For now, extraArgs is the holder/transporter for the details key.
+     *
      */
     public function addItem($qty, $productId, array $extraArgs = [])
     {
 
+
 //        $upid = $this->getUniqueProductId($productId, $complementaryId);
 
+        $details = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
 
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
+
+        $productIdentity = $this->getIdentityString($productId, $details);
 
 
 //        $this->sanitizeExtraArgs($extraArgs);
@@ -203,7 +223,7 @@ class CartLayer
 
         $alreadyExists = false;
         foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
-            if ((string)$item['id'] === $productId) {
+            if ((string)$item['id'] === $productIdentity) {
                 $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] += $qty;
                 $alreadyExists = true;
                 break;
@@ -214,11 +234,19 @@ class CartLayer
 
             $arr = [
                 "quantity" => $qty,
-                "id" => $productId,
+                "id" => $productIdentity,
             ];
 
-            if (count($extraArgs) > 0) {
-                $arr['extraArgs'] = $extraArgs;
+//            if (count($extraArgs) > 0) {
+//                $arr['extraArgs'] = $extraArgs;
+//            }
+
+            /**
+             * For now, only extraArgs.details (the details key of extraArgs)
+             * is recognized.
+             */
+            if (count($details) > 0) {
+                $arr['details'] = $details;
             }
 
             $_SESSION['ekom'][$this->sessionName][$shopId]['items'][] = $arr;
@@ -229,13 +257,13 @@ class CartLayer
         $this->writeToLocalStore();
     }
 
-    public function removeItem($productId)
+    public function removeItem($productIdentity)
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $productId = (string)$productId;
+        $productIdentity = (string)$productIdentity;
         foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
-            if ((string)$item['id'] === $productId) {
+            if ((string)$item['id'] === $productIdentity) {
                 unset($_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]);
                 break;
             }
@@ -262,12 +290,14 @@ class CartLayer
      *                  If acceptOutOfStockOrders is false, then if there is 7 products left and you order 10,
      *                  it will return 7.
      *
+     * @throws \Exception in case of problem
      */
-    public function updateItemQuantity($productId, $newQty, array &$errors = [])
+    public function updateItemQuantity($productIdentity, $newQty, array &$errors = [])
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $productId = (string)$productId;
+        $productIdentity = (string)$productIdentity;
+        list($productId) = $this->getProductIdByProductIdentity($productIdentity);
 
         if (false !== ($remainingQty = EkomApi::inst()->productLayer()->getProductQuantity($productId))) {
 
@@ -287,17 +317,19 @@ class CartLayer
 
             $alreadyExists = false;
             foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
-                if ((string)$item['id'] === $productId) {
+                if ((string)$item['id'] === $productIdentity) {
                     $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] = $newQty;
                     $alreadyExists = true;
                     break;
                 }
             }
 
+
             if (false === $alreadyExists) {
+                throw new \Exception("Deprecated");
                 $_SESSION['ekom'][$this->sessionName][$shopId]['items'][] = [
                     "quantity" => $newQty,
-                    "id" => $productId,
+                    "id" => $productIdentity,
                 ];
             }
 
@@ -423,9 +455,11 @@ class CartLayer
         //--------------------------------------------
         foreach ($items as $item) {
 
-            $id = $item['id'];
+            $identityString = $item['id'];
+            $productId = $this->getProductIdByProductIdentity($identityString);
 
-            if (false !== ($it = $this->getCartItemInfo($id))) {
+            if (false !== ($it = $this->getCartItemInfo($productId))) {
+
 
                 $qty = $item['quantity'];
                 $weight = $it['weight'];
@@ -433,12 +467,36 @@ class CartLayer
 
                 if (false === array_key_exists('errorCode', $it)) {
 
+
+                    $params = [];
+                    Hooks::call('Ekom_Cart_collectProductDetailsUriParams', $params, $item);
+                    $uriDetails = UriTool::uri($it['uri_card_with_ref'], $params, false);
+                    $it['uri_card_with_details'] = $uriDetails;
+
+
+                    $it['identityString'] = $identityString;
+                    $it['productDetails'] = (array_key_exists('details', $item)) ? $item['details'] : [];
                     $it['quantity'] = $qty;
                     $totalQty += $qty;
                     $totalWeight += $weight * $qty;
 
-//                $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
-//                $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
+
+                    /**
+                     * The primary goal of this hook is to change the price if you have a complex price system
+                     * (like the EkomEvents module has).
+                     *
+                     * You set either the rawSalePriceWithoutTax or rawSalePriceWithTax value,
+                     * and then, don't forget to convert the other value using the taxRatio.
+                     *
+                     */
+                    Hooks::call("Ekom_Cart_decorateCartItemInfo", $it);
+
+
+
+
+
+
+
                     $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
                     $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
 
@@ -468,6 +526,7 @@ class CartLayer
 //                    $attrValues[] = $v['value'];
 //                }
 //                $it['attributeValues'] = $attrValues;
+
 
                     $modelItems[] = $it;
                 } else {
@@ -631,7 +690,29 @@ class CartLayer
     //--------------------------------------------
     //
     //--------------------------------------------
+    private function getProductIdByProductIdentity($productIdentity)
+    {
+        return explode('-', $productIdentity)[0];
+    }
 
+    private function getIdentityStringByDetails(array $details)
+    {
+        if (count($details) > 0) {
+            sort($details);
+            $sDetails = serialize($details);
+            return hash('ripemd160', $sDetails);
+        }
+        return false;
+    }
+
+
+    private function getIdentityString($productId, array $details)
+    {
+        if (false !== ($idString = $this->getIdentityStringByDetails($details))) {
+            return $productId . "-" . $idString;
+        }
+        return $productId;
+    }
 
     private function doGetCartModel(array $options = null)
     {
@@ -756,6 +837,9 @@ and p.lang_id=$langId
                 }
 
 
+                $uriRef = E::link("Ekom_productCardRef", ['slug' => $cardSlug, 'ref' => $b["ref"]]);
+
+
                 return array_replace($b, [
                     'product_id' => $b['product_id'],
                     'label' => $b['label'],
@@ -767,7 +851,7 @@ and p.lang_id=$langId
                     'remove_uri' => EkomLinkHelper::getUri("removeProductFromCart", $pId),
                     'update_qty_uri' => EkomLinkHelper::getUri("updateCartProduct", $pId),
                     'uri_card' => E::link("Ekom_productCard", ['slug' => $cardSlug]),
-                    'uri_card_with_ref' => E::link("Ekom_productCardRef", ['slug' => $cardSlug, 'ref' => $b["ref"]]),
+                    'uri_card_with_ref' => $uriRef,
                     'product_card_id' => $productCardId,
                     'attributes' => $zeAttr,
 //                    'attributeDetails' => $zeAttr,
@@ -788,7 +872,6 @@ and p.lang_id=$langId
 //                    'rawSalePriceWithoutTax' => $b['rawSalePriceWithoutTax'],
 //                    'rawSalePriceWithTax' => $b['rawSalePriceWithTax'],
                 ]);
-
             }
 
         }, [

@@ -123,10 +123,47 @@ $uri = UriTool::uri($baseUri, ['dy' => $tmpDays], false);
 The cart
 ---------
 
+Details in the cart should identify the product, same as attributes do.
 
-                
+This means that the same product (same product id) with different details IS ANOTHER PRODUCT.
 
 
+To help visualize this idea, I introduce the concept of product identity, such as the identityString uniquely
+identifies ANY product (module special products included) PURCHASED by a customer.
+
+- identityString: <productId> (<-> <detailsHash>)?
+
+With detailsHash: a (unique) hash representing the details.
+
+The optional part of the identityString is only appended if the product use the details system.
+
+ 
+So, in the session cart, we should have something like this:
+
+```php
+- 0:
+----- id: string, product identity
+----- qty: int, the quantity in the cart for this product
+----- details: array containing the product details
+- ...
+``` 
+
+I recommend that modules use namespaces to encapsulate their details:
+
+```php
+- 0:
+----- id: string, product identity
+----- qty: int, the quantity in the cart for this product
+----- details: 
+--------- myModule: array of details originating from the myModule module
+--------- ...
+- ...
+```                 
+
+
+
+Then, to display the cart, modules should hook into cart rendering logic and use the details stored in the session cart,
+using the cartModel's **productDetails** key.
 
 
 
