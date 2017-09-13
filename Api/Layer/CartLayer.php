@@ -12,6 +12,7 @@ use Core\Services\Hooks;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Utils\CartLocalStore;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\EkomLinkHelper;
@@ -297,9 +298,11 @@ class CartLayer
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $productIdentity = (string)$productIdentity;
-        list($productId) = $this->getProductIdByProductIdentity($productIdentity);
+        $productId = $this->getProductIdByProductIdentity($productIdentity);
 
-        if (false !== ($remainingQty = EkomApi::inst()->productLayer()->getProductQuantity($productId))) {
+
+        $details = $this->getDetailsByIdentity($productIdentity);
+        if (false !== ($remainingQty = EkomApi::inst()->productLayer()->getCartProductStockQuantity($productId, $details))) {
 
 
             $remainingQty = (int)$remainingQty;
@@ -492,11 +495,6 @@ class CartLayer
                     Hooks::call("Ekom_Cart_decorateCartItemInfo", $it);
 
 
-
-
-
-
-
                     $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
                     $linePriceWithTax = $qty * $it['rawSalePriceWithTax'];
 
@@ -539,6 +537,7 @@ class CartLayer
 
 //        echo '<hr>';
 //        az($items);
+
 
         $taxAmount = $linesTotalWithTax - $linesTotalWithoutTax;
 
@@ -640,6 +639,7 @@ class CartLayer
         //--------------------------------------------
         // MODULES
         //--------------------------------------------
+
         Hooks::call("Ekom_CartLayer_decorate_mini_cart_model", $model);
 
         return $model;
@@ -695,7 +695,7 @@ class CartLayer
         return explode('-', $productIdentity)[0];
     }
 
-    private function getIdentityStringByDetails(array $details)
+    private function getIdentityStringHashByDetails(array $details)
     {
         if (count($details) > 0) {
             sort($details);
@@ -708,10 +708,43 @@ class CartLayer
 
     private function getIdentityString($productId, array $details)
     {
-        if (false !== ($idString = $this->getIdentityStringByDetails($details))) {
+        if (false !== ($idString = $this->getIdentityStringHashByDetails($details))) {
             return $productId . "-" . $idString;
         }
         return $productId;
+    }
+
+
+    /**
+     * @param $productIdentity
+     * @return false|array, the item matching $productIdentity
+     */
+    private function getCartItemByIdentity($productIdentity)
+    {
+        $this->initSessionCart();
+        $productIdentity = (string)$productIdentity;
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+
+        foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
+            if ((string)$item['id'] === $productIdentity) {
+                return $item;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param $productIdentity
+     * @return array
+     */
+    private function getDetailsByIdentity($productIdentity)
+    {
+        if (false !== ($item = $this->getCartItemByIdentity($productIdentity))) {
+            if (array_key_exists('details', $item)) {
+                return $item['details'];
+            }
+        }
+        return [];
     }
 
     private function doGetCartModel(array $options = null)

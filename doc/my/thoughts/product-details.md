@@ -83,6 +83,7 @@ Basically, follows the natural flow of things as if you were the customer.
 
 - do the productBox (gui) first: the customer sees the product box page first
 - then do the cart: the item that the customer put in the cart must appear correctly in the cart
+- take care of the quantity problem (see below)
 
 
 
@@ -161,9 +162,53 @@ I recommend that modules use namespaces to encapsulate their details:
 ```                 
 
 
+This concept of identityString is very important for you to grasp, because if you've got it, 
+you can resolve any problem.
+
+So again, for every operation that relates to the cart, the identity string should be used,
+which is basically the product id plus the option details that the user chose when putting the item in her cart.
+
+Having all the product details is crucial for cart operations like updating the cart quantity for instance,
+which requires the stock quantity (more on that below).
+
+
+
+
 
 Then, to display the cart, modules should hook into cart rendering logic and use the details stored in the session cart,
 using the cartModel's **productDetails** key.
+
+
+
+Watch out for the quantity!!
+-----------------------------
+
+So, while implementing this first "complex" product, I found out that to override the default quantity 
+with the current ekom system you had to modify code in multiple places.
+
+Rather than trying to change the ekom core code to make it easier for implementors, this time I rather decided
+to list the places where code needs to be changed, as I thought it was the best solution in this case for some reasons.
+
+Anyway, the places are:
+
+
+- Hooks::Ekom_Product_updateStockQuantity
+
+    when you update the item quantity of your cart, the **CartLayer.updateItemQuantity** method
+    calls the **ProductLayer.getProductQuantity** method to import the stock quantity in its codespace, and decide
+    whether or not the update is possible.
+    The **ProductLayer.getProductQuantity** method in turn calls the **Ekom_Product_updateStockQuantity** hook.
+
+
+- Hooks::Ekom_decorateBoxModel
+
+    when the productBox page is displayed, it needs to display a quantity.
+    Using the **Ekom_decorateBoxModel** hook, you can override any property of the model,
+    including the **quantity** property.
+    This hook is called by the **ProductLayer.getProductBoxModelByCardId** method.
+
+
+
 
 
 

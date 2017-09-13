@@ -9,6 +9,7 @@ use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 class DiscountLayer
@@ -72,6 +73,24 @@ where shop_id=$shopId
             ["shop_id", "=", $shopId],
             ["product_id", "=", $productId],
         ]);
+    }
+
+
+    public function applyDiscountsByProductId($productId, $priceWithoutTax, $priceWithTax, array $badges = [], $shopId = null, $langId = null)
+    {
+        $layerDiscount = EkomApi::inst()->discountLayer();
+        $discounts = $layerDiscount->getDiscountsByProductId($productId, $shopId, $langId);
+        $badges = [];
+        /**
+         * note that in this algorithm, the discount for the withTax price
+         * is applied on the WithTax price directly (see my note on algorithms in
+         * class-modules/Ekom/doc/my/thoughts/things-i-discovered-with-prices.md)
+         */
+        $salePrices = $layerDiscount->applyDiscountsToPrice($discounts, [
+            E::trimPrice($priceWithoutTax),
+            E::trimPrice($priceWithTax),
+        ], $badges);
+        return $salePrices;
     }
 
 
@@ -220,8 +239,8 @@ where shop_id=$shopId
          */
 
         $productId = (int)$productId;
-        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
-        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+        $shopId = E::getShopId($shopId);
+        $langId = E::getLangId($langId);
 
         return A::cache()->get("Module.Ekom.Api.Layer.DiscountLayer.getDiscountsByProductId.$shopId.$langId.$productId", function () use ($shopId, $langId, $productId) {
 

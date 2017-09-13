@@ -12,6 +12,7 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
+use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Price\PriceChain\EkomProductPriceChain;
 use Module\Ekom\ProductBox\AttributesModel\Generator\AttributesModelGeneratorInterface;
 use Module\Ekom\ProductBox\AttributesModel\GeneratorFactory\AttributesModelGeneratorFactory;
@@ -134,13 +135,12 @@ where p.id=$productId
     /**
      * @return false|int, the quantity for the given product, or false if something wrong happened
      */
-    public function getProductQuantity($productId)
+    public function getCartProductStockQuantity($productId, array $cartProductDetails = [])
     {
         EkomApi::inst()->initWebContext();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
 
-
-        return A::cache()->get("Ekom.ProductLayer.getProductQuantity.$shopId.$productId", function () use ($shopId, $productId) {
+        $stockQuantity = A::cache()->get("Ekom.ProductLayer.getCartProductStockQuantity.$shopId.$productId", function () use ($shopId, $productId) {
             if (false !== ($quantity = EkomApi::inst()->shopHasProduct()->readColumn("quantity", [
                     ["shop_id", '=', $shopId],
                     ["product_id", '=', $productId],
@@ -152,6 +152,13 @@ where p.id=$productId
             "ek_shop_has_product.update.$shopId.$productId",
             "ek_shop_has_product.delete.$shopId.$productId",
         ]);
+
+
+
+        Hooks::call("Ekom_Product_updateCartProductStockQuantity", $stockQuantity, $productId, $cartProductDetails, $shopId);
+        a(__FILE__);
+        az("tamere");
+        return $stockQuantity;
     }
 
     /**
@@ -720,11 +727,11 @@ order by h.order asc
 
         if (array_key_exists('product_id', $model)) { // if model is not in error form
 
-
             //--------------------------------------------
             // DYNAMIC PART: (could not be part of the cache, unless you know exactly what you are doing)
             //--------------------------------------------
             Hooks::call("Ekom_decorateBoxModel", $model);
+
 
             $_priceWithTax = $model['rawPriceWithTax'];
             $_priceWithoutTax = $model['rawPriceWithoutTax'];
@@ -734,7 +741,8 @@ order by h.order asc
             // NOW APPLYING DISCOUNT DYNAMICALLY (so that it's always synced with app rules)
             //--------------------------------------------
             /**
-             * Actually, todo: we can cache it for one day using:
+             * Actually,
+             * @ling-todo: we can cache it for one day using:
              *
              * - the user group Ids
              * - the currency
@@ -747,24 +755,10 @@ order by h.order asc
              *
              *
              */
-            $layerDiscount = $api->discountLayer();
-            $discounts = $layerDiscount->getDiscountsByProductId($model['product_id'], $shopId, $langId);
             $badges = [];
-            /**
-             * note that in this algorithm, the discount for the withTax price
-             * is applied on the WithTax price directly (see my note on algorithms in
-             * class-modules/Ekom/doc/my/thoughts/things-i-discovered-with-prices.md)
-             */
-            $salePrices = $layerDiscount->applyDiscountsToPrice($discounts, [
-                $_priceWithTax,
-                $_priceWithoutTax,
-            ], $badges);
-
-            list($_salePriceWithTax, $_salePriceWithoutTax) = $salePrices;
+            list($_salePriceWithoutTax, $_salePriceWithTax) = $api->discountLayer()->applyDiscountsByProductId($model['product_id'], $_priceWithoutTax, $_priceWithTax, $badges, $shopId, $langId);
 
 
-            $_salePriceWithTax = E::trimPrice($_salePriceWithTax);
-            $_salePriceWithoutTax = E::trimPrice($_salePriceWithoutTax);
             $salePriceWithTax = E::price($_salePriceWithTax);
             $salePriceWithoutTax = E::price($_salePriceWithoutTax);
             $model['rawSalePriceWithTax'] = $_salePriceWithTax;
