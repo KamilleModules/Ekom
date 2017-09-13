@@ -48,6 +48,12 @@ And now the user adds product #50 with other details, we end up with two differe
         ]
 ```
 
+
+
+This means in order to display a product page, we need the product details, which are passed via the uri. 
+
+
+
 So, that's the core idea #1 behind product details.
 
 
@@ -118,6 +124,16 @@ $uri = UriTool::uri($baseUri, ['dy' => $tmpDays], false);
 <!-- when the user clicks a refresh trigger, the productBox api automatically refreshes the page  -->
 <div class="refresh-trigger" data-ajax="<?php echo $uri; ?>"></div>
 ```
+
+
+
+Alternately, you can use the **window.ekomRefreshProductBox** function provided by the ProductBoxRenderer.
+
+
+```php
+window.ekomRefreshProductBox(uri);
+```
+
 
 
 

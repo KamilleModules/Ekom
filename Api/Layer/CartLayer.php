@@ -473,7 +473,7 @@ class CartLayer
 
                     $params = [];
                     Hooks::call('Ekom_Cart_collectProductDetailsUriParams', $params, $item);
-                    $uriDetails = UriTool::uri($it['uri_card_with_ref'], $params, false);
+                    $uriDetails = UriTool::uri($it['uri_card_with_ref'], $params, true);
                     $it['uri_card_with_details'] = $uriDetails;
 
 

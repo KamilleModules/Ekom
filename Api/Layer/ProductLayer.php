@@ -13,6 +13,7 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Util\CartUtil;
+use Module\Ekom\Api\Util\UriUtil;
 use Module\Ekom\Price\PriceChain\EkomProductPriceChain;
 use Module\Ekom\ProductBox\AttributesModel\Generator\AttributesModelGeneratorInterface;
 use Module\Ekom\ProductBox\AttributesModel\GeneratorFactory\AttributesModelGeneratorFactory;
@@ -156,8 +157,6 @@ where p.id=$productId
 
 
         Hooks::call("Ekom_Product_updateCartProductStockQuantity", $stockQuantity, $productId, $cartProductDetails, $shopId);
-        a(__FILE__);
-        az("tamere");
         return $stockQuantity;
     }
 
@@ -606,6 +605,7 @@ order by h.order asc
                                 "imageLarge" => $imageLarge,
 
                                 "uriCard" => $cardUri,
+                                "uriCardAjax" => UriUtil::getProductBoxBaseAjaxUri($productId),
                                 "label" => $label,
                                 "seller" => $p['seller'],
 
