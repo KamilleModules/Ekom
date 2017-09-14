@@ -352,6 +352,14 @@ class CartLayer
         return false;
     }
 
+    public function getIdentityString($productId, array $details)
+    {
+        if (false !== ($idString = $this->getIdentityStringHashByDetails($details))) {
+            return $productId . "-" . $idString;
+        }
+        return $productId;
+    }
+
 
     public function prepareUserCart()
     {
@@ -703,15 +711,6 @@ class CartLayer
             return hash('ripemd160', $sDetails);
         }
         return false;
-    }
-
-
-    private function getIdentityString($productId, array $details)
-    {
-        if (false !== ($idString = $this->getIdentityStringHashByDetails($details))) {
-            return $productId . "-" . $idString;
-        }
-        return $productId;
     }
 
 

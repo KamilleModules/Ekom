@@ -155,7 +155,6 @@ where p.id=$productId
         ]);
 
 
-
         Hooks::call("Ekom_Product_updateCartProductStockQuantity", $stockQuantity, $productId, $cartProductDetails, $shopId);
         return $stockQuantity;
     }
@@ -811,13 +810,22 @@ order by h.order asc
 
 
             //--------------------------------------------
+            // PRODUCT IDENTITY (product details system)
+            //--------------------------------------------
+            $productDetails = [];
+            Hooks::call("Ekom_getProductDetails", $productDetails, $model);
+
+
+            //--------------------------------------------
             // MISCELLANEOUS
             //--------------------------------------------
             /**
              * The cart quantity for the given product
              */
-            $cartQty = EkomApi::inst()->cartLayer()->getQuantity($model['product_id']);
+            $cartLayer = EkomApi::inst()->cartLayer();
+            $cartQty = $cartLayer->getQuantity($model['product_id']);
             $model['cartQuantity'] = $cartQty;
+            $model['productIdentity'] = $cartLayer->getIdentityString($model['product_id'], $productDetails);
 
         }
 
