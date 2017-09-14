@@ -21,6 +21,8 @@ Product details identifies the product
 Product details are part of the product's identify, same as attributes being part of the product's identity,
 so that if you add a product in your cart, the item recognition pattern only match if both the product id and the product details match.
 
+
+
 So, for instance, if a cart contains the following:
 
 ```txt
@@ -49,6 +51,36 @@ And now the user adds product #50 with other details, we end up with two differe
 ```
 
 
+But actually, it's a little bit more complicated than that.
+
+Let's call product instance a product identified by a unique combination of details.
+
+Since each product is unique, to remove them from the cart we need to have a unique identifier.
+In ekom, we create such a unique identifier using a hash of the detailsParams (which is explained later).
+
+So the real picture looks more like this:
+
+```txt
+- products:
+    - 0:
+        - id: 50
+        - qty: 5
+        - details: []
+        - detailsParams: []
+    - 1:
+        - id: 50-hjj44r0t0t0tz0egoeoe
+        - qty: 1
+        - details: [
+            - martial_art: judo,
+        ]
+        - detailsParams: [day => mar]
+```
+
+
+Notice that the hash is only added if the product contains detailsParams.
+
+The details (not detailsParams) is an extra container to help with modules implementing their logic.
+
 
 This means in order to display a product page, we need the product details, which are passed via the uri. 
 
@@ -73,11 +105,36 @@ is $_GET, because then we can fully control the product page from the uri: it's 
 
 
 
+Product details definition for implementors
+---------------------------------------------
+
+The product details is divided in two:
+
+- product details
+- product details params
+
+
+The product details's params definition for implementors is:
+
+- the product details params is the ensemble (array) of uri key/value pairs identifying a product instance, ordered by key asc.
+
+This is used to compute the identity of the product.
+
+The session cart's details is used to display the product details string (the human description identifying a particular
+configured product instance).
+It can be empty if the module can compute this information without further variables.
+
+
 
 
 
 Implementation guidelines
 ===========================
+
+
+[![product-details-implementation-memo.jpg](https://s19.postimg.org/mv52ngl7n/product-details-implementation-memo.jpg)](https://postimg.org/image/pcgtuq53z/)
+
+
 
 As I'm creating the EkomEvents module, specific for my company's application,
 I'm writing this memo as a guideline for my future self and friends, as to what steps need to be done in order
@@ -225,11 +282,11 @@ Anyway, the places are:
 
 
 
+cartProductDetails
+----------------------
 
-
-
-
-
-
+- cartProductDetails:
+    - productDetails
+    - productDetailsParams
 
 

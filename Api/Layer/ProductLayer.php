@@ -26,6 +26,10 @@ use QuickPdo\QuickPdo;
 class ProductLayer
 {
 
+    /**
+     * If null, $_GET will be used, otherwise it should be an array
+     */
+    public static $contextualGet = null;
 
     public function getProductTypeById($productId, $shopId = null)
     {
@@ -135,6 +139,7 @@ where p.id=$productId
 
     /**
      * @return false|int, the quantity for the given product, or false if something wrong happened
+     *
      */
     public function getCartProductStockQuantity($productId, array $cartProductDetails = [])
     {
@@ -394,6 +399,11 @@ order by h.order asc
      */
     public function getProductBoxModelByCardId($cardId, $shopId = null, $langId = null, $productId = null)
     {
+        if (null === self::$contextualGet) {
+            self::$contextualGet = $_GET;
+        }
+
+
         $cardId = (int)$cardId;
         $productId = (int)$productId;
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
@@ -726,10 +736,16 @@ order by h.order asc
 
         if (array_key_exists('product_id', $model)) { // if model is not in error form
 
+
+
+
+
+
             //--------------------------------------------
             // DYNAMIC PART: (could not be part of the cache, unless you know exactly what you are doing)
             //--------------------------------------------
-            Hooks::call("Ekom_decorateBoxModel", $model);
+            Hooks::call("Ekom_decorateBoxModel", $model, self::$contextualGet);
+//            a($model);
 
 
             $_priceWithTax = $model['rawPriceWithTax'];
@@ -812,8 +828,8 @@ order by h.order asc
             //--------------------------------------------
             // PRODUCT IDENTITY (product details system)
             //--------------------------------------------
-            $productDetails = [];
-            Hooks::call("Ekom_getProductDetails", $productDetails, $model);
+            $productDetailsParams = [];
+            Hooks::call("Ekom_getProductDetailsParams", $productDetailsParams, $model);
 
 
             //--------------------------------------------
@@ -823,14 +839,15 @@ order by h.order asc
              * The cart quantity for the given product
              */
             $cartLayer = EkomApi::inst()->cartLayer();
-            $cartQty = $cartLayer->getQuantity($model['product_id']);
+            $model['productIdentity'] = $cartLayer->getIdentityString($model['product_id'], $productDetailsParams);
+            $cartQty = $cartLayer->getQuantity($model['productIdentity']);
             $model['cartQuantity'] = $cartQty;
-            $model['productIdentity'] = $cartLayer->getIdentityString($model['product_id'], $productDetails);
+
 
         }
 
 //        a(__FILE__);
-
+        self::$contextualGet = null;
         return $model;
     }
 
@@ -936,6 +953,10 @@ order by h.order asc
             }
             return $model;
         }, [
+            /**
+             * @todo-ling: create a hook that ask modules what cache ids they want to add
+             * for the productBox page (look at EkomEvents module for instance)
+             */
             "ek_shop_has_product_card_lang",
             "ek_shop_has_product_card",
             "ek_product_card_lang",

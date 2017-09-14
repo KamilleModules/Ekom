@@ -160,9 +160,8 @@ class CartLayer
     public function getQuantity($productIdentity)
     {
         $items = $this->getItems();
-        $productIdentity = (int)$productIdentity;
         foreach ($items as $item) {
-            if ((int)$item['id'] === $productIdentity) {
+            if ($item['id'] === $productIdentity) {
                 return $item['quantity'];
             }
         }
@@ -212,11 +211,12 @@ class CartLayer
 //        $upid = $this->getUniqueProductId($productId, $complementaryId);
 
         $details = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
+        $detailsParams = array_key_exists('detailsParams', $extraArgs) ? $extraArgs['detailsParams'] : [];
 
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
 
-        $productIdentity = $this->getIdentityString($productId, $details);
+        $productIdentity = $this->getIdentityString($productId, $detailsParams);
 
 
 //        $this->sanitizeExtraArgs($extraArgs);
@@ -248,6 +248,9 @@ class CartLayer
              */
             if (count($details) > 0) {
                 $arr['details'] = $details;
+            }
+            if (count($detailsParams) > 0) {
+                $arr['detailsParams'] = $detailsParams;
             }
 
             $_SESSION['ekom'][$this->sessionName][$shopId]['items'][] = $arr;
@@ -301,60 +304,61 @@ class CartLayer
         $productId = $this->getProductIdByProductIdentity($productIdentity);
 
 
-        $details = $this->getDetailsByIdentity($productIdentity);
-        if (false !== ($remainingQty = EkomApi::inst()->productLayer()->getCartProductStockQuantity($productId, $details))) {
+        list($details, $detailsParams) = $this->getCartProductDetailsByIdentity($productIdentity);
 
 
-            $remainingQty = (int)$remainingQty;
-            $newQty = (int)$newQty;
-            if ($newQty < 0) {
-                $newQty = 0;
-            }
-
-            $maxQty = $newQty;
-            $acceptOutOfStockOrders = E::conf("acceptOutOfStockOrders", false);
-
-            if (false === $acceptOutOfStockOrders && $newQty > $remainingQty && -1 !== $remainingQty) {
-                $newQty = $remainingQty;
-            }
-
-            $alreadyExists = false;
-            foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
-                if ((string)$item['id'] === $productIdentity) {
-                    $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] = $newQty;
-                    $alreadyExists = true;
-                    break;
-                }
-            }
+        ProductLayer::$contextualGet = $detailsParams;
 
 
-            if (false === $alreadyExists) {
-                throw new \Exception("Deprecated");
-                $_SESSION['ekom'][$this->sessionName][$shopId]['items'][] = [
-                    "quantity" => $newQty,
-                    "id" => $productIdentity,
-                ];
-            }
+        $model = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($productId);
+        $remainingQty = $model['quantity'];
 
-
-            $this->writeToLocalStore();
-
-
-            if ($maxQty === $newQty) {
-                return true;
-            }
-            return $newQty;
-
-        } else {
-            XLog::error("[$this->moduleName] - $this->className.updateItemQuantity: cannot access the product quantity for product $productId");
-            $errors[] = "internal problem, please check the logs or contact the webmaster";
+        $newQty = (int)$newQty;
+        if ($newQty < 0) {
+            $newQty = 0;
         }
+
+        $maxQty = $newQty;
+        $acceptOutOfStockOrders = E::conf("acceptOutOfStockOrders", false);
+
+        if (false === $acceptOutOfStockOrders && $newQty > $remainingQty && -1 !== $remainingQty) {
+            $newQty = $remainingQty;
+        }
+
+        $alreadyExists = false;
+        foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
+            if ((string)$item['id'] === $productIdentity) {
+                $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] = $newQty;
+                $alreadyExists = true;
+                break;
+            }
+        }
+
+
+        if (false === $alreadyExists) {
+            throw new \Exception("Deprecated");
+            $_SESSION['ekom'][$this->sessionName][$shopId]['items'][] = [
+                "quantity" => $newQty,
+                "id" => $productIdentity,
+            ];
+        }
+
+
+        $this->writeToLocalStore();
+
+
+        if ($maxQty === $newQty) {
+            return true;
+        }
+        return $newQty;
+
+
         return false;
     }
 
-    public function getIdentityString($productId, array $details)
+    public function getIdentityString($productId, array $detailsParams)
     {
-        if (false !== ($idString = $this->getIdentityStringHashByDetails($details))) {
+        if (false !== ($idString = $this->getIdentityStringHashByDetails($detailsParams))) {
             return $productId . "-" . $idString;
         }
         return $productId;
@@ -466,8 +470,8 @@ class CartLayer
         //--------------------------------------------
         foreach ($items as $item) {
 
-            $identityString = $item['id'];
-            $productId = $this->getProductIdByProductIdentity($identityString);
+            $productIdentity = $item['id'];
+            $productId = $this->getProductIdByProductIdentity($productIdentity);
 
             if (false !== ($it = $this->getCartItemInfo($productId))) {
 
@@ -485,8 +489,9 @@ class CartLayer
                     $it['uri_card_with_details'] = $uriDetails;
 
 
-                    $it['identityString'] = $identityString;
-                    $it['productDetails'] = (array_key_exists('details', $item)) ? $item['details'] : [];
+                    $it['productIdentity'] = $productIdentity;
+                    $it['productCartDetails'] = (array_key_exists('details', $item)) ? $item['details'] : [];
+                    $it['productCartDetailsParams'] = (array_key_exists('detailsParams', $item)) ? $item['detailsParams'] : [];
                     $it['quantity'] = $qty;
                     $totalQty += $qty;
                     $totalWeight += $weight * $qty;
@@ -706,7 +711,8 @@ class CartLayer
     private function getIdentityStringHashByDetails(array $details)
     {
         if (count($details) > 0) {
-            sort($details);
+            ksort($details);
+//            return implode('-', $details);
             $sDetails = serialize($details);
             return hash('ripemd160', $sDetails);
         }
@@ -736,14 +742,28 @@ class CartLayer
      * @param $productIdentity
      * @return array
      */
-    private function getDetailsByIdentity($productIdentity)
+    private function getCartProductDetailsByIdentity($productIdentity)
     {
         if (false !== ($item = $this->getCartItemByIdentity($productIdentity))) {
+            $details = [];
             if (array_key_exists('details', $item)) {
-                return $item['details'];
+                $details = $item['details'];
             }
+
+            $detailsParams = [];
+            if (array_key_exists('detailsParams', $item)) {
+                $detailsParams = $item['detailsParams'];
+            }
+
+            return [
+                $details,
+                $detailsParams,
+            ];
         }
-        return [];
+        return [
+            [],
+            [],
+        ];
     }
 
     private function doGetCartModel(array $options = null)

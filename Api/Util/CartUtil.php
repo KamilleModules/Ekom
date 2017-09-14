@@ -13,7 +13,22 @@ class CartUtil
 {
 
 
-
+    public static function getDetailsByBoxModel(array $boxModel)
+    {
+        if (
+            array_key_exists("productCartDetails", $boxModel) &&
+            array_key_exists("productCartDetailsParams", $boxModel)
+        ) {
+            return [
+                $boxModel['productCartDetails'],
+                $boxModel['productCartDetailsParams'],
+            ];
+        }
+        return [
+            [],
+            [],
+        ];
+    }
 
     /**
      * @param array $items
