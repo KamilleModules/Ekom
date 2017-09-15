@@ -712,8 +712,22 @@ class CartLayer
     {
         if (count($details) > 0) {
             ksort($details);
-//            return implode('-', $details);
+
+//            $s = "";
+//            foreach ($details as $k => $v) {
+//                if (is_array($v)) {
+//                    foreach ($v as $k2 => $v2) {
+//                        $s .= $k2 . "_$v2-";
+//                    }
+//                } else {
+//
+//                    $s .= $k . "_$v-";
+//                }
+//            }
+//            return $s;
+
             $sDetails = serialize($details);
+            return preg_replace('![^a-zA-Z0-9]!', '-', $sDetails);
             return hash('ripemd160', $sDetails);
         }
         return false;

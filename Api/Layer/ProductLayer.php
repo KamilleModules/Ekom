@@ -745,7 +745,7 @@ order by h.order asc
             // DYNAMIC PART: (could not be part of the cache, unless you know exactly what you are doing)
             //--------------------------------------------
             Hooks::call("Ekom_decorateBoxModel", $model, self::$contextualGet);
-//            a($model);
+
 
 
             $_priceWithTax = $model['rawPriceWithTax'];
