@@ -737,15 +737,10 @@ order by h.order asc
         if (array_key_exists('product_id', $model)) { // if model is not in error form
 
 
-
-
-
-
             //--------------------------------------------
             // DYNAMIC PART: (could not be part of the cache, unless you know exactly what you are doing)
             //--------------------------------------------
             Hooks::call("Ekom_decorateBoxModel", $model, self::$contextualGet);
-
 
 
             $_priceWithTax = $model['rawPriceWithTax'];
@@ -840,8 +835,12 @@ order by h.order asc
              */
             $cartLayer = EkomApi::inst()->cartLayer();
             $model['productIdentity'] = $cartLayer->getIdentityString($model['product_id'], $productDetailsParams);
-            $cartQty = $cartLayer->getQuantity($model['productIdentity']);
-            $model['cartQuantity'] = $cartQty;
+
+
+            if (!array_key_exists('cartQuantity', $model)) {
+                $cartQty = $cartLayer->getQuantity($model['productIdentity']);
+                $model['cartQuantity'] = $cartQty;
+            }
 
 
         }
