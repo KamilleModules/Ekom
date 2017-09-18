@@ -95,6 +95,11 @@ class CartLayer
 //        return $default;
 //    }
 
+
+    /**
+     * @todo-ling: this is deprecated, fix binding with ekomCardCombination module
+     * when you remove it...
+     */
     public function getItemsExtraArgs($productIdentity, $argName, $default = null)
     {
         $productIdentity = (int)$productIdentity;
@@ -102,7 +107,7 @@ class CartLayer
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $items = $_SESSION['ekom'][$this->sessionName][$shopId]['items'];
         foreach ($items as $item) {
-            if ((int)$item['id'] === $productIdentity) {
+            if ($item['id'] === $productIdentity) {
                 if (
                     array_key_exists("extraArgs", $item) &&
                     array_key_exists($argName, $item['extraArgs'])
@@ -212,7 +217,6 @@ class CartLayer
 
         $details = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
         $detailsParams = array_key_exists('detailsParams', $extraArgs) ? $extraArgs['detailsParams'] : [];
-
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
 
@@ -296,7 +300,7 @@ class CartLayer
      *
      * @throws \Exception in case of problem
      */
-    public function updateItemQuantity($productIdentity, $newQty, array &$errors = [])
+    public function updateItemQuantity($productIdentity, $newQty, array &$errors = [], array $extraArgs = null)
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
@@ -325,22 +329,62 @@ class CartLayer
             $newQty = $remainingQty;
         }
 
+
         $alreadyExists = false;
         foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
             if ((string)$item['id'] === $productIdentity) {
                 $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] = $newQty;
+
                 $alreadyExists = true;
+
+                /**
+                 * Extra pass: the update has some replace properties
+                 * (was created for ekomEvents module, for cours product details)
+                 */
+                if (null !== $extraArgs) {
+                    $details = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
+                    $detailsParams = array_key_exists('detailsParams', $extraArgs) ? $extraArgs['detailsParams'] : [];
+                    $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['details'] = $details;
+                    $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['detailsParams'] = $detailsParams;
+                }
+
                 break;
             }
         }
 
 
         if (false === $alreadyExists) {
-            throw new \Exception("Deprecated");
-            $_SESSION['ekom'][$this->sessionName][$shopId]['items'][] = [
-                "quantity" => $newQty,
-                "id" => $productIdentity,
-            ];
+            if (null !== $extraArgs) {
+
+                $details = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
+                $detailsParams = array_key_exists('detailsParams', $extraArgs) ? $extraArgs['detailsParams'] : [];
+
+
+                $arr = [
+                    "quantity" => $newQty,
+                    "id" => $productIdentity,
+                ];
+
+                /**
+                 * For now, only extraArgs.details (the details key of extraArgs)
+                 * is recognized.
+                 */
+                if (count($details) > 0) {
+                    $arr['details'] = $details;
+                }
+                if (count($detailsParams) > 0) {
+                    $arr['detailsParams'] = $detailsParams;
+                }
+
+                $_SESSION['ekom'][$this->sessionName][$shopId]['items'][] = $arr;
+
+            } else {
+                throw new \Exception("Deprecated");
+                $_SESSION['ekom'][$this->sessionName][$shopId]['items'][] = [
+                    "quantity" => $newQty,
+                    "id" => $productIdentity,
+                ];
+            }
         }
 
 
@@ -451,6 +495,23 @@ class CartLayer
         return $_SESSION['ekom'][$this->sessionName][$shopId];
     }
 
+    /**
+     * @param $productIdentity
+     * @return false|array, the item matching $productIdentity
+     */
+    public function getCartItemByIdentity($productIdentity)
+    {
+        $this->initSessionCart();
+        $productIdentity = (string)$productIdentity;
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+
+        foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
+            if ((string)$item['id'] === $productIdentity) {
+                return $item;
+            }
+        }
+        return false;
+    }
 
     public function getCartModelByItems(array $items, $useEstimateShippingCosts = true, $couponBag = null)
     {
@@ -483,8 +544,6 @@ class CartLayer
                 if (false === array_key_exists('errorCode', $it)) {
 
 
-
-
                     $it['productIdentity'] = $productIdentity;
                     $it['productCartDetails'] = (array_key_exists('details', $item)) ? $item['details'] : [];
                     $it['productCartDetailsParams'] = (array_key_exists('detailsParams', $item)) ? $item['detailsParams'] : [];
@@ -493,10 +552,8 @@ class CartLayer
                     $totalWeight += $weight * $qty;
 
 
-
                     $uriDetails = UriTool::uri($it['uri_card_with_ref'], $it['productCartDetailsParams'], true);
                     $it['uri_card_with_details'] = $uriDetails;
-
 
 
                     /**
@@ -735,24 +792,6 @@ class CartLayer
         return false;
     }
 
-
-    /**
-     * @param $productIdentity
-     * @return false|array, the item matching $productIdentity
-     */
-    private function getCartItemByIdentity($productIdentity)
-    {
-        $this->initSessionCart();
-        $productIdentity = (string)$productIdentity;
-        $shopId = ApplicationRegistry::get("ekom.shop_id");
-
-        foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
-            if ((string)$item['id'] === $productIdentity) {
-                return $item;
-            }
-        }
-        return false;
-    }
 
     /**
      * @param $productIdentity

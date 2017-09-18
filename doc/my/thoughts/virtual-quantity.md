@@ -1,11 +1,20 @@
 Virtual quantity
 ===================
-2017-08-29
+2017-08-29 -> 2017-09-18
 
 
 
-The virtual quantity is at first the quantity (stock) of a product;
-but it decreases as the user adds the product to her cart.
+The virtual quantity is a number representing the quantity of a product instance that a user can buy.
+It decreases/increase as the user removes/adds product(s) to her cart.
+
+
+The general formulae of the virtual quantity is the following:
+
+
+- virtualQuantity = stockQuantity - cartQuantity
+
+
+
 
 
 

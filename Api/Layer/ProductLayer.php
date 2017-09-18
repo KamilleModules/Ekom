@@ -821,11 +821,34 @@ order by h.order asc
 
 
             //--------------------------------------------
+            // ABSOLUTELY NON CACHABLE THINGS
+            // like things depending on cart
+            //--------------------------------------------
+            /**
+             * Absolutely non cachable things (whereas above could potentially be cached for one day)
+             * like things depending on the user cart for instance...
+             */
+            Hooks::call("Ekom_decorateBoxModelAfter", $model, self::$contextualGet);
+
+            //--------------------------------------------
             // PRODUCT IDENTITY (product details system)
             //--------------------------------------------
-            $productDetailsParams = [];
-            Hooks::call("Ekom_getProductDetailsParams", $productDetailsParams, $model);
-
+            /**
+             * @todo-ling document this system of ekom:
+             * if a product has a token, we guess the productIdentity and cartQuantity from it,
+             * otherwise we use the product details params.
+             * This is the regular product details system of ekom.
+             *
+             * In other words, a token is "another way" to define a product's identity
+             *
+             */
+            if (array_key_exists('token', self::$contextualGet)) {
+                $token = self::$contextualGet['token'];
+                $productDetailsParams = ['token' => $token];
+            } else {
+                $productDetailsParams = [];
+                Hooks::call("Ekom_getProductDetailsParams", $productDetailsParams, $model, self::$contextualGet);
+            }
 
             //--------------------------------------------
             // MISCELLANEOUS
