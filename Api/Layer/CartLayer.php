@@ -483,10 +483,6 @@ class CartLayer
                 if (false === array_key_exists('errorCode', $it)) {
 
 
-                    $params = [];
-                    Hooks::call('Ekom_Cart_collectProductDetailsUriParams', $params, $item);
-                    $uriDetails = UriTool::uri($it['uri_card_with_ref'], $params, true);
-                    $it['uri_card_with_details'] = $uriDetails;
 
 
                     $it['productIdentity'] = $productIdentity;
@@ -495,6 +491,12 @@ class CartLayer
                     $it['quantity'] = $qty;
                     $totalQty += $qty;
                     $totalWeight += $weight * $qty;
+
+
+
+                    $uriDetails = UriTool::uri($it['uri_card_with_ref'], $it['productCartDetailsParams'], true);
+                    $it['uri_card_with_details'] = $uriDetails;
+
 
 
                     /**

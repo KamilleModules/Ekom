@@ -259,10 +259,29 @@ Watch out for the quantity!!
 So, while implementing this first "complex" product, I found out that to override the default quantity 
 with the current ekom system you had to modify code in multiple places.
 
-Rather than trying to change the ekom core code to make it easier for implementors, this time I rather decided
+Basically, I made a few improvements at the ekom level:
+
+- ekom has now a built-in way of handling virtual quantities:
+        it uses both properties of the box model:
+            - quantity
+            - cartQuantity
+            - ?virtual_quantity (virtualQty?)
+            
+Basically, the idea is that if virtualQty is set, then use virtualQty,
+otherwise, ekom computes the virtualQty using the following formulae:
+
+- virtualQty = quantity - cartQuantity
+
+
+Note: the virtualQty override was born to overpass the limitations of the formulae which doesn't necessary work
+for all cases (like ekomEvents module "à la carte" courses system).            
+            
+            
+!!! WHAT'S BELOW IN THIS SECTION MIGHT BE DEPRECATED...             
+Apart from that, rather than trying to change the ekom core code to make it easier for implementors, this time I rather decided
 to list the places where code needs to be changed, as I thought it was the best solution in this case for some reasons.
 
-Anyway, the places are:
+Anyway, the places are (might be deprecated, I don't know):
 
 
 - Hooks::Ekom_Product_updateStockQuantity
@@ -285,8 +304,12 @@ Anyway, the places are:
 cartProductDetails
 ----------------------
 
-- cartProductDetails:
-    - productDetails
-    - productDetailsParams
+Introducing two new properties to the cartModel:
+
+- productCartDetails, helper array for modules and fed by modules,
+    each module should put its configuration in a namespace inside this array.
+        For instance, the ekomEvents module should create the productCartDetails.ekomEvents array
+        and put all its configuration in it 
+- productCartDetailsParams, array of url params, helps building the instance uri
 
 
