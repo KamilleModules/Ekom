@@ -204,6 +204,8 @@ class CartLayer
      * - id
      * - quantity
      * - ?details
+     *      - major
+     *      - ?minor
      *
      * The idea behind extraArgs is to extend this system in the future.
      * For now, extraArgs is the holder/transporter for the details key.
@@ -211,16 +213,18 @@ class CartLayer
      */
     public function addItem($qty, $productId, array $extraArgs = [])
     {
-
-
-//        $upid = $this->getUniqueProductId($productId, $complementaryId);
+        $this->initSessionCart();
 
         $details = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
-        $detailsParams = array_key_exists('detailsParams', $extraArgs) ? $extraArgs['detailsParams'] : [];
-        $this->initSessionCart();
+//        $detailsParams = array_key_exists('detailsParams', $extraArgs) ? $extraArgs['detailsParams'] : [];
+
         $shopId = ApplicationRegistry::get("ekom.shop_id");
 
-        $productIdentity = $this->getIdentityString($productId, $detailsParams);
+
+        $majorDetailsParams = array_key_exists('major', $details) ? $details['major'] : [];
+
+
+        $token = CartUtil::generateTokenByProductIdMajorProductDetails($productId, $majorDetailsParams);
 
 
 //        $this->sanitizeExtraArgs($extraArgs);
@@ -228,7 +232,7 @@ class CartLayer
 
         $alreadyExists = false;
         foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
-            if ((string)$item['id'] === $productIdentity) {
+            if ((string)$item['id'] === $token) {
                 $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] += $qty;
                 $alreadyExists = true;
                 break;
@@ -239,24 +243,14 @@ class CartLayer
 
             $arr = [
                 "quantity" => $qty,
-                "id" => $productIdentity,
+                "id" => $token,
             ];
-
-//            if (count($extraArgs) > 0) {
-//                $arr['extraArgs'] = $extraArgs;
-//            }
-
-            /**
-             * For now, only extraArgs.details (the details key of extraArgs)
-             * is recognized.
-             */
             if (count($details) > 0) {
                 $arr['details'] = $details;
             }
-            if (count($detailsParams) > 0) {
-                $arr['detailsParams'] = $detailsParams;
-            }
-
+//            if (count($detailsParams) > 0) {
+//                $arr['detailsParams'] = $detailsParams;
+//            }
             $_SESSION['ekom'][$this->sessionName][$shopId]['items'][] = $arr;
         }
 

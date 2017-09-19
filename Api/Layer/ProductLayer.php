@@ -740,7 +740,8 @@ order by h.order asc
             //--------------------------------------------
             // DYNAMIC PART: (could not be part of the cache, unless you know exactly what you are doing)
             //--------------------------------------------
-            Hooks::call("Ekom_decorateBoxModel", $model, self::$contextualGet);
+//            Hooks::call("Ekom_decorateBoxModel", $model, self::$contextualGet);
+            Hooks::call("Ekom_decorateBoxModel", $model);
 
 
             $_priceWithTax = $model['rawPriceWithTax'];
@@ -828,42 +829,47 @@ order by h.order asc
              * Absolutely non cachable things (whereas above could potentially be cached for one day)
              * like things depending on the user cart for instance...
              */
-            Hooks::call("Ekom_decorateBoxModelAfter", $model, self::$contextualGet);
-
+            // defining the default virtual quantity
             //--------------------------------------------
-            // PRODUCT IDENTITY (product details system)
-            //--------------------------------------------
-            /**
-             * @todo-ling document this system of ekom:
-             * if a product has a token, we guess the productIdentity and cartQuantity from it,
-             * otherwise we use the product details params.
-             * This is the regular product details system of ekom.
-             *
-             * In other words, a token is "another way" to define a product's identity
-             *
-             */
-            if (array_key_exists('token', self::$contextualGet)) {
-                $token = self::$contextualGet['token'];
-                $productDetailsParams = ['token' => $token];
-            } else {
-                $productDetailsParams = [];
-                Hooks::call("Ekom_getProductDetailsParams", $productDetailsParams, $model, self::$contextualGet);
-            }
-
-            //--------------------------------------------
-            // MISCELLANEOUS
-            //--------------------------------------------
-            /**
-             * The cart quantity for the given product
-             */
-            $cartLayer = EkomApi::inst()->cartLayer();
-            $model['productIdentity'] = $cartLayer->getIdentityString($model['product_id'], $productDetailsParams);
 
 
-            if (!array_key_exists('cartQuantity', $model)) {
-                $cartQty = $cartLayer->getQuantity($model['productIdentity']);
-                $model['cartQuantity'] = $cartQty;
-            }
+//            Hooks::call("Ekom_decorateBoxModelAfter", $model, self::$contextualGet); //?
+            Hooks::call("Ekom_decorateBoxModelAfter", $model);
+
+//            //--------------------------------------------
+//            // PRODUCT IDENTITY (product details system)
+//            //--------------------------------------------
+//            /**
+//             * @todo-ling document this system of ekom:
+//             * if a product has a token, we guess the productIdentity and cartQuantity from it,
+//             * otherwise we use the product details params.
+//             * This is the regular product details system of ekom.
+//             *
+//             * In other words, a token is "another way" to define a product's identity
+//             *
+//             */
+//            if (array_key_exists('token', self::$contextualGet)) {
+//                $token = self::$contextualGet['token'];
+//                $productDetailsParams = ['token' => $token];
+//            } else {
+//                $productDetailsParams = [];
+//                Hooks::call("Ekom_getProductDetailsParams", $productDetailsParams, $model, self::$contextualGet);
+//            }
+//
+//            //--------------------------------------------
+//            // MISCELLANEOUS
+//            //--------------------------------------------
+//            /**
+//             * The cart quantity for the given product
+//             */
+//            $cartLayer = EkomApi::inst()->cartLayer();
+//            $model['productIdentity'] = $cartLayer->getIdentityString($model['product_id'], $productDetailsParams);
+//
+//
+//            if (!array_key_exists('cartQuantity', $model)) {
+//                $cartQty = $cartLayer->getQuantity($model['productIdentity']);
+//                $model['cartQuantity'] = $cartQty;
+//            }
 
 
         }

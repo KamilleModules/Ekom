@@ -13,6 +13,24 @@ class CartUtil
 {
 
 
+    public static function generateTokenByProductIdMajorProductDetails($productId, array $majorDetails = [])
+    {
+        $token = (string)$productId;
+
+        if (count($majorDetails) > 0) {
+            ksort($majorDetails);
+            $sDetails = serialize($majorDetails);
+
+            if ('debug') {
+                $token .= '-' . preg_replace('![^a-zA-Z0-9]!', '-', $sDetails);
+            } else {
+                $token .= '-' . hash('ripemd160', $sDetails);
+            }
+        }
+        return $token;
+    }
+
+
     public static function getDetailsByBoxModel(array $boxModel)
     {
         if (
