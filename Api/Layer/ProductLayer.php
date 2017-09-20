@@ -741,6 +741,7 @@ order by h.order asc
             // DYNAMIC PART: (could not be part of the cache, unless you know exactly what you are doing)
             //--------------------------------------------
 //            Hooks::call("Ekom_decorateBoxModel", $model, self::$contextualGet);
+
             Hooks::call("Ekom_decorateBoxModel", $model);
 
 
@@ -834,7 +835,7 @@ order by h.order asc
 
 
 //            Hooks::call("Ekom_decorateBoxModelAfter", $model, self::$contextualGet); //?
-            Hooks::call("Ekom_decorateBoxModelAfter", $model);
+//            Hooks::call("Ekom_decorateBoxModelAfter", $model);
 
 //            //--------------------------------------------
 //            // PRODUCT IDENTITY (product details system)
@@ -875,7 +876,7 @@ order by h.order asc
         }
 
 //        a(__FILE__);
-        self::$contextualGet = null;
+//        self::$contextualGet = null;
         return $model;
     }
 

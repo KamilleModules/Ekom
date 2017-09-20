@@ -4,7 +4,7 @@ Virtual quantity
 
 
 
-The virtual quantity is a number representing the quantity of a product instance that a user can buy.
+The virtual quantity is a number representing the maximum quantity of a product instance that a user can buy.
 It decreases/increase as the user removes/adds product(s) to her cart.
 
 
