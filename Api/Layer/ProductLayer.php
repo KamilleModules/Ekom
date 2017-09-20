@@ -13,6 +13,7 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Util\CartUtil;
+use Module\Ekom\Api\Util\HashUtil;
 use Module\Ekom\Api\Util\UriUtil;
 use Module\Ekom\Price\PriceChain\EkomProductPriceChain;
 use Module\Ekom\ProductBox\AttributesModel\Generator\AttributesModelGeneratorInterface;
@@ -27,9 +28,26 @@ class ProductLayer
 {
 
     /**
-     * If null, $_GET will be used, otherwise it should be an array
+     *
+     * Can be used to temporary replace $_GET.
+     *
+     *
+     * Long story:
+     * This was created for the getProductBoxModelByCardId method.
+     * That's because the product details in ekom are passed via $_GET.
+     * Sometimes, a class needs to access the boxModel.
+     * For instance, in the cartLayer, in order to check whether or not it's possible to add
+     * the desired quantity to the cart, the cartLayer can fetch the stock quantity of an item from the
+     * box model.
+     * However, the request from which the cartLayer originates the call (to the boxModel) is an ajax request,
+     * and it doesn't contain the $_GET parameters of the main product box page.
+     * In this case the tmpGet array can be used to emulate the $_GET array temporarily, so that
+     * the cartLayer can achieve its goal.
+     * Note: don't forget to reset tmpGet back to null when your task is done, because this could have
+     * dramatic consequences otherwise.
+     *
      */
-    public static $contextualGet = null;
+    public static $tmpGet = null;
 
     public function getProductTypeById($productId, $shopId = null)
     {
@@ -393,21 +411,26 @@ order by h.order asc
     }
 
     /**
+     *
+     * This is the main method returning the boxModel.
+     * The boxModel is used at many different places in ekom.
+     *
+     *
+     *
+     *
      * @param $productId , null|int, if null, it means that you want to display the productBox for the given cardId,
      *                              if not null, it means that you want to display the productBox for a specific product.
      * @return false|mixed
      */
-    public function getProductBoxModelByCardId($cardId, $shopId = null, $langId = null, $productId = null)
+    public function getProductBoxModelByCardId($cardId, $shopId = null, $langId = null, $productId = null, array $productDetails = [])
     {
-        if (null === self::$contextualGet) {
-            self::$contextualGet = $_GET;
-        }
 
 
         $cardId = (int)$cardId;
         $productId = (int)$productId;
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+        $sDetails = HashUtil::createHashByArray($productDetails);
 
         $isB2b = E::isB2b();
 
@@ -415,7 +438,7 @@ order by h.order asc
         $iIsB2b = (int)$isB2b;
         $api = EkomApi::inst();
 
-        $model = A::cache()->get("Ekom.ProductLayer.getProductBoxModelByCardId.$shopId.$langId.$cardId.$productId.$iIsB2b", function () use ($cardId, $shopId, $langId, $productId, $api, $isB2b) {
+        $model = A::cache()->get("Ekom.ProductLayer.getProductBoxModelByCardId.$shopId.$langId.$cardId.$productId.$iIsB2b.$sDetails", function () use ($cardId, $shopId, $langId, $productId, $api, $isB2b, $productDetails) {
             $model = [];
 
             try {
@@ -558,10 +581,11 @@ order by h.order asc
                             $priceWithoutTax = E::price($_priceWithoutTax);
 
 
+                            $productReference = $p['reference'];
                             $cardSlug = ("" !== $row['slug']) ? $row['slug'] : $row['default_slug'];
                             $cardUri = E::link("Ekom_productCardRef", [
                                 'slug' => $cardSlug,
-                                'ref' => $p['reference'],
+                                'ref' => $productReference,
                             ]);
 
 
@@ -602,7 +626,9 @@ order by h.order asc
 
                             $boxConf = [
                                 "card_id" => (int)$cardId,
+                                "card_slug" => $cardSlug,
                                 "product_id" => (int)$productId,
+                                "product_reference" => $productReference,
                                 "product_type" => $p['product_type'],
                                 "quantity" => (int)$quantity,
                                 "is_in_stock" => $isInStock,
@@ -741,7 +767,10 @@ order by h.order asc
             // DYNAMIC PART: (could not be part of the cache, unless you know exactly what you are doing)
             //--------------------------------------------
 //            Hooks::call("Ekom_decorateBoxModel", $model, self::$contextualGet);
-
+            /**
+             * Adding productDetails
+             * updating price if necessary
+             */
             Hooks::call("Ekom_decorateBoxModel", $model);
 
 
@@ -820,63 +849,7 @@ order by h.order asc
                 $model['salePrice'] = $model['salePriceWithTax'];
                 $model['rawSalePrice'] = $model['rawSalePriceWithTax'];
             }
-
-
-            //--------------------------------------------
-            // ABSOLUTELY NON CACHABLE THINGS
-            // like things depending on cart
-            //--------------------------------------------
-            /**
-             * Absolutely non cachable things (whereas above could potentially be cached for one day)
-             * like things depending on the user cart for instance...
-             */
-            // defining the default virtual quantity
-            //--------------------------------------------
-
-
-//            Hooks::call("Ekom_decorateBoxModelAfter", $model, self::$contextualGet); //?
-//            Hooks::call("Ekom_decorateBoxModelAfter", $model);
-
-//            //--------------------------------------------
-//            // PRODUCT IDENTITY (product details system)
-//            //--------------------------------------------
-//            /**
-//             * @todo-ling document this system of ekom:
-//             * if a product has a token, we guess the productIdentity and cartQuantity from it,
-//             * otherwise we use the product details params.
-//             * This is the regular product details system of ekom.
-//             *
-//             * In other words, a token is "another way" to define a product's identity
-//             *
-//             */
-//            if (array_key_exists('token', self::$contextualGet)) {
-//                $token = self::$contextualGet['token'];
-//                $productDetailsParams = ['token' => $token];
-//            } else {
-//                $productDetailsParams = [];
-//                Hooks::call("Ekom_getProductDetailsParams", $productDetailsParams, $model, self::$contextualGet);
-//            }
-//
-//            //--------------------------------------------
-//            // MISCELLANEOUS
-//            //--------------------------------------------
-//            /**
-//             * The cart quantity for the given product
-//             */
-//            $cartLayer = EkomApi::inst()->cartLayer();
-//            $model['productIdentity'] = $cartLayer->getIdentityString($model['product_id'], $productDetailsParams);
-//
-//
-//            if (!array_key_exists('cartQuantity', $model)) {
-//                $cartQty = $cartLayer->getQuantity($model['productIdentity']);
-//                $model['cartQuantity'] = $cartQty;
-//            }
-
-
         }
-
-//        a(__FILE__);
-//        self::$contextualGet = null;
         return $model;
     }
 

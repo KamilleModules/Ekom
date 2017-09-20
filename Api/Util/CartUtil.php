@@ -19,13 +19,8 @@ class CartUtil
 
         if (count($majorDetails) > 0) {
             ksort($majorDetails);
-            $sDetails = serialize($majorDetails);
-
-            if ('debug') {
-                $token .= '-' . preg_replace('![^a-zA-Z0-9]!', '-', $sDetails);
-            } else {
-                $token .= '-' . hash('ripemd160', $sDetails);
-            }
+            $sDetails = implode('-', $majorDetails); // this will be enough for now, later we could use a hash
+            $token .= '-' . $sDetails;
         }
         return $token;
     }

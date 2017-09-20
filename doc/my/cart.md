@@ -49,7 +49,7 @@ There are two types of product instances:
 Configurable product instances have minor product details, while "not configurable product instances" don't.
 With configurable product instances, you can change the minor details; it doesn't change the product instance. 
 
-Product details are explained in the cart.md document.
+Product details are explained in the product-details.md document.
 
 
 

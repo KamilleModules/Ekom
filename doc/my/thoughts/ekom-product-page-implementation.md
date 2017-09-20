@@ -129,21 +129,12 @@ Let's look at the formulae generating the token:
 - token = hash ( majorProductDetails )
 
 
-Hmm, we need the major product details.
-Those should be provided by the boxModel, via the productDetails property:
+Hmm, we need the major product details of the current product instance.
+Those should be provided by the boxModel, via the majorroductDetails property:
 
 - productDetails:
-    - major: array of name => item.
-            The name is the name of the major product detail. 
-            Suggestion: modules, consider prefixing your keys with namespaces,
-            as this is a pool of variables shared by all modules.
-            Each item being an array with the following entries:
-        - nameLabel: the label for the name             
-        - value: the value for this product detail
-        - valueLabel: label for the value of the product detail
-        - isSelected: bool, whether or not this product detail has been selected by the user
-    - minor: free array (i.e. not normalized yet) of variables helping providers (modules or other things)
-            to display the product minor details.
+    - major: array of name => value of the major product details selected for this product instance 
+    - minor: array of name => value of the major product details selected for this product instance
             
             
 With this particular structure ready in the boxModel, we have access to the major product details of the 

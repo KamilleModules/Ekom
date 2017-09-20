@@ -13,6 +13,7 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Util\CartUtil;
+use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Utils\CartLocalStore;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\EkomLinkHelper;
@@ -210,13 +211,15 @@ class CartLayer
      * The idea behind extraArgs is to extend this system in the future.
      * For now, extraArgs is the holder/transporter for the details key.
      *
+     * @throws EkomUserMessageException when something wrong happens
+     *
      */
     public function addItem($qty, $productId, array $extraArgs = [])
     {
         $this->initSessionCart();
 
+
         $details = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
-//        $detailsParams = array_key_exists('detailsParams', $extraArgs) ? $extraArgs['detailsParams'] : [];
 
         $shopId = ApplicationRegistry::get("ekom.shop_id");
 
@@ -231,9 +234,16 @@ class CartLayer
 
 
         $alreadyExists = false;
+        $remainingStockQty = null;
         foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
             if ((string)$item['id'] === $token) {
-                $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] += $qty;
+                $existingQuantity = $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'];
+                $this->checkQuantityOverflow($productId, $existingQuantity, $qty, $majorDetailsParams);
+
+                $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] = $qty;
+                if ($details) {
+                    $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['details'] = $details;
+                }
                 $alreadyExists = true;
                 break;
             }
@@ -241,16 +251,17 @@ class CartLayer
 
         if (false === $alreadyExists) {
 
+            $this->checkQuantityOverflow($productId, 0, $qty, $majorDetailsParams);
+
             $arr = [
                 "quantity" => $qty,
                 "id" => $token,
             ];
+
+
             if (count($details) > 0) {
                 $arr['details'] = $details;
             }
-//            if (count($detailsParams) > 0) {
-//                $arr['detailsParams'] = $detailsParams;
-//            }
             $_SESSION['ekom'][$this->sessionName][$shopId]['items'][] = $arr;
         }
 
@@ -259,13 +270,14 @@ class CartLayer
         $this->writeToLocalStore();
     }
 
-    public function removeItem($productIdentity)
+
+    public function removeItem($token)
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $productIdentity = (string)$productIdentity;
+        $token = (string)$token;
         foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
-            if ((string)$item['id'] === $productIdentity) {
+            if ((string)$item['id'] === $token) {
                 unset($_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]);
                 break;
             }
@@ -292,106 +304,39 @@ class CartLayer
      *                  If acceptOutOfStockOrders is false, then if there is 7 products left and you order 10,
      *                  it will return 7.
      *
-     * @throws \Exception in case of problem
+     * @throws EkomUserMessageException when something wrong happens
      */
-    public function updateItemQuantity($productIdentity, $newQty, array &$errors = [], array $extraArgs = null)
+    public function updateItemQuantity($token, $newQty)
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $productIdentity = (string)$productIdentity;
-        $productId = $this->getProductIdByProductIdentity($productIdentity);
+        $productId = $this->getProductIdByCartToken($token);
 
-
-        list($details, $detailsParams) = $this->getCartProductDetailsByIdentity($productIdentity);
-
-
-        ProductLayer::$contextualGet = $detailsParams;
-
-
-        $model = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($productId);
-        $remainingQty = $model['quantity'];
 
         $newQty = (int)$newQty;
         if ($newQty < 0) {
             $newQty = 0;
         }
 
-        $maxQty = $newQty;
-        $acceptOutOfStockOrders = E::conf("acceptOutOfStockOrders", false);
 
-        if (false === $acceptOutOfStockOrders && $newQty > $remainingQty && -1 !== $remainingQty) {
-            $newQty = $remainingQty;
-        }
-
-
-        $alreadyExists = false;
+        $wasUpdated = false;
         foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
-            if ((string)$item['id'] === $productIdentity) {
+            if ((string)$item['id'] === $token) {
+
+                $existingQty = $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'];
+                $details = $this->getProductDetailsByToken($token);
+                $majorDetailsParams = (array_key_exists('major', $details)) ? $details['major'] : [];
+                $this->checkQuantityOverflow($productId, $existingQty, $newQty, $majorDetailsParams, true);
+
                 $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] = $newQty;
-
-                $alreadyExists = true;
-
-                /**
-                 * Extra pass: the update has some replace properties
-                 * (was created for ekomEvents module, for cours product details)
-                 */
-                if (null !== $extraArgs) {
-                    $details = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
-                    $detailsParams = array_key_exists('detailsParams', $extraArgs) ? $extraArgs['detailsParams'] : [];
-                    $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['details'] = $details;
-                    $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['detailsParams'] = $detailsParams;
-                }
-
+                $wasUpdated = true;
                 break;
             }
         }
 
 
-        if (false === $alreadyExists) {
-            if (null !== $extraArgs) {
-
-                $details = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
-                $detailsParams = array_key_exists('detailsParams', $extraArgs) ? $extraArgs['detailsParams'] : [];
-
-
-                $arr = [
-                    "quantity" => $newQty,
-                    "id" => $productIdentity,
-                ];
-
-                /**
-                 * For now, only extraArgs.details (the details key of extraArgs)
-                 * is recognized.
-                 */
-                if (count($details) > 0) {
-                    $arr['details'] = $details;
-                }
-                if (count($detailsParams) > 0) {
-                    $arr['detailsParams'] = $detailsParams;
-                }
-
-                $_SESSION['ekom'][$this->sessionName][$shopId]['items'][] = $arr;
-
-            } else {
-                throw new \Exception("Deprecated");
-                $_SESSION['ekom'][$this->sessionName][$shopId]['items'][] = [
-                    "quantity" => $newQty,
-                    "id" => $productIdentity,
-                ];
-            }
-        }
-
-
         $this->writeToLocalStore();
-
-
-        if ($maxQty === $newQty) {
-            return true;
-        }
-        return $newQty;
-
-
-        return false;
+        return (true === $wasUpdated);
     }
 
     public function getIdentityString($productId, array $detailsParams)
@@ -489,18 +434,15 @@ class CartLayer
         return $_SESSION['ekom'][$this->sessionName][$shopId];
     }
 
-    /**
-     * @param $productIdentity
-     * @return false|array, the item matching $productIdentity
-     */
-    public function getCartItemByIdentity($productIdentity)
+
+    public function getCartItemByToken($token)
     {
         $this->initSessionCart();
-        $productIdentity = (string)$productIdentity;
+        $token = (string)$token;
         $shopId = ApplicationRegistry::get("ekom.shop_id");
 
         foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
-            if ((string)$item['id'] === $productIdentity) {
+            if ((string)$item['id'] === $token) {
                 return $item;
             }
         }
@@ -525,10 +467,15 @@ class CartLayer
         //--------------------------------------------
         foreach ($items as $item) {
 
-            $productIdentity = $item['id'];
-            $productId = $this->getProductIdByProductIdentity($productIdentity);
+            $cartToken = $item['id'];
+            $productId = $this->getProductIdByCartToken($cartToken);
 
-            if (false !== ($it = $this->getCartItemInfo($productId))) {
+
+            $details = (array_key_exists('details', $item)) ? $item['details'] : [];
+            $majorDetailsParams = (array_key_exists('major', $details)) ? $details['major'] : [];
+
+
+            if (false !== ($it = $this->getCartItemInfo($productId, $majorDetailsParams))) {
 
 
                 $qty = $item['quantity'];
@@ -538,15 +485,16 @@ class CartLayer
                 if (false === array_key_exists('errorCode', $it)) {
 
 
-                    $it['productIdentity'] = $productIdentity;
-                    $it['productCartDetails'] = (array_key_exists('details', $item)) ? $item['details'] : [];
-                    $it['productCartDetailsParams'] = (array_key_exists('detailsParams', $item)) ? $item['detailsParams'] : [];
+                    $it['cartToken'] = $cartToken;
+
+                    $it['productCartDetails'] = $details;
+
+
                     $it['quantity'] = $qty;
                     $totalQty += $qty;
                     $totalWeight += $weight * $qty;
 
-
-                    $uriDetails = UriTool::uri($it['uri_card_with_ref'], $it['productCartDetailsParams'], true);
+                    $uriDetails = UriTool::uri($it['uri_card_with_ref'], $majorDetailsParams, true);
                     $it['uri_card_with_details'] = $uriDetails;
 
 
@@ -756,7 +704,7 @@ class CartLayer
     //--------------------------------------------
     //
     //--------------------------------------------
-    private function getProductIdByProductIdentity($productIdentity)
+    private function getProductIdByCartToken($productIdentity)
     {
         return explode('-', $productIdentity)[0];
     }
@@ -787,32 +735,18 @@ class CartLayer
     }
 
 
-    /**
-     * @param $productIdentity
-     * @return array
-     */
-    private function getCartProductDetailsByIdentity($productIdentity)
+    private function getProductDetailsByToken($token)
     {
-        if (false !== ($item = $this->getCartItemByIdentity($productIdentity))) {
-            $details = [];
+        $details = [
+            'major' => [],
+            'minor' => [],
+        ];
+        if (false !== ($item = $this->getCartItemByToken($token))) {
             if (array_key_exists('details', $item)) {
                 $details = $item['details'];
             }
-
-            $detailsParams = [];
-            if (array_key_exists('detailsParams', $item)) {
-                $detailsParams = $item['detailsParams'];
-            }
-
-            return [
-                $details,
-                $detailsParams,
-            ];
         }
-        return [
-            [],
-            [],
-        ];
+        return $details;
     }
 
     private function doGetCartModel(array $options = null)
@@ -858,7 +792,7 @@ class CartLayer
      * @param $pId : int, the product id
      * @return array: the cartItem model
      */
-    private function getCartItemInfo($pId)
+    private function getCartItemInfo($pId, array $majorDetailsParams = [])
     {
         $pId = (int)$pId;
         $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
@@ -1000,6 +934,46 @@ and p.lang_id=$langId
             $this->cartLocalStore = new CartLocalStore();
         }
         return $this->cartLocalStore;
+    }
+
+
+    /**
+     *
+     *
+     * @param $productId
+     * @param $existingQty
+     * @param $qty ,
+     *              if isUpdate=false, the addedQty
+     *              if isUpdate=true, the newQty
+     *
+     * @param array $majorDetailsParams
+     * @param bool $isUpdate
+     * @throws EkomUserMessageException
+     */
+    private function checkQuantityOverflow($productId, $existingQty, $qty, array $majorDetailsParams, $isUpdate = false)
+    {
+        if (false === E::conf('acceptOutOfStockOrders', false)) {
+
+            ProductLayer::$tmpGet = $majorDetailsParams;
+            $boxModel = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($productId);
+            ProductLayer::$tmpGet = null;
+
+
+            $remainingStockQty = $boxModel['quantity'];
+
+            if (false === $isUpdate) {
+                $addedQty = $qty;
+                $desiredQty = $existingQty + $addedQty;
+                if (-1 !== $remainingStockQty && $desiredQty > $remainingStockQty) {
+                    throw new EkomUserMessageException("Cannot add $addedQty products to the cart (only $remainingStockQty left in stock)");
+                }
+            } else {
+                $newQty = $qty;
+                if (-1 !== $remainingStockQty && $newQty > $remainingStockQty) {
+                    throw new EkomUserMessageException("Cannot set $newQty products to the cart (only $remainingStockQty left in stock)");
+                }
+            }
+        }
     }
 
 
