@@ -13,6 +13,7 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Util\CartUtil;
+use Module\Ekom\Api\Util\HashUtil;
 use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Utils\CartLocalStore;
 use Module\Ekom\Utils\E;
@@ -792,16 +793,17 @@ class CartLayer
      * @param $pId : int, the product id
      * @return array: the cartItem model
      */
-    private function getCartItemInfo($pId, array $majorDetailsParams = [])
+    private function getCartItemInfo($pId, array $majorProductDetails = [])
     {
         $pId = (int)$pId;
         $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
         $langId = (int)ApplicationRegistry::get("ekom.lang_id");
+        $sDetails = HashUtil::createHashByArray($majorProductDetails);
 
-        return A::cache()->get("Module.Ekom.Api.Layer.$this->className.getCartItemInfo.$shopId.$langId.$pId", function () use ($pId, $shopId, $langId) {
+        return A::cache()->get("Module.Ekom.Api.Layer.$this->className.getCartItemInfo.$shopId.$langId.$pId.$sDetails", function () use ($pId, $shopId, $langId, $majorProductDetails) {
 
 
-            $b = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($pId, $shopId, $langId);
+            $b = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($pId, $shopId, $langId, $majorProductDetails);
             if (array_key_exists('errorCode', $b)) {
                 XLog::error("[$this->moduleName] - $this->className.getCartItemInfo: product not found or request failed with product id: $pId");
                 return $b;
@@ -909,19 +911,7 @@ and p.lang_id=$langId
                 ]);
             }
 
-        }, [
-            "ek_shop_has_product_card_lang",
-            "ek_shop_has_product_card",
-            "ek_product_card_lang",
-            "ek_product_card",
-            "ek_shop",
-            "ek_product_has_product_attribute",
-            "ek_product_attribute_lang",
-            "ek_product_attribute_value_lang",
-            "ek_product",
-            "ekomApi.image.product",
-            "ekomApi.image.productCard",
-        ]);
+        }, EkomApi::inst()->productLayer()->getProductBoxModelCaches());
     }
 
 
@@ -954,9 +944,8 @@ and p.lang_id=$langId
     {
         if (false === E::conf('acceptOutOfStockOrders', false)) {
 
-            ProductLayer::$tmpGet = $majorDetailsParams;
-            $boxModel = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($productId);
-            ProductLayer::$tmpGet = null;
+
+            $boxModel = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($productId, null, null, $majorDetailsParams);
 
 
             $remainingStockQty = $boxModel['quantity'];

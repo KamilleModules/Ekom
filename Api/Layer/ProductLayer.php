@@ -27,27 +27,6 @@ use QuickPdo\QuickPdo;
 class ProductLayer
 {
 
-    /**
-     *
-     * Can be used to temporary replace $_GET.
-     *
-     *
-     * Long story:
-     * This was created for the getProductBoxModelByCardId method.
-     * That's because the product details in ekom are passed via $_GET.
-     * Sometimes, a class needs to access the boxModel.
-     * For instance, in the cartLayer, in order to check whether or not it's possible to add
-     * the desired quantity to the cart, the cartLayer can fetch the stock quantity of an item from the
-     * box model.
-     * However, the request from which the cartLayer originates the call (to the boxModel) is an ajax request,
-     * and it doesn't contain the $_GET parameters of the main product box page.
-     * In this case the tmpGet array can be used to emulate the $_GET array temporarily, so that
-     * the cartLayer can achieve its goal.
-     * Note: don't forget to reset tmpGet back to null when your task is done, because this could have
-     * dramatic consequences otherwise.
-     *
-     */
-    public static $tmpGet = null;
 
     public function getProductTypeById($productId, $shopId = null)
     {
@@ -422,7 +401,7 @@ order by h.order asc
      *                              if not null, it means that you want to display the productBox for a specific product.
      * @return false|mixed
      */
-    public function getProductBoxModelByCardId($cardId, $shopId = null, $langId = null, $productId = null, array $productDetails = [])
+    public function getProductBoxModelByCardId($cardId, $shopId = null, $langId = null, $productId = null, array $majorProductDetails = [])
     {
 
 
@@ -430,7 +409,7 @@ order by h.order asc
         $productId = (int)$productId;
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
-        $sDetails = HashUtil::createHashByArray($productDetails);
+        $sDetails = HashUtil::createHashByArray($majorProductDetails);
 
         $isB2b = E::isB2b();
 
@@ -438,7 +417,7 @@ order by h.order asc
         $iIsB2b = (int)$isB2b;
         $api = EkomApi::inst();
 
-        $model = A::cache()->get("Ekom.ProductLayer.getProductBoxModelByCardId.$shopId.$langId.$cardId.$productId.$iIsB2b.$sDetails", function () use ($cardId, $shopId, $langId, $productId, $api, $isB2b, $productDetails) {
+        $model = A::cache()->get("Ekom.ProductLayer.getProductBoxModelByCardId.$shopId.$langId.$cardId.$productId.$iIsB2b.$sDetails", function () use ($cardId, $shopId, $langId, $productId, $api, $isB2b) {
             $model = [];
 
             try {
@@ -766,7 +745,6 @@ order by h.order asc
             //--------------------------------------------
             // DYNAMIC PART: (could not be part of the cache, unless you know exactly what you are doing)
             //--------------------------------------------
-//            Hooks::call("Ekom_decorateBoxModel", $model, self::$contextualGet);
             /**
              * Adding productDetails
              * updating price if necessary
@@ -875,16 +853,17 @@ order by h.order asc
     //--------------------------------------------
     //
     //--------------------------------------------
-    public function getProductBoxModelByProductRef($productRef, $shopId = null, $langId = null)
+    public function getProductBoxModelByProductRef($productRef, $shopId = null, $langId = null, array $majorProductDetails = [])
     {
         EkomApi::inst()->initWebContext();
 
         $b2b = (int)E::isB2b();
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+        $sDetails = HashUtil::createHashByArray($majorProductDetails);
 
 
-        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$shopId.$langId.$productRef.$b2b", function () use ($productRef, $shopId, $langId) {
+        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$shopId.$langId.$productRef.$b2b.$sDetails", function () use ($productRef, $shopId, $langId, $majorProductDetails) {
             try {
                 $row = EkomApi::inst()->product()->readOne([
                     'where' => [
@@ -892,7 +871,7 @@ order by h.order asc
                     ],
                 ]);
                 if (false !== $row) {
-                    return $this->getProductBoxModelByCardId($row['product_card_id'], $shopId, $langId, $row['id']);
+                    return $this->getProductBoxModelByCardId($row['product_card_id'], $shopId, $langId, $row['id'], $majorProductDetails);
                 }
                 $model['errorCode'] = "SqlRequestFailed";
                 $model['errorTitle'] = "sqlRequestFailed";
@@ -906,32 +885,21 @@ order by h.order asc
                 XLog::error("[Ekom module] - ProductLayer.getProductBoxModelByProductId.Exception: $e");
             }
             return $model;
-        }, [
-            "ek_shop_has_product_card_lang",
-            "ek_shop_has_product_card",
-            "ek_product_card_lang",
-            "ek_product_card",
-            "ek_shop",
-            "ek_product_has_product_attribute",
-            "ek_product_attribute_lang",
-            "ek_product_attribute_value_lang",
-            "ek_product.delete",
-            "ek_product.update",
-            "ekomApi.image.product",
-            "ekomApi.image.productCard",
-        ]);
+        }, $this->getProductBoxModelCaches());
     }
 
-    public function getProductBoxModelByProductId($productId, $shopId = null, $langId = null)
+
+    public function getProductBoxModelByProductId($productId, $shopId = null, $langId = null, array $majorProductDetails = [])
     {
         EkomApi::inst()->initWebContext();
 
         $productId = (int)$productId;
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+        $sDetails = HashUtil::createHashByArray($majorProductDetails);
 
 
-        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$shopId.$langId.$productId", function () use ($productId, $shopId, $langId) {
+        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$shopId.$langId.$productId.$sDetails", function () use ($productId, $shopId, $langId, $majorProductDetails) {
             $productId = (int)$productId;
             try {
 
@@ -940,7 +908,7 @@ order by h.order asc
                     ["id", "=", $productId],
                 ]);
                 if (false !== $cardId) {
-                    return $this->getProductBoxModelByCardId($cardId, $shopId, $langId, $productId);
+                    return $this->getProductBoxModelByCardId($cardId, $shopId, $langId, $productId, $majorProductDetails);
                 }
                 $model['errorCode'] = "SqlRequestFailed";
                 $model['errorTitle'] = "sqlRequestFailed";
@@ -954,11 +922,21 @@ order by h.order asc
                 XLog::error("[Ekom module] - ProductLayer.getProductBoxModelByProductId.Exception: $e");
             }
             return $model;
-        }, [
-            /**
-             * @todo-ling: create a hook that ask modules what cache ids they want to add
-             * for the productBox page (look at EkomEvents module for instance)
-             */
+        }, $this->getProductBoxModelCaches());
+    }
+
+
+    /**
+     * If you want to use the getProductBoxModelByCardId method,
+     * you need to use those tabatha caches.
+     */
+    public function getProductBoxModelCaches()
+    {
+
+
+        $caches = [
+
+
             "ek_shop_has_product_card_lang",
             "ek_shop_has_product_card",
             "ek_product_card_lang",
@@ -971,7 +949,33 @@ order by h.order asc
             "ek_product.update",
             "ekomApi.image.product",
             "ekomApi.image.productCard",
-        ]);
+
+            // taxes
+            "ek_tax",
+            "ek_tax_group_has_tax",
+            "ek_tax_group",
+            "ek_product_card_has_tax_group",
+
+
+            // discounts
+            "ek_product",
+            'ek_discount',
+            'ek_discount_lang',
+            'ek_product_has_discount',
+            'ek_product_card_has_discount',
+            'ek_category_has_discount',
+            'ek_category.delete',
+            'ek_product_card.delete',
+            "ek_user_has_user_group",
+        ];
+
+        /**
+         * modules using the Ekom_decorateBoxModel hook (of the getProductBoxModelByCardId method)
+         * should add their tabatha caches, should they use some.
+         */
+        Hooks::call("Ekom_ProductBoxModel_collectExtraCaches", $caches);
+
+        return $caches;
     }
 
 
