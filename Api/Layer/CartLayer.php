@@ -221,7 +221,6 @@ class CartLayer
 
 
         $details = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
-
         $shopId = ApplicationRegistry::get("ekom.shop_id");
 
 
@@ -238,21 +237,33 @@ class CartLayer
         $remainingStockQty = null;
         foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
             if ((string)$item['id'] === $token) {
-                $existingQuantity = $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'];
-                $this->checkQuantityOverflow($productId, $existingQuantity, $qty, $majorDetailsParams);
 
-                $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] = $qty;
-                if ($details) {
+
+                $isConfigurable = $this->isConfigurableProduct($productId, $details);
+                if (false === $isConfigurable) {
+
+                    $existingQuantity = $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'];
+                    $this->checkQuantityOverflow($productId, $existingQuantity, $qty, $details);
+
+                    $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] += $qty;
+                    if ($details) {
+                        $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['details'] = $details;
+                    }
+                    $alreadyExists = true;
+                    break;
+                } else {
+                    $this->checkQuantityOverflow($productId, 0, $qty, $details);
+                    $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] = $qty;
                     $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['details'] = $details;
+                    $alreadyExists = true;
+                    break;
                 }
-                $alreadyExists = true;
-                break;
             }
         }
 
         if (false === $alreadyExists) {
 
-            $this->checkQuantityOverflow($productId, 0, $qty, $majorDetailsParams);
+            $this->checkQuantityOverflow($productId, 0, $qty, $details);
 
             $arr = [
                 "quantity" => $qty,
@@ -326,8 +337,7 @@ class CartLayer
 
                 $existingQty = $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'];
                 $details = $this->getProductDetailsByToken($token);
-                $majorDetailsParams = (array_key_exists('major', $details)) ? $details['major'] : [];
-                $this->checkQuantityOverflow($productId, $existingQty, $newQty, $majorDetailsParams, true);
+                $this->checkQuantityOverflow($productId, $existingQty, $newQty, $details, true);
 
                 $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] = $newQty;
                 $wasUpdated = true;
@@ -466,6 +476,7 @@ class CartLayer
         //--------------------------------------------
         // CALCULATING LINE PRICES AND TOTAL
         //--------------------------------------------
+
         foreach ($items as $item) {
 
             $cartToken = $item['id'];
@@ -473,10 +484,10 @@ class CartLayer
 
 
             $details = (array_key_exists('details', $item)) ? $item['details'] : [];
-            $majorDetailsParams = (array_key_exists('major', $details)) ? $details['major'] : [];
+            $productDetails = CartUtil::getMergedProductDetails($details);
 
 
-            if (false !== ($it = $this->getCartItemInfo($productId, $majorDetailsParams))) {
+            if (false !== ($it = $this->getCartItemInfo($productId, $productDetails))) {
 
 
                 $qty = $item['quantity'];
@@ -495,19 +506,10 @@ class CartLayer
                     $totalQty += $qty;
                     $totalWeight += $weight * $qty;
 
-                    $uriDetails = UriTool::uri($it['uri_card_with_ref'], $majorDetailsParams, true);
+                    $uriDetails = UriTool::uri($it['uri_card_with_ref'], $productDetails, true);
                     $it['uri_card_with_details'] = $uriDetails;
 
 
-                    /**
-                     * The primary goal of this hook is to change the price if you have a complex price system
-                     * (like the EkomEvents module has).
-                     *
-                     * You set either the rawSalePriceWithoutTax or rawSalePriceWithTax value,
-                     * and then, don't forget to convert the other value using the taxRatio.
-                     *
-                     */
-                    Hooks::call("Ekom_Cart_decorateCartItemInfo", $it);
 
 
                     $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];
@@ -793,17 +795,18 @@ class CartLayer
      * @param $pId : int, the product id
      * @return array: the cartItem model
      */
-    private function getCartItemInfo($pId, array $majorProductDetails = [])
+    private function getCartItemInfo($pId, array $productDetails = [])
     {
         $pId = (int)$pId;
         $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
         $langId = (int)ApplicationRegistry::get("ekom.lang_id");
-        $sDetails = HashUtil::createHashByArray($majorProductDetails);
+        $sDetails = HashUtil::createHashByArray($productDetails);
 
-        return A::cache()->get("Module.Ekom.Api.Layer.$this->className.getCartItemInfo.$shopId.$langId.$pId.$sDetails", function () use ($pId, $shopId, $langId, $majorProductDetails) {
+        return A::cache()->get("Module.Ekom.Api.Layer.$this->className.getCartItemInfo.$shopId.$langId.$pId.$sDetails", function () use ($pId, $shopId, $langId, $productDetails) {
 
 
-            $b = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($pId, $shopId, $langId, $majorProductDetails);
+            $b = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($pId, $shopId, $langId, $productDetails);
+
             if (array_key_exists('errorCode', $b)) {
                 XLog::error("[$this->moduleName] - $this->className.getCartItemInfo: product not found or request failed with product id: $pId");
                 return $b;
@@ -940,12 +943,12 @@ and p.lang_id=$langId
      * @param bool $isUpdate
      * @throws EkomUserMessageException
      */
-    private function checkQuantityOverflow($productId, $existingQty, $qty, array $majorDetailsParams, $isUpdate = false)
+    private function checkQuantityOverflow($productId, $existingQty, $qty, array $details, $isUpdate = false)
     {
         if (false === E::conf('acceptOutOfStockOrders', false)) {
 
-
-            $boxModel = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($productId, null, null, $majorDetailsParams);
+            $productDetails = CartUtil::getMergedProductDetails($details);
+            $boxModel = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($productId, null, null, $productDetails);
 
 
             $remainingStockQty = $boxModel['quantity'];
@@ -986,5 +989,13 @@ and p.lang_id=$langId
 //        }
 //    }
 
+
+    private function isConfigurableProduct($productId, array $details)
+    {
+        return (
+            array_key_exists('minor', $details) &&
+            count($details['minor']) > 0 // assuming it's an array already..
+        );
+    }
 
 }

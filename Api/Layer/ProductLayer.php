@@ -4,6 +4,7 @@
 namespace Module\Ekom\Api\Layer;
 
 
+use ArrayToString\ArrayToStringTool;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Core\Services\X;
@@ -134,32 +135,6 @@ where p.id=$productId
 
     }
 
-    /**
-     * @return false|int, the quantity for the given product, or false if something wrong happened
-     *
-     */
-    public function getCartProductStockQuantity($productId, array $cartProductDetails = [])
-    {
-        EkomApi::inst()->initWebContext();
-        $shopId = ApplicationRegistry::get("ekom.shop_id");
-
-        $stockQuantity = A::cache()->get("Ekom.ProductLayer.getCartProductStockQuantity.$shopId.$productId", function () use ($shopId, $productId) {
-            if (false !== ($quantity = EkomApi::inst()->shopHasProduct()->readColumn("quantity", [
-                    ["shop_id", '=', $shopId],
-                    ["product_id", '=', $productId],
-                ]))
-            ) {
-                return $quantity;
-            }
-        }, [
-            "ek_shop_has_product.update.$shopId.$productId",
-            "ek_shop_has_product.delete.$shopId.$productId",
-        ]);
-
-
-        Hooks::call("Ekom_Product_updateCartProductStockQuantity", $stockQuantity, $productId, $cartProductDetails, $shopId);
-        return $stockQuantity;
-    }
 
     /**
      * @return false|int, the id of the product card which slug was given, or false if there is no matching product card.
@@ -399,9 +374,11 @@ order by h.order asc
      *
      * @param $productId , null|int, if null, it means that you want to display the productBox for the given cardId,
      *                              if not null, it means that you want to display the productBox for a specific product.
+     * @param array $productDetails , an array of all product details (containing major and minor merged together).
+     *                              Note: it can contain even more entries (i.e. you can pass a whole $_GET container if you want).
      * @return false|mixed
      */
-    public function getProductBoxModelByCardId($cardId, $shopId = null, $langId = null, $productId = null, array $majorProductDetails = [])
+    public function getProductBoxModelByCardId($cardId, $shopId = null, $langId = null, $productId = null, array $productDetails = [])
     {
 
 
@@ -409,7 +386,7 @@ order by h.order asc
         $productId = (int)$productId;
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
-        $sDetails = HashUtil::createHashByArray($majorProductDetails);
+
 
         $isB2b = E::isB2b();
 
@@ -417,7 +394,7 @@ order by h.order asc
         $iIsB2b = (int)$isB2b;
         $api = EkomApi::inst();
 
-        $model = A::cache()->get("Ekom.ProductLayer.getProductBoxModelByCardId.$shopId.$langId.$cardId.$productId.$iIsB2b.$sDetails", function () use ($cardId, $shopId, $langId, $productId, $api, $isB2b) {
+        $model = A::cache()->get("Ekom.ProductLayer.getProductBoxModelByCardId.$shopId.$langId.$cardId.$productId.$iIsB2b", function () use ($cardId, $shopId, $langId, $productId, $api, $isB2b) {
             $model = [];
 
             try {
@@ -748,10 +725,17 @@ order by h.order asc
             /**
              * Adding productDetails
              * updating price if necessary
+             * Note: to update price, you can use tools such as:
+             *
+             * - Ekom/Api/Util/ProductUtil::updateProductPrice
+             *
              */
+            $model['_productDetails'] = $productDetails;
             Hooks::call("Ekom_decorateBoxModel", $model);
+            unset($model['_productDetails']);
 
 
+            XLog::info("details: " . ArrayToStringTool::toPhpArray($productDetails));
             $_priceWithTax = $model['rawPriceWithTax'];
             $_priceWithoutTax = $model['rawPriceWithoutTax'];
 
@@ -853,17 +837,17 @@ order by h.order asc
     //--------------------------------------------
     //
     //--------------------------------------------
-    public function getProductBoxModelByProductRef($productRef, $shopId = null, $langId = null, array $majorProductDetails = [])
+    public function getProductBoxModelByProductRef($productRef, $shopId = null, $langId = null, array $productDetails = [])
     {
         EkomApi::inst()->initWebContext();
 
         $b2b = (int)E::isB2b();
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
-        $sDetails = HashUtil::createHashByArray($majorProductDetails);
+        $sDetails = HashUtil::createHashByArray($productDetails);
 
 
-        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$shopId.$langId.$productRef.$b2b.$sDetails", function () use ($productRef, $shopId, $langId, $majorProductDetails) {
+        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$shopId.$langId.$productRef.$b2b.$sDetails", function () use ($productRef, $shopId, $langId, $productDetails) {
             try {
                 $row = EkomApi::inst()->product()->readOne([
                     'where' => [
@@ -871,7 +855,7 @@ order by h.order asc
                     ],
                 ]);
                 if (false !== $row) {
-                    return $this->getProductBoxModelByCardId($row['product_card_id'], $shopId, $langId, $row['id'], $majorProductDetails);
+                    return $this->getProductBoxModelByCardId($row['product_card_id'], $shopId, $langId, $row['id'], $productDetails);
                 }
                 $model['errorCode'] = "SqlRequestFailed";
                 $model['errorTitle'] = "sqlRequestFailed";
@@ -889,17 +873,17 @@ order by h.order asc
     }
 
 
-    public function getProductBoxModelByProductId($productId, $shopId = null, $langId = null, array $majorProductDetails = [])
+    public function getProductBoxModelByProductId($productId, $shopId = null, $langId = null, array $productDetails = [])
     {
         EkomApi::inst()->initWebContext();
 
         $productId = (int)$productId;
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
-        $sDetails = HashUtil::createHashByArray($majorProductDetails);
+        $sDetails = HashUtil::createHashByArray($productDetails);
 
 
-        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$shopId.$langId.$productId.$sDetails", function () use ($productId, $shopId, $langId, $majorProductDetails) {
+        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$shopId.$langId.$productId.$sDetails", function () use ($productId, $shopId, $langId, $productDetails) {
             $productId = (int)$productId;
             try {
 
@@ -908,7 +892,7 @@ order by h.order asc
                     ["id", "=", $productId],
                 ]);
                 if (false !== $cardId) {
-                    return $this->getProductBoxModelByCardId($cardId, $shopId, $langId, $productId, $majorProductDetails);
+                    return $this->getProductBoxModelByCardId($cardId, $shopId, $langId, $productId, $productDetails);
                 }
                 $model['errorCode'] = "SqlRequestFailed";
                 $model['errorTitle'] = "sqlRequestFailed";
