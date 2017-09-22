@@ -321,6 +321,7 @@ class CartLayer
     public function updateItemQuantity($token, $newQty)
     {
         $this->initSessionCart();
+        $token = (string)$token;
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $productId = $this->getProductIdByCartToken($token);
 
@@ -330,11 +331,9 @@ class CartLayer
             $newQty = 0;
         }
 
-
         $wasUpdated = false;
         foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
             if ((string)$item['id'] === $token) {
-
                 $existingQty = $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'];
                 $details = $this->getProductDetailsByToken($token);
                 $this->checkQuantityOverflow($productId, $existingQty, $newQty, $details, true);
@@ -508,8 +507,6 @@ class CartLayer
 
                     $uriDetails = UriTool::uri($it['uri_card_with_ref'], $productDetails, true);
                     $it['uri_card_with_details'] = $uriDetails;
-
-
 
 
                     $linePriceWithoutTax = $qty * $it['rawSalePriceWithoutTax'];

@@ -86,7 +86,7 @@ class ConnexionLayer
             "errorForm" => "",
             "nameEmail" => "email",
             "namePass" => "pass",
-            "nameKey" => "key",
+            "nameKey" => "ekom-login-key",
             "nameMemorize" => "memorize",
             "valueEmail" => $email,
             "valuePass" => $pass,
