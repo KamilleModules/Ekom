@@ -735,7 +735,6 @@ order by h.order asc
             unset($model['_productDetails']);
 
 
-            XLog::info("details: " . ArrayToStringTool::toPhpArray($productDetails));
             $_priceWithTax = $model['rawPriceWithTax'];
             $_priceWithoutTax = $model['rawPriceWithoutTax'];
 
