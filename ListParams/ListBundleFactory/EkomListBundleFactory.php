@@ -50,7 +50,6 @@ class EkomListBundleFactory implements ListBundleFactoryInterface
 
         switch ($identifier) {
             case "customer.account.orders":
-
                 $params = ListParams::create()->infuse();
 
                 $userId = E::getUserId();

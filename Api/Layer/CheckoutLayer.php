@@ -64,7 +64,6 @@ class CheckoutLayer
                 // start collecting order data
                 $this->initOrderModel();
 
-
                 // taking data out of sections
                 $a = EkomSession::get($this->sessionName);
 
@@ -445,7 +444,6 @@ class CheckoutLayer
             $payIdentifier = array_key_exists('pay_id', $additionalOrderDetails) ? $additionalOrderDetails['pay_id'] : null;
 
 
-
             $paymentDetails = EkomApi::inst()->paymentLayer()->getPaymentDetails($model['paymentMethodName'], $model['paymentMethodOptions']);
             $details = $model;
             $details['payment_details'] = $paymentDetails;
@@ -499,26 +497,22 @@ class CheckoutLayer
     {
         try {
 
-
             $ret = QuickPdo::transaction(function () use ($cleanOnSuccess, $reference, $additionalOrderDetails) {
 
                 $info = $this->getPlaceOrderInfo($reference, $additionalOrderDetails);
-
-
                 if (false !== ($orderId = $this->placeOrderByInfo($info))) {
-                    $this->onPlaceOrderSuccessAfter($orderId, $cleanOnSuccess);
+
+                    $this->onPlaceOrderSuccessAfter($orderId, $info, $cleanOnSuccess);
                 }
                 return false;
-
             }, function (\Exception $e) {
                 XLog::error("[Ekom module] - CheckoutLayer: $e");
             });
-
             return $ret;
-
         } catch (IncompleteOrderException $e) {
             XLog::error("[Ekom module] - CheckoutLayer: $e");
         }
+
         return false;
     }
 
@@ -571,10 +565,12 @@ class CheckoutLayer
         ]);
     }
 
-    protected function onPlaceOrderSuccessAfter($orderId, $cleanOnSuccess = true)
+    protected function onPlaceOrderSuccessAfter($orderId, array $orderInfo, $cleanOnSuccess = true)
     {
-
         EkomApi::inst()->orderLayer()->addOrderStatusByEkomAction($orderId, EkomStatusAction::ACTION_ORDER_PLACED);
+
+        Hooks::call("Ekom_onPlaceOrderSuccessAfter", $orderId, $orderInfo);
+
 
         if (true === $cleanOnSuccess) {
             $this->doGetCartLayer()->clean();
