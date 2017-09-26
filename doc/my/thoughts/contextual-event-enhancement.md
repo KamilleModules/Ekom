@@ -24,5 +24,33 @@ That's the idea behind contextual event enhancement.
 
 
 
+Implementation
+================
+
+This implementation has to be done on every ekomApi function that you wish to "enhance".
+
+The designed function will basically use a hook to collect extra params that will improve the function.
+
+Generally, the function transmits the extra params to a server side service which usually makes 
+an useful (hard to reproduct on the front side) computation. The result of which being passed back to the caller,
+thus the term "enhanced".
+
+
+
+Some services in the ekomApi arsenal benefit this system, notably the api.cart.updateItemQuantity method.
+
+Note: enhancement of api methods is done as we discover the need for them.
+
+
+
+The cart.updateItemQuantity triggers the following hook to collect params:
+
+- collectParams.updateItemQuantity
+
+
+
+
+
+
 
 

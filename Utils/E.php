@@ -57,6 +57,7 @@ class E
         return _l();
     }
 
+
     /**
      * Return true if it's b2b, false otherwise
      */
