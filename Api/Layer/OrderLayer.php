@@ -22,6 +22,74 @@ class OrderLayer
 {
 
 
+    /**
+     * This is a method to filter orders.
+     * It's meant to be used by me only for now (i.e. the author of ekom, not developers).
+     *
+     *
+     * @param array $filters
+     *  - ?statuses: fn
+     *              bool:keepIt     fn ( array statusesHistory )
+     *  - ?userId: null|int, default=null
+     *                  If null, orders of all users are returned.
+     *                  If int, orders of the specified user only are returned.
+     *
+     * @return array, the orders, filtered by statuses
+     */
+    public function filterOrdersByStatuses(callable $statusFilter, $userId = null)
+    {
+        $ret = [];
+        $q = "select * from ek_order";
+        if (null !== $userId) {
+            $userId = (int)$userId;
+            $q .= " where user_id=$userId";
+        }
+        $q .= " order by `date` desc";
+        $rows = QuickPdo::fetchAll($q);
+
+        $slayer = EkomApi::inst()->statusLayer();
+        foreach ($rows as $row) {
+            $statuses = $slayer->getStatusCodesByOrderId($row['id']);
+            if (true === call_user_func($statusFilter, $statuses)) {
+                $ret[] = $row;
+            }
+        }
+        return $ret;
+    }
+
+
+    public function getNbUserPendingOrders($userId)
+    {
+        $pendingForbidden = implode(', ', StatusLayer::getPendingForbidden("'"));
+        $userId = (int)$userId;
+        return QuickPdo::fetch("
+select
+
+count(*) as count
+
+from ek_order o
+
+where
+o.user_id=$userId
+and 
+(
+  select
+  s.code
+  from ek_order_status s
+  inner join ek_order_has_order_status h on h.order_status_id=s.id
+  where order_id=o.id
+  order by h.date DESC
+  limit 0,1
+
+) not in ($pendingForbidden)
+
+
+", [], \PDO::FETCH_COLUMN);
+
+
+    }
+
+
     public function getUniqueReference($type = 'ekom')
     {
         /**
@@ -94,14 +162,52 @@ select * from ek_order where id=$id and user_id=$userId
     {
         if ("singleAddress" === E::conf("checkoutMode")) {
 
+            $hash = "";
+            if (null !== $params) {
+                $hash = $params->getHash();
+            }
 
             $userId = (int)$userId;
 
-            return A::cache()->get("Ekom.OrderLayer.getUserOrderSummaries.$userId", function () use ($userId, $params) {
+            return A::cache()->get("Ekom.OrderLayer.getUserOrderSummaries.$userId.$hash", function () use ($userId, $params) {
+
+                $pool = [];
+                if (null !== $params) {
+                    $pool = $params->getPool();
+                }
+
+                $status = null;
+                if (array_key_exists('status', $pool)) {
+                    $status = $pool['status'];
+                }
 
 
-                $q1 = "select id, reference, `date`, user_info, shipping_address, billing_address, order_details from ek_order where user_id=$userId";
-                $q2 = "select count(*) as count from ek_order where user_id=$userId";
+                $lastOrder = $this->subLastOrderStatus();
+                $q1 = "select 
+o.id, 
+o.reference, 
+o.`date`, 
+o.user_info, 
+o.shipping_address, 
+o.billing_address, 
+o.order_details, 
+$lastOrder as last_status
+from ek_order o where o.user_id=$userId";
+
+
+                $q2 = "select count(*) as count from ek_order o where o.user_id=$userId";
+
+
+                if ('pending' === $status) {
+                    $pendingForbidden = implode(', ', StatusLayer::getPendingForbidden("'"));
+                    $s = " and $lastOrder not in ($pendingForbidden)";
+                    $q1 .= $s;
+                    $q2 .= $s;
+                } elseif ('canceled' === $status) {
+                    $s = " and $lastOrder='canceled'";
+                    $q1 .= $s;
+                    $q2 .= $s;
+                }
 
 
                 $markers = [];
@@ -123,6 +229,8 @@ select * from ek_order where id=$id and user_id=$userId
                 $rows = QuickPdo::fetchAll($q1);
                 $ret = [];
                 foreach ($rows as $k => $row) {
+
+
                     $details = unserialize($row['order_details']);
                     $section = $details['orderSections']['sections'][0];
                     $paymentDetails = (array_key_exists('payment_details', $details)) ? $details['payment_details'] : [];
@@ -131,6 +239,7 @@ select * from ek_order where id=$id and user_id=$userId
                         "id" => $row['id'],
                         "ref" => $row['reference'],
                         "date" => $row['date'],
+                        "last_status" => $row['last_status'],
                         "orderGrandTotal" => $details['orderGrandTotal'],
                         "paymentMethodName" => $details['paymentMethodName'],
                         "payment_details" => $paymentDetails,
@@ -145,6 +254,8 @@ select * from ek_order where id=$id and user_id=$userId
                 return $ret;
             }, [
                 "ek_order",
+                "ek_order_status",
+                "ek_order_has_order_status",
             ]);
         }
         throw new \Exception("Not implemented yet with checkoutMode " . E::conf("checkoutMode"));
@@ -266,5 +377,23 @@ where user_id=$userId
         $row['shipping_address'] = unserialize($row['shipping_address']);
         $row['billing_address'] = unserialize($row['billing_address']);
         $row['order_details'] = unserialize($row['order_details']);
+    }
+
+    private function subLastOrderStatus($orderField = null)
+    {
+        if (null === $orderField) {
+            $orderField = 'o.id';
+        }
+        return "
+(
+  select
+  s.code
+  from ek_order_status s
+  inner join ek_order_has_order_status h on h.order_status_id=s.id
+  where order_id=$orderField
+  order by h.date DESC
+  limit 0,1
+)
+        ";
     }
 }

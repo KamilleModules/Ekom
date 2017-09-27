@@ -24,9 +24,9 @@ class LeeStatusProvider extends StatusProvider
     {
         parent::__construct();
         $this->action2Codes = [
-            EkomStatusAction::ACTION_ORDER_PLACED => 'orderPlaced',
-            EkomStatusAction::ACTION_PAYMENT_ACCEPTED => 'paymentAccepted',
-            EkomStatusAction::ACTION_SHIPPED => 'shipped',
+            EkomStatusAction::ACTION_ORDER_PLACED => 'payment_sent',
+            EkomStatusAction::ACTION_PAYMENT_ACCEPTED => 'payment_accepted',
+            EkomStatusAction::ACTION_SHIPPED => 'order_shipped',
         ];
     }
 

@@ -19,6 +19,14 @@ class ListBundleLayer
         return $factory->getListBundle("customer.account.orders");
     }
 
+    public function getWishListItemsListBundle(){
+        /**
+         * @var $factory ListBundleFactoryInterface
+         */
+        $factory = X::get("Ekom_ListBundleFactory");
+        return $factory->getListBundle("customer.account.wishlist");
+    }
+
     public function getUserAccountOrdersListBundle(){
         /**
          * @var $factory ListBundleFactoryInterface
