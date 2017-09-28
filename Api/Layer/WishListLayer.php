@@ -98,6 +98,16 @@ class WishListLayer
             $pRows[] = $player->getProductBoxModelByProductId($row['product_id'], null, null, $productDetails);
         }
 
+        //--------------------------------------------
+        // CONFIGURING PARAMS
+        //--------------------------------------------
+        $params->setAllowedSortFields([
+            'product_id',
+            'label',
+            'rawSalePrice',
+        ]);
+
+
 
         //--------------------------------------------
         // APPLYING PARAMS

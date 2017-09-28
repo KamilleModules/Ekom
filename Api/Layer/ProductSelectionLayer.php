@@ -51,6 +51,10 @@ class ProductSelectionLayer
     }
 
 
+    /**
+     * @todo-ling: replace all getBoxesByIds methods with getBoxesByProductsInfo methods.
+     *
+     */
     public function getProductBoxModelsByLastVisited($userId, $shopId = null)
     {
         return A::cache()->get("ProductSelectionLayer.getProductBoxModelsByLastVisited.$shopId.$userId", function () use ($userId, $shopId) {
@@ -59,8 +63,8 @@ class ProductSelectionLayer
              * @var $history UserProductHistoryInterface
              */
             $history = X::get("EkomUserProductHistory_UserProductHistory");
-            $ids = $history->getLastVisitedProductIds($userId, 7);
-            return $this->getBoxesByIds($ids, $shopId);
+            $productsInfo = $history->getLastVisitedProducts($userId, 7);
+            return $this->getBoxesByProductsInfo($productsInfo, $shopId);
 
         }, [
             "ekom_user_visited_product_history.$userId", // see FileSystemUserProductHistory
@@ -88,6 +92,22 @@ class ProductSelectionLayer
         $pLayer = EkomApi::inst()->productLayer();
         foreach ($ids as $id) {
             $ret[] = $pLayer->getProductBoxModelByProductId($id, $shopId);
+        }
+        return $ret;
+    }
+
+    /**
+     * @param array $productsInfo [int:productId, arr:productDetails]
+     * @param $shopId
+     * @return array
+     */
+    public function getBoxesByProductsInfo(array $productsInfo, $shopId)
+    {
+        $ret = [];
+        $pLayer = EkomApi::inst()->productLayer();
+        foreach ($productsInfo as $productInfo) {
+            list($id, $details) = $productInfo;
+            $ret[] = $pLayer->getProductBoxModelByProductId($id, $shopId, null, $details);
         }
         return $ret;
     }
