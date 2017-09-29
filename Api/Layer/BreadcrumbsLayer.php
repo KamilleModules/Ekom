@@ -60,7 +60,7 @@ class BreadcrumbsLayer
             }
 
         } else {
-            $label = null;
+            $label = ApplicationRegistry::get("ekom.breacrumbs.label");
             $items = [
                 [
                     "link" => "#",
