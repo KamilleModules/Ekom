@@ -102,9 +102,24 @@ where s.id=$shopId
     }
 
 
-    public function allIds(){
+    public function allIds()
+    {
         return QuickPdo::fetchAll("select id from ek_shop", [], \PDO::FETCH_COLUMN);
     }
 
+
+    public function getLangIds($shopId)
+    {
+        $shopId = (int)$shopId;
+        return A::cache()->get("Ekom.ShopLayer.getLangIds.$shopId", function () use ($shopId) {
+            return QuickPdo::fetchAll("
+select lang_id from ek_shop_has_lang where shop_id=$shopId        
+        ", [], \PDO::FETCH_COLUMN);
+        }, [
+            "ek_shop_has_lang",
+            "ek_shop.delete",
+            "ek_lang.delete",
+        ]);
+    }
 
 }

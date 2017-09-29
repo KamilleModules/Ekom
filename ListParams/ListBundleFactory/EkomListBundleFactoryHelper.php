@@ -12,7 +12,7 @@ use ListParams\ListParamsInterface;
 class EkomListBundleFactoryHelper
 {
 
-    protected static function getListBundleByItemsParams(array $items, ListParamsInterface $params)
+    public static function getListBundleByItemsParams(array $items, ListParamsInterface $params)
     {
         $pagination = PaginationFrame::createByParams($params);
         $sortLabels = [];

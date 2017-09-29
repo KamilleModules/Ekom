@@ -43,8 +43,10 @@ use Module\Ekom\Api\Layer\ProductPageLayer;
 use Module\Ekom\Api\Layer\ProductSelectionLayer;
 use Module\Ekom\Api\Layer\ProductTypeLayer;
 use Module\Ekom\Api\Layer\RelatedProductLayer;
+use Module\Ekom\Api\Layer\SearchResultsLayer;
 use Module\Ekom\Api\Layer\SellerLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
+use Module\Ekom\Api\Layer\SpecialCategoryLayer;
 use Module\Ekom\Api\Layer\StatusLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
@@ -564,6 +566,14 @@ and h.lang_id=$langId
 
 
     /**
+     * @return SearchResultsLayer
+     */
+    public function searchResultsLayer()
+    {
+        return $this->getLayer('searchResultsLayer');
+    }
+
+    /**
      * @return SellerLayer
      */
     public function sellerLayer()
@@ -578,6 +588,14 @@ and h.lang_id=$langId
     public function shopLayer()
     {
         return $this->getLayer('shopLayer');
+    }
+
+    /**
+     * @return SpecialCategoryLayer
+     */
+    public function specialCategoryLayer()
+    {
+        return $this->getLayer('specialCategoryLayer');
     }
 
     /**
