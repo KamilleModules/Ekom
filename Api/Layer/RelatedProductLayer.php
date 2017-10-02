@@ -27,6 +27,7 @@ class RelatedProductLayer
         }
         $shopId = (int)$shopId;
 
+
         return A::cache()->get("Ekom.RelatedProductLayer.getRelatedProductIds.$shopId.$type.$cardId", function () use ($cardId, $shopId, $type) {
             return QuickPdo::fetchAll("
 select h.product_id from ek_product_group_has_product h

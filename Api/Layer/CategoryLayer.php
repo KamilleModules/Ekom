@@ -16,6 +16,21 @@ class CategoryLayer
 {
 
 
+    public function getSlugByName($categoryName)
+    {
+        return QuickPdo::fetch("
+select l.slug 
+
+from ek_category_lang l 
+inner join ek_category c on c.id=l.category_id
+ 
+where c.name=:name
+
+", ['name' => $categoryName], \PDO::FETCH_COLUMN);
+    }
+
+
+
     public function getCategoryIdByName($name)
     {
         return QuickPdo::fetch("select id from ek_category where name=:name", ['name' => $name], \PDO::FETCH_COLUMN);
@@ -389,7 +404,7 @@ and cl.lang_id=$langId
                 if (-1 === $maxDepth || $maxDepth > 0) {
                     $this->doCollectDescendantsInfo($row['category_id'], $children, $level + 1, $maxDepth);
                 }
-                $row['uri'] = E::link("Ekom_category", ['slug' => $row['slug']]);
+                $row['uri'] = E::link("Ekom_specialCategory", ['category' => $row['name']]);
                 $row['level'] = $level;
                 $row['children'] = $children;
                 $ret[] = $row;
