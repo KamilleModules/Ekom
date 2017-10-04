@@ -4,9 +4,9 @@
 namespace Module\Ekom\QueryFilterBox\QueryFilterBox;
 
 
-use ListModifier\Util\ListModifierUtil;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
+use QueryFilterBox\Collectable\CollectableInterface;
 use QueryFilterBox\Query\Query;
 use QueryFilterBox\QueryFilterBox\QueryFilterBox;
 use QueryFilterBox\Util\Helper\QueryFilterBoxHelper;
@@ -20,15 +20,19 @@ use QueryFilterBox\Util\Helper\QueryFilterBoxHelper;
  * Class PriceQueryFilterBox
  * @package Module\Ekom\QueryFilterBox\QueryFilterBox
  */
-class PriceQueryFilterBox extends QueryFilterBox
+class PriceQueryFilterBox extends QueryFilterBox implements CollectableInterface
 {
 
     private $categoryId;
+    private $_min;
+    private $_max;
 
 
     public function __construct()
     {
         $this->categoryId = null;
+        $this->_min = null;
+        $this->_max = null;
     }
 
     public static function create()
@@ -42,6 +46,7 @@ class PriceQueryFilterBox extends QueryFilterBox
         $this->categoryId = $categoryId;
         return $this;
     }
+
 
     public function prepare()
     {
@@ -66,6 +71,14 @@ class PriceQueryFilterBox extends QueryFilterBox
 
                 $formTrail = QueryFilterBoxHelper::toFormFields($this->usedPool, ['price']);
 
+                if(null !== $this->_min){
+                    $currentMin = $this->_min;
+                }
+                if(null !== $this->_max){
+                    $currentMax = $this->_max;
+                }
+
+
                 $this->model = [
                     "formTrail" => $formTrail,
                     "title" => "Price",
@@ -81,6 +94,21 @@ class PriceQueryFilterBox extends QueryFilterBox
     }
 
 
+    //--------------------------------------------
+    // COLLECTABLE
+    //--------------------------------------------
+    public function collect($param, $value)
+    {
+        if ('price' === $param) {
+            if (null !== $this->_min) {
+                return [
+                    'keyLabel' => 'Prix',
+                    'valueLabel' => E::price($this->_min) . " - " . E::price($this->_max),
+                ];
+            }
+        }
+    }
+
 
 
 
@@ -89,6 +117,9 @@ class PriceQueryFilterBox extends QueryFilterBox
     //--------------------------------------------
     protected function doDecorateQuery(Query $query, array $pool, array &$usedPool)
     {
+        $this->_min = null;
+        $this->_max = null;
+
         if (array_key_exists("price", $pool)) {
             $usedPool[] = 'price';
 
@@ -97,6 +128,10 @@ class PriceQueryFilterBox extends QueryFilterBox
             if (2 === count($p)) {
                 $min = (float)$p[0];
                 $max = (float)$p[1];
+
+
+                $this->_min = $min;
+                $this->_max = $max;
 
                 $tagMin = "pricemin";
                 $tagMax = "pricemax";
