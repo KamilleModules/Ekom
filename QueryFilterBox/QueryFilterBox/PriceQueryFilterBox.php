@@ -63,8 +63,10 @@ class PriceQueryFilterBox extends QueryFilterBox implements CollectableInterface
                 $min = (float)$minMax['minSalePriceWithTax'];
                 $max = (float)$minMax['maxSalePriceWithTax'];
             }
-            if ($min !== $max) {
 
+
+
+            if ($min !== $max) {
 
                 $currentMin = $min;
                 $currentMax = $max;

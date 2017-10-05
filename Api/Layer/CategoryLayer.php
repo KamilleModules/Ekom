@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 
 use Bat\CaseTool;
 use Core\Services\A;
+use Core\Services\Hooks;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
@@ -41,22 +42,56 @@ where c.name=:name
     }
 
 
-    public function getCategoryIdByName($name)
+    public function getCategoryIdByName($name, $shopId=null)
     {
-        return QuickPdo::fetch("select id from ek_category where name=:name", ['name' => $name], \PDO::FETCH_COLUMN);
+        $shopId = E::getShopId($shopId);
+        return QuickPdo::fetch("select id from ek_category where name=:name and shop_id=$shopId", ['name' => $name], \PDO::FETCH_COLUMN);
     }
 
+
+    /**
+     * Collect product card ids contained in the given category and children.
+     */
+    public function collectProductCardIdsDescendantsByCategoryName(array &$ids, $categoryName, $shopId = null){
+
+
+        $catId = $this->getCategoryIdByName($categoryName, $shopId);
+        $catIds = [];
+        $leafIds=[];
+        $this->doCollectDescendants($catId, $catIds, $leafIds);
+        $ids =  EkomApi::inst()->productCardLayer()->getProductCardIdsByCategoryIds($catIds);
+    }
+
+    /**
+     * Collect product for product contained in the given category and children.
+     */
+    public function collectProductCardInfoDescendantsByCategoryName(array &$infos, $categoryName, $shopId = null){
+
+
+        $catId = $this->getCategoryIdByName($categoryName, $shopId);
+        $catIds = [];
+        $leafIds=[];
+        $this->doCollectDescendants($catId, $catIds, $leafIds);
+        $infos =  EkomApi::inst()->productCardLayer()->getProductCardInfosByCategoryIds($catIds);
+    }
+
+
+    /**
+     * Collect product ids contained in the given category and ancestors.
+     *
+     *
+     * maxNumber: -1|int, -1 means no limit
+     */
     public function collectProductIdsByCategoryName(array &$ids, $categoryName, $maxNumber = 7, $shopId = null)
     {
-        if (null === $shopId) {
-            $shopId = E::getShopId();
-        }
-        $shopId = (int)$shopId;
+
+        $shopId = E::getShopId($shopId);
         $maxNumber = (int)$maxNumber;
 
 
         $catIds = [];
         $this->collectCategoryIdTreeByCategoryName($catIds, $categoryName, $shopId);
+
         if ($catIds) {
 
             $c = 0;
@@ -70,7 +105,7 @@ where c.name=:name
                 }
 
 
-                $newIds = QuickPdo::fetchAll("
+                $q = "
 select shpc.product_id from ek_shop_has_product_card shpc 
 inner join ek_category_has_product_card chpc on chpc.product_card_id=shpc.product_card_id
 inner join ek_category c on c.id=chpc.category_id 
@@ -82,17 +117,25 @@ and shpc.active=1
 and shpc.shop_id=$shopId 
 
 
-limit 0, $maxNumber
+            
+                ";
 
-        
-        ", [], \PDO::FETCH_COLUMN);
+                $useLimit = false;
+                if (-1 !== $maxNumber) {
+                    $q .= "limit 0, $maxNumber";
+                    $useLimit = true;
+                }
 
+                $newIds = QuickPdo::fetchAll($q, [], \PDO::FETCH_COLUMN);
 
                 foreach ($newIds as $id) {
                     $ids[] = $id;
-                    $maxNumber--;
-                    if ($maxNumber <= 0) {
-                        break 2;
+
+                    if (true === $useLimit) {
+                        $maxNumber--;
+                        if ($maxNumber <= 0) {
+                            break 2;
+                        }
                     }
                 }
 
@@ -358,6 +401,8 @@ and l.slug=:slug
      *              - if 0, only the current level (children of category identified by the given $name)
      *              - if any positive number, represents the maximum level that this function can reach
      *
+     * @param string $wildCard , an extra identifier for modules; modules can use it as a marker with hooks.
+     *
      *
      * @return array
      * Return an array of items, each of which having the following structure:
@@ -368,16 +413,18 @@ and l.slug=:slug
      * - uri: a link to the category's page
      * - level: The current level of the node, starting at 0 and increasing
      * - children: array of children
+     *
+     *
      */
 
-    public function getSubCategoriesByName($name, $maxDepth = -1)
+    public function getSubCategoriesByName($name, $maxDepth = -1, $wildCard = '')
     {
         EkomApi::inst()->initWebContext();
         $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
         $langId = (int)ApplicationRegistry::get("ekom.lang_id");
 
 
-        return A::cache()->get("Ekom.CategoryLayer.getSubCategoriesByName.$shopId.$langId.$name.$maxDepth", function () use ($shopId, $maxDepth, $name, $langId) {
+        return A::cache()->get("Ekom.CategoryLayer.getSubCategoriesByName.$shopId.$langId.$name.$maxDepth.$wildCard", function () use ($shopId, $maxDepth, $name, $langId, $wildCard) {
 
 
             $rows = QuickPdo::fetchAll("
@@ -408,15 +455,23 @@ and cl.lang_id=$langId
 
             $ret = [];
             $level = 0;
+
+            $linkOptions = [
+                'fn' => function (array $row) {
+                    return E::link("Ekom_category", ['slug' => $row['slug']]);
+                },
+            ];
+            Hooks::call("Ekom_categoryLayer_overrideLinkOptions", $linkOptions, $wildCard);
+
             foreach ($rows as $row) {
 
                 $children = [];
                 if (-1 === $maxDepth || $maxDepth > 0) {
                     $this->doCollectDescendantsInfo($row['category_id'], $children, $level + 1, $maxDepth);
                 }
-                $row['uri'] = E::link("Ekom_specialCategory", ['category' => $row['name']]);
                 $row['level'] = $level;
                 $row['children'] = $children;
+                $row['uri'] = call_user_func($linkOptions['fn'], $row);
                 $ret[] = $row;
             }
 
@@ -504,12 +559,8 @@ where c.id=$categoryId and c.category_id!=$categoryId and c.shop_id=$shopId and 
         ]);
     }
 
-    //--------------------------------------------
-    //
-    //--------------------------------------------
 
-
-    private function doCollectDescendants($categoryId, array &$ret, array &$leafIds = [])
+    public function doCollectDescendants($categoryId, array &$ret, array &$leafIds = [])
     {
         $ids = QuickPdo::fetchAll("
 select id from ek_category 
@@ -526,6 +577,14 @@ and id != $categoryId
             $this->doCollectDescendants($id, $ret, $leafIds);
         }
     }
+
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+
+
 
     private function doCollectDescendantsInfo($categoryId, array &$ret, $level = 0, $maxLevel = -1)
     {

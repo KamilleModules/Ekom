@@ -9,6 +9,7 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use ListModifier\Circle\ListModifierCircle;
 use ListModifier\Util\RequestModifier2RowsGeneratorAdaptorUtil;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\EkomDebug;
 use Module\Ekom\Utils\ListModifiers;
 use QuickPdo\QuickPdo;
@@ -33,236 +34,51 @@ where shop_id=$shopId
     }
 
 
-    public function getProductCardsByCategory($categoryId, $isB2b, ListModifierCircle $circle = null, $shopId = null, $langId = null, &$nbTotalItems = 0)
+    public function getProductCardIdsByCategoryIds(array $categoryIds)
     {
-        EkomApi::inst()->initWebContext();
-        $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
-        $langId = (null === $langId) ? (int)ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
-        $categoryId = (int)$categoryId;
-        $catIds = EkomApi::inst()->categoryLayer()->getDescendantCategoryIdTree($categoryId);
+        $sCatIds = '"' . implode('", "', $categoryIds) . '"';
+        return QuickPdo::fetchAll("
+select product_card_id from ek_category_has_product_card 
+where category_id in ($sCatIds)
+", [], \PDO::FETCH_COLUMN);
+
+    }
+
+    public function getProductCardInfosByCategoryIds(array $categoryIds, $langId=null)
+    {
+        $langId = E::getLangId($langId);
+        $sCatIds = '"' . implode('", "', $categoryIds) . '"';
+
+        $q = "
+select
+cat.name as category_name, 
+h.product_card_id,
+shpc.product_id,
+shpc.active,
+COALESCE(NULLIF(l.label,''), cl.label) as label,
+COALESCE(NULLIF(l.slug,''), cl.slug) as slug,
+shp._sale_price_without_tax,
+shp._sale_price_with_tax,
+COALESCE(shp.price, p.price) as price
 
 
-        $ret = A::cache()->get("Ekom.ProductCardLayer.getProductCardsByCategory.$shopId.$langId.$categoryId.$isB2b.$circle", function () use ($circle, $catIds, $langId, $shopId) {
+from ek_category cat 
+inner join ek_category_has_product_card h on h.category_id=cat.id
+inner join ek_shop_has_product_card shpc on shpc.product_card_id=h.product_card_id and cat.shop_id=shpc.shop_id
+inner join ek_shop_has_product_card_lang l on l.shop_id=cat.shop_id and l.product_card_id=shpc.product_card_id and l.lang_id=$langId
+inner join ek_product_card_lang cl on cl.product_card_id=h.product_card_id and cl.lang_id=l.lang_id
+inner join ek_shop_has_product shp on shp.shop_id=l.shop_id and shp.product_id=shpc.product_id
+inner join ek_product p on p.id=shp.product_id
 
-
-//            $rows = QuickPdo::fetchAll("
-//select chc.product_card_id
-//
-//from ek_category_has_product_card chc
-//
-//inner join ek_shop_has_product_card shc on shc.product_card_id=chc.product_card_id
-//where chc.category_id in(" . implode(', ', $catIds) . ")
-//and shc.shop_id=$shopId
-//and shc.active=1
-//
-//
-//
-//        ");
-
-
-            $sJoin = "";
-            $sWhere = "";
-            $sOrder = "";
-            $markers = [];
-
-
-            $mod = $circle->getRequestModifier();
-            $searchItems = $mod->getSearchItems();
-            $sortItems = $mod->getSortItems();
-            $limitInfo = $mod->getLimit();
-
-
-            $c = 0;
-            foreach ($sortItems as $sortItem => $dir) {
-                if (0 !== $c++) {
-                    $sOrder .= ", ";
-                }
-                if ('label' === $sortItem) {
-                    $sortItem = "
-COALESCE(NULLIF(shpl.label,''), NULLIF(shcl.label,''), NULLIF(pl.label,''), cl.label)            
-                    ";
-                    $sOrder .= "$sortItem $dir";
-                } else {
-                    $sOrder .= "$sortItem $dir";
-                }
-            }
-
-
-            $included = false;
-            $c = 0;
-            foreach ($searchItems as $name => $searchItem) {
-                // assuming operator is safe
-                list($operand, $operator, $operand2) = $searchItem;
-
-                switch ($operator) {
-                    case 'between':
-
-                        if ('price' === $name) {
-
-
-                            $tagMin = "attrmin" . $c;
-                            $tagMax = "attrmax" . $c;
-                            $c++;
-
-                            $sWhere .= "
-and shp._sale_price_without_tax >= :$tagMin                
-and shp._sale_price_without_tax <= :$tagMax                
-                ";
-                            $markers[$tagMin] = $operand;
-                            $markers[$tagMax] = $operand2;
-                        }
-
-                        break;
-                    case 'in': // attributes
-                        $safeIds = $operand;
-                        $tagName = "attrname" . $c;
-                        $c++;
-
-                        $sWhere .= "
-and a.name = :$tagName
-and v.id in (" . implode(', ', $safeIds) . ")                
-                ";
-
-
-                        $markers[$tagName] = $name;
-
-                        break;
-                    default:
-                        $tagName = "attrname" . $c;
-                        $tagValue = "attrvalue" . $c;
-                        $c++;
-
-                        $sWhere .= "
-and a.name = :$tagName
-and v.value $operator :$tagValue                
-                ";
-                        $markers[$tagName] = $name;
-                        $markers[$tagValue] = $operand;
-                        break;
-                }
-
-                if ('price' !== $name) {
-                    if (false === $included) {
-
-                        $included = true;
-                        $sJoin .= "
-inner join ek_product_has_product_attribute h on h.product_id=p.id
-inner join ek_product_attribute a on a.id=h.product_attribute_id
-inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id  
-                ";
-
-                    }
-                }
-
-            }
-
-
-            $sTheOrder = "";
-            if (!empty($sOrder)) {
-                $sTheOrder = "order by " . $sOrder;
-            }
-
-            $query = "
-select 
-
-chc.product_card_id,
-p.id,
-shcl.label as cardLabel,
-cl.label as cardLabelDefault,
-shpl.label as label,
-pl.label as labelDefault
-
-
-from ek_category_has_product_card chc
-  
-inner join ek_shop_has_product_card shc on shc.product_card_id=chc.product_card_id
-inner join ek_shop_has_product_card_lang shcl on shcl.shop_id=shc.shop_id and shcl.product_card_id=shcl.product_card_id
-inner join ek_product p on p.product_card_id=chc.product_card_id
-inner join ek_product_card_lang cl on cl.product_card_id=chc.product_card_id
-inner join ek_product_lang pl on pl.product_id=p.id
-inner join ek_shop_has_product shp on shp.product_id=shc.product_id
-inner join ek_shop_has_product_lang shpl on shpl.shop_id=shp.shop_id and shpl.product_id=shp.product_id
-
-
-
-$sJoin
-
-where chc.category_id in(" . implode(', ', $catIds) . ")
-and shcl.lang_id=$langId        
-and cl.lang_id=$langId        
-and shpl.lang_id=$langId        
-and shc.shop_id=$shopId        
-and pl.lang_id=$langId
-and shc.active=1    
-and shp.active=1    
-
-$sWhere
-        
-        
-        
-group by chc.product_card_id
-
-
-$sTheOrder
-        
-        
-        
+ 
+where h.category_id in ($sCatIds)
+and l.lang_id=$langId        
         ";
 
-            EkomDebug::$debug = $query;
+        return QuickPdo::fetchAll($q);
 
-
-            $rows = QuickPdo::fetchAll($query, $markers);
-            $nbTotalItems = count($rows);
-
-
-            if (null !== $limitInfo) {
-                list($offset, $length) = $limitInfo;
-                $rows = array_slice($rows, $offset, $length);
-            }
-
-
-//            az($query);
-
-            /**
-             * Todo: if bad perfs: try to compile all necessary info in the sql query above
-             */
-            $ret = [];
-            $productLayer = EkomApi::inst()->productLayer();
-            foreach ($rows as $row) {
-                $ret[] = $productLayer->getProductBoxModelByCardId($row['product_card_id'], $shopId, $langId);
-            }
-
-//            az($catIds, $rows);
-
-
-//            $gen = ArrayRowsGenerator::create()->setArray($ret);
-//            RequestModifier2RowsGeneratorAdaptorUtil::decorate($gen, $circle);
-//            $ret = $gen->getRows();
-
-            return [$nbTotalItems, $ret];
-
-        }, [
-            "ek_category_has_product_card",
-            "ek_product_card",
-            "ek_product_card_lang",
-            "ek_product",
-            "ek_product_lang",
-            "ek_product_has_product_attribute",
-            "ek_product_attribute",
-            "ek_product_attribute_value",
-            "ek_shop_has_product",
-            "ek_shop_has_product_lang",
-            "ek_shop_has_product_card_lang",
-            "ek_shop_has_product_card.create",
-            "ek_shop_has_product_card.delete.$shopId",
-            "ek_shop_has_product_card.update.$shopId",
-        ]);
-
-
-        list($nbTotalItems, $return) = $ret;
-        return $return;
     }
+
 
     public function setTaxGroup($cardId, $taxGroupId, $shopId = null)
     {

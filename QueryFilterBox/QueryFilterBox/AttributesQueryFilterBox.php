@@ -184,9 +184,7 @@ inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id
 ");
         }
 
-
         $this->model = $model;
-
     }
 
 
