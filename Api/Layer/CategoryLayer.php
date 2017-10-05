@@ -16,6 +16,17 @@ class CategoryLayer
 {
 
 
+    /**
+     * Returns whether or not the $categoryId belongs to (or is) the $ancestorName.
+     */
+    public function categoryIdBelongsTo($categoryId, $ancestorName, $shopId = null)
+    {
+        $idAncestor = $this->getCategoryIdByName($ancestorName);
+        $treeIds = [];
+        $this->collectCategoryIdTreeByCategoryId($treeIds, $categoryId, $shopId);
+        return (in_array($idAncestor, $treeIds));
+    }
+
     public function getSlugByName($categoryName)
     {
         return QuickPdo::fetch("
@@ -28,7 +39,6 @@ where c.name=:name
 
 ", ['name' => $categoryName], \PDO::FETCH_COLUMN);
     }
-
 
 
     public function getCategoryIdByName($name)
