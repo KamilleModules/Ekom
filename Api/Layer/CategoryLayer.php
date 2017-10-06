@@ -42,37 +42,46 @@ where c.name=:name
     }
 
 
-    public function getCategoryIdByName($name, $shopId=null)
+    public function getCategoryIdByName($name, $shopId = null)
     {
         $shopId = E::getShopId($shopId);
         return QuickPdo::fetch("select id from ek_category where name=:name and shop_id=$shopId", ['name' => $name], \PDO::FETCH_COLUMN);
     }
 
 
+    public function getCategoryNameById($id)
+    {
+        $id = (int)$id;
+        return QuickPdo::fetch("select `name` from ek_category where id=$id", [], \PDO::FETCH_COLUMN);
+    }
+
+
     /**
      * Collect product card ids contained in the given category and children.
      */
-    public function collectProductCardIdsDescendantsByCategoryName(array &$ids, $categoryName, $shopId = null){
+    public function collectProductCardIdsDescendantsByCategoryName(array &$ids, $categoryName, $shopId = null)
+    {
 
 
         $catId = $this->getCategoryIdByName($categoryName, $shopId);
         $catIds = [];
-        $leafIds=[];
+        $leafIds = [];
         $this->doCollectDescendants($catId, $catIds, $leafIds);
-        $ids =  EkomApi::inst()->productCardLayer()->getProductCardIdsByCategoryIds($catIds);
+        $ids = EkomApi::inst()->productCardLayer()->getProductCardIdsByCategoryIds($catIds);
     }
 
     /**
      * Collect product for product contained in the given category and children.
      */
-    public function collectProductCardInfoDescendantsByCategoryName(array &$infos, $categoryName, $shopId = null){
+    public function collectProductCardInfoDescendantsByCategoryName(array &$infos, $categoryName, $shopId = null)
+    {
 
 
         $catId = $this->getCategoryIdByName($categoryName, $shopId);
         $catIds = [];
-        $leafIds=[];
+        $leafIds = [];
         $this->doCollectDescendants($catId, $catIds, $leafIds);
-        $infos =  EkomApi::inst()->productCardLayer()->getProductCardInfosByCategoryIds($catIds);
+        $infos = EkomApi::inst()->productCardLayer()->getProductCardInfosByCategoryIds($catIds);
     }
 
 
@@ -583,7 +592,6 @@ and id != $categoryId
     //--------------------------------------------
     //
     //--------------------------------------------
-
 
 
     private function doCollectDescendantsInfo($categoryId, array &$ret, $level = 0, $maxLevel = -1)

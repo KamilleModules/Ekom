@@ -386,7 +386,7 @@ order by h.order asc
         $productId = (int)$productId;
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
-
+        $sProductDetails = HashUtil::createHashByArray($productDetails);
 
         $isB2b = E::isB2b();
 
@@ -394,7 +394,7 @@ order by h.order asc
         $iIsB2b = (int)$isB2b;
         $api = EkomApi::inst();
 
-        $model = A::cache()->get("Ekom.ProductLayer.getProductBoxModelByCardId.$shopId.$langId.$cardId.$productId.$iIsB2b", function () use ($cardId, $shopId, $langId, $productId, $api, $isB2b) {
+        $model = A::cache()->get("Ekom.ProductLayer.getProductBoxModelByCardId.$shopId.$langId.$cardId.$productId.$iIsB2b.$sProductDetails", function () use ($cardId, $shopId, $langId, $productId, $api, $isB2b, $productDetails) {
             $model = [];
 
             try {
@@ -643,6 +643,14 @@ order by h.order asc
                             ];
 
                             $model = $boxConf;
+                            /**
+                             * The product details passed here are just the raw product details params in the uri
+                             */
+                            $model['_productDetails'] = $productDetails;
+
+                            /**
+                             * You can only subscribe to this hook if you use the tabatha cache ids
+                             */
                             Hooks::call("Ekom_decorateBoxModelCacheable", $model);
 
 
@@ -680,40 +688,7 @@ order by h.order asc
             return $model;
 
 
-        }, [
-            "ek_shop_has_product_card_lang.create",
-            "ek_shop_has_product_card_lang.delete.$shopId.$cardId",
-            "ek_shop_has_product_card_lang.update.$shopId.$cardId",
-            "ek_shop_has_product_card.create",
-            "ek_shop_has_product_card.delete.$shopId.$cardId",
-            "ek_shop_has_product_card.update.$shopId.$cardId",
-            "ek_product_card_lang.create",
-            "ek_product_card_lang.delete.$cardId.$langId",
-            "ek_product_card_lang.update.$cardId.$langId",
-            "ek_product_card.create",
-            "ek_product_card.delete.$cardId",
-            "ek_product_card.update.$cardId",
-            "ek_shop.create",
-            "ek_shop.delete.$shopId",
-            "ek_shop.update.$shopId",
-            //
-            "ek_product_has_product_attribute",
-            "ek_product_attribute_lang",
-            "ek_product_attribute_value_lang",
-            "ek_product.delete",
-            "ek_product.update",
-            //
-            // images
-            "ekomApi.image.product",
-            "ekomApi.image.productCard",
-            // taxes
-            "ek_tax",
-            "ek_tax_group_has_tax",
-            "ek_tax_group",
-            "ek_product_card_has_tax_group.create",
-            "ek_product_card_has_tax_group.update.$shopId.$cardId",
-            "ek_product_card_has_tax_group.delete.$shopId.$cardId",
-        ]);
+        },$this->getProductBoxModelCaches());
 
 
         if (array_key_exists('product_id', $model)) { // if model is not in error form
@@ -730,9 +705,10 @@ order by h.order asc
              * - Ekom/Api/Util/ProductUtil::updateProductPrice
              *
              */
-            $model['_productDetails'] = $productDetails;
+
             Hooks::call("Ekom_decorateBoxModel", $model);
             unset($model['_productDetails']);
+
 
 
             $_priceWithTax = $model['rawPriceWithTax'];
@@ -951,6 +927,7 @@ order by h.order asc
             'ek_product_card.delete',
             "ek_user_has_user_group",
         ];
+
 
         /**
          * modules using the Ekom_decorateBoxModel hook (of the getProductBoxModelByCardId method)

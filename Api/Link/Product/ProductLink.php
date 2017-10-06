@@ -5,10 +5,16 @@ namespace Module\Ekom\Api\Link\Product;
 
 
 use Bat\CaseTool;
+use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Link\Features\FeaturesLink;
 use Module\Ekom\Utils\Api\EkomApiLink;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 use SaveOrmObject\Object\Ek\CategoryHasProductCardObject;
 use SaveOrmObject\Object\Ek\CategoryObject;
+use SaveOrmObject\Object\Ek\FeatureLangObject;
+use SaveOrmObject\Object\Ek\FeatureObject;
+use SaveOrmObject\Object\Ek\FeatureValueLangObject;
 use SaveOrmObject\Object\Ek\LangObject;
 use SaveOrmObject\Object\Ek\ProductAttributeLangObject;
 use SaveOrmObject\Object\Ek\ProductAttributeObject;
@@ -295,7 +301,8 @@ class ProductLink extends EkomApiLink
      * //----- physical product
      *
      * - ?cardId: if not set, one will be created
-     * - reference *
+     * - ?shopId:
+     * - reference
      * - weight
      * - price
      *
@@ -315,10 +322,38 @@ class ProductLink extends EkomApiLink
      *          - ?name (default=based on label version)
      *          - ?value (default=based on label version)
      *
+     * - ?features:
+     *      - $featureName => $featureValue| [$featureValue, $position],
+     *
      * @return int, the id of the created product
      */
     public function savePhysicalProduct(array $data, array &$results = [])
     {
+
+        // uncomment and copy paste to speed up your development
+//        $dataExample = [
+//            'cardId' => null,
+//            'reference' => '',
+//            'weight' => 0,
+//            'price' => 0,
+//            // physical product description
+//            'lang' => 'fra',
+//            'label' => '',
+//            'description' => null,
+//            'meta_title' => null,
+//            'meta_description' => null,
+//            'meta_keywords' => null,
+//            'attributes' => [
+//                [
+//                    'nameLabel' => '',
+//                    'valueLabel' => '',
+//                    'name' => null,
+//                    'value' => null,
+//                ],
+//            ],
+//        ];
+
+
         $mandatories = [
             'lang',
             'reference',
@@ -337,7 +372,9 @@ class ProductLink extends EkomApiLink
         $metaDescription = $this->get('meta_description', $data);
         $metaKeywords = $this->get('meta_keywords', $data);
         $attributes = $this->get('attributes', $data, []);
+        $features = $this->get('features', $data, []);
         $cardId = $this->get('cardId', $data, null);
+        $shopId = $this->get('shopId', $data, E::getShopId());
 
 
         $product = ProductObject::createByReference($reference);
@@ -410,6 +447,18 @@ class ProductLink extends EkomApiLink
             }
         }
 
+
+        if ($features) {
+            $featuresLink = FeaturesLink::create();
+            $options = [
+                "shop_id" => $shopId,
+                "lang_id" => $lang->getId(),
+                "technical_description" => '',
+            ];
+            $results['features'] = $featuresLink->saveFeatures($idProduct, $features, $options);
+        }
+
+
         return $idProduct;
     }
 
@@ -424,6 +473,9 @@ class ProductLink extends EkomApiLink
 
     private function getLangObject($lang)
     {
+        if ($lang instanceof LangObject) {
+            return $lang;
+        }
         return LangObject::createByIsoCode($lang);
     }
 }
