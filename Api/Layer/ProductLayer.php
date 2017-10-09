@@ -566,6 +566,8 @@ order by h.order asc
                             }
 
                             $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $productId);
+
+
                             $attrSelection = $p['attributes'];
                             $attrStringArr = [];
                             foreach ($attrSelection as $item) {

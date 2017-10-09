@@ -17,6 +17,31 @@ class CategoryLayer
 {
 
 
+    public function getCategoryInfoByCardIds(array $cardIds, $shopId= null){
+        $shopId = E::getShopId($shopId);
+        $sIds = implode(', ', array_map('intval', $cardIds));
+
+        return QuickPdo::fetchAll("
+select 
+c.id,
+c.name,
+c.category_id,
+h.product_card_id
+
+from ek_category c 
+inner join ek_category_has_product_card h on h.category_id=c.id
+
+
+where c.shop_id=$shopId 
+and h.product_card_id in ($sIds)
+
+
+        ");
+
+
+    }
+
+
     /**
      * Returns whether or not the $categoryId belongs to (or is) the $ancestorName.
      */
@@ -461,6 +486,8 @@ and cl.lang_id=$langId
         ", [
                 "cname" => $name,
             ]);
+
+
 
             $ret = [];
             $level = 0;

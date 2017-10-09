@@ -245,6 +245,7 @@ class AttributeSelectorHelper
         $level = 1;
         $curChain = "";
         $nextChain = "";
+        $atLeastOneSelected = false;
         foreach ($allAttributes as $attrIndex => $attributes) {
 
             foreach ($attributes as $k => $attributeInfo) {
@@ -279,6 +280,7 @@ class AttributeSelectorHelper
 
                 }
                 if ('1' === $attributeInfo['selected']) {
+                    $atLeastOneSelected = true;
                     $nextChain = $attributeInfo['value_id'] . '-';
                 }
 
@@ -305,8 +307,16 @@ class AttributeSelectorHelper
 
 
         $ret = [];
+        $c = 0;
         foreach ($allAttributes as $attributes) {
             foreach ($attributes as $attributeInfo) {
+
+
+                $selected = $attributeInfo['selected'];
+                if (false === $atLeastOneSelected && 0 === $c++) {
+                    $selected = "1";
+                }
+
                 $name = $attributeInfo["name"];
                 if (false === array_key_exists($name, $ret)) {
                     $ret[$name] = [
@@ -319,7 +329,7 @@ class AttributeSelectorHelper
                     'value' => $attributeInfo['value'],
                     'value_label' => $attributeInfo['value_label'],
                     'value_id' => $attributeInfo['value_id'],
-                    'selected' => $attributeInfo['selected'],
+                    'selected' => $selected,
                     'productUri' => $attributeInfo['productUri'],
                     'getProductInfoAjaxUri' => $attributeInfo['getProductInfoAjaxUri'],
                     'product_id' => $attributeInfo['_product_id'],
