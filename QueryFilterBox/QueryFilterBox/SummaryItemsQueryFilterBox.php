@@ -74,6 +74,7 @@ class SummaryItemsQueryFilterBox extends QueryFilterBox
                 }
             }
         }
+
         $this->model = [
             'items' => $summaryItems,
             'uriClearAll' => UriTool::uri(),

@@ -17,7 +17,8 @@ class CategoryLayer
 {
 
 
-    public function getCategoryInfoByCardIds(array $cardIds, $shopId= null){
+    public function getCategoryInfoByCardIds(array $cardIds, $shopId = null)
+    {
         $shopId = E::getShopId($shopId);
         $sIds = implode(', ', array_map('intval', $cardIds));
 
@@ -281,24 +282,18 @@ where category_id in (" . implode(", ", $catIds) . ")
      */
     public function collectCategoryIdTreeByCategoryId(array &$ids, $categoryId, $shopId = null)
     {
-        $api = EkomApi::inst();
         if (null === $shopId) {
             $shopId = E::getShopId();
         }
 
-        return A::cache()->get("Ekom.CategoryLayer.getCategoryIdTreeByCategoryId.$shopId.$categoryId", function () use ($api, $shopId, $categoryId, &$ids) {
 
-            $ids[] = $categoryId;
-            $parentCatId = EkomApi::inst()->category()->readColumn("category_id", [
-                ["id", "=", $categoryId],
-            ]);
-            if (null !== $parentCatId) {
-                $this->collectCategoryIdTreeByCategoryId($ids, $parentCatId, $shopId);
-            }
-        }, [
-            'ek_product',
-            'ek_category',
+        $ids[] = $categoryId;
+        $parentCatId = EkomApi::inst()->category()->readColumn("category_id", [
+            ["id", "=", $categoryId],
         ]);
+        if (null !== $parentCatId) {
+            $this->collectCategoryIdTreeByCategoryId($ids, $parentCatId, $shopId);
+        }
     }
 
 
@@ -312,7 +307,7 @@ where category_id in (" . implode(", ", $catIds) . ")
             $shopId = E::getShopId();
         }
 
-        return A::cache()->get("Ekom.CategoryLayer.getCategoryIdTreeByCategoryId.$shopId.$categoryName", function () use ($api, $shopId, $categoryName, &$ids) {
+        return A::cache()->get("Ekom.CategoryLayer.collectCategoryIdTreeByCategoryName.$shopId.$categoryName", function () use ($api, $shopId, $categoryName, &$ids) {
 
             $id = EkomApi::inst()->category()->readColumn("id", [
                 ["name", "=", $categoryName],
@@ -486,7 +481,6 @@ and cl.lang_id=$langId
         ", [
                 "cname" => $name,
             ]);
-
 
 
             $ret = [];
