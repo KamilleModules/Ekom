@@ -16,6 +16,36 @@ class DiscountLayer
 {
 
 
+    public function getDiscountBadgesByCategoryId($categoryId, $shopId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        $categoryId = (int)$categoryId;
+
+        $catIds = EkomApi::inst()->categoryLayer()->getDescendantCategoryIdTree($categoryId);
+        $sCatIds = implode(', ', $catIds);
+
+
+        return QuickPdo::fetchAll("
+select distinct
+
+h._discount_badge
+
+from ek_shop_has_product h 
+inner join ek_shop_has_product_card hpc on hpc.shop_id=h.shop_id and hpc.product_id=h.product_id
+inner join ek_category_has_product_card chpc on chpc.product_card_id=hpc.product_card_id
+
+
+where h.shop_id=$shopId
+and h.active=1 
+and hpc.active=1
+and chpc.category_id in ($sCatIds)
+and h._discount_badge != ''
+
+        ", [], \PDO::FETCH_COLUMN);
+
+
+    }
+
     /**
      * Prescription:
      * - do this once per day, at 04:00 am,
@@ -68,25 +98,70 @@ where shop_id=$shopId
         $shopId = E::getShopId($shopId);
         $productLayer = EkomApi::inst()->productLayer();
         $box = $productLayer->getProductBoxModelByProductId($productId, $shopId);
+        if (false === array_key_exists('errorCode', $box)) {
 
-        $salePriceWithoutTax = $box['rawSalePriceWithoutTax'];
-        $salePriceWithTax = $box['rawSalePriceWithTax'];
 
-        return QuickPdo::update("ek_shop_has_product", [
-            "_sale_price_without_tax" => $salePriceWithoutTax,
-            "_sale_price_with_tax" => $salePriceWithTax,
-        ], [
-            ["shop_id", "=", $shopId],
-            ["product_id", "=", $productId],
-        ]);
+            $salePriceWithoutTax = $box['rawSalePriceWithoutTax'];
+            $salePriceWithTax = $box['rawSalePriceWithTax'];
+            $discountBadge = '';
+
+
+            $badgeDetails = $box['badgeDetails'];
+            $badges = [];
+            if ($badgeDetails) {
+                foreach ($badgeDetails as $info) {
+                    $prefix = '';
+                    switch ($info['type']) {
+                        case "amount":
+                            $prefix = 'f';
+                            break;
+                        default:
+                            $prefix = 'p';
+                            break;
+                    }
+
+                    $compo2 = '';
+                    switch ($info['level']) {
+                        case "product":
+                            $compo2 = 'p';
+                            break;
+                        case "card":
+                            $compo2 = 'c';
+                            break;
+                        case "category":
+                            $compo2 = 't';
+                            break;
+                        default:
+                            break;
+                    }
+
+
+                    $badges[] = $prefix . $compo2 . $info['value'];
+                }
+
+                if ($badges) {
+                    $discountBadge = implode(',', $badges);
+                }
+            }
+
+
+            return QuickPdo::update("ek_shop_has_product", [
+                "_sale_price_without_tax" => $salePriceWithoutTax,
+                "_sale_price_with_tax" => $salePriceWithTax,
+                "_discount_badge" => $discountBadge,
+            ], [
+                ["shop_id", "=", $shopId],
+                ["product_id", "=", $productId],
+            ]);
+        }
+        return false;
     }
 
 
-    public function applyDiscountsByProductId($productId, $priceWithoutTax, $priceWithTax, array $badges = [], $shopId = null, $langId = null)
+    public function applyDiscountsByProductId($productId, $priceWithoutTax, $priceWithTax, array &$badges = [], $shopId = null, $langId = null)
     {
         $layerDiscount = EkomApi::inst()->discountLayer();
         $discounts = $layerDiscount->getDiscountsByProductId($productId, $shopId, $langId);
-        $badges = [];
         /**
          * note that in this algorithm, the discount for the withTax price
          * is applied on the WithTax price directly (see my note on algorithms in
@@ -108,7 +183,6 @@ where shop_id=$shopId
     public function applyDiscountsToPrice(array $discounts, $price, array &$badges = [])
     {
         $layerDiscount = EkomApi::inst()->discountLayer();
-
         $atLeastOneDiscountApplied = false;
         foreach ($discounts as $d) {
             $t = false;
@@ -121,6 +195,7 @@ where shop_id=$shopId
                     "type" => $d['procedure_type'],
                     "value" => $operand,
                     "label" => $d['label'],
+                    "level" => $d['level'],
                 ];
                 $atLeastOneDiscountApplied = true;
             }
@@ -145,7 +220,7 @@ where shop_id=$shopId
      */
     public function applyDiscountToPrice(array $discount, $price, &$atLeastOneDiscountApplied = false)
     {
-        // todo: check hybrid system (in filesystem), only if use case appears
+        // @todo-ling: check hybrid system (in filesystem), only if use case appears
         //--------------------------------------------
         // ELIMINATE BY FILTERS
         //--------------------------------------------
@@ -200,11 +275,11 @@ where shop_id=$shopId
         if (is_array($price)) {
             $ret = [];
             foreach ($price as $k => $p) {
-                $ret[$k] = $this->applyDiscountInfoToPrice($p, $discount);
+                $ret[$k] = $this->applyDiscountInfoToPrice($p, $discount, $atLeastOneDiscountApplied);
             }
             return $ret;
         } else {
-            return $this->applyDiscountInfoToPrice($price, $discount);
+            return $this->applyDiscountInfoToPrice($price, $discount, $atLeastOneDiscountApplied);
         }
     }
 

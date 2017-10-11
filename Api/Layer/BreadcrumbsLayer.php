@@ -34,6 +34,7 @@ class BreadcrumbsLayer
         // PRODUCT CARD
         //--------------------------------------------
         $cardId = ApplicationRegistry::get("ekom.cardId");
+        $categoryId = ApplicationRegistry::get("ekom.categoryId");
 
 
         $label = null;
@@ -59,6 +60,30 @@ class BreadcrumbsLayer
                 ];
             }
 
+        } elseif (null !== $categoryId) {
+
+
+            $cats = EkomApi::inst()->categoryLayer()->getUpCategoryInfosById($categoryId);
+
+            $baseUri = E::link("Ekom_category", [
+                'slug' => '%s',
+            ]);
+
+            if ($cats) {
+
+                $last = array_pop($cats);
+
+                foreach ($cats as $cat) {
+                    $items[] = [
+                        "link" => sprintf($baseUri, $cat['slug']),
+                        "title" => "Go to " . $cat['label'],
+                        "label" => $cat['label'],
+                    ];
+                }
+                $label = $last['label'];
+            }
+
+
         } else {
             $label = ApplicationRegistry::get("ekom.breacrumbs.label");
             $items = [
@@ -69,6 +94,7 @@ class BreadcrumbsLayer
                 ],
             ];
         }
+
 
         return [
             "label" => $label,

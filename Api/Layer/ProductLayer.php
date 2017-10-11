@@ -690,7 +690,7 @@ order by h.order asc
             return $model;
 
 
-        },$this->getProductBoxModelCaches());
+        }, $this->getProductBoxModelCaches());
 
 
         if (array_key_exists('product_id', $model)) { // if model is not in error form
@@ -712,7 +712,6 @@ order by h.order asc
             unset($model['_productDetails']);
 
 
-
             $_priceWithTax = $model['rawPriceWithTax'];
             $_priceWithoutTax = $model['rawPriceWithoutTax'];
 
@@ -722,7 +721,7 @@ order by h.order asc
             //--------------------------------------------
             /**
              * Actually,
-             * @ling-todo: we can cache it for one day using:
+             * @todo-ling: we can cache it for one day using:
              *
              * - the user group Ids
              * - the currency
@@ -737,7 +736,6 @@ order by h.order asc
              */
             $badges = [];
             list($_salePriceWithoutTax, $_salePriceWithTax) = $api->discountLayer()->applyDiscountsByProductId($model['product_id'], $_priceWithoutTax, $_priceWithTax, $badges, $shopId, $langId);
-
 
             $salePriceWithTax = E::price($_salePriceWithTax);
             $salePriceWithoutTax = E::price($_salePriceWithoutTax);

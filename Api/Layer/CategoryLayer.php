@@ -17,6 +17,55 @@ class CategoryLayer
 {
 
 
+    public function getUpCategoryInfosById($categoryId, $topToBottom = true, $shopId = null, $langId = null)
+    {
+        $infos = [];
+        $this->collectCategoryInfoTreeByCategoryId($infos, $categoryId, $shopId, $langId);
+        if (true === $topToBottom) {
+            $infos = array_reverse($infos);
+        }
+        return $infos;
+    }
+
+
+    public function collectCategoryInfoTreeByCategoryId(array &$infos, $categoryId, $shopId = null, $langId = null)
+    {
+        $categoryId = (int)$categoryId;
+        $shopId = E::getShopId($shopId);
+        $langId = E::getLangId($langId);
+
+
+        $row = QuickPdo::fetch("
+select    
+
+c.id,
+c.name,
+c.category_id,
+cl.label,
+cl.description,
+cl.slug
+
+from ek_category c 
+inner join ek_category_lang cl on cl.category_id=c.id
+
+where c.id=$categoryId
+and c.shop_id=$shopId
+and cl.lang_id=$langId
+
+
+     
+        ");
+
+        if (false !== $row) {
+            $infos[] = $row;
+            if (null !== $row['category_id']) {
+                $this->collectCategoryInfoTreeByCategoryId($infos, $row['category_id'], $shopId, $langId);
+            }
+
+        }
+    }
+
+
     public function getCategoryInfoByCardIds(array $cardIds, $shopId = null)
     {
         $shopId = E::getShopId($shopId);
@@ -419,6 +468,36 @@ and l.slug=:slug
     }
 
 
+    public function getSubCategoryIdsByName($name, $includeSelfInChildren = true)
+    {
+        $ret = [];
+        $topCats = $this->getSubCategoriesByName($name);
+        foreach ($topCats as $info) {
+
+            $childrenIds = [];
+            $this->collectChildrenIds($info['children'], $childrenIds);
+            if (true === $includeSelfInChildren) {
+                $childrenIds[] = $info['category_id'];
+            }
+            $info['children'] = $childrenIds;
+
+            $ret[] = $info;
+        }
+        return $ret;
+    }
+
+
+    private function collectChildrenIds(array $children, array &$childrenIds)
+    {
+        foreach ($children as $child) {
+            $childrenIds[] = $child['category_id'];
+            if ($child['children']) {
+                $this->collectChildrenIds($child['children'], $childrenIds);
+            }
+        }
+    }
+
+
     /**
      * This function can be used to create menu.
      *
@@ -445,7 +524,6 @@ and l.slug=:slug
      *
      *
      */
-
     public function getSubCategoriesByName($name, $maxDepth = -1, $wildCard = '')
     {
         EkomApi::inst()->initWebContext();
@@ -538,6 +616,55 @@ and cl.slug=:slug
         }, [
             "ek_category",
             "ek_category_lang",
+        ]);
+    }
+
+
+    public function getCategoryInfoById($categoryId)
+    {
+        $categoryId = (int)$categoryId;
+        return QuickPdo::fetch("
+select 
+c.id,
+c.name,
+c.category_id,
+c.shop_id,
+cl.label,
+cl.description,
+cl.slug,
+cl.meta_title,
+cl.meta_description,
+cl.meta_keywords
+
+
+from ek_category c 
+inner join ek_category_lang cl on cl.category_id=c.id
+where c.id=$categoryId
+");
+    }
+
+
+    public function getSubCategoriesById($categoryId, $maxDepth = -1)
+    {
+        EkomApi::inst()->initWebContext();
+        $shopId = E::getShopId();
+        $langId = E::getLangId();
+        $categoryId = (int)$categoryId;
+
+        return A::cache()->get("Ekom.CategoryLayer.getSubCategoriesById.$shopId.$langId.$categoryId.$maxDepth", function () use ($shopId, $maxDepth, $categoryId, $langId) {
+
+            $name = QuickPdo::fetch("select 
+name 
+from ek_category 
+where 
+shop_id=$shopId 
+and id=$categoryId
+", [], \PDO::FETCH_COLUMN);
+
+
+            return $this->getSubCategoriesByName($name, $maxDepth);
+        }, [
+            "ek_category",
         ]);
     }
 

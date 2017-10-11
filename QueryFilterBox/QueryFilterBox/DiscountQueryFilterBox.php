@@ -10,24 +10,17 @@ use QueryFilterBox\Collectable\CollectableInterface;
 use QueryFilterBox\Query\Query;
 use QueryFilterBox\QueryFilterBox\QueryFilterBox;
 
-/**
- *
- * categoryId must be set.
- *
- *
- * Class AttributesQueryFilterBox
- * @package Module\Ekom\QueryFilterBox\QueryFilterBox
- */
-class AttributesQueryFilterBox extends QueryFilterBox implements CollectableInterface
+
+class DiscountQueryFilterBox extends QueryFilterBox implements CollectableInterface
 {
 
     private $categoryId;
-    private $_attributes;
+    private $_discounts;
 
     public function setCategoryId($categoryId)
     {
         $this->categoryId = $categoryId;
-        $this->_attributes = [];
+        $this->_discounts = [];
         return $this;
     }
 
@@ -42,7 +35,7 @@ class AttributesQueryFilterBox extends QueryFilterBox implements CollectableInte
     //--------------------------------------------
     public function collect($param, $value)
     {
-        foreach ($this->_attributes as $info) {
+        foreach ($this->_discounts as $info) {
             if ($param === $info['name'] && $value === $info['value']) {
                 return [
                     'keyLabel' => $info['name_label'],
@@ -59,18 +52,19 @@ class AttributesQueryFilterBox extends QueryFilterBox implements CollectableInte
     //--------------------------------------------
     protected function doDecorateQuery(Query $query, array $pool, array &$usedPool)
     {
-        $this->_attributes = [];
+        $this->_discounts = [];
         $already = [];
         $model = [];
         $once = false;
-        $attrApi = EkomApi::inst()->attributeLayer();
-        $attributes = $attrApi->getAvailableAttributeByCategoryId($this->categoryId);
+        $api = EkomApi::inst()->discountLayer();
+        $discounts = $api->getDiscountBadgesByCategoryId($this->categoryId);
 
-        $this->_attributes = $attributes;
+        $this->_discounts = $discounts;
         $c = 0;
-        foreach ($attributes as $attr) {
-            $name = $attr['name'];
+        foreach ($discounts as $discount) {
 
+
+//            $discount = "fp0.50";
 
             if (!array_key_exists($name, $model)) {
                 $model[$name] = [
