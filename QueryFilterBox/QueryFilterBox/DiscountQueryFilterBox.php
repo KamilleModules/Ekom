@@ -5,7 +5,8 @@ namespace Module\Ekom\QueryFilterBox\QueryFilterBox;
 
 
 use Bat\UriTool;
-use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Layer\DiscountLayer;
+use Module\Ekom\Utils\E;
 use QueryFilterBox\Collectable\CollectableInterface;
 use QueryFilterBox\Query\Query;
 use QueryFilterBox\QueryFilterBox\QueryFilterBox;
@@ -35,13 +36,11 @@ class DiscountQueryFilterBox extends QueryFilterBox implements CollectableInterf
     //--------------------------------------------
     public function collect($param, $value)
     {
-        foreach ($this->_discounts as $info) {
-            if ($param === $info['name'] && $value === $info['value']) {
-                return [
-                    'keyLabel' => $info['name_label'],
-                    'valueLabel' => $info['value_label'],
-                ];
-            }
+        if ('discounts' === $param) {
+            return [
+                'keyLabel' => 'Réduction',
+                'valueLabel' => "Réduction -" . $value . "%",
+            ];
         }
     }
 
@@ -52,135 +51,75 @@ class DiscountQueryFilterBox extends QueryFilterBox implements CollectableInterf
     //--------------------------------------------
     protected function doDecorateQuery(Query $query, array $pool, array &$usedPool)
     {
-        $this->_discounts = [];
-        $already = [];
-        $model = [];
-        $once = false;
-        $api = EkomApi::inst()->discountLayer();
-        $discounts = $api->getDiscountBadgesByCategoryId($this->categoryId);
 
-        $this->_discounts = $discounts;
-        $c = 0;
-        foreach ($discounts as $discount) {
+        if (array_key_exists("discounts", $pool)) {
+            $usedPool[] = "discounts";
 
-
-//            $discount = "fp0.50";
-
-            if (!array_key_exists($name, $model)) {
-                $model[$name] = [
-                    'title' => $attr['name_label'],
-                    'type' => "items",
-                    'items' => [],
-                ];
-            }
-
-
-            //--------------------------------------------
-            // PREPARING OTHER THINGS
-            //--------------------------------------------
-            /**
-             * The params are in the uri.
-             * Example:
-             * https://lee/category/tapis_de_marche?poids[0]=15_kg&poids[1]=4_kg
-             *
-             */
-            $get = $pool;
-            $getArr = (array_key_exists($name, $pool)) ? $pool[$name] : [];
-
-            $value = $attr['value'];
-            if (
-                (is_array($getArr) && in_array($value, $getArr, true)) ||
-                (!is_array($getArr) && $value === $getArr)
-            ) {
-                /**
-                 * If the attribute already exist in the uri, we remove it from the uri
-                 * params (toggle like behaviour)
-                 */
-                $selected = true;
-                if (is_array($getArr)) {
-                    if (false !== ($index = array_search($value, $getArr))) {
-                        unset($get[$name][$index]);
-                        if (0 === count($get[$name])) {
-                            unset($get[$name]);
-                        }
-                    }
-                } else {
-                    unset($get[$name]);
-                }
-            } else {
-                $selected = false;
-                if (true === is_array($getArr)) {
-                    if (false === array_search($value, $getArr)) {
-                        $get[$name][] = $value;
-                    }
-                } else {
-                    $get[$name] = $value;
-                }
-            }
-
-            $uri = UriTool::uri(null, $get);
-            $model[$name]['items'][] = [
-                "label" => $attr['value_label'],
-                "value" => $attr['value'],
-                "uri" => $uri,
-                "selected" => $selected,
-            ];
-
-
-
-
-            //--------------------------------------------
-            // PREPARING THE MODEL
-            //--------------------------------------------
-            if (!array_key_exists($name, $already)) {
-                $already[$name] = null;
-
-                //--------------------------------------------
-                // TAKING CARE OF THE QUERY
-                //--------------------------------------------
-                if (array_key_exists($name, $pool)) {
-
-                    $usedPool[] = $name;
-
-
-                    $once = true;
-                    $values = $pool[$name];
-                    if (!is_array($values)) {
-                        $values = [$values];
-                    }
-
-                    $safeIds = [];
-                    foreach ($values as $v) {
-                        if (false !== ($valueId = $attrApi->getAttrValueBySlug($v))) {
-                            $safeIds[] = $valueId;
-                        }
-                    }
-
-
-                    $tagName = "attrname" . $c;
-                    $c++;
-
-                    $query->addWhere("
-a.name = :$tagName
-and v.id in (" . implode(', ', $safeIds) . ")                          
-                        ");
-                    $query->addMarker($tagName, $name);
-
-
-                }
-            }
+            $discounts = $pool['discounts'];
+            $discounts = array_map(function ($v) {
+                $v = (int)$v;
+                return '..' . $v;
+            }, $discounts);
+            $sBadges = implode('|', $discounts);
+            $query->addWhere("
+shp._discount_badge REGEXP '$sBadges'
+        ");
         }
 
-        if (true === $once) {
-            $query->addJoin("
-inner join ek_product_has_product_attribute h on h.product_id=p.id
-inner join ek_product_attribute a on a.id=h.product_attribute_id
-inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id                            
-");
-        }
-
-        $this->model = $model;
     }
 
+    public function prepare()
+    {
+
+        $o = new DiscountLayer();
+        $badges = $o->getDiscountBadges([
+            'categoryId' => $this->categoryId,
+            'procedureType' => 'percent',
+        ]);
+
+
+        $poolBadges = array_key_exists('discounts', $this->pool) ? $this->pool['discounts'] : [];
+
+        $badgesModel = [];
+        $already = [];
+        foreach ($badges as $badge) {
+            $badgeInt = substr($badge, 2);
+
+            $bm = $poolBadges;
+            $selected = false;
+            if (in_array($badgeInt, $poolBadges)) {
+                $selected = true;
+                unset($bm[array_search($badgeInt, $poolBadges)]);
+            } else {
+                $bm[] = $badgeInt;
+            }
+            $uri = UriTool::uri(null, [
+                'discounts' => $bm,
+            ]);
+
+
+            if (!in_array($badgeInt, $already)) {
+                $already[] = $badgeInt;
+                $badgesModel[] = [
+                    'value' => $badgeInt,
+                    'label' => $this->getBadgeLabel($badge),
+                    'selected' => $selected,
+                    'uri' => $uri,
+                ];
+            }
+        }
+        $this->model = [
+            'badges' => $badgesModel,
+        ];
+    }
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    private function getBadgeLabel($name)
+    {
+        $n = substr($name, 2);
+        return "-" . $n . "%";
+    }
 
 }

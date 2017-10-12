@@ -146,6 +146,23 @@ where c.name=:name
     }
 
     /**
+     * Collect product card ids contained in the given category and children.
+     */
+    public function collectProductCardIdsDescendantsByCategoryIds(array &$ids, array $categoryIds)
+    {
+
+        $allCatIds = [];
+        $leafIds = [];
+        foreach ($categoryIds as $id) {
+            $catIds = [];
+            $this->doCollectDescendants($id, $catIds, $leafIds);
+            $allCatIds = array_merge($allCatIds, $catIds);
+        }
+        $allCatIds = array_unique($allCatIds);
+        $ids = EkomApi::inst()->productCardLayer()->getProductCardIdsByCategoryIds($allCatIds);
+    }
+
+    /**
      * Collect product for product contained in the given category and children.
      */
     public function collectProductCardInfoDescendantsByCategoryName(array &$infos, $categoryName, $shopId = null)

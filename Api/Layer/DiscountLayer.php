@@ -5,6 +5,7 @@ namespace Module\Ekom\Api\Layer;
 
 
 use Authenticate\SessionUser\SessionUser;
+use Bat\HashTool;
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
@@ -12,8 +13,269 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
+
+/**
+ * Be always aware that caching with discounts should be done with caution,
+ * as ekom envisions the possibility to use filesystem baked conditions,
+ * which are potentially non-cachable (for instance based on a random number, the weather,
+ * the color of my shoes, ...).
+ *
+ * We generally want to cache the output of the discount methods for one day (to save most of the
+ * computation), and then we refresh (delete/recreate) all caches for the next day and so on
+ * (i.e. every night a cron task could trigger the cache refresher robot for instance).
+ *
+ *
+ */
 class DiscountLayer
 {
+
+
+    /**
+     * Return the list of badges filtered according to the given options.
+     *
+     * @param array $options (all options are optional)
+     *              - shop_id: restrict the search to the given shop id
+     *              - lang_id: use the given lang_id
+     *              - categoryName: restrict the search to the given category name
+     *              - procedureType: percent|amount, restrict the search to the given procedure type
+     *
+     *
+     * @return array, the list of badges
+     */
+    public function getDiscountBadges(array $options = [])
+    {
+        $options = array_merge([
+            'shop_id' => null,
+            'lang_id' => null,
+            'categoryId' => null,
+            'categoryName' => null,
+            'procedureType' => null,
+        ], $options);
+
+        $hash = HashTool::getHashByArray($options);
+
+        return A::cache()->get("Ekom.DiscountLayer.getDiscountBadges.$hash", function () use ($options) {
+
+            $shopId = E::getShopId($options['shop_id']);
+            $langId = E::getLangId($options['lang_id']);
+
+            $categoryId = $options['categoryId'];
+            $category = $options['categoryName'];
+            $procedureType = $options['procedureType'];
+
+
+            $allowedProductCardIds = null;
+            if (null !== $category) {
+                $allowedProductCardIds = [];
+                EkomApi::inst()->categoryLayer()->collectProductCardIdsDescendantsByCategoryName($allowedProductCardIds, $category, $shopId);
+            } elseif (null !== $categoryId) {
+                $allowedProductCardIds = [];
+                EkomApi::inst()->categoryLayer()->collectProductCardIdsDescendantsByCategoryIds($allowedProductCardIds, [$categoryId]);
+            }
+
+
+            $pInfos = $this->getProductsInfoHavingDiscount($shopId, $langId);
+            $allBadges = [];
+            foreach ($pInfos as $info) {
+                $badge = $info['_discount_badge'];
+
+
+                // filtering by cats
+                if (null !== $allowedProductCardIds && false === in_array($info['product_card_id'], $allowedProductCardIds)) {
+                    continue;
+                }
+
+                // filtering by procedure type
+                if (null !== $procedureType) {
+                    $firstLetter = substr($badge, 0, 1);
+                    if (
+                        ('percent' === $procedureType && 'p' !== $firstLetter) ||
+                        ('amount' === $procedureType && 'f' !== $firstLetter)
+                    ) {
+                        continue;
+                    }
+                }
+
+                if ('' !== $badge) {
+                    $badges = explode(',', $badge);
+                    $allBadges = array_merge($allBadges, $badges);
+                }
+            }
+            $allBadges = array_unique($allBadges);
+            sort($allBadges);
+            return $allBadges;
+        }, [
+            'ek_category',
+            'ek_category_has_product_card',
+            'ek_shop_has_product',
+            'ek_shop_has_product_lang',
+            'ek_seller',
+            'ek_product_type',
+            'ek_product',
+            'ek_product_lang',
+            'ek_product_has_discount',
+            'ek_product_card_has_discount',
+            'ek_shop_has_product_card',
+        ]);
+    }
+
+
+    public function getProductsInfoHavingDiscount($shopId = null, $langId = null)
+    {
+
+        $shopId = E::getLangId($shopId);
+        $langId = E::getLangId($langId);
+
+
+        return A::cache()->get("Ekom.DiscountLayer.getProductsInfoHavingDiscount.$shopId.$langId", function () use ($shopId, $langId) {
+
+
+            /**
+             * Discounts are dispatched in products, cards and categories.
+             * We want to return some presentational info.
+             */
+            $getResults = function (array $options = [], $debug = false) use ($shopId, $langId) {
+
+                $join = (array_key_exists('join', $options)) ? $options['join'] : '';
+                $where = (array_key_exists('where', $options)) ? $options['where'] : '';
+
+                $q = "
+select
+distinct 
+p.id,
+p.product_card_id, 
+p.reference, 
+COALESCE(NULLIF('', shpl.label), pl.label) as label,        
+COALESCE(NULLIF('', shpl.description), pl.description) as label,        
+shp.quantity,
+shp.active,
+shp._sale_price_without_tax,
+shp._sale_price_with_tax,
+shp._discount_badge,
+s.name as seller,
+pt.name as product_type
+
+
+from ek_shop_has_product shp 
+inner join ek_shop_has_product_lang shpl on shpl.shop_id=shp.shop_id and shpl.product_id=shp.product_id
+inner join ek_seller s on s.id=shp.seller_id 
+inner join ek_product_type pt on pt.id=shp.product_type_id
+inner join ek_product p on p.id=shp.product_id
+inner join ek_product_lang pl on pl.product_id=shp.product_id and pl.lang_id=shpl.lang_id
+$join
+
+
+
+where
+shp.shop_id=$shopId 
+and shpl.lang_id=$langId
+$where
+
+        
+        ";
+
+                if (true === $debug) {
+                    a($q);
+                }
+                return QuickPdo::fetchAll($q);
+
+            };
+
+
+            $productRows = $getResults([
+                'join' => "inner join ek_product_has_discount phd on phd.product_id=p.id",
+                'where' => "and phd.active=1",
+            ]);
+
+
+            $cardRows = $getResults([
+                'join' => "            
+inner join ek_product_card_has_discount pchd on pchd.product_card_id=p.product_card_id
+inner join ek_shop_has_product_card shpc on shpc.shop_id=shpl.shop_id and shpc.product_card_id=p.product_card_id
+",
+                'where' => "
+and pchd.active=1
+and shpc.active=1
+            ",
+            ]);
+
+
+            $catsContainingDiscounts = $this->getCategoriesInfoHavingDiscount($shopId, $langId);
+            $catIds = [];
+            $allSubCatIds = [];
+            foreach ($catsContainingDiscounts as $info) {
+                $catIds[] = $info['id'];
+                EkomApi::inst()->categoryLayer()->doCollectDescendants($info['id'], $allSubCatIds);
+            }
+            $allCardIds = [];
+            EkomApi::inst()->categoryLayer()->collectProductCardIdsDescendantsByCategoryIds($allCardIds, $catIds);
+            sort($allCardIds);
+
+            $sCardIds = implode(', ', $allCardIds);
+            $catRows = $getResults([
+                'join' => "                      
+inner join ek_shop_has_product_card shpc on shpc.shop_id=shpl.shop_id and shpc.product_card_id=p.product_card_id
+",
+                'where' => "
+and p.product_card_id in ($sCardIds)
+and shpc.active=1
+
+            ",
+            ]);
+
+
+            $all = array_merge($catRows, $productRows, $cardRows);
+            $in = [];
+            $all = array_filter($all, function ($v) use (&$in) {
+                if (in_array($v['id'], $in)) {
+                    return false;
+                } else {
+                    $in[] = $v['id'];
+                    return true;
+                }
+            });
+            return $all;
+
+        }, [
+            'ek_shop_has_product',
+            'ek_shop_has_product_lang',
+            'ek_seller',
+            'ek_product_type',
+            'ek_product',
+            'ek_product_lang',
+            'ek_product_has_discount',
+            'ek_product_card_has_discount',
+            'ek_shop_has_product_card',
+        ]);
+    }
+
+    public function getCategoriesInfoHavingDiscount($shopId = null, $langId = null)
+    {
+
+        $shopId = E::getLangId($shopId);
+        $langId = E::getLangId($langId);
+
+        return QuickPdo::fetchAll("
+select   
+c.id,      
+c.name,      
+cl.label,
+cl.slug
+
+from ek_category c 
+inner join ek_category_lang cl on cl.category_id=c.id
+inner join ek_category_has_discount chd on chd.category_id=c.id
+
+where 
+
+c.shop_id=$shopId 
+and cl.lang_id=$langId 
+and chd.active=1
+
+
+        ");
+
+    }
 
 
     public function getDiscountBadgesByCategoryId($categoryId, $shopId = null)
