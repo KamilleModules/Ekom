@@ -18,10 +18,15 @@ class DiscountQueryFilterBox extends QueryFilterBox implements CollectableInterf
     private $categoryId;
     private $_discounts;
 
+
+    public function __construct()
+    {
+        $this->_discounts = [];
+    }
+
     public function setCategoryId($categoryId)
     {
         $this->categoryId = $categoryId;
-        $this->_discounts = [];
         return $this;
     }
 
