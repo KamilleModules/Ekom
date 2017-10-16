@@ -19,13 +19,48 @@ class ProductCardLayer
 {
 
 
+    public function getProductCardIdsByProductIds(array $productIds)
+    {
+        if ($productIds) {
+
+            $sIds = implode(', ', array_map('intval', $productIds));
+            return QuickPdo::fetchAll("
+select DISTINCT product_card_id from ek_product where id in ($sIds)        
+        ", [], \PDO::FETCH_COLUMN);
+        }
+        return [];
+    }
+
+    public function getLabelById($id, $shopId = null, $langId = null, $default = "")
+    {
+
+        $shopId = E::getShopId($shopId);
+        $langId = E::getLangId($langId);
+        if (false !== ($label = QuickPdo::fetch("
+select 
+COALESCE( NULLIF(shpcl.label, ''), pcl.label ) as label
+from 
+ek_product_card_lang pcl 
+inner join 
+ek_shop_has_product_card_lang shpcl on shpcl.product_card_id=pcl.product_card_id and shpcl.lang_id=pcl.lang_id
+where 
+pcl.lang_id=$langId
+and shpcl.shop_id=$shopId 
+and pcl.product_card_id=$id        
+        ", [], \PDO::FETCH_COLUMN))) {
+            return $label;
+        }
+        return $default;
+    }
+
+
     /**
      * A maintenance method to do "batch" operations on cards.
      */
     public function getProductCardIdsByShop($shopId = null)
     {
         EkomApi::inst()->initWebContext();
-        $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+        $shopId = E::getShopId($shopId);
 
         return QuickPdo::fetchAll("
 select product_card_id from ek_shop_has_product_card
@@ -44,7 +79,7 @@ where category_id in ($sCatIds)
 
     }
 
-    public function getProductCardInfosByCategoryIds(array $categoryIds, $langId=null)
+    public function getProductCardInfosByCategoryIds(array $categoryIds, $langId = null)
     {
         $langId = E::getLangId($langId);
         $sCatIds = '"' . implode('", "', $categoryIds) . '"';

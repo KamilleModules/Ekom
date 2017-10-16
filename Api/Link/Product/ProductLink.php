@@ -183,6 +183,9 @@ class ProductLink extends EkomApiLink
             foreach ($categories as $category) {
                 $idCategory = CategoryObject::createByNameShopId($category, $shop_id)
                     ->save();
+
+                $idCategory = $idCategory['id'];
+
                 $rCats[] = $idCategory;
 
                 $r = [];
@@ -405,6 +408,7 @@ class ProductLink extends EkomApiLink
             );
         $r = [];
         $idProduct = $product->save($r);
+        $idProduct = $idProduct['id'];
         $results = array_merge($results, $r);
 
 
@@ -443,6 +447,7 @@ class ProductLink extends EkomApiLink
                         )
                     )
                     ->save($r);
+
                 $results['attributes'][] = $r;
             }
         }

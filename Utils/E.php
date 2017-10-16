@@ -4,6 +4,7 @@
 namespace Module\Ekom\Utils;
 
 
+use ArrayToString\ArrayToStringTool;
 use Authenticate\SessionUser\SessionUser;
 use Bat\CaseTool;
 use Bat\SessionTool;
@@ -43,11 +44,20 @@ class E
         return EkomApi::inst()->connexionLayer()->getUserId($default);
     }
 
+    public static function isErroneousModel(array $m)
+    {
+        if (array_key_exists('errorCode', $m)) {
+//            XLog::error("[Ekom module] E:isErroneousModel - a model error occurred: " . ArrayToStringTool::toPhpArray($m));
+            return true;
+        }
+        return false;
+    }
 
     /**
      * @return \Localys\LocalysInterface
      */
-    public static function localys(){
+    public static function localys()
+    {
         /**
          * I personally use this _l function that I find handy.
          * This should be the one place where you change the localys invocation

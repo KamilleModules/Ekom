@@ -11,6 +11,31 @@ use QuickPdo\QuickPdo;
 class ProductTypeLayer
 {
 
+    public function getProductIdsByProductType($productType, $shopId = null)
+    {
+        EkomApi::inst()->initWebContext();
+        $shopId = E::getShopId($shopId);
+
+
+        return QuickPdo::fetchAll("
+select distinct
+h.product_id
+from 
+ek_shop_has_product h
+inner join ek_product_type t on t.id=h.product_type_id and t.shop_id=h.shop_id 
+where t.name=:name 
+and h.shop_id=$shopId
+", [
+            "name" => $productType,
+        ],
+            \PDO::FETCH_COLUMN
+        );
+    }
+
+
+
+
+
     public function registerNewType($type)
     {
         $row = QuickPdo::fetch("select id from ek_product_type

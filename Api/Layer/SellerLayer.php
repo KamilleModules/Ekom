@@ -12,6 +12,7 @@ use QuickPdo\QuickPdo;
 class SellerLayer
 {
 
+
     public function getProductIdsBySellerName($name, $shopId = null)
     {
         EkomApi::inst()->initWebContext();
@@ -32,6 +33,8 @@ and h.shop_id=$shopId
             \PDO::FETCH_COLUMN
         );
     }
+
+
 
 
     /**

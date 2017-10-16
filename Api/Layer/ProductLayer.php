@@ -310,8 +310,10 @@ and p.product_card_id=$cardId
                 $productIds[] = $row['product_id'];
             }
 
+            if ($productIds) {
 
-            $rows = QuickPdo::fetchAll("
+
+                $rows = QuickPdo::fetchAll("
 select 
 h.product_id,
 al.product_attribute_id as attribute_id,
@@ -336,24 +338,26 @@ order by h.order asc
 ");
 
 
-            $productId2attr = [];
+                $productId2attr = [];
 
-            foreach ($rows as $row) {
-                $pid = $row['product_id'];
-                unset($row['product_id']);
-                $productId2attr[$pid][] = $row;
-            }
-
-            foreach ($productsInfo as $k => $row) {
-                $pid = $row['product_id'];
-                if (array_key_exists($pid, $productId2attr)) {
-                    $productsInfo[$k]['attributes'] = $productId2attr[$pid];
-                } else {
-//                    XLog::error("[Ekom module] - ProductLayer: attributes not found for product with id $pid in shop $shopId and lang $langId");
-                    $productsInfo[$k]['attributes'] = [];
+                foreach ($rows as $row) {
+                    $pid = $row['product_id'];
+                    unset($row['product_id']);
+                    $productId2attr[$pid][] = $row;
                 }
+
+                foreach ($productsInfo as $k => $row) {
+                    $pid = $row['product_id'];
+                    if (array_key_exists($pid, $productId2attr)) {
+                        $productsInfo[$k]['attributes'] = $productId2attr[$pid];
+                    } else {
+//                    XLog::error("[Ekom module] - ProductLayer: attributes not found for product with id $pid in shop $shopId and lang $langId");
+                        $productsInfo[$k]['attributes'] = [];
+                    }
+                }
+                return $productsInfo;
             }
-            return $productsInfo;
+            return [];
 
         }, [
             "ek_product_has_product_attribute",
@@ -407,6 +411,7 @@ order by h.order asc
                         /**
                          * Take the list of attributes
                          */
+
                         $productsInfo = $this->getProductCardProductsWithAttributes($cardId, $shopId, $langId);
 
 
@@ -659,7 +664,7 @@ order by h.order asc
                         } else {
                             $model['errorCode'] = "emptyProductCard";
                             $model['errorTitle'] = "Empty product card";
-                            $model['errorMessage'] = "This product card does not contain any products";
+                            $model['errorMessage'] = "This product card does not contain any products ($cardId, $productId)";
                         }
                     } else {
                         /**
@@ -667,7 +672,7 @@ order by h.order asc
                          */
                         $model['errorCode'] = "inactive";
                         $model['errorTitle'] = "Product card not active";
-                        $model['errorMessage'] = "This product card is not active for this shop, sorry";
+                        $model['errorMessage'] = "This product card is not active for this shop, sorry ($cardId, $productId)";
                     }
                 } else {
                     /**
@@ -682,8 +687,9 @@ order by h.order asc
             } catch (\Exception $e) {
                 $model['errorCode'] = "exception";
                 $model['errorTitle'] = "Exception occurred";
-                $model['errorMessage'] = $e->getMessage();
-                XLog::error("[Ekom module] - ProductLayer.Exception: $e");
+                $model['errorMessage'] = $e->getMessage() . "($cardId, $productId)";
+                $model['errorTrace'] = $e->getTraceAsString();
+
             }
 
 
@@ -707,7 +713,6 @@ order by h.order asc
              * - Ekom/Api/Util/ProductUtil::updateProductPrice
              *
              */
-
             Hooks::call("Ekom_decorateBoxModel", $model);
             unset($model['_productDetails']);
 
@@ -787,6 +792,8 @@ order by h.order asc
                 $model['rawSalePrice'] = $model['rawSalePriceWithTax'];
             }
         }
+
+
         return $model;
     }
 
