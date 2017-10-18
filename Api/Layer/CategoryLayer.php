@@ -541,10 +541,10 @@ and l.slug=:slug
      *
      *
      */
-    public function getSubCategoriesByName($name, $maxDepth = -1, $wildCard = '')
+    public function getSubCategoriesByName($name, $maxDepth = -1, $wildCard = '', $shopId=null)
     {
         EkomApi::inst()->initWebContext();
-        $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
+        $shopId = E::getShopId($shopId);
         $langId = (int)ApplicationRegistry::get("ekom.lang_id");
 
 
@@ -570,12 +570,14 @@ c.category_id = (
 ) 
 
 and cl.lang_id=$langId
+and c.shop_id=$shopId
 
         
         
         ", [
                 "cname" => $name,
             ]);
+
 
 
             $ret = [];
