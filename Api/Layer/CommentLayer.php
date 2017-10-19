@@ -4,8 +4,10 @@
 namespace Module\Ekom\Api\Layer;
 
 
+use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 class CommentLayer
@@ -40,6 +42,32 @@ and active=1
 
         }
         return $info;
+    }
 
+
+    public function getProductCommentInfo($shopId = null)
+    {
+
+        $shopId = E::getShopId($shopId);
+
+        return A::cache()->get("Ekom.CommentLayer.getProductCommentInfo.$shopId", function () use ($shopId) {
+            return QuickPdo::fetchAll("
+select 
+
+product_id,
+count(*) as nbComments,
+sum(rating) as sum,
+avg(rating) as average
+
+from ek_product_comment
+where 
+
+shop_id=$shopId
+
+group by product_id
+        ");
+        }, [
+            'ek_product_comment',
+        ]);
     }
 }

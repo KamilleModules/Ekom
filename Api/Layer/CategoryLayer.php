@@ -572,6 +572,7 @@ c.category_id = (
 and cl.lang_id=$langId
 and c.shop_id=$shopId
 
+order by c.order asc
         
         
         ", [
