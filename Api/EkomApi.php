@@ -15,7 +15,9 @@ use Module\Ekom\Api\Layer\BreadcrumbsLayer;
 use Module\Ekom\Api\Layer\BundleLayer;
 use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
+use Module\Ekom\Api\Layer\CategoryCoreLayer;
 use Module\Ekom\Api\Layer\CategoryLayer;
+use Module\Ekom\Api\Layer\CategoryNewLayer;
 use Module\Ekom\Api\Layer\CheckoutLayer;
 use Module\Ekom\Api\Layer\CommentLayer;
 use Module\Ekom\Api\Layer\ConditionLayer;
@@ -350,6 +352,15 @@ and h.lang_id=$langId
     public function categoryLayer()
     {
         return $this->getLayer('categoryLayer');
+    }
+
+
+    /**
+     * @return CategoryCoreLayer
+     */
+    public function categoryCoreLayer()
+    {
+        return $this->getLayer('categoryCoreLayer');
     }
 
 
