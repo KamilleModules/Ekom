@@ -17,6 +17,39 @@ class CategoryLayer
 {
 
 
+
+    public function collectCategoryInfoTreeByCategorySlugs(array &$infos, array $categorySlugs, $shopId = null, $langId = null)
+    {
+
+        $shopId = E::getLangId($shopId);
+        $langId = E::getLangId($langId);
+        $markers = [];
+        $c = 0;
+        foreach ($categorySlugs as $slug) {
+            $markers["marker_" . $c++] = $slug;
+        }
+        $slugs = implode(', ', array_map(function ($v) {
+            return ':' . $v;
+        }, array_keys($markers)));
+
+
+        $catIds = QuickPdo::fetchAll("
+select c.id 
+from ek_category_lang cl
+inner join ek_category c on c.id=cl.category_id
+ 
+where cl.lang_id=$langId
+and c.shop_id=$shopId
+and cl.slug in ($slugs)
+         
+        ", $markers, \PDO::FETCH_COLUMN);
+        foreach ($catIds as $catId) {
+            $this->doCollectDescendantsInfo($catId, $infos);
+        }
+    }
+
+
+
     public function getUpCategoryInfosById($categoryId, $topToBottom = true, $shopId = null, $langId = null)
     {
         $infos = [];
@@ -485,10 +518,11 @@ and l.slug=:slug
     }
 
 
-    public function getSubCategoryIdsByName($name, $includeSelfInChildren = true)
+    public function getSubCategoriesInfoByName($name, $includeSelfInChildren = true, $shopId = null)
     {
+        $shopId = E::getShopId($shopId);
         $ret = [];
-        $topCats = $this->getSubCategoriesByName($name);
+        $topCats = $this->getSubCategoriesByName($name, -1, '', $shopId);
         foreach ($topCats as $info) {
 
             $childrenIds = [];
@@ -541,7 +575,7 @@ and l.slug=:slug
      *
      *
      */
-    public function getSubCategoriesByName($name, $maxDepth = -1, $wildCard = '', $shopId=null)
+    public function getSubCategoriesByName($name, $maxDepth = -1, $wildCard = '', $shopId = null)
     {
         EkomApi::inst()->initWebContext();
         $shopId = E::getShopId($shopId);
@@ -578,7 +612,6 @@ order by c.order asc
         ", [
                 "cname" => $name,
             ]);
-
 
 
             $ret = [];
