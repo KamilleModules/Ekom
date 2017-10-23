@@ -4,6 +4,9 @@
 namespace Module\Ekom\Api\Layer;
 
 
+use Bat\HashTool;
+use Core\Services\A;
+use Module\Ekom\Api\Util\HashUtil;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
@@ -46,39 +49,65 @@ use QuickPdo\QuickPdo;
  *
  *
  *
- * Sources:
+ *
+ *
+ * inspirational sources:
  * http://mikehillyer.com/articles/managing-hierarchical-data-in-mysql/
+ *
+ * Note: I didn't implement nested model because:
+ * - it's easier to make hot-update (using phpmyadmin) with the adjacency model
+ * - the approach of the adjacency model is more intuitive to me
+ * - if my boss ask me a complex request, I will feel more comfortable with the adjacency model
+ *
  */
 class CategoryCoreLayer
 {
     private $_shop_id;
     private $_lang_id;
-    private $_options;
+    private static $cpt = 0;
 
+    /**
+     * @param $parentName
+     * @param int $maxLevel
+     * @param null $shopId
+     * @param bool $langId
+     * @param array $options
+     *          - order: [$field, asc|desc]
+     * @return array
+     */
     public function getSelfAndChildren($parentName, $maxLevel = -1, $shopId = null, $langId = false, array $options = [])
     {
-        $ret = [];
-        $this->_shop_id = $shopId;
-        $this->_lang_id = $langId;
-        $this->_options = $options;
-        $q = $this->getQuery("name");
+
+        $hash = HashTool::getHashByArray($options);
+        $mix = "$parentName.$maxLevel.$shopId.$langId.$hash";
+
+        return A::cache()->get("Ekom.CategoryCoreLayer.getSelfAndChildren.$mix", function () use ($shopId, $langId, $parentName, $maxLevel, $options) {
+            $ret = [];
+            $this->_shop_id = $shopId;
+            $this->_lang_id = $langId;
+            $q = $this->getQuery("name");
+            $row = QuickPdo::fetch($q,
+                ['name' => $parentName]
+            );
 
 
-        $row = QuickPdo::fetch($q,
-            ['name' => $parentName]
-        );
-        if (false !== $row) {
-            $depth = 0;
-            $row['depth'] = $depth;
-            $ret[] = $row;
-            if (0 !== $maxLevel) {
-                $this->collectChildrenByRow($row, $ret, $maxLevel, $depth + 1);
+            if (false !== $row) {
+                $depth = 0;
+                $row['depth'] = $depth;
+                $ret[] = $row;
+                if (0 !== $maxLevel) {
+                    $this->collectChildrenByRow($row, $ret, $maxLevel, $depth + 1);
+                }
+                $this->applySort($ret, $options);
             }
-            return $ret;
-        }
-        return [];
-    }
 
+
+            return $ret;
+        }, [
+            'ek_category',
+            'ek_category_lang',
+        ]);
+    }
 
     public function getLeafNodes()
     {
@@ -86,22 +115,38 @@ class CategoryCoreLayer
     }
 
 
-    public function getSelfAndParents($catName, $maxLevel = -1)
+    public function getSelfAndParents($catName, $maxLevel = -1, $shopId = null, $langId = false, $options = [])
     {
-        $ret = [];
-        $row = QuickPdo::fetch("
-select * from ek_category where `name`=:name        
-        ",
-            ['name' => $catName]
-        );
-        if (false !== $row) {
-            $ret[] = $row;
-            if (0 !== $maxLevel) {
-                $this->collectParentsByRow($row, $ret, $maxLevel);
+
+        $hash = HashTool::getHashByArray($options);
+        $mix = "$catName.$maxLevel.$shopId.$langId.$hash";
+
+        return A::cache()->get("Ekom.CategoryCoreLayer.getSelfAndParents.$mix", function () use ($shopId, $langId, $catName, $maxLevel, $options) {
+            $ret = [];
+            $this->_shop_id = $shopId;
+            $this->_lang_id = $langId;
+
+
+            $q = $this->getQuery("name");
+            $row = QuickPdo::fetch($q,
+                ['name' => $catName]
+            );
+
+
+            if (false !== $row) {
+                $ret[] = $row;
+                if (0 !== $maxLevel) {
+                    $this->collectParentsByRow($row, $ret, $maxLevel);
+                }
+                $this->applySort($ret, $options);
             }
             return $ret;
-        }
-        return $ret;
+        }, [
+            'ek_category',
+            'ek_category_lang',
+        ]);
+
+
     }
 
 
@@ -131,15 +176,15 @@ select * from ek_category where `name`=:name
     //--------------------------------------------
     private function collectChildrenByRow(array $row, array &$ret, $maxLevel = 1, $depth = 1)
     {
+        if (self::$cpt++ > 20) {
+            throw new \Exception("infinite loop prevention for collectChildrenByRow");
+        }
         if (0 === $maxLevel--) {
             return;
         }
         $catId = $row['id'];
-        $q = $this->getQuery("nested", $catId);
-
-        $rows = QuickPdo::fetchAll("
-select c.* from ek_category where category_id=$catId            
-            ");
+        $q = $this->getQuery("collectChildrenByRow", $catId);
+        $rows = QuickPdo::fetchAll($q);
 
 
         foreach ($rows as $row) {
@@ -150,8 +195,11 @@ select c.* from ek_category where category_id=$catId
     }
 
 
-    private function collectParentsByRow(array $row, array &$ret, $maxLevel = 1, $depth = 1)
+    private function collectParentsByRow(array $row, array &$ret, $maxLevel = 1)
     {
+        if (self::$cpt++ > 20) {
+            throw new \Exception("infinite loop prevention for collectParentsByRow");
+        }
         if (0 === $maxLevel--) {
             return;
         }
@@ -159,9 +207,10 @@ select c.* from ek_category where category_id=$catId
         if (null === $parentId) {
             return;
         }
-        $row = QuickPdo::fetch("
-select * from ek_category where id=$parentId            
-            ");
+
+        $q = $this->getQuery("collectParentsByRow", $parentId);
+        $row = QuickPdo::fetch($q);
+
         if (false !== $row) {
             $ret[] = $row;
             $this->collectParentsByRow($row, $ret, $maxLevel);
@@ -169,34 +218,23 @@ select * from ek_category where id=$parentId
     }
 
 
-    private function decorateQueryByShopIdLangId(&$query, $shopId, $langId)
-    {
-        if (false !== $shopId) {
-            $shopId = E::getShopId($shopId);
-            $query .= "
-and c.shop_id=$shopId            
-            ";
-        }
-        if (false !== $langId) {
-            $langId = E::getShopId($langId);
-            $query .= "
-and c.lang_id=$langId            
-            ";
-        }
-    }
-
     private function getQuery($type, $extra = null)
     {
-        $options = array_replace([
-            'order' => null,
-        ], $this->_options);
 
         $shopId = $this->_shop_id;
         $langId = $this->_lang_id;
 
         $what = "c.*";
         if (false !== $langId) {
-            $what .= ", cl.*";
+            $what .= ",
+cl.lang_id,            
+cl.label,            
+cl.description,            
+cl.slug,            
+cl.meta_title,            
+cl.meta_description,            
+cl.meta_keywords            
+";
         }
         $q = "
 select $what 
@@ -215,9 +253,14 @@ inner join ek_category_lang cl on cl.category_id=c.id
             $q .= "
 where c.name=:name        
         ";
-        } else {
+        } elseif ('collectChildrenByRow' === $type) {
             $q .= "
-where category_id=$extra        
+where c.category_id=$extra        
+        ";
+        } elseif ('collectParentsByRow' === $type) {
+
+            $q .= "
+where c.id=$extra        
         ";
         }
 
@@ -231,18 +274,28 @@ and c.shop_id=$shopId
         if (false !== $langId) {
             $langId = E::getShopId($langId);
             $q .= "
-and c.lang_id=$langId            
-            ";
-        }
-
-
-        if (null !== $options['order']) {
-            $q .= "
-order by cl.label asc            
+and cl.lang_id=$langId            
             ";
         }
 
         return $q;
     }
 
+
+    private function applySort(array &$ret, array $options)
+    {
+        if (array_key_exists('order', $options)) {
+            $order = $options['order'];
+            list($field, $direction) = $order;
+            if ('asc' === $direction) {
+                usort($ret, function ($a, $b) use ($field, $direction) {
+                    return $a[$field] > $b[$field];
+                });
+            } else {
+                usort($ret, function ($a, $b) use ($field, $direction) {
+                    return $a[$field] < $b[$field];
+                });
+            }
+        }
+    }
 }
