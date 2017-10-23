@@ -65,6 +65,7 @@ class CategoryCoreLayer
     private $_shop_id;
     private $_lang_id;
     private static $cpt = 0;
+    private static $max = 40;
 
     /**
      * @param $parentName
@@ -80,6 +81,7 @@ class CategoryCoreLayer
 
         $hash = HashTool::getHashByArray($options);
         $mix = "$parentName.$maxLevel.$shopId.$langId.$hash";
+        self::$cpt = 0;
 
         return A::cache()->get("Ekom.CategoryCoreLayer.getSelfAndChildren.$mix", function () use ($shopId, $langId, $parentName, $maxLevel, $options) {
             $ret = [];
@@ -89,7 +91,6 @@ class CategoryCoreLayer
             $row = QuickPdo::fetch($q,
                 ['name' => $parentName]
             );
-
 
             if (false !== $row) {
                 $depth = 0;
@@ -120,6 +121,7 @@ class CategoryCoreLayer
 
         $hash = HashTool::getHashByArray($options);
         $mix = "$catName.$maxLevel.$shopId.$langId.$hash";
+        self::$cpt = 0;
 
         return A::cache()->get("Ekom.CategoryCoreLayer.getSelfAndParents.$mix", function () use ($shopId, $langId, $catName, $maxLevel, $options) {
             $ret = [];
@@ -176,7 +178,7 @@ class CategoryCoreLayer
     //--------------------------------------------
     private function collectChildrenByRow(array $row, array &$ret, $maxLevel = 1, $depth = 1)
     {
-        if (self::$cpt++ > 20) {
+        if (self::$cpt++ > self::$max) {
             throw new \Exception("infinite loop prevention for collectChildrenByRow");
         }
         if (0 === $maxLevel--) {
@@ -197,7 +199,7 @@ class CategoryCoreLayer
 
     private function collectParentsByRow(array $row, array &$ret, $maxLevel = 1)
     {
-        if (self::$cpt++ > 20) {
+        if (self::$cpt++ > self::$max) {
             throw new \Exception("infinite loop prevention for collectParentsByRow");
         }
         if (0 === $maxLevel--) {

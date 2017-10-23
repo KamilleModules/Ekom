@@ -33,9 +33,9 @@ class SummaryItemsQueryFilterBox extends QueryFilterBox
     public function prepare()
     {
         $summaryItems = [];
-
         $usedPool = array_intersect_key($this->pool, array_flip($this->usedPool));
         $uriParams = $usedPool;
+
         foreach ($usedPool as $name => $value) {
 
 
@@ -74,6 +74,7 @@ class SummaryItemsQueryFilterBox extends QueryFilterBox
                 }
             }
         }
+
 
         $this->model = [
             'items' => $summaryItems,

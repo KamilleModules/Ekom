@@ -17,7 +17,6 @@ class CategoryLayer
 {
 
 
-
     public function getUpCategoryInfosById($categoryId, $topToBottom = true, $shopId = null, $langId = null)
     {
         $infos = [];
@@ -129,6 +128,22 @@ where c.name=:name
     {
         $id = (int)$id;
         return QuickPdo::fetch("select `name` from ek_category where id=$id", [], \PDO::FETCH_COLUMN);
+    }
+
+    public function getCategoryNameBySlug($slug, $langId = null)
+    {
+        $langId = E::getLangId($langId);
+        return QuickPdo::fetch("
+select c.`name` 
+from ek_category c
+inner join ek_category_lang cl on cl.category_id=c.id 
+where
+cl.slug=:slug
+and cl.lang_id=$langId
+
+", [
+            'slug' => $slug,
+        ], \PDO::FETCH_COLUMN);
     }
 
 

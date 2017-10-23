@@ -83,7 +83,7 @@ class PriceQueryFilterBox extends QueryFilterBox implements CollectableInterface
 
                 $this->model = [
                     "formTrail" => $formTrail,
-                    "title" => "Price",
+                    "title" => "Prix",
                     "type" => "minMax",
                     "minValue" => $this->formatPrice($min),
                     "maxValue" => $this->formatPrice($max),

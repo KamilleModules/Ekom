@@ -7,6 +7,7 @@ namespace Module\Ekom\Api\Layer;
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 class CountryLayer
@@ -53,6 +54,22 @@ order by c.iso_code asc
     public function getCountryIdByIso($iso)
     {
         return QuickPdo::fetch("select id from ek_country where iso_code=:iso", [
+            "iso" => $iso,
+        ], \PDO::FETCH_COLUMN);
+    }
+
+
+    public function getLabelByIso($iso, $langId = null)
+    {
+        $langId = E::getLangId($langId);
+        return QuickPdo::fetch("
+select cl.label
+from ek_country_lang cl  
+inner join ek_country c on c.id=cl.country_id
+ 
+where c.iso_code=:iso
+and cl.lang_id=$langId
+", [
             "iso" => $iso,
         ], \PDO::FETCH_COLUMN);
     }
