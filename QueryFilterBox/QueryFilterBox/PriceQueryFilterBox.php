@@ -65,7 +65,6 @@ class PriceQueryFilterBox extends QueryFilterBox implements CollectableInterface
             }
 
 
-
             if ($min !== $max) {
 
                 $currentMin = $min;
@@ -73,10 +72,10 @@ class PriceQueryFilterBox extends QueryFilterBox implements CollectableInterface
 
                 $formTrail = QueryFilterBoxHelper::toFormFields($this->usedPool, ['price']);
 
-                if(null !== $this->_min){
+                if (null !== $this->_min) {
                     $currentMin = $this->_min;
                 }
-                if(null !== $this->_max){
+                if (null !== $this->_max) {
                     $currentMax = $this->_max;
                 }
 
@@ -85,10 +84,10 @@ class PriceQueryFilterBox extends QueryFilterBox implements CollectableInterface
                     "formTrail" => $formTrail,
                     "title" => "Prix",
                     "type" => "minMax",
-                    "minValue" => $this->formatPrice($min),
-                    "maxValue" => $this->formatPrice($max),
-                    "currentMin" => $this->formatPrice($currentMin),
-                    "currentMax" => $this->formatPrice($currentMax),
+                    "minValue" => (int)$this->formatPrice($min),
+                    "maxValue" => (int)$this->formatPrice($max),
+                    "currentMin" => (int)$this->formatPrice($currentMin),
+                    "currentMax" => (int)$this->formatPrice($currentMax),
                     "moneyFormatArgs" => E::conf("moneyFormatArgs"),
                 ];
             }
