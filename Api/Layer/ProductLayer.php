@@ -248,6 +248,7 @@ t.name as product_type,
 s.price,
 s.quantity,
 s.active,
+s.codes,
 se.name as seller,
 l.label,
 l.description,
@@ -553,23 +554,6 @@ order by h.order asc
                             //--------------------------------------------
                             // attributes
                             //--------------------------------------------
-                            if (false === 'deprecated') {
-                                /**
-                                 * @var $attrModelGenFactory AttributesModelGeneratorFactoryInterface
-                                 */
-                                $attrModelGenFactory = X::get("Ekom_getAttributesModelGeneratorFactory");
-
-                                /**
-                                 * @var $attrModelGen AttributesModelGeneratorInterface
-                                 */
-                                $attrModelGen = $attrModelGenFactory->get([
-                                    'product_type' => $p['product_type'],
-                                    'extra' => 0,
-                                ]);
-
-                                $attr = $attrModelGen->generate($productsInfo, $productId);
-                            }
-
                             $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $productId);
 
 
@@ -585,6 +569,14 @@ order by h.order asc
                             // rating
                             //--------------------------------------------
                             $ratingInfo = EkomApi::inst()->commentLayer()->getRatingInfo($cardId);
+
+
+
+                            //--------------------------------------------
+                            // CODES
+                            //--------------------------------------------
+                            $codes = ProductCodeLayer::extractCodes($p['codes']);
+
 
 
                             $boxConf = [
@@ -640,6 +632,7 @@ order by h.order asc
                                 // tax ratio
                                 "taxRatio" => $taxRatio,
                                 "taxDetails" => $taxDetails,
+                                "codes" => $codes,
 
 
                                 // card combination

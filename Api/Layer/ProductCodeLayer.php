@@ -69,10 +69,7 @@ shop_id=$shopId
 and product_id=$productId
         ");
         if (false !== $row) {
-            if ('' !== $row['codes']) {
-                $codes = $row['codes'];
-                return explode(",", $codes);
-            }
+            return self::extractCodes($row['codes']);
         }
         return [];
     }
@@ -81,4 +78,8 @@ and product_id=$productId
     //
     //--------------------------------------------
 
+    public static function extractCodes($sCodes)
+    {
+        return explode(",", $sCodes);
+    }
 }

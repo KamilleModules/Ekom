@@ -6,6 +6,7 @@ namespace Module\Ekom\QueryFilterBox\QueryFilterBox;
 
 use Bat\UriTool;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\QueryFilterBox\CategoryAwareQueryFilterBoxInterface;
 use QueryFilterBox\Collectable\CollectableInterface;
 use QueryFilterBox\Query\Query;
 use QueryFilterBox\QueryFilterBox\QueryFilterBox;
@@ -18,7 +19,7 @@ use QueryFilterBox\QueryFilterBox\QueryFilterBox;
  * Class AttributesQueryFilterBox
  * @package Module\Ekom\QueryFilterBox\QueryFilterBox
  */
-class AttributesQueryFilterBox extends QueryFilterBox implements CollectableInterface
+class AttributesQueryFilterBox extends QueryFilterBox implements CollectableInterface, CategoryAwareQueryFilterBoxInterface
 {
 
     private $categoryId;
@@ -30,6 +31,14 @@ class AttributesQueryFilterBox extends QueryFilterBox implements CollectableInte
         $this->_attributes = [];
         return $this;
     }
+
+    public function getCategoryId()
+    {
+        return $this->categoryId;
+    }
+
+
+
 
     public static function create()
     {

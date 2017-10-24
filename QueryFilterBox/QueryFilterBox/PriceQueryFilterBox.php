@@ -5,6 +5,7 @@ namespace Module\Ekom\QueryFilterBox\QueryFilterBox;
 
 
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\QueryFilterBox\CategoryAwareQueryFilterBoxInterface;
 use Module\Ekom\Utils\E;
 use QueryFilterBox\Collectable\CollectableInterface;
 use QueryFilterBox\Query\Query;
@@ -20,7 +21,7 @@ use QueryFilterBox\Util\Helper\QueryFilterBoxHelper;
  * Class PriceQueryFilterBox
  * @package Module\Ekom\QueryFilterBox\QueryFilterBox
  */
-class PriceQueryFilterBox extends QueryFilterBox implements CollectableInterface
+class PriceQueryFilterBox extends QueryFilterBox implements CollectableInterface, CategoryAwareQueryFilterBoxInterface
 {
 
     private $categoryId;
@@ -30,6 +31,7 @@ class PriceQueryFilterBox extends QueryFilterBox implements CollectableInterface
 
     public function __construct()
     {
+        parent::__construct();
         $this->categoryId = null;
         $this->_min = null;
         $this->_max = null;
@@ -46,6 +48,12 @@ class PriceQueryFilterBox extends QueryFilterBox implements CollectableInterface
         $this->categoryId = $categoryId;
         return $this;
     }
+
+    public function getCategoryId()
+    {
+        return $this->categoryId;
+    }
+
 
 
     public function prepare()
@@ -83,6 +91,7 @@ class PriceQueryFilterBox extends QueryFilterBox implements CollectableInterface
                 $this->model = [
                     "formTrail" => $formTrail,
                     "title" => "Prix",
+                    "name" => "price",
                     "type" => "minMax",
                     "minValue" => (int)$this->formatPrice($min),
                     "maxValue" => (int)$this->formatPrice($max),

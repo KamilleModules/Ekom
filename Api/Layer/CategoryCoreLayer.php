@@ -110,6 +110,7 @@ class CategoryCoreLayer
         ]);
     }
 
+
     public function getLeafNodes()
     {
         throw new \Exception("Is that really useful?");
@@ -133,6 +134,39 @@ class CategoryCoreLayer
             $row = QuickPdo::fetch($q,
                 ['name' => $catName]
             );
+
+
+            if (false !== $row) {
+                $ret[] = $row;
+                if (0 !== $maxLevel) {
+                    $this->collectParentsByRow($row, $ret, $maxLevel);
+                }
+                $this->applySort($ret, $options);
+            }
+            return $ret;
+        }, [
+            'ek_category',
+            'ek_category_lang',
+        ]);
+
+
+    }
+
+    public function getSelfAndParentsByCategoryId($catId, $maxLevel = -1, $shopId = null, $langId = false, $options = [])
+    {
+
+        $hash = HashTool::getHashByArray($options);
+        $mix = "$catId.$maxLevel.$shopId.$langId.$hash";
+        self::$cpt = 0;
+
+        return A::cache()->get("Ekom.CategoryCoreLayer.getSelfAndParentsByCategoryId.$mix", function () use ($shopId, $langId, $catId, $maxLevel, $options) {
+            $ret = [];
+            $this->_shop_id = $shopId;
+            $this->_lang_id = $langId;
+
+
+            $q = $this->getQuery("id", $catId);
+            $row = QuickPdo::fetch($q);
 
 
             if (false !== $row) {
@@ -254,6 +288,11 @@ inner join ek_category_lang cl on cl.category_id=c.id
 
             $q .= "
 where c.name=:name        
+        ";
+        } elseif ('id' === $type) {
+
+            $q .= "
+where c.id=$extra        
         ";
         } elseif ('collectChildrenByRow' === $type) {
             $q .= "

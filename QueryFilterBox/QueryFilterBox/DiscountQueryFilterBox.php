@@ -6,13 +6,14 @@ namespace Module\Ekom\QueryFilterBox\QueryFilterBox;
 
 use Bat\UriTool;
 use Module\Ekom\Api\Layer\DiscountLayer;
+use Module\Ekom\QueryFilterBox\CategoryAwareQueryFilterBoxInterface;
 use Module\Ekom\Utils\E;
 use QueryFilterBox\Collectable\CollectableInterface;
 use QueryFilterBox\Query\Query;
 use QueryFilterBox\QueryFilterBox\QueryFilterBox;
 
 
-class DiscountQueryFilterBox extends QueryFilterBox implements CollectableInterface
+class DiscountQueryFilterBox extends QueryFilterBox implements CollectableInterface, CategoryAwareQueryFilterBoxInterface
 {
 
     private $categoryId;
@@ -21,6 +22,7 @@ class DiscountQueryFilterBox extends QueryFilterBox implements CollectableInterf
 
     public function __construct()
     {
+        parent::__construct();
         $this->_discounts = [];
     }
 
@@ -28,6 +30,11 @@ class DiscountQueryFilterBox extends QueryFilterBox implements CollectableInterf
     {
         $this->categoryId = $categoryId;
         return $this;
+    }
+
+    public function getCategoryId()
+    {
+        return $this->categoryId;
     }
 
     public static function create()

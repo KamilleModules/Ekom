@@ -5,10 +5,11 @@ namespace Module\Ekom\QueryFilterBox\QueryFilterBox;
 
 
 use Bat\UriTool;
+use Module\Ekom\QueryFilterBox\CategoryAwareQueryFilterBoxInterface;
 use QueryFilterBox\Collectable\CollectableInterface;
 use QueryFilterBox\QueryFilterBox\QueryFilterBox;
 
-class SummaryItemsQueryFilterBox extends QueryFilterBox
+class SummaryItemsQueryFilterBox extends QueryFilterBox implements CategoryAwareQueryFilterBoxInterface
 {
 
     private $categoryId;
@@ -21,6 +22,7 @@ class SummaryItemsQueryFilterBox extends QueryFilterBox
 
     public function __construct()
     {
+        parent::__construct();
         $this->categoryId = null;
         $this->collectables = [];
     }
@@ -29,6 +31,12 @@ class SummaryItemsQueryFilterBox extends QueryFilterBox
     {
         return new static();
     }
+
+    public function getCategoryId()
+    {
+        return $this->categoryId;
+    }
+
 
     public function prepare()
     {
