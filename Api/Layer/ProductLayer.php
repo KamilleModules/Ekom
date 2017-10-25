@@ -542,7 +542,6 @@ order by h.order asc
                             $priceWithTax = E::price($_priceWithTax);
                             $priceWithoutTax = E::price($_priceWithoutTax);
 
-
                             $productReference = $p['reference'];
                             $cardSlug = ("" !== $row['slug']) ? $row['slug'] : $row['default_slug'];
                             $cardUri = E::link("Ekom_productCardRef", [
@@ -571,12 +570,10 @@ order by h.order asc
                             $ratingInfo = EkomApi::inst()->commentLayer()->getRatingInfo($cardId);
 
 
-
                             //--------------------------------------------
                             // CODES
                             //--------------------------------------------
                             $codes = ProductCodeLayer::extractCodes($p['codes']);
-
 
 
                             $boxConf = [
@@ -621,7 +618,6 @@ order by h.order asc
                                 "rawPriceWithoutTax" => $_priceWithoutTax,
 
 
-//                                "taxDetails" => $taxDetails, // see TaxLayer.applyTaxesToPrice for more details
                                 "attributesString" => $attrString,
                                 "attributesSelection" => $attrSelection,
                                 "attributes" => $attr,
@@ -630,6 +626,7 @@ order by h.order asc
                                 "rating_nbVotes" => $ratingInfo['count'],
 
                                 // tax ratio
+                                "taxApplies" => true, // you could set this to false with modules
                                 "taxRatio" => $taxRatio,
                                 "taxDetails" => $taxDetails,
                                 "codes" => $codes,
@@ -651,7 +648,7 @@ order by h.order asc
                             /**
                              * You can only subscribe to this hook if you use the tabatha cache ids
                              */
-                            Hooks::call("Ekom_decorateBoxModelCacheable", $model);
+                            Hooks::call("Ekom_decorateBoxModelCachable", $model);
 
 
                         } else {
@@ -766,7 +763,10 @@ order by h.order asc
             //--------------------------------------------
             //
             //--------------------------------------------
-
+            /**
+             * We need this in some cases where a renderer only renders one item.
+             * This can not be cached.
+             */
             $model['isB2B'] = $isB2b;
 
 
@@ -856,9 +856,10 @@ order by h.order asc
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
         $sDetails = HashUtil::createHashByArray($productDetails);
+        $b2b = (int)E::isB2b();
 
 
-        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$shopId.$langId.$productId.$sDetails", function () use ($productId, $shopId, $langId, $productDetails) {
+        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$shopId.$langId.$productId.$sDetails.$b2b", function () use ($productId, $shopId, $langId, $productDetails) {
             $productId = (int)$productId;
             try {
 

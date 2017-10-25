@@ -778,8 +778,8 @@ class CartLayer
         if (null === $items) {
             $items = $_SESSION['ekom'][$this->sessionName][$shopId]['items'];
         }
-
         $ret = $this->getCartModelByItems($items, $useEstimateShippingCosts);
+
 
         // cache for next time
         $this->_cartModel[] = [$options, $ret];
@@ -798,8 +798,9 @@ class CartLayer
         $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
         $langId = (int)ApplicationRegistry::get("ekom.lang_id");
         $sDetails = HashUtil::createHashByArray($productDetails);
+        $b2b = (int)E::isB2b();
 
-        return A::cache()->get("Module.Ekom.Api.Layer.$this->className.getCartItemInfo.$shopId.$langId.$pId.$sDetails", function () use ($pId, $shopId, $langId, $productDetails) {
+        return A::cache()->get("Module.Ekom.Api.Layer.$this->className.getCartItemInfo.$shopId.$langId.$pId.$sDetails.$b2b"  , function () use ($pId, $shopId, $langId, $productDetails) {
 
 
             $b = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($pId, $shopId, $langId, $productDetails);
