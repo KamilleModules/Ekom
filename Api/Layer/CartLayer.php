@@ -622,17 +622,17 @@ class CartLayer
         //--------------------------------------------
         // ADDING CARRIER INFORMATION
         //--------------------------------------------
+        /**
+         * we have basically two cases: either the user is connected, or not.
+         * If the user is not connected, the application chooses its own heuristics
+         * and returns an estimated shipping cost.
+         *
+         * If the user is connected and has a shipping address, the user's shipping address
+         * is used for the base of calculating the estimated shipping cost.
+         *
+         */
         if (true === $useEstimateShippingCosts) {
 
-            /**
-             * we have basically two cases: either the user is connected, or not.
-             * If the user is not connected, the application chooses its own heuristics
-             * and returns an estimated shipping cost.
-             *
-             * If the user is connected and has a shipping address, the user's shipping address
-             * is used for the base of calculating the estimated shipping cost.
-             *
-             */
             $carrierGroups = EkomApi::inst()->carrierLayer()->estimateShippingCosts($items);
             $model['carrierSections'] = $carrierGroups;
             $allShippingCosts = $carrierGroups['totalShippingCost'];
@@ -648,7 +648,6 @@ class CartLayer
                 $model['estimatedOrderGrandTotal'] = $model['estimatedOrderGrandTotalWithTax'];
             }
         }
-
 
         //--------------------------------------------
         // MODULES
@@ -800,7 +799,7 @@ class CartLayer
         $sDetails = HashUtil::createHashByArray($productDetails);
         $b2b = (int)E::isB2b();
 
-        return A::cache()->get("Module.Ekom.Api.Layer.$this->className.getCartItemInfo.$shopId.$langId.$pId.$sDetails.$b2b"  , function () use ($pId, $shopId, $langId, $productDetails) {
+        return A::cache()->get("Module.Ekom.Api.Layer.$this->className.getCartItemInfo.$shopId.$langId.$pId.$sDetails.$b2b", function () use ($pId, $shopId, $langId, $productDetails) {
 
 
             $b = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($pId, $shopId, $langId, $productDetails);

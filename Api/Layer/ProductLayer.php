@@ -29,6 +29,33 @@ class ProductLayer
 {
 
 
+    /**
+     * @param array $taxes , array of taxItem (defined at top of TaxLayer)
+     * @param $originalPrice , float, the price from shop_has_product or product tables.
+     *
+     * @return array
+     */
+    public static function getTaxInfo(array $taxes, $originalPrice)
+    {
+        $taxLayer = EkomApi::inst()->taxLayer();
+        $taxDetails = [];
+        $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $originalPrice, $taxDetails);
+        $_priceWithoutTax = $originalPrice;
+        if (0.0 !== (float)$originalPrice) {
+            $taxRatio = $_priceWithTax / $originalPrice;
+        } else {
+            $taxRatio = 1;
+            XLog::error("[Ekom module] - ProductLayer: division by zero with taxes: " . ArrayToStringTool::toPhpArray($taxes));
+        }
+        return [
+            'taxDetails' => $taxDetails,
+            'taxRatio' => $taxRatio,
+            'priceWithoutTax' => $_priceWithoutTax,
+            'priceWithTax' => $_priceWithTax,
+        ];
+    }
+
+
     public function getProductTypeById($productId, $shopId = null)
     {
 
@@ -525,15 +552,11 @@ order by h.order asc
                             // get taxes, for both modes (b2b, b2b), just in case the template need the info
                             $taxLayer = $api->taxLayer();
                             $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
-                            $taxDetails = [];
-                            $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $_price, $taxDetails);
-                            $_priceWithoutTax = $_price;
-                            if (0.0 !== (float)$_price) {
-                                $taxRatio = $_priceWithTax / $_price;
-                            } else {
-                                $taxRatio = 1;
-                                XLog::error("[Ekom module] - ProductLayer: division by zero with product $productId, card $cardId");
-                            }
+                            $taxInfo = self::getTaxInfo($taxes, $_price);
+                            $taxRatio = $taxInfo['taxRatio'];
+                            $taxDetails = $taxInfo['taxDetails'];
+                            $_priceWithTax = $taxInfo['priceWithTax'];
+                            $_priceWithoutTax = $taxInfo['priceWithoutTax'];
 
 
                             $_priceWithTax = E::trimPrice($_priceWithTax);
@@ -577,6 +600,7 @@ order by h.order asc
 
 
                             $boxConf = [
+                                "_price" => $_price, // the original price (price from the shop_has_product table, or, if null, from product table)
                                 "card_id" => (int)$cardId,
                                 "card_slug" => $cardSlug,
                                 "product_id" => (int)$productId,
@@ -682,7 +706,6 @@ order by h.order asc
 
             }
 
-
             return $model;
 
 
@@ -786,7 +809,7 @@ order by h.order asc
             }
         }
 
-
+        ksort($model);
         return $model;
     }
 

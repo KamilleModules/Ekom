@@ -82,21 +82,21 @@ class CartUtil
         }
 
 
-//        foreach ($ret as $k => $item) {
-//            $ret[$k]['totalWithoutTax'] = E::price($item['rawTotalWithoutTax']);
-//            $ret[$k]['totalWithTax'] = E::price($item['rawTotalWithTax']);
-//
-//
-//            // false === vat applies <-equals?-> no tax
-//            if (true === $b2b || false === $ret[$k]['taxApplies']) {
-//                $rawTotal = $item['rawTotalWithoutTax'];
-//
-//            } else {
-//                $rawTotal = $item['rawTotalWithTax'];
-//            }
-//            $ret[$k]['rawTotal'] = $rawTotal;
-//            $ret[$k]['total'] = E::price($rawTotal);
-//        }
+        foreach ($ret as $k => $item) {
+            $ret[$k]['totalWithoutTax'] = E::price($item['rawTotalWithoutTax']);
+            $ret[$k]['totalWithTax'] = E::price($item['rawTotalWithTax']);
+
+
+            // false === vat applies <-equals?-> no tax
+            if (true === $b2b || false === $ret[$k]['taxApplies']) {
+                $rawTotal = $item['rawTotalWithoutTax'];
+
+            } else {
+                $rawTotal = $item['rawTotalWithTax'];
+            }
+            $ret[$k]['rawTotal'] = $rawTotal;
+            $ret[$k]['total'] = E::price($rawTotal);
+        }
         return $ret;
     }
 

@@ -7,8 +7,22 @@ namespace Module\Ekom\Api\Layer;
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
+
+/**
+ * Models used by this class:
+ *
+ *
+ * taxItem:
+ *      - label: translated label of the tax
+ *      - amount: in percent
+ *      - order: order of this tax in the tax group
+ *      - mode: how to combine this tax with the other taxes in the group
+ *      - group_label: the bo label for the tax group owning this tax
+ *      - condition: whether or not this group applies (by default, it's empty and means yes)
+ */
 class TaxLayer
 {
 
@@ -24,26 +38,13 @@ class TaxLayer
      * @param $cardId
      * @param null $shopId
      * @param null $langId
-     * @return a taxesArray, containing taxArray items.
-     *              Each taxArray contains the following entries:
-     *              - label: translated label of the tax
-     *              - amount: in percent
-     *              - order: order of this tax in the tax group
-     *              - mode: how to combine this tax with the other taxes in the group
-     *              - group_label: the bo label for the tax group owning this tax
-     *              - condition: whether or not this group applies (by default, it's empty and means yes)
-     *
+     * @return a taxesArray, array of taxItem.
      */
     public function getTaxesByCardId($cardId, $shopId = null, $langId = null)
     {
-        if (null === $shopId) {
-            $shopId = ApplicationRegistry::get("ekom.shop_id");
-        }
-        if (null === $langId) {
-            $langId = ApplicationRegistry::get("ekom.lang_id");
-        }
-        $langId = (int)$langId;
-        $shopId = (int)$shopId;
+        $shopId = E::getShopId($shopId);
+        $langId = E::getLangId($langId);
+
         $cardId = (int)$cardId;
 
         return A::cache()->get("Module.Ekom.Api.Layer.TaxLayer.getTaxesByCardId-$shopId.$langId.$cardId", function () use ($shopId, $langId, $cardId) {
@@ -79,6 +80,49 @@ order by h.order asc
             "ek_product_card_has_tax_group.create",
             "ek_product_card_has_tax_group.update.$shopId.$cardId",
             "ek_product_card_has_tax_group.delete.$shopId.$cardId",
+        ]);
+    }
+
+
+    /**
+     * @return array of taxItem
+     */
+    public function getTaxesByTaxGroupName($taxGroupName, $shopId = null, $langId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        $langId = E::getLangId($langId);
+
+        return A::cache()->get("Module.Ekom.Api.Layer.TaxLayer.getTaxesByTaxGroupName.$shopId.$langId.$taxGroupName", function () use ($shopId, $langId, $taxGroupName) {
+
+            return QuickPdo::fetchAll("
+select 
+l.label,
+t.id as tax_id,
+t.amount,
+h.order,
+h.mode,
+g.label as group_label,
+g.condition
+
+from 
+ek_tax_lang l
+inner join ek_tax t on t.id=l.tax_id
+inner join ek_tax_group_has_tax h on h.tax_id=t.id
+inner join ek_tax_group g on g.id=h.tax_group_id
+
+where l.lang_id=$langId
+and g.shop_id=$shopId
+and g.name=:name
+        
+order by h.order asc
+        
+        ", [
+                'name' => $taxGroupName,
+            ]);
+        }, [
+            "ek_tax",
+            "ek_tax_group_has_tax",
+            "ek_tax_group",
         ]);
     }
 
@@ -150,7 +194,6 @@ order by h.order asc
         }
         return $ret;
     }
-
 
 
 }

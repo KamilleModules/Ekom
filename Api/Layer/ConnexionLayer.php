@@ -123,7 +123,6 @@ class ConnexionLayer
             ) {
                 if ('1' === $row['active']) {
                     $hash = $row['pass'];
-
                     if (true === EkomApi::inst()->passwordLayer()->passwordVerify($model['valuePass'], $hash)) {
 
 
@@ -137,6 +136,7 @@ class ConnexionLayer
                             $target .= '#' . $hashFragment;
                         }
                         $response = RedirectResponse::create($target);
+
 
                     } else {
                         $model['errorForm'] = $errorMsg;
