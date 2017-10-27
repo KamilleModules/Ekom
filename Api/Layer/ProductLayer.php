@@ -5,6 +5,7 @@ namespace Module\Ekom\Api\Layer;
 
 
 use ArrayToString\ArrayToStringTool;
+use Bat\SessionTool;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Core\Services\X;
@@ -20,6 +21,7 @@ use Module\Ekom\Price\PriceChain\EkomProductPriceChain;
 use Module\Ekom\ProductBox\AttributesModel\Generator\AttributesModelGeneratorInterface;
 use Module\Ekom\ProductBox\AttributesModel\GeneratorFactory\AttributesModelGeneratorFactory;
 use Module\Ekom\ProductBox\AttributesModel\GeneratorFactory\AttributesModelGeneratorFactoryInterface;
+use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Utils\AttributeSelectorHelper;
 use Module\Ekom\Utils\E;
 use Module\EkomCardCombination\Api\EkomCardCombinationApi;
@@ -30,6 +32,47 @@ class ProductLayer
 
 
     /**
+     * @param array $info
+     *
+     *      - shopId: int
+     *      - langId: int
+     *      - cardId: int
+     *      - productId: int|null
+     *      - productDetails: array of key => value passed in the uri to identify the product
+     *
+     * @return array
+     */
+    public static function getProductBoxContext(array $info = [])
+    {
+        a(SessionTool::dump(null, [
+            'ekom.cart',
+            'ekom.estimateCart',
+            'ekom.TrainingOrderBuilderStep',
+            'ekom.thisApp-checkout-stepManager',
+            'ekom.thisApp-checkout-stepManager-2017-10-26',
+            'ekom.order\\.singleAddress',
+        ]));
+        $shopId = null;
+        $langId = null;
+        $ret = [
+            'shopId' => E::getShopId($shopId),
+            'langId' => E::getLangId($langId),
+            'cardId' => $info['cardId'],
+            'productId' => $info['productId'], // can be null
+            'productDetails' => $info['productDetails'],
+            //
+            'userCountry' => $info['productDetails'],
+            'userShippingCountry' => $info['productDetails'],
+            'userGroupName' => $info['productDetails'],
+            'currencyIso' => $info['productDetails'],
+        ];
+
+//        $cardId, $shopId = null, $langId = null, $productId = null, array $productDetails = []
+
+        return $ret;
+    }
+
+    /**
      * @param array $taxes , array of taxItem (defined at top of TaxLayer)
      * @param $originalPrice , float, the price from shop_has_product or product tables.
      *
@@ -37,19 +80,39 @@ class ProductLayer
      */
     public static function getTaxInfo(array $taxes, $originalPrice)
     {
-        $taxLayer = EkomApi::inst()->taxLayer();
-        $taxDetails = [];
-        $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $originalPrice, $taxDetails);
-        $_priceWithoutTax = $originalPrice;
-        if (0.0 !== (float)$originalPrice) {
-            $taxRatio = $_priceWithTax / $originalPrice;
+        if ($taxes) {
+            $groupName = $taxes[0]['group_name'];
+            $groupLabel = $taxes[0]['group_label'];
+
+            $taxLayer = EkomApi::inst()->taxLayer();
+            $taxDetails = [];
+            $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $originalPrice, $taxDetails);
+            $_priceWithoutTax = $originalPrice;
+            if (0.0 !== (float)$originalPrice) {
+                $taxRatio = $_priceWithTax / $originalPrice;
+            } else {
+                $taxRatio = 1;
+                XLog::error("[Ekom module] - ProductLayer: division by zero with taxes: " . ArrayToStringTool::toPhpArray($taxes));
+            }
+            $taxAmountUnit = $_priceWithTax - $_priceWithoutTax;
+
         } else {
+            $taxDetails = [];
             $taxRatio = 1;
-            XLog::error("[Ekom module] - ProductLayer: division by zero with taxes: " . ArrayToStringTool::toPhpArray($taxes));
+            $_priceWithoutTax = $originalPrice;
+            $_priceWithTax = $originalPrice;
+            $groupName = '';
+            $groupLabel = '';
+            $taxAmountUnit = 0;
         }
+
+
         return [
             'taxDetails' => $taxDetails,
             'taxRatio' => $taxRatio,
+            'taxGroupName' => $groupName,
+            'taxGroupLabel' => $groupLabel,
+            'taxAmountUnit' => $taxAmountUnit,
             'priceWithoutTax' => $_priceWithoutTax,
             'priceWithTax' => $_priceWithTax,
         ];
@@ -413,6 +476,14 @@ order by h.order asc
     public function getProductBoxModelByCardId($cardId, $shopId = null, $langId = null, $productId = null, array $productDetails = [])
     {
 
+        $context = self::getProductBoxContext([
+            'cardId' => $cardId,
+            'shopId' => $shopId,
+            'langId' => $langId,
+            'productId' => $productId,
+            'productDetails' => $productDetails,
+        ]);
+        az(__FILE__, $context);
 
         $cardId = (int)$cardId;
         $productId = (int)$productId;
@@ -653,6 +724,9 @@ order by h.order asc
                                 "taxApplies" => true, // you could set this to false with modules
                                 "taxRatio" => $taxRatio,
                                 "taxDetails" => $taxDetails,
+                                "taxGroupName" => $taxInfo['taxGroupName'],
+                                "taxGroupLabel" => $taxInfo['taxGroupLabel'],
+                                "taxAmountUnit" => $taxInfo['taxAmountUnit'],
                                 "codes" => $codes,
 
 
@@ -712,6 +786,7 @@ order by h.order asc
         }, $this->getProductBoxModelCaches());
 
 
+//        az(__FILE__, $model);
         if (array_key_exists('product_id', $model)) { // if model is not in error form
 
 

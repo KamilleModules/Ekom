@@ -26,6 +26,19 @@ That's why I want to explain the ekom approach, which might be wrong or right, b
 
 
 
+Reminder: what's an order section?
+========================
+
+An order is composed of order sections, each section encapsulating a carrier.
+This is just in case the customer's products can't be handled by 
+the same carrier, and so the order is distributed between different carriers.
+
+I've seen this use case implemented in amazon, but in my company we don't need it,
+at least for now, so, the idea is here in ekom, waiting to being implemented.
+              
+
+
+
 
 How is the price affected?
 ===========

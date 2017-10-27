@@ -538,8 +538,9 @@ class CartLayer
 //                    $attrValues[] = $v['value'];
 //                }
 //                $it['attributeValues'] = $attrValues;
+                    $it['taxAmount'] = $qty * $it['taxAmountUnit'];
 
-
+                    ksort($it);
                     $modelItems[] = $it;
                 } else {
                     XLog::error("[$this->moduleName] - $this->className.getCartModelByItems: errorCode: " . $it['errorCode'] . ", msg: " . $it['errorMessage']);
@@ -587,6 +588,12 @@ class CartLayer
             $couponBag = $this->getCouponBag();
         }
 
+        /**
+         * @todo-ling: ensure that afterShipping coupons cannot apply when a user/customer
+         * sees the cart summary on the right @route=Ekom_cart.
+         *
+         *
+         */
         $details = $couponApi->applyCouponBag($linesTotalWithoutTax, $linesTotalWithTax, "beforeShipping", $couponBag, $validCoupons);
 //        EkomApi::inst()->cartLayer()->setCouponBag($validCoupons);
 
@@ -652,7 +659,6 @@ class CartLayer
         //--------------------------------------------
         // MODULES
         //--------------------------------------------
-
         Hooks::call("Ekom_CartLayer_decorate_mini_cart_model", $model);
 
         return $model;

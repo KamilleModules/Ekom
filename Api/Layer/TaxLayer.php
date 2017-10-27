@@ -21,6 +21,7 @@ use QuickPdo\QuickPdo;
  *      - order: order of this tax in the tax group
  *      - mode: how to combine this tax with the other taxes in the group
  *      - group_label: the bo label for the tax group owning this tax
+ *      - group_name: the name for the tax group owning this tax
  *      - condition: whether or not this group applies (by default, it's empty and means yes)
  */
 class TaxLayer
@@ -56,6 +57,7 @@ t.id as tax_id,
 t.amount,
 h.order,
 h.mode,
+g.name as group_name,
 g.label as group_label,
 g.condition
 
