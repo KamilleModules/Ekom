@@ -44,14 +44,18 @@ class ProductLayer
      */
     public static function getProductBoxContext(array $info = [])
     {
-        a(SessionTool::dump(null, [
-            'ekom.cart',
-            'ekom.estimateCart',
-            'ekom.TrainingOrderBuilderStep',
-            'ekom.thisApp-checkout-stepManager',
-            'ekom.thisApp-checkout-stepManager-2017-10-26',
-            'ekom.order\\.singleAddress',
-        ]));
+
+//        a(SessionTool::dump(null, [
+//            'ekom.cart',
+//            'ekom.estimateCart',
+//            'ekom.order\\.singleAddress',
+//        ]));
+//
+        $userCountry = 0;
+        $userShippingCountry = 0;
+        $userGroupNames = 0;
+
+
         $shopId = null;
         $langId = null;
         $ret = [
@@ -61,10 +65,10 @@ class ProductLayer
             'productId' => $info['productId'], // can be null
             'productDetails' => $info['productDetails'],
             //
-            'userCountry' => $info['productDetails'],
-            'userShippingCountry' => $info['productDetails'],
-            'userGroupName' => $info['productDetails'],
-            'currencyIso' => $info['productDetails'],
+            'userCountry' => $userCountry,
+            'userShippingCountry' => $userShippingCountry,
+            'userGroupNames' => $userGroupNames,
+            'currencyIso' => ApplicationRegistry::get("ekom.currency_iso"),
         ];
 
 //        $cardId, $shopId = null, $langId = null, $productId = null, array $productDetails = []
@@ -483,7 +487,7 @@ order by h.order asc
             'productId' => $productId,
             'productDetails' => $productDetails,
         ]);
-        az(__FILE__, $context);
+//        az(__FILE__, $context);
 
         $cardId = (int)$cardId;
         $productId = (int)$productId;

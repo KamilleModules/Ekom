@@ -33,11 +33,13 @@ use QuickPdo\QuickPdoExceptionTool;
  * - postcode
  * - supplement
  * - country
+ * - country_id
+ * - country_iso_code
  * //
- * - fName, string: a full name, which format depends on some locale parameters
- * - fAddress, string: a full address, which format depends on some locale parameters
  * - is_default_shipping_address, bool
  * - is_default_billing_address, bool
+ * - fName, string: a full name, which format depends on some locale parameters
+ * - fAddress, string: a full address, which format depends on some locale parameters
  *
  *
  *
@@ -134,12 +136,14 @@ a.postcode,
 a.supplement,        
 l.label as country,
 l.country_id,
+c.iso_code as country_iso_code,
 h.is_default_shipping_address,
 h.is_default_billing_address
 
 
 from ek_user_has_address h 
 inner join ek_address a on a.id=h.address_id 
+inner join ek_country c on c.id=a.country_id
 inner join ek_country_lang l on l.country_id=a.country_id
 
 where 

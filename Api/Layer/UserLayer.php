@@ -13,6 +13,8 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Session\EkomSession;
+use Module\Ekom\Utils\Checkout\CheckoutPageUtil;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 use QuickPdo\QuickPdoExceptionTool;
@@ -46,6 +48,43 @@ use QuickPdo\QuickPdoExceptionTool;
 class UserLayer
 {
 
+
+    /**
+     * The current shipping address is
+     */
+    public function getCurrentShippingAddress($userId = null, $langId = null)
+    {
+        $shipping = CheckoutPageUtil::getStepData("shipping");
+        if (false !== $shipping) {
+            throw new \Exception("not implemented yet");
+        }
+        return EkomApi::inst()->userAddressLayer()->getDefaultShippingAddress($userId, $langId);
+    }
+
+
+    /**
+     * The current country where the user resides
+     */
+    public function getCurrentCountry($userId = null, $langId = null)
+    {
+        $country = null;
+        $country = EkomSession::get("userCountry");
+        if(null===$country){
+            /**
+             * @todo-ling
+             * Should we use the billing address?
+             * If so, you can embrace the same model as
+             * the getCurrentShippingAddress method.
+             * But for now, I doubt it, so no.
+             *
+             */
+
+
+
+
+        }
+            return $country;
+    }
 
     //--------------------------------------------
     // USER CONNEXION

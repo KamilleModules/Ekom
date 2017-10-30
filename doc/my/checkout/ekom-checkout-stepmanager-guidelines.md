@@ -1,4 +1,4 @@
-Ekom checkout technique
+Ekom checkout StepManager guidelines
 ===========================
 2017-10-26
 

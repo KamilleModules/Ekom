@@ -86,13 +86,11 @@ class CheckoutPageUtil
          * Those positions (0,1000,2000) are my defaults.
          * If you use this class, you can assume that those numbers won't change.
          */
-        $this->registerStep("login", LoginCheckoutStep::create(), 0);
-        $this->registerStep("shipping", ShippingCheckoutStep::create(), 1000);
-        $this->registerStep("payment", PaymentCheckoutStep::create(), 2000);
+        $this->registerStep("login", LoginCheckoutStep::create(), 1000);
+        $this->registerStep("shipping", ShippingCheckoutStep::create(), 2000);
+        $this->registerStep("payment", PaymentCheckoutStep::create(), 3000);
 
         Hooks::call("Ekom_CheckoutPageUtil_registerSteps", $this);
-
-
 
 
         // be sure to do this once only, and AFTER steps are registered
@@ -137,7 +135,7 @@ class CheckoutPageUtil
 
             $stepObject = $this->getStepObjectByName($currentStep);
             $stepData = null;
-            $defaults = $this->getStepData($currentStep);
+            $defaults = $this->_getStepData($currentStep);
             $model = $stepObject->listen($stepData, $defaults);
 
 
@@ -166,7 +164,7 @@ class CheckoutPageUtil
                 if (null !== $currentStep) {
                     $stepObject = $this->getStepObjectByName($currentStep);
                     $stepData = null;
-                    $defaults = $this->getStepData($currentStep);
+                    $defaults = $this->_getStepData($currentStep);
                     $model = $stepObject->listen($stepData, $defaults);
                 } else {
                     /**
@@ -189,6 +187,9 @@ class CheckoutPageUtil
 
     }
 
+    //--------------------------------------------
+    //
+    //--------------------------------------------
     public static function cleanSessionVars()
     {
         EkomSession::remove(self::$sessionName);
@@ -197,7 +198,45 @@ class CheckoutPageUtil
 
     public static function getSessionVars()
     {
-        return EkomSession::get(self::$sessionName, []);
+        $ret = EkomSession::get(self::$sessionName, null);
+        if (null === $ret) {
+            $ret = [
+                /**
+                 * array of stepName => isDone,
+                 */
+                'done' => [],
+                /**
+                 * array of stepName => stepDoneData
+                 */
+                'steps' => [],
+//                'active' => null,
+            ];
+        }
+        return $ret;
+    }
+    /**
+     * @return array of completed stepNames => data
+     * Note: if a step hasn't been completed, it does not appear in the returned array.
+     */
+    public static function getStepsData()
+    {
+        return self::getSessionVars()['steps']; // php 5.4+
+    }
+
+
+    /**
+     * @param $stepName
+     * @return mixed|false,
+     *          false is returned when the key is not found (i.e. the stepName was not completed yet).
+     *          Otherwise, return the data collected when the step $stepName was completed.
+     */
+    public static function getStepData($stepName)
+    {
+        $stepDatas = self::getStepsData();
+        if (array_key_exists($stepName, $stepDatas)) {
+            return $stepDatas[$stepName];
+        }
+        return false;
     }
 
 
@@ -274,7 +313,7 @@ class CheckoutPageUtil
     private function getStepToDoneStates()
     {
         $ret = [];
-        $sessionVars = $this->_getSessionVars();
+        $sessionVars = self::getSessionVars();
         $dones = $sessionVars['done'];
         foreach ($this->_stepNames as $stepName) {
             $ret[$stepName] = (array_key_exists($stepName, $dones) && true === $dones[$stepName]);
@@ -293,9 +332,9 @@ class CheckoutPageUtil
     }
 
 
-    private function getStepData($stepName)
+    private function _getStepData($stepName)
     {
-        $sessionVars = $this->_getSessionVars();
+        $sessionVars = self::getSessionVars();
         $data = $sessionVars['steps'];
         if (array_key_exists($stepName, $data)) {
             return $data[$stepName];
@@ -305,7 +344,7 @@ class CheckoutPageUtil
 
     private function saveStepData($stepName, array $data)
     {
-        $sessionVars = $this->_getSessionVars();
+        $sessionVars = self::getSessionVars();
         $sessionVars['steps'][$stepName] = $data;
         $sessionVars['done'][$stepName] = true;
         $this->_setSessionVars($sessionVars);
@@ -322,7 +361,7 @@ class CheckoutPageUtil
         $steps = array_keys($this->steps);
         $step2DoneStates = $this->getStepToDoneStates();
         $barClickStep = null;
-        $sessVars = $this->_getSessionVars();
+        $sessVars = self::getSessionVars();
 
         $stepsInfo = [
             'model' => $mixed,
@@ -364,24 +403,6 @@ class CheckoutPageUtil
     }
 
 
-    private function _getSessionVars()
-    {
-        $ret = EkomSession::get(self::$sessionName, null);
-        if (null === $ret) {
-            $ret = [
-                /**
-                 * array of stepName => isDone,
-                 */
-                'done' => [],
-                /**
-                 * array of stepName => stepDoneData
-                 */
-                'steps' => [],
-//                'active' => null,
-            ];
-        }
-        return $ret;
-    }
 
     /**
      * Keep this in case you want to debug and quickly remove all sessions variables

@@ -28,6 +28,9 @@ the same carrier, and so the order is distributed between different carriers.
 
 I've seen this use case implemented in amazon, but in my company we don't need it,
 at least for now, so, the idea is here in ekom, waiting to being implemented.
+
+Note: there are further information about order section in the "order section" section
+of this document: class-modules/Ekom/doc/my/checkout/ekom-checkout-synopsis.md
               
 
 

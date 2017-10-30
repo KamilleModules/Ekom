@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 
 use Authenticate\SessionUser\SessionUser;
 use Core\Services\Hooks;
+use Http4All\Header\Http4AllHeader;
 use Kamille\Architecture\Response\Web\RedirectResponse;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
@@ -126,7 +127,23 @@ class ConnexionLayer
                     if (true === EkomApi::inst()->passwordLayer()->passwordVerify($model['valuePass'], $hash)) {
 
 
-                        EkomApi::inst()->connexionLayer()->connect(['id' => $row['id']]);
+                        $userId = $row['id'];
+                        $userGroupNames = EkomApi::inst()->userLayer()->getUserGroupNames($userId);
+                        $shippingAddress = EkomApi::inst()->userLayer()->getCurrentShippingAddress($userId);
+                        $userShippingCountry = $shippingAddress['country_iso_code'];
+
+
+                        $data = [
+                            'id' => $row['id'],
+                            'userCountry' => Http4AllHeader::getUserPreferredCountry("FR"),
+                            'userShippingCountry' => $userShippingCountry,
+                            'userGroupNames' => $userGroupNames,
+                        ];
+
+
+                        EkomApi::inst()->connexionLayer()->connect($data);
+
+
                         Hooks::call("Ekom_onUserConnectedAfter");
 
 
