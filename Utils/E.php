@@ -99,6 +99,12 @@ class E
         return (int)ApplicationRegistry::get("ekom.lang_id");
     }
 
+    public static function getLangIso()
+    {
+        EkomApi::inst()->initWebContext();
+        return ApplicationRegistry::get("ekom.lang_iso");
+    }
+
     /**
      * This should be the only method used to check whether or not the ekom customer
      * is connected or not.
