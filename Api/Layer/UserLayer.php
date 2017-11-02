@@ -69,7 +69,7 @@ class UserLayer
     {
         $country = null;
         $country = EkomSession::get("userCountry");
-        if(null===$country){
+        if (null === $country) {
             /**
              * @todo-ling
              * Should we use the billing address?
@@ -80,10 +80,8 @@ class UserLayer
              */
 
 
-
-
         }
-            return $country;
+        return $country;
     }
 
     //--------------------------------------------
@@ -145,6 +143,16 @@ class UserLayer
 
     /**
      * Data should be filtered before hand, it's assumed to be sanitized.
+     * It's an array containing the following:
+     *
+     * - ek_user
+     *      - ...all fields of table ek_user
+     * - groups: array of group names to which the user should belong.
+     *              The groups are created if they don't exist.
+     *
+     * - ...other things, like other tables that modules wish to impact for instance
+     *
+     *
      *
      * - userError: an array with the following entries:
      *      - 0: code, an arbitrary code representing the error
@@ -156,7 +164,7 @@ class UserLayer
      *              containing the following:
      *              - userId
      *              - data
-     *              - ?groupId
+     *              - ?groupIds
      *
      *
      */
@@ -165,22 +173,9 @@ class UserLayer
         $hookData = [];
         $ok = QuickPdo::transaction(function () use ($data, &$hookData) {
 
-            EkomApi::inst()->initWebContext();
-            $shopId = ApplicationRegistry::get("ekom.shop_id");
 
-
-            /**
-             * Todo: let modules control this,
-             * for instance, the newsletter might be 1 in some cases,
-             * or active might be 0, ...
-             */
-            $data['shop_id'] = $shopId;
-            $data['active'] = 1;
-            $data['date_creation'] = date('Y-m-d H:i:s');
-            $data['newsletter'] = 0;
-
-
-            $userId = EkomApi::inst()->user()->create($data);
+            $shopId = E::getShopId();
+            $userId = EkomApi::inst()->user()->create($data['ek_user']);
 
 
             $hookData = [
@@ -188,16 +183,21 @@ class UserLayer
                 "data" => $data,
             ];
 
-
-            if (array_key_exists("group", $data)) {
-                $group = $data["group"];
-                $groupId = EkomApi::inst()->userGroupLayer()->createGroupIfNotExist([
-                    "name" => $group,
-                    "shop_id" => $shopId,
-                ]);
-                EkomApi::inst()->userHasGroupLayer()->bindUser2Group($userId, $groupId);
-                $hookData['groupId'] = $groupId;
+            if (array_key_exists("groups", $data)) {
+                $groups = $data["groups"];
+                $groupIds = [];
+                foreach ($groups as $group) {
+                    $groupId = EkomApi::inst()->userGroupLayer()->createGroupIfNotExist([
+                        "name" => $group,
+                        "shop_id" => $shopId,
+                    ]);
+                    EkomApi::inst()->userHasGroupLayer()->bindUser2Group($userId, $groupId);
+                    $groupIds[] = $groupId;
+                }
+                $hookData['groupIds'] = $groupIds;
             }
+
+
             Hooks::call("Ekom_createAccountAfter", $hookData);
 
 
@@ -205,12 +205,14 @@ class UserLayer
             if (QuickPdoExceptionTool::isDuplicateEntry($e)) {
                 $userError = [
                     "duplicateEntry",
-                    "An user with this email already exist in our database",
+                    "Un utilisateur avec cet email existe déjà dans notre base de données",
+//                    "An user with this email already exist in our database",
                 ];
             } else {
                 $userError = [
                     "unknownException",
-                    "An error occurred",
+                    "Une erreur est survenue",
+//                    "An error occurred",
                 ];
             }
             XLog::error("$e");

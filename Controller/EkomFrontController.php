@@ -80,5 +80,13 @@ class EkomFrontController extends ApplicationController
         return RedirectResponse::create($link);
     }
 
+    protected function prepareClaws() // override me
+    {
+        if (true === $this->setSessionReferer) {
+            EkomSession::set("referer", UriTool::uri(null, [], true, true));
+        }
+        parent::prepareClaws();
+    }
+
 
 }

@@ -41,7 +41,7 @@ cl.label
 from ek_country_lang cl 
 inner join ek_country c on c.id=cl.country_id  
 where cl.lang_id=$langId
-order by c.iso_code asc
+order by cl.label asc
 ", [], \PDO::FETCH_UNIQUE | \PDO::FETCH_COLUMN);
             }
         }, [

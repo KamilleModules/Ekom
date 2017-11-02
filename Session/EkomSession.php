@@ -57,4 +57,18 @@ class EkomSession
         }
         return false;
     }
+
+
+    public static function pick($k, $default = null)
+    {
+        SessionTool::start();
+        if (array_key_exists('ekom', $_SESSION)) {
+            if (array_key_exists($k, $_SESSION['ekom'])) {
+                $value = $_SESSION['ekom'];
+                unset($_SESSION['ekom'][$k]);
+                return $value;
+            }
+        }
+        return $default;
+    }
 }
