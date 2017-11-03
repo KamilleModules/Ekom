@@ -1368,11 +1368,41 @@ ek_discount
 - procedure_type:
 - procedure_operand:
 - target: the type of price to affect (withTax or withoutTax), but it's not currently implemented (the price withTax is affected for now)
+- condition: text, a way to express whether or not the discount applies (in addition to the existing table fields).
+                The language used for expressing the condition is the following:
+                
+                - conditionLanguage: <conditionBlock> (<conditionCombinationOperator> <conditionBlock>)*
+                - conditionBlock: <operand1> <comparisonOperator> <operand2>
+                - operand1: a key found in the product box context
+                - comparisonOperator: <equalComparisonOperator> | <notEqualComparisonOperator> | <inComparisonOperator>
+                - equalComparisonOperator: =
+                            The condition is true if operand1 equals operand2 (using php ===)  
+                - notEqualComparisonOperator: !=  
+                            The condition is true if operand1 is different than operand2 (using php !==)  
+                - inComparisonOperator: in 
+                            The condition is true if operand1 is one of the items provided in operand2.
+                            In this case, operand2 is a list of items (string) separated by commas;
+                            space around the commas have no meaning and are not part of the item.
+                            The item shouldn't contain space for now, as there is no escaping system implemented yet.
+                            (maybe in the future if we need it...)
+                              
+                - operand2: a key found in the product box context
+                - conditionCombinationOperator: <andOperator> | <orOperator>
+                - andOperator: <&&>
+                - orOperator: <||>
+                
+                            
+                            
+                
+                
+                
 - shop_id: fk
 
 
-Note: to use the hybrid system, take the id of the discount, and create a corresponding file containing the 
-condition written in php. Details will be provided later when this feature will be used for the first time.
+Note: the condition system has to be such as it's always possible to cache whether or not the condition will apply.
+provided that the
+
+
  
 Note2:
 If date_start and date_end are both not set, the currentDate will always match.

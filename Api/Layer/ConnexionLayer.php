@@ -17,6 +17,22 @@ class ConnexionLayer
 {
 
 
+    public static function getConnexionDataByUserId($userId)
+    {
+        $userGroupNames = EkomApi::inst()->userLayer()->getUserGroupNames($userId);
+        $shippingAddress = EkomApi::inst()->userLayer()->getCurrentShippingAddress($userId);
+        $userShippingCountry = $shippingAddress['country_iso_code'];
+
+
+        return [
+            'id' => $userId,
+            'userCountry' => Http4AllHeader::getUserPreferredCountry("FR"),
+            'userShippingCountry' => $userShippingCountry,
+            'userGroupNames' => $userGroupNames,
+        ];
+    }
+
+
     //--------------------------------------------
     // FRONT OFFICE USER
     //--------------------------------------------
@@ -47,6 +63,14 @@ class ConnexionLayer
         }
         if (false === $default) {
             throw new UserNotConnectedException("The user is not connected");
+        }
+        return $default;
+    }
+
+    public function getUserData($key, $default = null)
+    {
+        if (SessionUser::isConnected()) {
+            return SessionUser::getValue($key, $default);
         }
         return $default;
     }
@@ -128,19 +152,7 @@ class ConnexionLayer
 
 
                         $userId = $row['id'];
-                        $userGroupNames = EkomApi::inst()->userLayer()->getUserGroupNames($userId);
-                        $shippingAddress = EkomApi::inst()->userLayer()->getCurrentShippingAddress($userId);
-                        $userShippingCountry = $shippingAddress['country_iso_code'];
-
-
-                        $data = [
-                            'id' => $row['id'],
-                            'userCountry' => Http4AllHeader::getUserPreferredCountry("FR"),
-                            'userShippingCountry' => $userShippingCountry,
-                            'userGroupNames' => $userGroupNames,
-                        ];
-
-
+                        $data = self::getConnexionDataByUserId($userId);
                         EkomApi::inst()->connexionLayer()->connect($data);
 
 

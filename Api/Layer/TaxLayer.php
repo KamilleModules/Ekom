@@ -4,8 +4,10 @@
 namespace Module\Ekom\Api\Layer;
 
 
+use ArrayToString\ArrayToStringTool;
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
+use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
@@ -27,6 +29,54 @@ use QuickPdo\QuickPdo;
 class TaxLayer
 {
 
+
+    /**
+     * @param array $taxes , array of taxItem (defined at top of TaxLayer)
+     * @param $originalPrice , float, the price from shop_has_product or product tables.
+     *
+     * @return array
+     */
+    public static function getTaxInfo(array $taxes, $originalPrice)
+    {
+        if ($taxes) {
+            $groupName = $taxes[0]['group_name'];
+            $groupLabel = $taxes[0]['group_label'];
+
+            $taxLayer = EkomApi::inst()->taxLayer();
+            $taxDetails = [];
+            $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $originalPrice, $taxDetails);
+            $_priceWithoutTax = $originalPrice;
+            if (0.0 !== (float)$originalPrice) {
+                $taxRatio = $_priceWithTax / $originalPrice;
+            } else {
+                $taxRatio = 1;
+                XLog::error("[Ekom module] - TaxLayer: division by zero with taxes: " . ArrayToStringTool::toPhpArray($taxes));
+            }
+            $taxAmountUnit = $_priceWithTax - $_priceWithoutTax;
+
+        } else {
+            $taxDetails = [];
+            $taxRatio = 1;
+            $_priceWithoutTax = $originalPrice;
+            $_priceWithTax = $originalPrice;
+            $groupName = '';
+            $groupLabel = '';
+            $taxAmountUnit = 0;
+        }
+
+
+        return [
+            'taxDetails' => $taxDetails,
+            'taxRatio' => $taxRatio,
+            'taxGroupName' => $groupName,
+            'taxGroupLabel' => $groupLabel,
+            'taxAmountUnit' => $taxAmountUnit,
+            'priceWithoutTax' => $_priceWithoutTax,
+            'priceWithTax' => $_priceWithTax,
+        ];
+    }
+
+
     /**
      * Return the array of possible taxes of the tax group to which the given cardId is bound.
      * Taxes are ordered by increasing order.
@@ -39,7 +89,7 @@ class TaxLayer
      * @param $cardId
      * @param null $shopId
      * @param null $langId
-     * @return a taxesArray, array of taxItem.
+     * @return array taxesArray, array of taxItem.
      */
     public function getTaxesByCardId($cardId, $shopId = null, $langId = null)
     {
