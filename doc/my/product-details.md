@@ -35,7 +35,32 @@ Those minor product details are instead used to configure further a product inst
 This is what led us to distinguish two types of product instances (see cart again).
 
 
+So to recap, if you are not sure whether your product details is major or minor, ask yourself this one question:
 
+- if the product already exist in my cart, if I go to the product page and change a detail,
+    does it increment the quantity in your cart, or does it just change the configuration of the existing
+    product in your cart?
+    
+If the answer to this question is it increments the cart quantity, then it's a major product detail,
+otherwise it's a minor product detail.
+
+
+
+Put it differently, minor details override the default quantity system, they provide their own 
+product quantities system. 
+
+A product using minor details is called a configurable product.
+    
+
+
+If a module use the product details system, it must add the productDetails key in the product box model
+(see the product box model for more info).
+
+
+This property is required by the cart system to take a decision about whether to increment
+or not increment the cart quantity when the "add to cart button" is clicked: the cart quantity of a 
+configurable product is set --but not added to the previous quantity-- when the user clicks the add to 
+cart button (see addItem method).
 
 
 

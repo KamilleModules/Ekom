@@ -3,6 +3,10 @@ Ekom product box
 2017-11-03
 
 
+
+
+
+
 The product box is the object used to display a product page in ekom.
 
 The idea behind the product box object is that it can be used any time we need to display a product or a card.
@@ -18,6 +22,13 @@ The idea behind the product box object is that it can be used any time we need t
 
 This way, displaying a product or a card is a no brainer: we just use the product box.
 
+
+
+
+The ekom product box overview
+=============================
+
+[![ekom-productbox-overview.png](https://s19.postimg.org/jiixkqi6r/ekom-productbox-overview.png)](https://postimg.org/image/kkt43a0zz/)
 
 
 The need for performance
