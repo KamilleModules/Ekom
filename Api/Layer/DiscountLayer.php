@@ -30,6 +30,10 @@ class DiscountLayer
 {
 
 
+    public static function applyDiscount($discount, $price){
+
+    }
+
     /**
      * Return the list of badges filtered according to the given options.
      *
@@ -547,6 +551,173 @@ where shop_id=$shopId
 
 
     /**
+     * @return array|false, the applicable discount for a given product, or false the product has no
+     * applicable discount bound to it.
+     *
+     * The returned discount if any looks like this:
+     *
+     * - discount_id: int
+     * - label: string
+     * - type: the procedure type (percentage|fixed)
+     * - operand: numeric, the procedure operand
+     * - target: string representing the target to which the procedure should be applied
+     * - level: string, the level at which the discount was applied, can be one of:
+     *          - product
+     *          - card
+     *          - category
+     *
+     * - conditions: string, text of conditions deciding whether or not the discount applies to the product
+     *
+     */
+    public function getApplicableDiscountByProductId($productId, $shopId = null, $langId = null)
+    {
+
+
+        $productId = (int)$productId;
+        $shopId = E::getShopId($shopId);
+        $langId = E::getLangId($langId);
+
+        return A::cache()->get("Module.Ekom.Api.Layer.DiscountLayer.getDiscountByProductId.$shopId.$langId.$productId", function () use ($shopId, $langId, $productId) {
+
+
+            /**
+             * Discount applying at the product level is the most specific.
+             */
+            $discount = QuickPdo::fetch("
+select 
+d.id as discount_id,  
+d.type,        
+d.operand,        
+d.target,
+l.label,
+h.conditions
+        
+from         
+ek_discount d 
+inner join ek_product_has_discount h on h.discount_id=d.id
+inner join ek_discount_lang l on l.discount_id=d.id 
+
+where h.product_id=$productId
+and h.active=1
+and d.shop_id=$shopId        
+and l.lang_id=$langId        
+
+order by d.id desc 
+        
+        
+        ");
+
+
+            $level = null;
+            if (false === $discount) {
+
+                /**
+                 * No discount set at the product level?
+                 * Maybe there is one at the card level?
+                 */
+                $discount = QuickPdo::fetch("
+select 
+d.id as discount_id,
+d.type,        
+d.operand,        
+d.target,
+l.label,
+h.conditions
+        
+from         
+ek_discount d 
+inner join ek_product_card_has_discount h on h.discount_id=d.id
+inner join ek_discount_lang l on l.discount_id=d.id 
+inner join ek_product p on p.product_card_id=h.product_card_id
+
+where p.id=$productId
+and h.active=1
+and d.shop_id=$shopId        
+and l.lang_id=$langId
+        
+order by d.id desc         
+        
+        ");
+
+                if (false === $discount) {
+
+                    /**
+                     * No discount set at the card level?
+                     * Maybe there is one at the category level?
+                     *
+                     */
+                    /**
+                     * Cats is the category of the product, or a category above (parent)
+                     */
+                    $cats = EkomApi::inst()->categoryLayer()->getCategoryIdTreeByProductId($productId);
+                    if (0 === count($cats)) {
+                        XLog::error("[Ekom module] - DiscountLayer.getDiscountsByProductId: no categories found for product $productId");
+                    }
+
+                    if ($cats) {
+
+                        $sCats = implode(', ', $cats);
+                        // get the discounts that apply to the product,
+                        $discount = QuickPdo::fetch("
+select 
+d.id as discount_id,
+d.type,        
+d.operand,        
+d.target,
+l.label,
+h.conditions
+        
+from         
+ek_discount d 
+inner join ek_category_has_discount h on h.discount_id=d.id
+inner join ek_discount_lang l on l.discount_id=d.id 
+
+where h.category_id in ($sCats) 
+and h.active=1
+and d.shop_id=$shopId        
+and l.lang_id=$langId        
+        
+order by d.id desc        
+        
+        ");
+                        if (false !== $discount) {
+                            $level = "category";
+                        }
+
+                    }
+
+                } else {
+                    $level = "card";
+                }
+
+            } else {
+                $level = 'product';
+            }
+
+
+            if (false !== $discount) {
+                $discount['level'] = $level;
+            }
+            return $discount;
+
+        }, [
+            "ek_product",
+            'ek_product_card',
+            'ek_category',
+            'ek_discount',
+            'ek_discount_lang',
+            'ek_product_has_discount',
+            'ek_product_card_has_discount',
+            'ek_category_has_discount',
+        ]);
+    }
+
+
+    /**
+     * @deprecated, but keep it here just in case ekom switches again to a system that allows multiple discounts
+     * per product.
+     *
+     *
      * Return the discounts to potentially (if the condition matches) apply to a given product, ordered by ascending order_phase.
      *
      * Note that there can only be one discount per order_phase (by design).

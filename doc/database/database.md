@@ -618,30 +618,7 @@ The products are available to a shop.
                         in this new schema for simplicity).
                         This means if you want something more complicated, you need to add your own plugin.
                                                 
-- active: 0|1, whether or not the product is available for the shop
-- _sale_price_without_tax: number, the sale price of the product. It's a cached data.
-                        The problem we had is the following:
-                        
-                        we want to display the list of products.
-                        This list can be filtered by different criterion, including price (sale price).
-                        The problem is that the sale price depends on the discount, which usually is computed
-                        dynamically everytime (because a discount potentially depends on conditions which involve
-                        cache-unfriendly things like the date for instance).
-                        
-                        So without the salePrice in the database, the only way we can select all products 
-                        which price is between 10 and 100 is to actually compute all cards, then compute
-                        every discount.
-                        Only then we can start limiting the items, manually.
-                        Performance wise, this approach is a nightmare.
-                        
-                        Now with the _sale_price column in the database we can use the mysql filtering
-                        power of the where clause at its full potential,
-                        and thus use the natural limit clause to paginate our request and limit the results
-                        to the subset we are interesting in.
-                        It turns out that the current implementation still recompute the model for every card,
-                        but that could be changed in a near future, and it's less dramatic with 20 items than 
-                        with 200 anyway.
-- _sale_price_with_tax: same as _sale_price_without_tax, but with tax                        
+- active: 0|1, whether or not the product is available for the shop                     
 - _discount_badge: same principle as _sale_price_without_tax, but describing the discount badge.
                     The idea is that on a product list we want to be able to filter by discount badges: 
                         imagine a list of selectable badges:
@@ -1053,7 +1030,6 @@ In fact, you can bind product cards only to tax groups, you cannot bind product 
 - id: pk
 - name: uq1, str case the developer needs to identify a tax group
 - label
-- condition: ekom condition syntax, empty string will validate
 - shop_id: uq1
 
 
@@ -1151,8 +1127,8 @@ Represents the user's wishlist.
 ek_discount
 ===========
 - id: pk
-- procedure_type:
-- procedure_operand:
+- type:
+- operand:
 - target: the type of price to affect (withTax or withoutTax), but it's not currently implemented (the price withTax is affected for now)                
 - shop_id: fk
 
@@ -1193,38 +1169,6 @@ ek_category_has_discount
 
 
 
-
-
-Order phase note
---------------------
-It's possible to set discounts at the product level, product_card level and category level.
-The problem is that those three types of discounts do the same thing in the end: they apply
-to a set of products.
-
-Therefore, we have potential discounts conflicts.
- 
-Yet, the shop owner should be able to do any shaping she wants, including:
-
-- all products in the category X have discount A, except productCard 45 and product R8
-
-
-So, the order_phase let the shop_owner do that.
-
-How does it work?
-
-The order_phase  put all three discount types in the same ring for the battle: only one winner for a given order_phase.
-And the winner is the most specific (product, then productCard, and category).
-
-So, this means if you set discount A at the three levels with the same phase (order_phase) of 0 (for instance), then only
-the product discount will apply.
-
-This means, if you want to do the example I gave above, you would set the discount A for the category X at phase=0,
-then for the productCard 45 at phase=0, then for the product R8 at phase=0.
-
-Now, order_phase also works as an ordering tool to allow parallel discounts (because your shop owner might want to cumulate
-two discounts for some reasons, right?).
-
-So, the discounts are applied by order_phase asc.  
 
 
 
@@ -1809,6 +1753,8 @@ History Log
 - ek_discount.procedure_operand  has been renamed to operand
 
 
+### Various
+- removed ek_user_has_product.id 
 
 
 

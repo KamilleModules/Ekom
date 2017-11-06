@@ -66,6 +66,14 @@ So, in case of conflicts, that is if the discounts that you set on different eko
 (for instance there is a discount on a product, and a discount on the parent product card too),
 then the most specific ekom object wins.
 
+
+Further more, if you have multiple discounts attached on the same product for a given level 
+(let's say the product level for instance), then only the discount with the highest id will be used.
+Note: maybe in the future ekom will support multiple discounts on the same product, but for now,
+as to simplify things, we only use one (which is all my company needs anyway).
+
+
+
 So, if the discount is set on a product object, then it will always win.
 A product card discount will win against a category discount, you get the idea.
 
@@ -113,7 +121,15 @@ The language has two elements:
 - logical operator
 
 
-The comparison block is a statement involving at least two values and a comparison operator.
+The comparison block is a statement resolving to a boolean value.
+
+It generally involves two values separated by a comparison operator, but it can also be composed of 
+only one value (mainly implemented for testing purpose), or three values in the case
+of a comparison block using the between comparison operator.
+
+
+
+
 The available comparison operators are:
 
 - = (equivalent of php ===)
@@ -122,6 +138,8 @@ The available comparison operators are:
 - <= 
 - > 
 - >= 
+- >< (between, then this comparison operator expect two arguments separated by a comma,
+        whitespace around the comma has no meaning) 
 
 
 The values can be any value, or a variable (using the dollar symbol as a prefix).
@@ -143,14 +161,20 @@ The logical operators are the following:
 
 - ||
 - &&
+- (( 
+- ))
 
 With them, we can combine multiple comparison blocks together.
 
 - $lang_id=1&&user_country=FR
+- ((1 && 2)) || 3
+- 1 && ((2 || 3))
+- Note: 1 && 2 || 3 is equivalent to 1 && ((2 || 3))
+        In other words, the condition string is first cut with &&, then || 
 
 
-Note that **ekom discounts conditions language** does not allow to make logical groups yet (using parenthesis
-to make groups).
+Note that **ekom discounts conditions language** is a primitive language and does not allow
+for nested logical groups.
 
 
 
@@ -158,188 +182,5 @@ to make groups).
 
 
 
-
-
-
-
- 
-
-
-
-
-
-The discount object
-----------------------
-In ekom, a discount is represented by the two tables:
-
-
-- ek_discount
------ id: pk
------ procedure_type: str
------ procedure_operand: str
------ target: str
------ shop_id: fk
-
-- ek_discount_lang
------ discount_id: pk
------ lang_id: pk
------ label: str
-
-
-
-### Type
-A discount also has a type, which can be one of:
-
-- product: applies at the product level
-- cart: a discount applying at the cart level
-- ...(your own types)
-
-The type is inferred by the context.
-
-
-### Target
-The target is the type of number on which the discount applies.
-In ekom, in the context of there are different possible targets depending on the discount type.
-
-@todo-ling: remove deprecated targets, and update this document' section.
-
-- product level discount
-    - beforeTax 
-    - afterTax
-    - tax: use the application's default between beforeTax and afterTax
-    
-    - priceWithoutTax (deprecated)
-    - priceWithTax (deprecated)
-    
-- cart level discount 
-    - shippingCost (deprecated)
-    - taxes (deprecated)
-    - ...
-
-
-
-### Procedure
-
-The procedure is HOW you apply the discount.
-The procedure is itself composed of two elements:
-
-- procedure_type: a technique identifier, currently:
-    - amount
-    - percent
-- operand: an operand to work with, which signification and use depends on the procedure_type.
-        For instance, if the procedure_type is amount, then the operand represents a fixed amount to retrieve from the 
-        target price.
-        On the other hand, if the procedure_type is percent, then the operand represents the percentage of the target
-        price that needs to be removed.
-- ...    
-    
-    
-    
-
-    
-    
-    
-    
-    
-
-The binding
-----------------
-A discount can be bound to a product, a card, or a category.
-
-This is materialized in the three following tables:
-
-- ek_product_has_discount:
------ product_id: pk
------ discount_id: pk
------ order_phase: int
------ active: 1|0
-
-- ek_product_card_has_discount:
------ product_card_id: pk
------ discount_id: pk
------ order_phase: int
------ active: 1|0
-
-- ek_category_has_discount:
------ category_id: pk
------ discount_id: pk
------ order_phase: int
------ active: 1|0
-
-
-
-The conditions
------------------
-
-There are two types of discounts conditions:
-
-- database conditions
-- filesystem conditions
-
-
-The database conditions use the fields in the ek_discount table...
-
-- user_group_id
-- currency_id
-- date_start
-- date_end
-
-... to decide whether or not the condition should apply to a product.
-
-
-Although the database conditions system is useful, it certainly is limited and might not cover
-all the website owner's needs.
-
-Therefore, the filesystem conditions system was created.
-The basic idea is that the condition can use the whole expressing power of the php language to return 
-the desired boolean (whether the condition applies or not).
-
-Note: the filesystem conditions system can hardly be cached, and therefore we generally prefer to use
-the database conditions system when possible.
-In fact, we prefer to extend the database model whenever possible, rather than using the filesystem,
-because of this caching reason.
-Note that the cacheString should contain a whole lot of information: the currency_id, the user_group_id,
-the current date, and more if we extend it.
-
-
-
-
-There is no current implementation of it, although I did something in the past.
-My (old) code is still in this app (data/Ekom/conditions/products/1.php), and looks like this:
-
-```php
-<?php
-
-
-$date = date('Y-m-d');
-
-
-$target = "priceWithoutTax";
-$condition = "date between 2017-05-25 an 2017-06-31"; // just for the user and gui
-$condition = ($date > "2017-05-25" && $date < "2017-06-31"); // used concretely by the prod application
-$procedure = [
-    "type" => "amount",
-    "operand" => "5",
-];
-
-
-
-
-
-
-
-$cb = function (array &$model) {
-    $date = date('Y-m-d');
-    $model['priceWithTax'];
-    if ($date > "2017-05-25" && $date < "2017-06-31") {
-        $model['priceWithoutTax'] -= 5;
-    }
-};
-```
-
-
-By reading all documents, you might even found a code that can process this file, but I'm not 100% sure if 
-I've created this implementation or not.
-Hopefully this helps.
 
 

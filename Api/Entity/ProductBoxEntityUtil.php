@@ -12,16 +12,12 @@ class ProductBoxEntityUtil
 {
 
 
-    public static function getCacheContext(array $deleteIdentifiers = [])
-    {
-        $cacheContext = [
-            'modulesContextData' => [],
-            'cacheDeleteIdentifiers' => [],
-        ];
-        Hooks::call("Ekom_ProductBox_collectPreCacheData", $cacheContext);
-        $cacheContext['cacheDeleteIdentifiers'] = array_unique(array_merge($deleteIdentifiers, $cacheContext['cacheDeleteIdentifiers']));
-        return $cacheContext;
 
+    public static function getProductBoxGeneralContext()
+    {
+        $data = [];
+        Hooks::call("Ekom_ProductBox_collectGeneralContext", $data);
+        return $data;
     }
 
     public static function getProductCardInfoByCardId($cardId, $shopId, $langId)
@@ -160,9 +156,8 @@ select
 p.id as product_id,
 p.reference,
 p.weight,
-p.price as default_price,
+COALESCE (s.price, p.price) as price,
 t.name as product_type,
-s.price,
 s.quantity,
 s.active,
 s.codes,

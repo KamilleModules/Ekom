@@ -22,7 +22,7 @@ class ProductBoxEntity
     /**
      * @var null|array
      */
-    private $modulesContextData;
+    private $generalContext;
     /**
      * @var null|array
      */
@@ -34,20 +34,17 @@ class ProductBoxEntity
     private $productCardId;
     private $productId;
     private $productDetails;
-    private $date;
-    private $groupIds;
-    private $currencyId;
 
-    // cache
+    //
     private $_nativeContextData;
 
 
     public function __construct()
     {
-
         // hybrid system, see documentation for more info (doc/my/ekom-product-box-implementation.md)
-        $this->modulesContextData = null;
+        $this->generalContext = null;
         $this->cacheDeleteIdentifiers = null;
+        $this->_nativeContext = null;
     }
 
     public static function create()
@@ -58,41 +55,38 @@ class ProductBoxEntity
     //--------------------------------------------
     //
     //--------------------------------------------
-    public function setModulesContextDataValue($key, $value)
+    public function setGeneralContextValue($key, $value)
     {
-        if (null === $this->modulesContextData) {
-            $this->modulesContextData = [];
+        if (null === $this->generalContext) {
+            $this->generalContext = [];
         }
-        $this->modulesContextData[$key] = $value;
+        $this->generalContext[$key] = $value;
         return $this;
     }
 
-    public function setModulesContextData(array $context)
+    public function setGeneralContext(array $context)
     {
-        $this->modulesContextData = $context;
+        $this->generalContext = $context;
         return $this;
     }
 
-    public function getModulesContextData()
+    public function getGeneralContext()
     {
-        if (null === $this->modulesContextData) {
-            $this->modulesContextData = [];
+        if (null === $this->generalContext) {
+            $this->generalContext = [];
         }
-        return $this->modulesContextData;
+        return $this->generalContext;
     }
 
 
-    public function getNativeContextData()
+    public function getNativeContext()
     {
-        if (null === $this->_nativeContextData) {
+        if (null === $this->_nativeContext) {
             $shopId = $this->shopId;
-            $langId = $this->shopId;
+            $langId = $this->langId;
             $productCardId = $this->productCardId;
             $productId = $this->productId;
             $productDetails = $this->productDetails;
-            $date = $this->date;
-            $groupIds = $this->groupIds;
-            $currencyId = $this->currencyId;
 
 
             if (null === $shopId) {
@@ -104,30 +98,17 @@ class ProductBoxEntity
             if (null === $productDetails) {
                 $productDetails = [];
             }
-            if (null === $date) {
-                $date = date("Y-m-d");
-            }
-            if (null === $groupIds) {
-                $groupNames = E::getUserData("userGroupNames", []);
-                $groupIds = array_keys($groupNames);
-            }
-            if (null === $currencyId) {
-                $currencyId = ApplicationRegistry::get("ekom.currency_id");
-            }
 
-            $this->_nativeContextData = [
+            $this->_nativeContext = [
                 'shop_id' => $shopId,
                 'lang_id' => $langId,
                 'product_card_id' => $productCardId,
                 'product_id' => $productId,
                 'product_details' => $productDetails,
-                'date' => $date,
-                'group_ids' => $groupIds,
-                'currency_id' => $currencyId,
             ];
 
         }
-        return $this->_nativeContextData;
+        return $this->_nativeContext;
     }
 
     public function setShopId($shopId)
@@ -160,23 +141,6 @@ class ProductBoxEntity
         return $this;
     }
 
-    public function setDate($date)
-    {
-        $this->date = $date;
-        return $this;
-    }
-
-    public function setGroupIds(array $groupIds)
-    {
-        $this->groupIds = $groupIds;
-        return $this;
-    }
-
-    public function setCurrencyId($currencyId)
-    {
-        $this->currencyId = $currencyId;
-        return $this;
-    }
 
     //--------------------------------------------
     //
@@ -195,31 +159,33 @@ class ProductBoxEntity
         //--------------------------------------------
         // BASIC CHECKING
         //--------------------------------------------
-        $nativeContextData = $this->getNativeContextData();
-        if (null === $nativeContextData["product_card_id"]) {
+        $nativeContext = $this->getNativeContext();
+        if (null === $nativeContext["product_card_id"]) {
             throw new EkomException("The cardId must be set");
         }
 
 
         //--------------------------------------------
-        // PREPARING THE CACHE IDENTIFIER AND CACHE DELETE IDENTIFIERS
+        // PREPARING THE CACHE IDENTIFIERS
         //--------------------------------------------
-        $modulesContextData = $this->modulesContextData;
-        $deleteIdentifiers = $this->getDeleteIdentifiers();
+        $nativeDeleteIdentifiers = $this->getDeleteIdentifiers();
+        $modulesDeleteIdentifiers = [];
+        Hooks::call("Ekom_ProductBox_getTabathaDeleteIdentifiers", $modulesDeleteIdentifiers);
+        $cacheIdentifiers = array_unique(array_merge($nativeDeleteIdentifiers, $modulesDeleteIdentifiers));
+
+
+        $generalContext = $this->generalContext;
 
 
         /**
-         * If the developer didn't set prepare the modulesContext data,
-         * we do it manually
+         * If the developer didn't set the generalContext manually, we create it automatically.
          */
-        if (null === $modulesContextData) {
-            $cacheContext = ProductBoxEntityUtil::getCacheContext($deleteIdentifiers);
-            $modulesContextData = $cacheContext['modulesContextData'];
-            $deleteIdentifiers = $cacheContext['cacheDeleteIdentifiers'];
+        if (null === $generalContext) {
+            $generalContext = ProductBoxEntityUtil::getProductBoxGeneralContext();
         }
 
 
-        $productBoxContext = array_replace($modulesContextData, $nativeContextData);
+        $productBoxContext = array_replace($nativeContext, $generalContext);
         $hash = $this->getHashByCacheContext($productBoxContext);
         $hashString = "ekom-pbox-$hash";
 
@@ -227,345 +193,50 @@ class ProductBoxEntity
         //--------------------------------------------
         // RETURN THE PRODUCT BOX MODEL
         //--------------------------------------------
-        $model = A::cache()->get($hashString, function () use ($productBoxContext) {
-
-            $productId = $productBoxContext["product_id"];
-            $cardId = (int)$productBoxContext["product_card_id"];
-            $shopId = $productBoxContext["shop_id"];
-            $langId = $productBoxContext["lang_id"];
-            $productDetails = $productBoxContext["product_details"];
+        return A::cache()->get($hashString, function () use ($productBoxContext) {
 
 
             $model = [];
-            $api = EkomApi::inst();
-
-
             try {
-                if (false !== ($row = ProductBoxEntityUtil::getProductCardInfoByCardId($cardId, $shopId, $langId))) {
-                    if ('1' === $row['active']) {
 
 
-                        /**
-                         * Take the list of attributes
-                         */
-                        $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($cardId, $shopId, $langId);
+                $isErroneous = false;
+                $primitiveModel = $this->getPrimitiveModel($productBoxContext, $isErroneous);
 
-                        if (count($productsInfo) > 0) {
+                if (false === $isErroneous) {
 
 
-                            $productId = (string)$productId;
-                            if (empty($productId)) {
-                                $productId = $row['product_id'];
-                                if (null === $productId) {
-                                    $productId = $productsInfo[0]["product_id"];
-                                }
-                            }
-
-
-                            //--------------------------------------------
-                            // IMAGES
-                            //--------------------------------------------
-                            list($defaultImage, $images) = $api->imageLayer()->getImagesInfo("productBox", [
-                                $productId,
-                                $cardId,
-                            ], true);
-
-                            $imageThumb = "";
-                            $imageSmall = "";
-                            $imageMedium = "";
-                            $imageLarge = "";
-                            if ($defaultImage) {
-                                $imageThumb = $images[$defaultImage]['thumb'];
-                                $imageSmall = $images[$defaultImage]['small'];
-                                $imageMedium = $images[$defaultImage]['medium'];
-                                $imageLarge = $images[$defaultImage]['large'];
-                            }
-
-
-                            //--------------------------------------------
-                            // CHOSEN PRODUCT (main product)
-                            //--------------------------------------------
-                            $p = null;
-                            if (null !== $productId) {
-                                foreach ($productsInfo as $pr) {
-                                    if ($productId === $pr['product_id']) {
-                                        $p = $pr;
-                                        break;
-                                    }
-                                }
-                                if (null === $p) {
-                                    throw new EkomApiException("the default product_id $productId was not found in card $cardId");
-                                }
-                            }
-                            if (null === $p) {
-                                $p = $productsInfo[0];
-                            }
-
-
-                            if ('' !== $p['label']) {
-                                $label = $p['label'];
-                            } elseif ("" !== $row['label']) {
-                                $label = $row['label'];
-                            } else {
-                                $label = ("" !== $p['default_label']) ? $p['default_label'] : $row['default_label'];
-                            }
-
-                            if ('' !== $p['description']) {
-                                $description = $p['description'];
-                            } elseif ("" !== $row['description']) {
-                                $description = $row['description'];
-                            } else {
-                                $description = ("" !== $p['default_description']) ? $p['default_description'] : $row['default_description'];
-                            }
-
-
-                            //--------------------------------------------
-                            // BASE INFO
-                            //--------------------------------------------
-                            $productReference = $p['reference'];
-                            $cardSlug = ("" !== $row['slug']) ? $row['slug'] : $row['default_slug'];
-                            $cardUri = E::link("Ekom_productCardRef", [
-                                'slug' => $cardSlug,
-                                'ref' => $productReference,
-                            ]);
-
-
-
-                            //--------------------------------------------
-                            // META
-                            //--------------------------------------------
-                            $metaTitle = $this->getMetaTitle($p, $row, $label);
-                            $metaDescription = $this->getMetaDescription($p, $row, $label, $description);
-                            $metaKeywords = $this->getMetaKeywords($p, $row, $label, $description);
-
-
-                            //--------------------------------------------
-                            // STOCK
-                            //--------------------------------------------
-                            $outOfStockText = $p['out_of_stock_text'];
-                            $quantity = $p['quantity'];
-                            $isInStock = true; // isInStock handles qty=-1, it's a helper for the view
-                            if (0 === (int)$quantity) {
-                                $isInStock = false;
-                            }
-
-                            //--------------------------------------------
-                            // ATTRIBUTES
-                            //--------------------------------------------
-                            $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $productId);
-
-
-                            $attrSelection = $p['attributes'];
-                            $attrStringArr = [];
-                            foreach ($attrSelection as $item) {
-                                $attrStringArr[] = $item['value_label'];
-                            }
-                            $attrString = implode(' | ', $attrStringArr);
-
-
-                            //--------------------------------------------
-                            // RATING
-                            //--------------------------------------------
-                            $ratingInfo = EkomApi::inst()->commentLayer()->getRatingInfo($cardId);
-
-
-                            //--------------------------------------------
-                            // CODES
-                            //--------------------------------------------
-                            /**
-                             * Abstract codes for things like:
-                             *      - is new product
-                             *      - ...
-                             */
-                            $codes = ProductCodeLayer::extractCodes($p['codes']);
-
-
-
-
-
-                            //--------------------------------------------
-                            // DECORATING THE MODEL WITH MODULES
-                            //--------------------------------------------
-                            /**
-                             * This is an opportunity for modules to decorate:
-                             *
-                             * - the price (to benefit the "price synopsis" below which includes tax computation
-                             *          and discounts)
-                             * - the quantity
-                             * - ...other things
-                             *
-                             *
-                             * Note: since we are inside a tabatha cache, modules should
-                             * only use the product box context data, and provide their cache delete identifiers
-                             * (using the Ekom_ProductBox_collectPreCacheData hook).
-                             *
-                             */
-                            $preModel = [
-
-                            ];
-                            Hooks::call("Ekom_decorateBoxModel", $preModelà);
-
-
-
-                            //--------------------------------------------
-                            // PRICE SYNOPSIS
-                            //--------------------------------------------
-                            //--------------------------------------------
-                            // ORIGINAL PRICE
-                            //--------------------------------------------
-                            $originalPrice = $p['price'];
-                            if (null === $originalPrice) {
-                                $originalPrice = $p['default_price'];
-                            }
-                            $originalPrice = E::trimPrice($originalPrice);
-
-
-
-
-                            //--------------------------------------------
-                            // TAXES AND BASE PRICE
-                            //--------------------------------------------
-                            $taxLayer = $api->taxLayer();
-                            $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
-
-                            $config = [];
-                            Hooks::call("Ekom_ProductBox_filterTaxGroup", $config, $productBoxContext, $p);
-                            $taxDisabled = (array_key_exists("noTax", $config) && true === $config['noTax']) ? true : false;
-
-                            if (true === $taxDisabled) {
-                                $taxRatio = 1;
-                                $basePrice = $originalPrice;
-                                $basePriceWithoutTax = $basePrice;
-                                $basePriceWithTax = $basePrice;
-
-                            } else {
-                                $taxInfo = TaxLayer::getTaxInfo($taxes, $originalPrice);
-                                $taxRatio = $taxInfo['taxRatio'];
-                                $taxDetails = $taxInfo['taxDetails'];
-
-                                $basePriceWithoutTax = $taxInfo['priceWithoutTax'];
-                                $basePriceWithTax = $taxInfo['priceWithTax'];
-                                $basePrice = $basePriceWithTax;
-                            }
-
-                            $basePriceWithoutTax = E::trimPrice($basePriceWithoutTax);
-                            $basePriceWithTax = E::trimPrice($basePriceWithTax);
-                            $basePrice = E::trimPrice($basePrice);
-
-
-
-
-
-
-                            //--------------------------------------------
-                            // DISCOUNTS AND SALE PRICE
-                            //--------------------------------------------
-                            az("todo discounts");
-
-
-                            $boxConf = [
-                                "_price" => $originalPrice, // the original price (price from the shop_has_product table, or, if null, from product table)
-                                "card_id" => (int)$cardId,
-                                "card_slug" => $cardSlug,
-                                "product_id" => (int)$productId,
-                                "product_reference" => $productReference,
-                                "product_type" => $p['product_type'],
-                                "quantity" => (int)$quantity,
-                                "is_in_stock" => $isInStock,
-                                "images" => $images,
-                                "defaultImage" => $defaultImage,
-                                "imageThumb" => $imageThumb,
-                                "imageSmall" => $imageSmall,
-                                "imageMedium" => $imageMedium,
-                                "imageLarge" => $imageLarge,
-
-                                "uriCard" => $cardUri,
-                                "uriCardAjax" => UriUtil::getProductBoxBaseAjaxUri($productId),
-                                "label" => $label,
-                                "seller" => $p['seller'],
-
-
-                                "label_escaped" => htmlspecialchars($label),
-                                "ref" => $p['reference'],
-                                "weight" => $p['weight'],
-                                "description" => $description,
-                                //
-                                "metaTitle" => $metaTitle,
-                                "metaDescription" => $metaDescription,
-                                "metaKeywords" => $metaKeywords,
-                                /**
-                                 * Is used by the widget to assign visual cues (for instance success color) to the stockText
-                                 * List of available types will be defined later.
-                                 */
-                                "outOfStockText" => $outOfStockText,
-
-
-                                "priceWithTax" => $priceWithTax,
-                                "priceWithoutTax" => $priceWithoutTax,
-                                "rawPriceWithTax" => $_priceWithTax,
-                                "rawPriceWithoutTax" => $_priceWithoutTax,
-
-
-                                "attributesString" => $attrString,
-                                "attributesSelection" => $attrSelection,
-                                "attributes" => $attr,
-                                // rating
-                                "rating_amount" => $ratingInfo['average'], // percent
-                                "rating_nbVotes" => $ratingInfo['count'],
-
-                                // tax ratio
-                                "taxApplies" => true, // you could set this to false with modules
-                                "taxRatio" => $taxRatio,
-                                "taxDetails" => $taxDetails,
-                                "taxGroupName" => $taxInfo['taxGroupName'],
-                                "taxGroupLabel" => $taxInfo['taxGroupLabel'],
-                                "taxAmountUnit" => $taxInfo['taxAmountUnit'],
-                                "codes" => $codes,
-
-
-                                // card combination
-                                //--------------------------------------------
-                                // PRIVATE, are removed before the result is returned
-                                //--------------------------------------------
-//                                "_taxes" => $taxes,
-                            ];
-
-                            $model = $boxConf;
-                            /**
-                             * The product details passed here are just the raw product details params in the uri
-                             */
-                            $model['_productDetails'] = $productDetails;
-
-                            /**
-                             * You can only subscribe to this hook if you use the tabatha cache ids
-                             */
-                            Hooks::call("Ekom_decorateBoxModelCachable", $model);
-
-
-                        } else {
-                            $model['errorCode'] = "emptyProductCard";
-                            $model['errorTitle'] = "Empty product card";
-                            $model['errorMessage'] = "This product card does not contain any products ($cardId, $productId)";
-                        }
-                    } else {
-                        /**
-                         * product card not associated with this shop/lang.
-                         */
-                        $model['errorCode'] = "inactive";
-                        $model['errorTitle'] = "Product card not active";
-                        $model['errorMessage'] = "This product card is not active for this shop, sorry ($cardId, $productId)";
-                    }
-                } else {
                     /**
-                     * product card not associated with this shop/lang.
+                     * @todo: remove
+                     * You can only subscribe to this hook if you use the tabatha cache ids
                      */
-                    $model['errorCode'] = "noAssociation";
-                    $model['errorTitle'] = "Product card not associated";
-                    $model['errorMessage'] = "This product card is not associated with this shop, sorry (cardId: $cardId, shopId: $shopId, langId: $langId)";
+//                Hooks::call("Ekom_decorateBoxModelCachable", $model);
+                    /**
+                     * Let modules decorate the box model.
+                     * Reminder: they can do things like:
+                     * - change original price
+                     * - change (stock) quantity
+                     * - change taxGroup
+                     * - change discount
+                     * - ...express their intents or other things
+                     */
+                    Hooks::call("Ekom_decorateBoxModel", $primitiveModel, $productBoxContext);
+
+
+                    /**
+                     * At this point, the model is considered definitive, especially the
+                     * originalPrice, taxGroup and discount.
+                     * So now, we just resolve the priceChain
+                     */
+                    $model = $primitiveModel;
+                    $this->resolvePriceChain($model);
+                    az($model);
+                } else {
+                    $model = $primitiveModel;
                 }
-
-
             } catch (\Exception $e) {
+                $productId = $productBoxContext["product_id"];
+                $cardId = (int)$productBoxContext["product_card_id"];
                 $model['errorCode'] = "exception";
                 $model['errorTitle'] = "Exception occurred";
                 $model['errorMessage'] = $e->getMessage() . "($cardId, $productId)";
@@ -573,113 +244,12 @@ class ProductBoxEntity
 
             }
 
+
+            ksort($model);
             return $model;
 
 
-        }, $deleteIdentifiers);
-
-
-//        az(__FILE__, $model);
-        if (array_key_exists('product_id', $model)) { // if model is not in error form
-
-
-            //--------------------------------------------
-            // DYNAMIC PART: (could not be part of the cache, unless you know exactly what you are doing)
-            //--------------------------------------------
-            /**
-             * Adding productDetails
-             * updating price if necessary
-             * Note: to update price, you can use tools such as:
-             *
-             * - Ekom/Api/Util/ProductUtil::updateProductPrice
-             *
-             */
-            Hooks::call("Ekom_decorateBoxModel", $model);
-            unset($model['_productDetails']);
-
-
-            $_priceWithTax = $model['rawPriceWithTax'];
-            $_priceWithoutTax = $model['rawPriceWithoutTax'];
-
-
-            //--------------------------------------------
-            // NOW APPLYING DISCOUNT DYNAMICALLY (so that it's always synced with app rules)
-            //--------------------------------------------
-            /**
-             * Actually,
-             * @todo-ling: we can cache it for one day using:
-             *
-             * - the user group Ids
-             * - the currency
-             * - today's date
-             *
-             * However, if the discount date ends in the middle of the day,
-             * we need another helper external system to clean the cache in time.
-             *
-             * - suggestion: try to see how well/fast it works without cache first
-             *
-             *
-             */
-            $badges = [];
-            list($_salePriceWithoutTax, $_salePriceWithTax) = $api->discountLayer()->applyDiscountsByProductId($model['product_id'], $_priceWithoutTax, $_priceWithTax, $badges, $shopId, $langId);
-
-            $salePriceWithTax = E::price($_salePriceWithTax);
-            $salePriceWithoutTax = E::price($_salePriceWithoutTax);
-            $model['rawSalePriceWithTax'] = $_salePriceWithTax;
-            $model['rawSalePriceWithoutTax'] = $_salePriceWithoutTax;
-            $model['salePriceWithTax'] = $salePriceWithTax;
-            $model['salePriceWithoutTax'] = $salePriceWithoutTax;
-
-
-            $model['badgeDetails'] = $badges;
-            $model['hasDiscount'] = (count($badges) > 0);
-
-            if (true === $isB2b) {
-                $diff = $_priceWithoutTax - $_salePriceWithoutTax;
-                if (0.0 !== (float)$_priceWithoutTax) {
-                    $diffPercent = $diff / $_priceWithoutTax * 100;
-                } else {
-                    $diffPercent = 0;
-                }
-            } else {
-                $diff = $_priceWithTax - $_salePriceWithTax;
-                if (0.0 !== (float)$_priceWithTax) {
-                    $diffPercent = $diff / $_priceWithTax * 100;
-                } else {
-                    $diffPercent = 0;
-                }
-            }
-            $model['savingPercent'] = E::trimPercent($diffPercent);
-            $model['savingAmount'] = E::price($diff);
-            //--------------------------------------------
-            //
-            //--------------------------------------------
-            /**
-             * We need this in some cases where a renderer only renders one item.
-             * This can not be cached.
-             */
-            $model['isB2B'] = $isB2b;
-
-
-            //--------------------------------------------
-            // NOW SETTING DEFAULT PRICES
-            //--------------------------------------------
-            if (true === $isB2b) {
-                $model['price'] = $model['priceWithoutTax'];
-                $model['rawPrice'] = $model['rawPriceWithoutTax'];
-                $model['salePrice'] = $model['salePriceWithoutTax'];
-                $model['rawSalePrice'] = $model['rawSalePriceWithoutTax'];
-            } else {
-                $model['price'] = $model['priceWithTax'];
-                $model['rawPrice'] = $model['rawPriceWithTax'];
-                $model['salePrice'] = $model['salePriceWithTax'];
-                $model['rawSalePrice'] = $model['rawSalePriceWithTax'];
-            }
-        }
-
-        ksort($model);
-        return $model;
-
+        }, $cacheIdentifiers);
     }
 
 
@@ -698,6 +268,560 @@ class ProductBoxEntity
     //--------------------------------------------
     //
     //--------------------------------------------
+
+    private function resolvePriceChain(array &$model)
+    {
+
+        $rawOriginalPrice = E::trimPrice($model['rawOriginalPrice']); // ensure that modules didn't parasite us with some lengthy floats
+        $taxGroup = $model['taxGroup'];
+        $discount = $model['discount'];
+
+        /**
+         * Any data that can be computed only using the 3 variables above should be defined inside
+         * this method.
+         *
+         * The following properties correspond to this criteria:
+         *
+         *
+         * // related to price
+         * ------------------------
+         * - originalPrice
+         *
+         * - basePrice (assumed with tax)
+         * - rawBasePrice
+         *
+         * - basePriceWithoutTax
+         * - rawBasePriceWithoutTax
+         *
+         * - salePrice (assumed with tax)
+         * - rawSalePrice
+         *
+         * - salePriceWithoutTax (who needs that?)
+         * - rawSalePriceWithoutTax
+         *
+         * // related to taxes
+         * ------------------------
+         * - taxDetails
+         * - taxRatio
+         * - taxGroupName
+         * - taxGroupLabel
+         * - taxAmountUnit
+         *
+         *
+         * // related to discount
+         * ------------------------
+         * // Note: the discount price is the salePrice
+         * // Note2: badgeDetails has been removed for now
+         *
+         * - hasDiscount: bool
+         * - type: the procedure type
+         * - savingInPercent
+         * - savingInAmount
+         * - rawSavingInAmount
+         *
+         *
+         */
+        //--------------------------------------------
+        // APPLYING TAXES
+        //--------------------------------------------
+        $taxInfo = TaxLayer::applyTaxGroup($taxGroup, $rawOriginalPrice);
+        $rawBasePrice = $taxInfo['priceWithTax'];
+        $rawBasePriceWithoutTax = $taxInfo['priceWithoutTax'];
+
+
+        $model["taxDetails"] = $taxInfo['taxDetails'];
+        $model["taxRatio"] = $taxInfo['taxRatio'];
+        $model["taxGroupName"] = $taxInfo['taxGroupName'];
+        $model["taxGroupLabel"] = $taxInfo['taxGroupLabel'];
+        $model["taxAmountUnit"] = $taxInfo['taxAmountUnit'];
+
+
+        //--------------------------------------------
+        // NOW APPLYING DISCOUNT
+        //--------------------------------------------
+        if (false !== $discount) {
+            a($discount);
+        }
+        az("pou");
+
+
+        $_priceWithTax = $model['rawPriceWithTax'];
+        $_priceWithoutTax = $model['rawPriceWithoutTax'];
+
+
+        //--------------------------------------------
+        // NOW APPLYING DISCOUNT DYNAMICALLY (so that it's always synced with app rules)
+        //--------------------------------------------
+        /**
+         * Actually,
+         * @todo-ling: we can cache it for one day using:
+         *
+         * - the user group Ids
+         * - the currency
+         * - today's date
+         *
+         * However, if the discount date ends in the middle of the day,
+         * we need another helper external system to clean the cache in time.
+         *
+         * - suggestion: try to see how well/fast it works without cache first
+         *
+         *
+         */
+        $badges = [];
+        list($_salePriceWithoutTax, $_salePriceWithTax) = $api->discountLayer()->applyDiscountsByProductId($model['product_id'], $_priceWithoutTax, $_priceWithTax, $badges, $shopId, $langId);
+
+        $salePriceWithTax = E::price($_salePriceWithTax);
+        $salePriceWithoutTax = E::price($_salePriceWithoutTax);
+        $model['rawSalePriceWithTax'] = $_salePriceWithTax;
+        $model['rawSalePriceWithoutTax'] = $_salePriceWithoutTax;
+        $model['salePriceWithTax'] = $salePriceWithTax;
+        $model['salePriceWithoutTax'] = $salePriceWithoutTax;
+
+
+        $model['badgeDetails'] = $badges;
+        $model['hasDiscount'] = (count($badges) > 0);
+
+        if (true === $isB2b) {
+            $diff = $_priceWithoutTax - $_salePriceWithoutTax;
+            if (0.0 !== (float)$_priceWithoutTax) {
+                $diffPercent = $diff / $_priceWithoutTax * 100;
+            } else {
+                $diffPercent = 0;
+            }
+        } else {
+            $diff = $_priceWithTax - $_salePriceWithTax;
+            if (0.0 !== (float)$_priceWithTax) {
+                $diffPercent = $diff / $_priceWithTax * 100;
+            } else {
+                $diffPercent = 0;
+            }
+        }
+        $model['savingPercent'] = E::trimPercent($diffPercent);
+        $model['savingAmount'] = E::price($diff);
+        //--------------------------------------------
+        //
+        //--------------------------------------------
+        /**
+         * We need this in some cases where a renderer only renders one item.
+         * This can not be cached.
+         */
+        $model['isB2B'] = $isB2b;
+
+
+        //--------------------------------------------
+        // NOW SETTING DEFAULT PRICES
+        //--------------------------------------------
+        if (true === $isB2b) {
+            $model['price'] = $model['priceWithoutTax'];
+            $model['rawPrice'] = $model['rawPriceWithoutTax'];
+            $model['salePrice'] = $model['salePriceWithoutTax'];
+            $model['rawSalePrice'] = $model['rawSalePriceWithoutTax'];
+        } else {
+            $model['price'] = $model['priceWithTax'];
+            $model['rawPrice'] = $model['rawPriceWithTax'];
+            $model['salePrice'] = $model['salePriceWithTax'];
+            $model['rawSalePrice'] = $model['rawSalePriceWithTax'];
+        }
+
+        return $model;
+    }
+
+    private function getPrimitiveModel(array $productBoxContext, &$isErroneous = false)
+    {
+
+        $model = [];
+
+        //
+        $productId = $productBoxContext["product_id"];
+        $cardId = (int)$productBoxContext["product_card_id"];
+        $shopId = (int)$productBoxContext["shop_id"];
+        $langId = (int)$productBoxContext["lang_id"];
+        $productDetails = $productBoxContext["product_details"];
+
+
+        if (false !== ($row = ProductBoxEntityUtil::getProductCardInfoByCardId($cardId, $shopId, $langId))) {
+            if ('1' === $row['active']) {
+
+                $api = EkomApi::inst();
+
+                /**
+                 * Take the list of attributes
+                 */
+                $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($cardId, $shopId, $langId);
+
+                if (count($productsInfo) > 0) {
+
+
+                    $productId = (string)$productId;
+                    if (empty($productId)) {
+                        $productId = $row['product_id'];
+                        if (null === $productId) {
+                            $productId = $productsInfo[0]["product_id"];
+                        }
+                    }
+
+
+                    //--------------------------------------------
+                    // IMAGES
+                    //--------------------------------------------
+                    list($defaultImage, $images) = $api->imageLayer()->getImagesInfo("productBox", [
+                        $productId,
+                        $cardId,
+                    ], true);
+
+                    $imageThumb = "";
+                    $imageSmall = "";
+                    $imageMedium = "";
+                    $imageLarge = "";
+                    if ($defaultImage) {
+                        $imageThumb = $images[$defaultImage]['thumb'];
+                        $imageSmall = $images[$defaultImage]['small'];
+                        $imageMedium = $images[$defaultImage]['medium'];
+                        $imageLarge = $images[$defaultImage]['large'];
+                    }
+
+
+                    //--------------------------------------------
+                    // CHOSEN PRODUCT (main product)
+                    //--------------------------------------------
+                    $p = null;
+                    if (null !== $productId) {
+                        foreach ($productsInfo as $pr) {
+                            if ($productId === $pr['product_id']) {
+                                $p = $pr;
+                                break;
+                            }
+                        }
+                        if (null === $p) {
+                            throw new EkomApiException("the default product_id $productId was not found in card $cardId");
+                        }
+                    }
+                    if (null === $p) {
+                        $p = $productsInfo[0];
+                    }
+
+
+                    if ('' !== $p['label']) {
+                        $label = $p['label'];
+                    } elseif ("" !== $row['label']) {
+                        $label = $row['label'];
+                    } else {
+                        $label = ("" !== $p['default_label']) ? $p['default_label'] : $row['default_label'];
+                    }
+
+                    if ('' !== $p['description']) {
+                        $description = $p['description'];
+                    } elseif ("" !== $row['description']) {
+                        $description = $row['description'];
+                    } else {
+                        $description = ("" !== $p['default_description']) ? $p['default_description'] : $row['default_description'];
+                    }
+
+
+                    //--------------------------------------------
+                    // BASE INFO
+                    //--------------------------------------------
+                    $productReference = $p['reference'];
+                    $cardSlug = ("" !== $row['slug']) ? $row['slug'] : $row['default_slug'];
+                    $cardUri = E::link("Ekom_productCardRef", [
+                        'slug' => $cardSlug,
+                        'ref' => $productReference,
+                    ]);
+
+
+                    //--------------------------------------------
+                    // META
+                    //--------------------------------------------
+                    $metaTitle = $this->getMetaTitle($p, $row, $label);
+                    $metaDescription = $this->getMetaDescription($p, $row, $label, $description);
+                    $metaKeywords = $this->getMetaKeywords($p, $row, $label, $description);
+
+
+                    //--------------------------------------------
+                    // STOCK
+                    //--------------------------------------------
+                    $outOfStockText = $p['out_of_stock_text'];
+                    $quantity = $p['quantity'];
+                    $isInStock = true; // isInStock handles qty=-1, it's a helper for the view
+                    if (0 === (int)$quantity) {
+                        $isInStock = false;
+                    }
+
+                    //--------------------------------------------
+                    // ATTRIBUTES
+                    //--------------------------------------------
+                    $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $productId);
+
+
+                    $attrSelection = $p['attributes'];
+                    $attrStringArr = [];
+                    foreach ($attrSelection as $item) {
+                        $attrStringArr[] = $item['value_label'];
+                    }
+                    $attrString = implode(' | ', $attrStringArr);
+
+
+                    //--------------------------------------------
+                    // RATING
+                    //--------------------------------------------
+                    $ratingInfo = $api->commentLayer()->getRatingInfo($cardId);
+
+
+                    //--------------------------------------------
+                    // CODES
+                    //--------------------------------------------
+                    /**
+                     * Abstract codes for things like:
+                     *      - is new product
+                     *      - ...
+                     */
+                    $codes = ProductCodeLayer::extractCodes($p['codes']);
+
+
+                    //--------------------------------------------
+                    // TAXES AND BASE PRICE
+                    //--------------------------------------------
+                    $taxLayer = $api->taxLayer();
+                    $taxGroup = $taxLayer->getTaxGroupInfoByCardId($cardId, $shopId, $langId);
+
+
+                    //--------------------------------------------
+                    // DISCOUNT
+                    //--------------------------------------------
+                    $discount = $api->discountLayer()->getApplicableDiscountByProductId($p['product_id'], $shopId, $langId);
+
+                    $model = [
+                        //--------------------------------------------
+                        // BASIC DATA
+                        //--------------------------------------------
+                        "card_id" => (int)$cardId,
+                        "card_slug" => $cardSlug,
+                        "product_id" => (int)$productId,
+                        "product_reference" => $productReference,
+                        "product_type" => $p['product_type'],
+                        "quantity" => (int)$quantity,
+                        "is_in_stock" => $isInStock,
+                        "images" => $images,
+                        "defaultImage" => $defaultImage,
+                        "imageThumb" => $imageThumb,
+                        "imageSmall" => $imageSmall,
+                        "imageMedium" => $imageMedium,
+                        "imageLarge" => $imageLarge,
+
+                        "uriCard" => $cardUri,
+                        "uriCardAjax" => UriUtil::getProductBoxBaseAjaxUri($productId),
+                        "label" => $label,
+                        "seller" => $p['seller'],
+
+
+                        "label_escaped" => htmlspecialchars($label),
+                        "ref" => $p['reference'],
+                        "weight" => $p['weight'],
+                        "description" => $description,
+                        //
+                        "metaTitle" => $metaTitle,
+                        "metaDescription" => $metaDescription,
+                        "metaKeywords" => $metaKeywords,
+                        /**
+                         * Is used by the widget to assign visual cues (for instance success color) to the stockText
+                         * List of available types will be defined later.
+                         */
+                        "outOfStockText" => $outOfStockText,
+                        //
+                        "attributesString" => $attrString,
+                        "attributesSelection" => $attrSelection,
+                        "attributes" => $attr,
+                        // rating
+                        "rating_amount" => $ratingInfo['average'], // percent
+                        "rating_nbVotes" => $ratingInfo['count'],
+
+                        // codes
+                        "codes" => $codes,
+                        //--------------------------------------------
+                        // PRICE RELATED
+                        //--------------------------------------------
+                        "rawOriginalPrice" => $p['price'], // the original price (price from the shop_has_product table, or, if null, from product table)
+                        // tax
+                        "taxGroup" => $taxGroup, // false|array
+                        // discount
+                        "discount" => $discount, // false|array
+                    ];
+                    $model['_productDetails'] = $productDetails;
+
+
+                } else {
+                    $model['errorCode'] = "emptyProductCard";
+                    $model['errorTitle'] = "Empty product card";
+                    $model['errorMessage'] = "This product card does not contain any products ($cardId, $productId)";
+                }
+            } else {
+                /**
+                 * product card not associated with this shop/lang.
+                 */
+                $model['errorCode'] = "inactive";
+                $model['errorTitle'] = "Product card not active";
+                $model['errorMessage'] = "This product card is not active for this shop, sorry ($cardId, $productId)";
+            }
+        } else {
+            /**
+             * product card not associated with this shop/lang.
+             */
+            $model['errorCode'] = "noAssociation";
+            $model['errorTitle'] = "Product card not associated";
+            $model['errorMessage'] = "This product card is not associated with this shop, sorry (cardId: $cardId, shopId: $shopId, langId: $langId)";
+        }
+
+        $isErroneous = (array_key_exists('errorCode', $model));
+        return $model;
+    }
+
+    private function gggg()
+    {
+
+
+        az("o");
+        //--------------------------------------------
+        // DECORATING THE MODEL WITH MODULES
+        //--------------------------------------------
+        /**
+         * This is an opportunity for modules to decorate:
+         *
+         * - the price (to benefit the "price synopsis" below which includes tax computation
+         *          and discounts)
+         * - the quantity
+         * - ...other things
+         *
+         *
+         * Note: since we are inside a tabatha cache, modules should
+         * only use the product box context data, and provide their cache delete identifiers
+         * (using the Ekom_ProductBox_collectPreCacheData hook).
+         *
+         */
+        $preModel = [
+
+        ];
+        Hooks::call("Ekom_decorateBoxModel", $preModel);
+
+
+        //--------------------------------------------
+        // PRICE SYNOPSIS
+        //--------------------------------------------
+        //--------------------------------------------
+        // ORIGINAL PRICE
+        //--------------------------------------------
+        $originalPrice = $p['price'];
+        if (null === $originalPrice) {
+            $originalPrice = $p['default_price'];
+        }
+        $originalPrice = E::trimPrice($originalPrice);
+
+
+        //--------------------------------------------
+        // TAXES AND BASE PRICE
+        //--------------------------------------------
+        $taxLayer = $api->taxLayer();
+        $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
+
+        $config = [];
+        Hooks::call("Ekom_ProductBox_filterTaxGroup", $config, $productBoxContext, $p);
+        $taxDisabled = (array_key_exists("noTax", $config) && true === $config['noTax']) ? true : false;
+
+        if (true === $taxDisabled) {
+            $taxRatio = 1;
+            $basePrice = $originalPrice;
+            $basePriceWithoutTax = $basePrice;
+            $basePriceWithTax = $basePrice;
+
+        } else {
+            $taxInfo = TaxLayer::getTaxInfo($taxes, $originalPrice);
+            $taxRatio = $taxInfo['taxRatio'];
+            $taxDetails = $taxInfo['taxDetails'];
+
+            $basePriceWithoutTax = $taxInfo['priceWithoutTax'];
+            $basePriceWithTax = $taxInfo['priceWithTax'];
+            $basePrice = $basePriceWithTax;
+        }
+
+        $basePriceWithoutTax = E::trimPrice($basePriceWithoutTax);
+        $basePriceWithTax = E::trimPrice($basePriceWithTax);
+        $basePrice = E::trimPrice($basePrice);
+
+
+        //--------------------------------------------
+        // DISCOUNTS AND SALE PRICE
+        //--------------------------------------------
+        az("todo discounts");
+
+
+        $boxConf = [
+            "_price" => $originalPrice, // the original price (price from the shop_has_product table, or, if null, from product table)
+            "card_id" => (int)$cardId,
+            "card_slug" => $cardSlug,
+            "product_id" => (int)$productId,
+            "product_reference" => $productReference,
+            "product_type" => $p['product_type'],
+            "quantity" => (int)$quantity,
+            "is_in_stock" => $isInStock,
+            "images" => $images,
+            "defaultImage" => $defaultImage,
+            "imageThumb" => $imageThumb,
+            "imageSmall" => $imageSmall,
+            "imageMedium" => $imageMedium,
+            "imageLarge" => $imageLarge,
+
+            "uriCard" => $cardUri,
+            "uriCardAjax" => UriUtil::getProductBoxBaseAjaxUri($productId),
+            "label" => $label,
+            "seller" => $p['seller'],
+
+
+            "label_escaped" => htmlspecialchars($label),
+            "ref" => $p['reference'],
+            "weight" => $p['weight'],
+            "description" => $description,
+            //
+            "metaTitle" => $metaTitle,
+            "metaDescription" => $metaDescription,
+            "metaKeywords" => $metaKeywords,
+            /**
+             * Is used by the widget to assign visual cues (for instance success color) to the stockText
+             * List of available types will be defined later.
+             */
+            "outOfStockText" => $outOfStockText,
+
+
+            "priceWithTax" => $priceWithTax,
+            "priceWithoutTax" => $priceWithoutTax,
+            "rawPriceWithTax" => $_priceWithTax,
+            "rawPriceWithoutTax" => $_priceWithoutTax,
+
+
+            "attributesString" => $attrString,
+            "attributesSelection" => $attrSelection,
+            "attributes" => $attr,
+            // rating
+            "rating_amount" => $ratingInfo['average'], // percent
+            "rating_nbVotes" => $ratingInfo['count'],
+
+            // tax ratio
+            "taxApplies" => true, // you could set this to false with modules
+            "taxRatio" => $taxRatio,
+            "taxDetails" => $taxDetails,
+            "taxGroupName" => $taxInfo['taxGroupName'],
+            "taxGroupLabel" => $taxInfo['taxGroupLabel'],
+            "taxAmountUnit" => $taxInfo['taxAmountUnit'],
+            "codes" => $codes,
+
+
+            // card combination
+            //--------------------------------------------
+            // PRIVATE, are removed before the result is returned
+            //--------------------------------------------
+//                                "_taxes" => $taxes,
+        ];
+
+    }
+
     private function getMetaTitle(array $product, array $card, $label)
     {
         $ret = '';
