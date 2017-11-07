@@ -34,7 +34,7 @@ use QuickPdo\QuickPdo;
  *
  *
  */
-class DiscountLayer
+class DiscountLayerOld
 {
 
 
@@ -351,7 +351,6 @@ and h._discount_badge != ''
      * so that you start a day with fresh cached discount prices.
      *
      *
-     *
      * To give you an idea,
      * I executed this method on my local computer
      * with 1434 products, it took about 6 minute and 13 seconds to finish,
@@ -401,32 +400,18 @@ where shop_id=$shopId
         if (false === array_key_exists('errorCode', $box)) {
 
 
-            if (true === $box['discountHasDiscount']) {
-
-                $discount = $box['discount'];
-                /**
-                 * - discount_id: int
-                 * - label: string
-                 * - type: the procedure type (percentage|fixed)
-                 * - operand: numeric, the procedure operand
-                 * - target: string representing the target to which the procedure should be applied
-                 * - level: string, the level at which the discount was applied, can be one of:
-                 *          - product
-                 *          - card
-                 *          - category
-                 *
-                 * - conditions: string, text of conditions deciding whether or not the discount applies to the product
-                 *
-                 *
-                 */
+            $salePriceWithoutTax = $box['rawSalePriceWithoutTax'];
+            $salePriceWithTax = $box['rawSalePriceWithTax'];
+            $discountBadge = '';
 
 
-                $badgeDetails = [$discount];
-                $badges = [];
+            $badgeDetails = $box['badgeDetails'];
+            $badges = [];
+            if ($badgeDetails) {
                 foreach ($badgeDetails as $info) {
                     $prefix = '';
                     switch ($info['type']) {
-                        case "fixed":
+                        case "amount":
                             $prefix = 'f';
                             break;
                         default:
@@ -455,19 +440,24 @@ where shop_id=$shopId
 
                 if ($badges) {
                     $discountBadge = implode(',', $badges);
-                    return QuickPdo::update("ek_shop_has_product", [
-                        /**
-                         * Note: this is just the applicable discount, not the actual discount applied
-                         * to the product.
-                         *
-                         */
-                        "_discount_badge" => $discountBadge,
-                    ], [
-                        ["shop_id", "=", $shopId],
-                        ["product_id", "=", $productId],
-                    ]);
                 }
             }
+
+
+            return QuickPdo::update("ek_shop_has_product", [
+//                "_sale_price_without_tax" => $salePriceWithoutTax,
+//                "_sale_price_with_tax" => $salePriceWithTax,
+
+                /**
+                 * Note: this is just the applicable discount, not the actual discount applied
+                 * to the product.
+                 *
+                 */
+                "_discount_badge" => $discountBadge,
+            ], [
+                ["shop_id", "=", $shopId],
+                ["product_id", "=", $productId],
+            ]);
         }
         return false;
     }

@@ -5,11 +5,13 @@ namespace Module\Ekom\Api\Entity;
 
 
 use Bat\HashTool;
+use ConditionResolver\SimpleConditionResolverUtil;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
+use Module\Ekom\Api\Layer\DiscountLayer;
 use Module\Ekom\Api\Layer\ProductCodeLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
 use Module\Ekom\Api\Util\UriUtil;
@@ -36,7 +38,7 @@ class ProductBoxEntity
     private $productDetails;
 
     //
-    private $_nativeContextData;
+    private $_nativeContext;
 
 
     public function __construct()
@@ -229,8 +231,7 @@ class ProductBoxEntity
                      * So now, we just resolve the priceChain
                      */
                     $model = $primitiveModel;
-                    $this->resolvePriceChain($model);
-                    az($model);
+                    $this->resolvePriceChain($model, $productBoxContext);
                 } else {
                     $model = $primitiveModel;
                 }
@@ -269,7 +270,7 @@ class ProductBoxEntity
     //
     //--------------------------------------------
 
-    private function resolvePriceChain(array &$model)
+    private function resolvePriceChain(array &$model, $productBoxContext)
     {
 
         $rawOriginalPrice = E::trimPrice($model['rawOriginalPrice']); // ensure that modules didn't parasite us with some lengthy floats
@@ -285,19 +286,21 @@ class ProductBoxEntity
          *
          * // related to price
          * ------------------------
+         * - rawOriginalPrice (already set in the given model)
          * - originalPrice
-         *
-         * - basePrice (assumed with tax)
+         * - basePrice (assumed with applicable tax applied)
          * - rawBasePrice
-         *
-         * - basePriceWithoutTax
-         * - rawBasePriceWithoutTax
-         *
-         * - salePrice (assumed with tax)
+         * - salePrice (assumed with applicable tax and discount applied)
          * - rawSalePrice
          *
+         *
+         * @deprecated (as not useful for now)
+         * - basePriceWithoutTax
+         * - rawBasePriceWithoutTax
          * - salePriceWithoutTax (who needs that?)
          * - rawSalePriceWithoutTax
+         *
+         *
          *
          * // related to taxes
          * ------------------------
@@ -313,11 +316,11 @@ class ProductBoxEntity
          * // Note: the discount price is the salePrice
          * // Note2: badgeDetails has been removed for now
          *
-         * - hasDiscount: bool
-         * - type: the procedure type
-         * - savingInPercent
-         * - savingInAmount
-         * - rawSavingInAmount
+         * - discountHasDiscount: bool
+         * - discountType: the procedure type (percent|fixed)
+         * - discountSavingPercent
+         * - discountSavingFixed
+         * - discountRawSavingFixed
          *
          *
          */
@@ -325,8 +328,13 @@ class ProductBoxEntity
         // APPLYING TAXES
         //--------------------------------------------
         $taxInfo = TaxLayer::applyTaxGroup($taxGroup, $rawOriginalPrice);
-        $rawBasePrice = $taxInfo['priceWithTax'];
-        $rawBasePriceWithoutTax = $taxInfo['priceWithoutTax'];
+        /**
+         * Note that if the taxGroup was refuted by modules (=false),
+         * the base price used by ekom is still the taxInfo.priceWithTax (which happens to be the
+         * same as the taxInfo.priceWithoutTax)
+         */
+        $basePrice = $taxInfo['priceWithTax'];
+        $basePriceWithoutTax = $taxInfo['priceWithoutTax'];
 
 
         $model["taxDetails"] = $taxInfo['taxDetails'];
@@ -339,91 +347,41 @@ class ProductBoxEntity
         //--------------------------------------------
         // NOW APPLYING DISCOUNT
         //--------------------------------------------
+        $discountInfo = [];
         if (false !== $discount) {
-            a($discount);
-        }
-        az("pou");
-
-
-        $_priceWithTax = $model['rawPriceWithTax'];
-        $_priceWithoutTax = $model['rawPriceWithoutTax'];
-
-
-        //--------------------------------------------
-        // NOW APPLYING DISCOUNT DYNAMICALLY (so that it's always synced with app rules)
-        //--------------------------------------------
-        /**
-         * Actually,
-         * @todo-ling: we can cache it for one day using:
-         *
-         * - the user group Ids
-         * - the currency
-         * - today's date
-         *
-         * However, if the discount date ends in the middle of the day,
-         * we need another helper external system to clean the cache in time.
-         *
-         * - suggestion: try to see how well/fast it works without cache first
-         *
-         *
-         */
-        $badges = [];
-        list($_salePriceWithoutTax, $_salePriceWithTax) = $api->discountLayer()->applyDiscountsByProductId($model['product_id'], $_priceWithoutTax, $_priceWithTax, $badges, $shopId, $langId);
-
-        $salePriceWithTax = E::price($_salePriceWithTax);
-        $salePriceWithoutTax = E::price($_salePriceWithoutTax);
-        $model['rawSalePriceWithTax'] = $_salePriceWithTax;
-        $model['rawSalePriceWithoutTax'] = $_salePriceWithoutTax;
-        $model['salePriceWithTax'] = $salePriceWithTax;
-        $model['salePriceWithoutTax'] = $salePriceWithoutTax;
-
-
-        $model['badgeDetails'] = $badges;
-        $model['hasDiscount'] = (count($badges) > 0);
-
-        if (true === $isB2b) {
-            $diff = $_priceWithoutTax - $_salePriceWithoutTax;
-            if (0.0 !== (float)$_priceWithoutTax) {
-                $diffPercent = $diff / $_priceWithoutTax * 100;
-            } else {
-                $diffPercent = 0;
-            }
-        } else {
-            $diff = $_priceWithTax - $_salePriceWithTax;
-            if (0.0 !== (float)$_priceWithTax) {
-                $diffPercent = $diff / $_priceWithTax * 100;
-            } else {
-                $diffPercent = 0;
+            $conditions = $discount['conditions'];
+            if (true === SimpleConditionResolverUtil::create()->evaluate($conditions, $productBoxContext)) {
+                $discountInfo = DiscountLayer::applyDiscount($discount, $basePrice);
             }
         }
-        $model['savingPercent'] = E::trimPercent($diffPercent);
-        $model['savingAmount'] = E::price($diff);
-        //--------------------------------------------
-        //
-        //--------------------------------------------
-        /**
-         * We need this in some cases where a renderer only renders one item.
-         * This can not be cached.
-         */
-        $model['isB2B'] = $isB2b;
-
-
-        //--------------------------------------------
-        // NOW SETTING DEFAULT PRICES
-        //--------------------------------------------
-        if (true === $isB2b) {
-            $model['price'] = $model['priceWithoutTax'];
-            $model['rawPrice'] = $model['rawPriceWithoutTax'];
-            $model['salePrice'] = $model['salePriceWithoutTax'];
-            $model['rawSalePrice'] = $model['rawSalePriceWithoutTax'];
-        } else {
-            $model['price'] = $model['priceWithTax'];
-            $model['rawPrice'] = $model['rawPriceWithTax'];
-            $model['salePrice'] = $model['salePriceWithTax'];
-            $model['rawSalePrice'] = $model['rawSalePriceWithTax'];
+        if (!$discountInfo) {
+            $discountInfo = [
+                "type" => "fixed",
+                "savingPercent" => 0,
+                "savingFixed" => 0,
+                "discountPrice" => $basePrice,
+            ];
         }
+        $discountPrice = $discountInfo['discountPrice'];
 
-        return $model;
+        $model['discountHasDiscount'] = ($discountInfo['savingFixed'] > 0);
+        $model['discountType'] = $discountInfo['type'];
+        $model['discountPrice'] = E::price($discountPrice);
+        $model['discountRawPrice'] = $discountPrice;
+        $model['discountSavingPercent'] = $discountInfo['savingPercent'];
+        $model['discountSavingFixed'] = E::price($discountInfo['savingFixed']);
+        $model['discountRawSavingFixed'] = $discountInfo['savingFixed'];
+
+
+        //--------------------------------------------
+        // INCLUDING PRICE CHAIN
+        //--------------------------------------------
+        $salePrice = $discountPrice;
+        $model['originalPrice'] = E::price($rawOriginalPrice);
+        $model['rawBasePrice'] = $basePrice;
+        $model['basePrice'] = E::price($basePrice);
+        $model['rawSalePrice'] = $salePrice;
+        $model['salePrice'] = E::price($salePrice);
     }
 
     private function getPrimitiveModel(array $productBoxContext, &$isErroneous = false)
@@ -645,8 +603,9 @@ class ProductBoxEntity
                         "taxGroup" => $taxGroup, // false|array
                         // discount
                         "discount" => $discount, // false|array
+                        "productDetails" => [], // will be decorated by modules if present
+                        "productDetailsArgs" => $productDetails,  // the product details from the uri if any
                     ];
-                    $model['_productDetails'] = $productDetails;
 
 
                 } else {
@@ -675,152 +634,6 @@ class ProductBoxEntity
         return $model;
     }
 
-    private function gggg()
-    {
-
-
-        az("o");
-        //--------------------------------------------
-        // DECORATING THE MODEL WITH MODULES
-        //--------------------------------------------
-        /**
-         * This is an opportunity for modules to decorate:
-         *
-         * - the price (to benefit the "price synopsis" below which includes tax computation
-         *          and discounts)
-         * - the quantity
-         * - ...other things
-         *
-         *
-         * Note: since we are inside a tabatha cache, modules should
-         * only use the product box context data, and provide their cache delete identifiers
-         * (using the Ekom_ProductBox_collectPreCacheData hook).
-         *
-         */
-        $preModel = [
-
-        ];
-        Hooks::call("Ekom_decorateBoxModel", $preModel);
-
-
-        //--------------------------------------------
-        // PRICE SYNOPSIS
-        //--------------------------------------------
-        //--------------------------------------------
-        // ORIGINAL PRICE
-        //--------------------------------------------
-        $originalPrice = $p['price'];
-        if (null === $originalPrice) {
-            $originalPrice = $p['default_price'];
-        }
-        $originalPrice = E::trimPrice($originalPrice);
-
-
-        //--------------------------------------------
-        // TAXES AND BASE PRICE
-        //--------------------------------------------
-        $taxLayer = $api->taxLayer();
-        $taxes = $taxLayer->getTaxesByCardId($cardId, $shopId, $langId);
-
-        $config = [];
-        Hooks::call("Ekom_ProductBox_filterTaxGroup", $config, $productBoxContext, $p);
-        $taxDisabled = (array_key_exists("noTax", $config) && true === $config['noTax']) ? true : false;
-
-        if (true === $taxDisabled) {
-            $taxRatio = 1;
-            $basePrice = $originalPrice;
-            $basePriceWithoutTax = $basePrice;
-            $basePriceWithTax = $basePrice;
-
-        } else {
-            $taxInfo = TaxLayer::getTaxInfo($taxes, $originalPrice);
-            $taxRatio = $taxInfo['taxRatio'];
-            $taxDetails = $taxInfo['taxDetails'];
-
-            $basePriceWithoutTax = $taxInfo['priceWithoutTax'];
-            $basePriceWithTax = $taxInfo['priceWithTax'];
-            $basePrice = $basePriceWithTax;
-        }
-
-        $basePriceWithoutTax = E::trimPrice($basePriceWithoutTax);
-        $basePriceWithTax = E::trimPrice($basePriceWithTax);
-        $basePrice = E::trimPrice($basePrice);
-
-
-        //--------------------------------------------
-        // DISCOUNTS AND SALE PRICE
-        //--------------------------------------------
-        az("todo discounts");
-
-
-        $boxConf = [
-            "_price" => $originalPrice, // the original price (price from the shop_has_product table, or, if null, from product table)
-            "card_id" => (int)$cardId,
-            "card_slug" => $cardSlug,
-            "product_id" => (int)$productId,
-            "product_reference" => $productReference,
-            "product_type" => $p['product_type'],
-            "quantity" => (int)$quantity,
-            "is_in_stock" => $isInStock,
-            "images" => $images,
-            "defaultImage" => $defaultImage,
-            "imageThumb" => $imageThumb,
-            "imageSmall" => $imageSmall,
-            "imageMedium" => $imageMedium,
-            "imageLarge" => $imageLarge,
-
-            "uriCard" => $cardUri,
-            "uriCardAjax" => UriUtil::getProductBoxBaseAjaxUri($productId),
-            "label" => $label,
-            "seller" => $p['seller'],
-
-
-            "label_escaped" => htmlspecialchars($label),
-            "ref" => $p['reference'],
-            "weight" => $p['weight'],
-            "description" => $description,
-            //
-            "metaTitle" => $metaTitle,
-            "metaDescription" => $metaDescription,
-            "metaKeywords" => $metaKeywords,
-            /**
-             * Is used by the widget to assign visual cues (for instance success color) to the stockText
-             * List of available types will be defined later.
-             */
-            "outOfStockText" => $outOfStockText,
-
-
-            "priceWithTax" => $priceWithTax,
-            "priceWithoutTax" => $priceWithoutTax,
-            "rawPriceWithTax" => $_priceWithTax,
-            "rawPriceWithoutTax" => $_priceWithoutTax,
-
-
-            "attributesString" => $attrString,
-            "attributesSelection" => $attrSelection,
-            "attributes" => $attr,
-            // rating
-            "rating_amount" => $ratingInfo['average'], // percent
-            "rating_nbVotes" => $ratingInfo['count'],
-
-            // tax ratio
-            "taxApplies" => true, // you could set this to false with modules
-            "taxRatio" => $taxRatio,
-            "taxDetails" => $taxDetails,
-            "taxGroupName" => $taxInfo['taxGroupName'],
-            "taxGroupLabel" => $taxInfo['taxGroupLabel'],
-            "taxAmountUnit" => $taxInfo['taxAmountUnit'],
-            "codes" => $codes,
-
-
-            // card combination
-            //--------------------------------------------
-            // PRIVATE, are removed before the result is returned
-            //--------------------------------------------
-//                                "_taxes" => $taxes,
-        ];
-
-    }
 
     private function getMetaTitle(array $product, array $card, $label)
     {
