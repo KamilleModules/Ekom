@@ -8,6 +8,33 @@ class ConditionResolverUtil
 {
 
 
+    private $parenthesisBlocks;
+    private $tags;
+    private static $comparisonOperators = [
+        '=',
+        '!=',
+        '><', // between exclusive
+        '>=<', // between inclusive
+        '<',
+        '<=',
+        '>',
+        '>=',
+    ];
+
+
+    public function __construct()
+    {
+        $this->parenthesisBlocks = [];
+        $this->tags = [];
+    }
+
+
+    public static function create()
+    {
+        return new static();
+    }
+
+
     /**
      * @param $conditionString , the
      *      ekom discounts conditions language
@@ -16,17 +43,20 @@ class ConditionResolverUtil
      * @param array $pool , an array of key => variable
      * @return bool, whether or not the condition string is successful
      */
-    public static function evaluate($conditionString, array $pool)
+    public function evaluate($conditionString, array $pool)
     {
-        a("evaluating conditionString: $conditionString");
+        $this->parenthesisBlocks = []; // reset
+        $tags = self::getTags($pool);
+
+
+        $conditionString = trim($conditionString);
         //--------------------------------------------
         // SIMPLIFY THE CONDITION STRING BY REMOVING PARENTHESIS
         //--------------------------------------------
         $c = 1;
         $pattern = '!\(\((.*?)\)\)!';
-        $parenthesisBlocks = [];
-        $expression = preg_replace_callback($pattern, function ($v) use (&$c, &$parenthesisBlocks) {
-            $parenthesisBlocks[$c] = $v[1];
+        $expression = preg_replace_callback($pattern, function ($v) use (&$c) {
+            $this->parenthesisBlocks[$c] = $v[1];
             return '$' . $c++;
         }, $conditionString);
 
@@ -34,40 +64,49 @@ class ConditionResolverUtil
         //--------------------------------------------
         // NOW RESOLVE EXPRESSION STRING
         //--------------------------------------------
-        return self::evaluateExpression($expression, $pool, $parenthesisBlocks);
+        return $this->evaluateExpression($expression, $tags);
     }
+
 
 
     //--------------------------------------------
     //
     //--------------------------------------------
-    private static function evaluateExpression($conditionString, array $pool, $parenthesisBlocks)
+    protected function languageError($msg)
     {
-        a("evaluating expression: $conditionString");
-        $andBlocks = preg_split('!(&&)!', $conditionString);
+        throw new \Exception("Language error: $msg");
+    }
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    private function evaluateExpression($expression, array $tags)
+    {
+        $expression = trim($expression);
+        $andBlocks = preg_split('!(&&)!', $expression);
         foreach ($andBlocks as $andBlock) {
-            if (false === self::evaluateAndBlock($andBlock, $pool, $parenthesisBlocks)) {
+            $andBlock = trim($andBlock);
+            if (false === $this->evaluateAndBlock($andBlock, $tags)) {
                 return false;
             }
         }
         return true;
     }
 
-    private static function evaluateAndBlock($andBlock, array $pool, $parenthesisBlocks)
+    private function evaluateAndBlock($andBlock, array $tags)
     {
-        a("evaluating AndBlock: $andBlock");
         $orBlocks = preg_split('!(\|\|)!', $andBlock);
         foreach ($orBlocks as $orBlock) {
-            if (true === self::evaluateOrBlock($orBlock, $pool, $parenthesisBlocks)) {
+            $orBlock = trim($orBlock);
+            if (true === $this->evaluateOrBlock($orBlock, $tags)) {
                 return true;
             }
         }
         return false;
     }
 
-    private static function evaluateOrBlock($orBlock, array $pool, $parenthesisBlocks)
+    private function evaluateOrBlock($orBlock, array $tags)
     {
-        a("evaluating OrBlock: $orBlock");
         /**
          * Miss foreach
          */
@@ -75,28 +114,100 @@ class ConditionResolverUtil
         /**
          * First, search for parenthesisBlocks and evaluate them
          */
-        $flattenComparisonBlock = preg_replace_callback('!\$([0-9]+)!', function ($v) use ($parenthesisBlocks, $pool) {
+        $flattenComparisonBlock = preg_replace_callback('!\$([0-9]+)!', function ($v) use ($tags) {
             $index = $v[1];
-            if (array_key_exists($index, $parenthesisBlocks)) {
-                return self::evaluateExpression($parenthesisBlocks[$index], $pool, $parenthesisBlocks);
+            if (array_key_exists($index, $this->parenthesisBlocks)) {
+                $expression = $this->parenthesisBlocks[$index];
+//                unset($this->parenthesisBlocks[$index]);
+                return (int)$this->evaluateExpression($expression, $tags);
             } else {
                 return $v[0];
             }
         }, $orBlock);
-        return self::evaluateComparisonBlock($flattenComparisonBlock, $pool);
+
+
+        $flattenComparisonBlock = trim($flattenComparisonBlock);
+        return $this->evaluateComparisonBlock($flattenComparisonBlock, $tags);
 
     }
 
-    private static function evaluateComparisonBlock($comparisonBlock, array $pool)
+    private function evaluateComparisonBlock($comparisonBlock, array $tags)
     {
-        $random = rand(0, 1);
         /**
-         * Note: the comparisonBlock could be just a string (for testing purposes),
-         * like a, b, c, 1, 2, ...
+         * Note: the comparisonBlock could be just a flat string (not containing
+         * a comparison operator or a variable) for testing purposes,
+         * like 0 for instance, which evaluates to false, or any other flat string which evaluates to 1.
+         *
+         * So, this string for instance:
+         *
+         * ((2 || 0 && 1)) && ((0 || 1))
+         *
+         * evaluates to true.
+         *
          */
-//        $comparisonBlock = trim($comparisonBlock);
-        a("evaluating comparisonBlock: $comparisonBlock, random result=$random");
-        return (bool)$random;
+
+        //--------------------------------------------
+        // REPLACING VARIABLES WITH THEIR REAL VALUES
+        //--------------------------------------------
+        $comparisonBlock = str_replace(array_keys($tags), array_values($tags), $comparisonBlock);
+
+
+        //--------------------------------------------
+        // NOW CHECK IF THERE IS A COMPARISON OPERATOR
+        // if so, evaluate the comparison block, otherwise evaluate the string
+        //--------------------------------------------
+        foreach (self::$comparisonOperators as $operator) {
+            if (false !== strpos($comparisonBlock, $operator)) {
+                return $this->doEvaluateComparisonBlock($comparisonBlock, $operator);
+            }
+        }
+
+        // else it's just a string
+        return ('0' !== $comparisonBlock);
     }
+
+
+    private function doEvaluateComparisonBlock($comparisonBlock, $operator)
+    {
+        $p = explode($operator, $comparisonBlock, 2);
+        $left = trim($p[0]);
+        $right = trim($p[1]);
+
+                        a("this case $comparisonBlock");
+        switch ($operator) {
+            case "=":
+                return ($left===$right);
+                break;
+            case ">=<":
+            case "><":
+                $members = explode(',', $right, 2);
+                if (2 === count($members)) {
+                    $start = trim($members[0]);
+                    $end = trim($members[1]);
+                    if ('><' === $operator) {
+                        return ($left > $start && $left < $end);
+                    } else {
+                        return ($left >= $start && $left <= $end);
+                    }
+                } else {
+                    $this->languageError("Missing comma in right member of comparisonBlock $comparisonBlock");
+                }
+                break;
+            default:
+                $this->languageError("Unknown operator: $operator in comparisonBlock $comparisonBlock");
+                break;
+        }
+
+    }
+
+    private static function getTags(array $pool)
+    {
+        $ret = [];
+        foreach ($pool as $k => $v) {
+            $ret['$' . $k] = $v;
+        }
+        return $ret;
+    }
+
 
 }

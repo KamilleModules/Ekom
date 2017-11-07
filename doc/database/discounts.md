@@ -138,8 +138,9 @@ The available comparison operators are:
 - <= 
 - > 
 - >= 
-- >< (between, then this comparison operator expect two arguments separated by a comma,
+- >< (between exclusive, then this comparison operator expect two arguments separated by a comma,
         whitespace around the comma has no meaning) 
+- >=< (between inclusive, same as ><, but accepts boundaries)
 
 
 The values can be any value, or a variable (using the dollar symbol as a prefix).
