@@ -43,7 +43,8 @@ class BreadcrumbsLayer
         if (null !== $cardId) {
 
 
-            $box = EkomApi::inst()->productLayer()->getProductBoxModelByCardId($cardId);
+            $box = ProductBoxLayer::getProductBoxByCardId($cardId);
+
             if (false === array_key_exists("errorCode", $box)) {
                 $label = $box['label'];
             }

@@ -7,10 +7,18 @@ namespace Module\Ekom\Api\Entity;
 use Bat\HashTool;
 use Core\Services\A;
 use Core\Services\Hooks;
+use Kamille\Architecture\Registry\ApplicationRegistry;
 use QuickPdo\QuickPdo;
 
 class ProductBoxEntityUtil
 {
+
+    public static function filterProductDetails(array $pool)
+    {
+        $availableProductDetails = [];
+        Hooks::call("Ekom_ProductBox_collectAvailableProductDetails", $availableProductDetails);
+        return array_intersect_key($pool, array_flip($availableProductDetails));
+    }
 
     public static function hashify($string)
     {
@@ -29,9 +37,12 @@ class ProductBoxEntityUtil
      */
     public static function getProductBoxGeneralContext()
     {
-        $data = [];
-        Hooks::call("Ekom_ProductBox_collectGeneralContext", $data);
-        return $data;
+        $gpc = ApplicationRegistry::get("ekom.gpc");
+        if (null === $gpc) {
+            $gpc = [];
+            Hooks::call("Ekom_ProductBox_collectGeneralContext", $gpc);
+        }
+        return $gpc;
     }
 
     public static function getProductCardInfoByCardId($cardId, $shopId, $langId)

@@ -35,7 +35,7 @@ select id, product_card_id from ek_product where id in ($sIds)
     public static function getIdByProductId($productId)
     {
         $productId = (int)$productId;
-        return QuickPdo::fetch("select product_card_id from ek_product where id=$productId");
+        return QuickPdo::fetch("select product_card_id from ek_product where id=$productId", [], \PDO::FETCH_COLUMN);
     }
 
 

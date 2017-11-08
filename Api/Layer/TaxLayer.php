@@ -19,6 +19,7 @@ use QuickPdo\QuickPdo;
  * Models used by this class:
  *
  *
+ * ------------------------------
  * taxItem:
  *      - label: translated label of the tax
  *      - amount: in percent
@@ -26,9 +27,117 @@ use QuickPdo\QuickPdo;
  *      - mode: how to combine this tax with the other taxes in the group
  *      - group_label: the bo label for the tax group owning this tax
  *      - group_name: the name for the tax group owning this tax
+ *
+ *
+ *
+ * ------------------------------
+ * taxGroup:
+ * - name
+ * - label
+ * - id
+ * - taxes:
+ *      - 0:
+ *          - id
+ *          - label
+ *          - amount
+ *          - order
+ *          - mode
+ *      - ...
  */
 class TaxLayer
 {
+
+    public static function getTaxGroupInfoByName($name, $shopId = null, $langId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        $langId = E::getLangId($langId);
+
+        return A::cache()->get("Ekom.TaxLayer.getTaxGroupInfoByName-$shopId.$langId.$name", function () use ($shopId, $langId, $name) {
+
+            $rows = QuickPdo::fetchAll("
+select 
+l.label,
+t.id as tax_id,
+t.amount,
+h.order,
+h.mode,
+g.id as group_id,
+g.name as group_name,
+g.label as group_label
+
+from 
+ek_tax_lang l
+inner join ek_tax t on t.id=l.tax_id
+inner join ek_tax_group_has_tax h on h.tax_id=t.id
+inner join ek_tax_group g on g.id=h.tax_group_id
+
+where l.lang_id=$langId
+and g.shop_id=$shopId
+and g.name=:name
+        
+order by h.order asc
+        
+        ", [
+                "name" => $name,
+            ]);
+
+            return self::getTaxGroupInfoByRows($rows);
+        }, [
+            "ek_tax",
+            "ek_tax_group_has_tax",
+            "ek_tax_group",
+            "ek_shop_has_product_card",
+        ]);
+    }
+
+
+    /**
+     * Return the taxGroup model for the given cardId, or false array if the card
+     * is not bound to any tax group.
+     */
+    public static function getTaxGroupInfoByCardId($cardId, $shopId = null, $langId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        $langId = E::getLangId($langId);
+
+        $cardId = (int)$cardId;
+
+        return A::cache()->get("Ekom.TaxLayer.getTaxesByCardId-$shopId.$langId.$cardId", function () use ($shopId, $langId, $cardId) {
+
+            $rows = QuickPdo::fetchAll("
+select 
+l.label,
+t.id as tax_id,
+t.amount,
+h.order,
+h.mode,
+g.id as group_id,
+g.name as group_name,
+g.label as group_label
+
+from 
+ek_tax_lang l
+inner join ek_tax t on t.id=l.tax_id
+inner join ek_tax_group_has_tax h on h.tax_id=t.id
+inner join ek_tax_group g on g.id=h.tax_group_id
+inner join ek_shop_has_product_card hh on hh.shop_id=g.shop_id and hh.tax_group_id=g.id
+
+where l.lang_id=$langId
+and g.shop_id=$shopId
+and hh.product_card_id=$cardId
+        
+order by h.order asc
+        
+        ");
+
+            return self::getTaxGroupInfoByRows($rows);
+        }, [
+            "ek_tax",
+            "ek_tax_group_has_tax",
+            "ek_tax_group",
+            "ek_shop_has_product_card",
+        ]);
+    }
 
 
     /**
@@ -85,93 +194,6 @@ class TaxLayer
     public static function getTaxInfo(array $taxes, $originalPrice)
     {
         throw new EkomApiException("deprecated, use applyTaxGroup instead");
-    }
-
-
-    /**
-     * Return the taxGroup model for the given cardId, or false array if the card
-     * is not bound to any tax group.
-     *
-     * The taxGroup model looks like this:
-     *
-     * - name
-     * - label
-     * - id
-     * - taxes:
-     *      - 0:
-     *          - id
-     *          - label
-     *          - amount
-     *          - order
-     *          - mode
-     *      - ...
-     *
-     *
-     */
-    public function getTaxGroupInfoByCardId($cardId, $shopId = null, $langId = null)
-    {
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
-
-        $cardId = (int)$cardId;
-
-        return A::cache()->get("Module.Ekom.Api.Layer.TaxLayer.getTaxesByCardId-$shopId.$langId.$cardId", function () use ($shopId, $langId, $cardId) {
-
-            $rows = QuickPdo::fetchAll("
-select 
-l.label,
-t.id as tax_id,
-t.amount,
-h.order,
-h.mode,
-g.id as group_id,
-g.name as group_name,
-g.label as group_label
-
-from 
-ek_tax_lang l
-inner join ek_tax t on t.id=l.tax_id
-inner join ek_tax_group_has_tax h on h.tax_id=t.id
-inner join ek_tax_group g on g.id=h.tax_group_id
-inner join ek_shop_has_product_card hh on hh.shop_id=g.shop_id and hh.tax_group_id=g.id
-
-where l.lang_id=$langId
-and g.shop_id=$shopId
-and hh.product_card_id=$cardId
-        
-order by h.order asc
-        
-        ");
-            $ret = false;
-            if ($rows) {
-                $ret = [];
-                $groupSet = false;
-                $taxes = [];
-                foreach ($rows as $row) {
-                    if (false === $groupSet) {
-                        $ret['id'] = $row['group_id'];
-                        $ret['name'] = $row['group_name'];
-                        $ret['label'] = $row['group_label'];
-                        $groupSet = true;
-                    }
-                    $taxes[] = [
-                        "id" => $row['tax_id'],
-                        "label" => $row['label'],
-                        "amount" => $row['amount'],
-                        "order" => $row['order'],
-                        "mode" => $row['mode'],
-                    ];
-                }
-                $ret["taxes"] = $taxes;
-            }
-            return $ret;
-
-        }, [
-            "ek_tax",
-            "ek_tax_group_has_tax",
-            "ek_tax_group",
-            "ek_shop_has_product_card",
-        ]);
     }
 
 
@@ -278,6 +300,34 @@ order by h.order asc
             $info['priceAfter'] = $priceAfter;
             $info["amount"] = (float)$info["amount"];
             $details[] = $info;
+        }
+        return $ret;
+    }
+
+
+    private static function getTaxGroupInfoByRows(array $rows)
+    {
+        $ret = false;
+        if ($rows) {
+            $ret = [];
+            $groupSet = false;
+            $taxes = [];
+            foreach ($rows as $row) {
+                if (false === $groupSet) {
+                    $ret['id'] = $row['group_id'];
+                    $ret['name'] = $row['group_name'];
+                    $ret['label'] = $row['group_label'];
+                    $groupSet = true;
+                }
+                $taxes[] = [
+                    "id" => $row['tax_id'],
+                    "label" => $row['label'],
+                    "amount" => $row['amount'],
+                    "order" => $row['order'],
+                    "mode" => $row['mode'],
+                ];
+            }
+            $ret["taxes"] = $taxes;
         }
         return $ret;
     }

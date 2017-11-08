@@ -7,18 +7,18 @@ namespace Module\Ekom\Api\Layer;
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 class FeatureLayer
 {
-    public function getFeaturesModelByProductId($productId, $shopId = null, $langId = null)
+    public static function getFeaturesModelByProductId($productId, $shopId = null, $langId = null)
     {
         EkomApi::inst()->initWebContext();
-        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
-        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
+        $shopId = E::getShopId($shopId);
+        $langId = E::getShopId($langId);
+
         $productId = (int)$productId;
-
-
         return A::cache()->get("Ekom.FeatureLayer.$shopId.$langId.$productId", function () use ($productId, $shopId, $langId) {
 
 

@@ -1385,7 +1385,11 @@ ek_user_has_address
 
 In ekom, you don't make a difference between shipping and billing address until
 you need to ship an item. This means every user has an address book, and each of which 
-can potentially be of any type (billing and/or shipping)
+can potentially be of any type (billing and/or shipping).
+There must be at most one default shipping address and at most one default billing address.
+Also, as soon as the user has at least one address, there should be at least one default shipping address
+and one default billing address. 
+
 
 - user_id: pk
 - address_id: pk

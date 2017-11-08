@@ -16,20 +16,52 @@ use Module\Ekom\Utils\E;
 class ConnexionLayer
 {
 
+    /**
+     * Return either one or all the user connexion data.
+     * By default, returns all user connexion data.
+     * The two arguments of this function only apply if you want to retrieve ONE particular entry of
+     * the user connexion data.
+     *
+     *
+     * @param null $key
+     * @param null $default
+     * @return bool|mixed
+     */
+    public static function getUserConnexionData($key = null, $default = null)
+    {
+        if (null === $key) {
+            if (SessionUser::isConnected()) {
+                return SessionUser::getAll();
+            }
+            return false;
+        }
+        return SessionUser::getValue($key, $default);
+    }
+
 
     public static function getConnexionDataByUserId($userId)
     {
+
+
         $userGroupNames = EkomApi::inst()->userLayer()->getUserGroupNames($userId);
-        $shippingAddress = EkomApi::inst()->userLayer()->getCurrentShippingAddress($userId);
+        $shippingAddress = UserAddressLayer::getDefaultShippingAddress($userId);
+//        az($shippingAddress);
         $userShippingCountry = $shippingAddress['country_iso_code'];
 
 
-        return [
+        $userConnexionData = [
             'id' => $userId,
-            'userCountry' => Http4AllHeader::getUserPreferredCountry("FR"),
+            'userBrowserCountry' => Http4AllHeader::getUserPreferredCountry("FR"),
             'userShippingCountry' => $userShippingCountry,
-            'userGroupNames' => $userGroupNames,
+            /**
+             * array of groupId => groupName
+             */
+            'userGroups' => $userGroupNames,
         ];
+
+        Hooks::call("Ekom_Connexion_decorateUserConnexionData", $userConnexionData);
+
+        return $userConnexionData;
     }
 
 
@@ -74,7 +106,6 @@ class ConnexionLayer
         }
         return $default;
     }
-
 
     /**
      *

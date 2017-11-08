@@ -156,7 +156,7 @@ class ProductBoxEntity
         /**
          * If the developer didn't set the generalContext manually, we create it automatically.
          */
-        az(__FILE__, $generalContext);
+//        az(__FILE__, $generalContext);
         if (null === $generalContext) {
             $generalContext = ProductBoxEntityUtil::getProductBoxGeneralContext();
         }
@@ -518,8 +518,7 @@ class ProductBoxEntity
                     //--------------------------------------------
                     // TAXES AND BASE PRICE
                     //--------------------------------------------
-                    $taxLayer = $api->taxLayer();
-                    $taxGroup = $taxLayer->getTaxGroupInfoByCardId($cardId, $shopId, $langId);
+                    $taxGroup = TaxLayer::getTaxGroupInfoByCardId($cardId, $shopId, $langId);
 
 
                     //--------------------------------------------
@@ -582,7 +581,14 @@ class ProductBoxEntity
                         "taxGroup" => $taxGroup, // false|array
                         // discount
                         "discount" => $discount, // false|array
-                        "productDetails" => [], // will be decorated by modules if present
+
+                        /**
+                         * will be decorated by modules if present.
+                         * Format is defined in ekom doc:
+                         * - major: array of key => value
+                         * - minor: array of key => value
+                         */
+                        "productDetails" => [],
                         "productDetailsArgs" => $productDetails,  // the product details from the uri if any
                     ];
 

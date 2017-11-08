@@ -278,6 +278,10 @@ class UserLayer
     }
 
 
+    /**
+     * @param $userId
+     * @return array of groupId => groupName owned by user which id is given
+     */
     public function getUserGroupNames($userId)
     {
         return A::cache()->get("Ekom.UserLayer.getUserGroupNames.$userId", function () use ($userId) {

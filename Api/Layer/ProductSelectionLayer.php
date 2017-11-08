@@ -36,46 +36,10 @@ class ProductSelectionLayer
 //    }
 
 
-    public function getProductBoxModelsByRelatedId($cardId, $shopId = null)
-    {
-        if (null === $shopId) {
-            $shopId = E::getShopId();
-        }
-        $shopId = (int)$shopId;
-
-        return A::cache()->get("ProductSelectionLayer.getProductBoxModelsByRelatedId.$shopId.$cardId", function () use ($cardId, $shopId) {
-            $ids = EkomApi::inst()->relatedProductLayer()->getRelatedProductIds($cardId, $shopId);
-            return $this->getBoxesByIds($ids, $shopId);
-
-        }, [
-            // RelatedProductLayer.getRelatedProductIds
-            'ek_product_group_has_product',
-            'ek_product_group',
-        ]);
-    }
-
-
     /**
      * @todo-ling: replace all getBoxesByIds methods with getBoxesByProductsInfo methods.
      *
      */
-    public function getProductBoxModelsByLastVisited($userId, $shopId = null)
-    {
-        return A::cache()->get("ProductSelectionLayer.getProductBoxModelsByLastVisited.$shopId.$userId", function () use ($userId, $shopId) {
-
-            /**
-             * @var $history UserProductHistoryInterface
-             */
-            $history = X::get("EkomUserProductHistory_UserProductHistory");
-            $productsInfo = $history->getLastVisitedProducts($userId, 7);
-            return $this->getBoxesByProductsInfo($productsInfo, $shopId);
-
-        }, [
-            "ekom_user_visited_product_history.$userId", // see FileSystemUserProductHistory
-        ]);
-    }
-
-
     public function getProductBoxModelsByAnyInCategoryAndUp($categoryName, $shopId = null)
     {
         return A::cache()->get("ProductSelectionLayer.getProductBoxModelsByAnyInCategoryAndUp.$shopId.$categoryName", function () use ($categoryName, $shopId) {

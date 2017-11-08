@@ -29,7 +29,12 @@ use QuickPdo\QuickPdo;
 
 class ProductLayer
 {
-
+    public static function getProductIdByRef($ref)
+    {
+        return QuickPdo::fetch("select id from ek_product where reference=:ref", [
+            'ref' => $ref,
+        ], \PDO::FETCH_COLUMN);
+    }
 
     /**
      * @param array $info
@@ -856,13 +861,6 @@ order by h.order asc
 //        }
 //    }
 
-
-    public function getProductIdByRef($ref)
-    {
-        return QuickPdo::fetch("select id from ek_product where reference=:ref", [
-            'ref' => $ref,
-        ], \PDO::FETCH_COLUMN);
-    }
 
     //--------------------------------------------
     //

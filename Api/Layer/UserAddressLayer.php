@@ -48,6 +48,88 @@ use QuickPdo\QuickPdoExceptionTool;
 class UserAddressLayer
 {
 
+    /**
+     * Return an array of user addresses.
+     * Each address is an addressModel (see top of this document)
+     *
+     *
+     */
+    public static function getUserAddresses($userId = null, $langId = null)
+    {
+        $userId = E::getUserId($userId);
+        $langId = E::getLangId($langId);
+
+        return A::cache()->get("Ekom.UserAddressLayer.getUserAddresses.$langId.$userId", function () use ($userId, $langId) {
+
+
+            $rows = QuickPdo::fetchAll("
+select 
+a.id as address_id,        
+a.first_name,        
+a.last_name,        
+a.phone,        
+a.address,        
+a.city,        
+a.postcode,        
+a.supplement,        
+l.label as country,
+l.country_id,
+c.iso_code as country_iso_code,
+h.is_default_shipping_address,
+h.is_default_billing_address
+
+
+from ek_user_has_address h 
+inner join ek_address a on a.id=h.address_id 
+inner join ek_country c on c.id=a.country_id
+inner join ek_country_lang l on l.country_id=a.country_id
+
+where 
+h.user_id=$userId 
+and a.active='1'
+and l.lang_id=$langId
+
+
+order by h.`order` asc 
+        
+        
+        ");
+
+            // depending on the shop's country?
+            foreach ($rows as $k => $row) {
+
+
+                list($fName, $fAddress) = self::getFormattedNameAndAddress($row);
+                $rows[$k]['fName'] = $fName;
+                $rows[$k]['fAddress'] = $fAddress;
+            }
+
+            return $rows;
+        }, [
+            "ek_address",
+            "ek_user_has_address",
+            "ek_country_lang.delete",
+            "ek_country_lang.update",
+        ]);
+    }
+
+
+    /**
+     * @return false|array
+     */
+    public static function getDefaultShippingAddress($userId = null, $langId = null)
+    {
+        return self::getDefaultAddress($userId, 'shipping', $langId);
+    }
+
+    /**
+     * @return false|array
+     */
+    public static function getDefaultBillingAddress($userId = null, $langId = null)
+    {
+        return self::getDefaultAddress($userId, 'billing', $langId);
+    }
+
 
     public function userOwnsAddress($userId, $id)
     {
@@ -102,80 +184,6 @@ and address_id=$id
     }
 
 
-    /**
-     * Return an array of user addresses.
-     * Each address is an addressModel (see top of this document)
-     *
-     *
-     */
-    public function getUserAddresses($userId = null, $langId = null)
-    {
-
-        EkomApi::inst()->initWebContext();
-        if (null === $userId) {
-            $userId = E::getUserId();
-        }
-        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
-
-        $userId = (int)$userId;
-        $langId = (int)$langId;
-
-
-        return A::cache()->get("Ekom.UserAddressLayer.getUserAddresses.$langId.$userId", function () use ($userId, $langId) {
-
-
-            $rows = QuickPdo::fetchAll("
-select 
-a.id as address_id,        
-a.first_name,        
-a.last_name,        
-a.phone,        
-a.address,        
-a.city,        
-a.postcode,        
-a.supplement,        
-l.label as country,
-l.country_id,
-c.iso_code as country_iso_code,
-h.is_default_shipping_address,
-h.is_default_billing_address
-
-
-from ek_user_has_address h 
-inner join ek_address a on a.id=h.address_id 
-inner join ek_country c on c.id=a.country_id
-inner join ek_country_lang l on l.country_id=a.country_id
-
-where 
-h.user_id=$userId 
-and a.active='1'
-and l.lang_id=$langId
-
-
-order by h.`order` asc 
-        
-        
-        ");
-
-            // depending on the shop's country?
-            foreach ($rows as $k => $row) {
-
-
-                list($fName, $fAddress) = $this->getFormattedNameAndAddress($row);
-                $rows[$k]['fName'] = $fName;
-                $rows[$k]['fAddress'] = $fAddress;
-            }
-
-            return $rows;
-        }, [
-            "ek_address",
-            "ek_user_has_address",
-            "ek_country_lang.delete",
-            "ek_country_lang.update",
-        ]);
-    }
-
-
     public function deleteAddress($userId, $addressId)
     {
         $userId = (int)$userId;
@@ -224,7 +232,7 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
      */
     public function getUserAddressById($userId, $addressId, $langId = null)
     {
-        $addresses = $this->getUserAddresses($userId, $langId);
+        $addresses = self::getUserAddresses($userId, $langId);
         foreach ($addresses as $address) {
             if ((int)$addressId === (int)$address['address_id']) {
                 return $address;
@@ -288,22 +296,6 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
     public function setDefaultBillingAddress($addressId, $userId)
     {
         return $this->setDefaultAddress($addressId, $userId, "billing");
-    }
-
-    /**
-     * @return false|array
-     */
-    public function getDefaultShippingAddress($userId = null, $langId = null)
-    {
-        return $this->getDefaultAddress($userId, 'shipping', $langId);
-    }
-
-    /**
-     * @return false|array
-     */
-    public function getDefaultBillingAddress($userId = null, $langId = null)
-    {
-        return $this->getDefaultAddress($userId, 'billing', $langId);
     }
 
 
@@ -389,15 +381,6 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
     }
 
 
-    private function getFormattedNameAndAddress(array $row)
-    {
-        return [
-            $row['first_name'] . " " . $row['last_name'],
-            $row['address'] . ", " . $row['postcode'] . " " . $row['city'] . ". " . $row['country'],
-        ];
-    }
-
-
     /**
      * @param $addressId
      * @param $userId
@@ -416,29 +399,9 @@ where user_id=$userId
     }
 
 
-    /**
-     * @param $userId
-     * @param null $langId
-     * @return false|array representing the default shipping address model
-     *
-     *
-     */
-    private function getDefaultAddress($userId, $type, $langId = null)
-    {
-        $userAddresses = $this->getUserAddresses($userId, $langId);
-        foreach ($userAddresses as $userAddress) {
-            if ('1' === $userAddress['is_default_' . $type . '_address']) {
-                return $userAddress;
-            }
-        }
-        return false;
-
-    }
-
-
     private function getNbAddresses($userId)
     {
-        $addresses = $this->getUserAddresses($userId);
+        $addresses = self::getUserAddresses($userId);
         return count($addresses);
     }
 
@@ -462,5 +425,38 @@ and `type`=:zetype
     {
         $userId = (int)$userId;
         return QuickPdo::fetch("select address_id from ek_user_has_address where user_id=$userId order by `order` asc", [], \PDO::FETCH_COLUMN);
+    }
+
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    private static function getFormattedNameAndAddress(array $row)
+    {
+        return [
+            $row['first_name'] . " " . $row['last_name'],
+            $row['address'] . ", " . $row['postcode'] . " " . $row['city'] . ". " . $row['country'],
+        ];
+    }
+
+
+    /**
+     * @param $userId
+     * @param null $langId
+     * @return false|array representing the default shipping address model
+     *
+     *
+     */
+    private static function getDefaultAddress($userId, $type, $langId = null)
+    {
+        $userAddresses = self::getUserAddresses($userId, $langId);
+        foreach ($userAddresses as $userAddress) {
+            if ('1' === $userAddress['is_default_' . $type . '_address']) {
+                return $userAddress;
+            }
+        }
+        return false;
+
     }
 }
