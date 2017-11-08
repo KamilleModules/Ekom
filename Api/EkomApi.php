@@ -34,6 +34,7 @@ use Module\Ekom\Api\Layer\OrderBuilderLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\PasswordLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
+use Module\Ekom\Api\Layer\ProductBoxLayer;
 use Module\Ekom\Api\Layer\ProductCardLangLayer;
 use Module\Ekom\Api\Layer\ProductCardLayer;
 use Module\Ekom\Api\Layer\ProductCodeLayer;
@@ -496,6 +497,15 @@ and h.lang_id=$langId
     public function paymentLayer()
     {
         return $this->getLayer('paymentLayer');
+    }
+
+
+    /**
+     * @return ProductBoxLayer
+     */
+    public function productBoxLayer()
+    {
+        return $this->getLayer('productBoxLayer');
     }
 
 

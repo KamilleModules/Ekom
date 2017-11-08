@@ -32,7 +32,7 @@ class TaxLayer
 
 
     /**
-     * @param array $taxGroup
+     * @param array|false $taxGroup
      * @param $price , float, the price to apply the taxGroup to
      *
      * @return array

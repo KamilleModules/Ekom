@@ -19,6 +19,26 @@ class ProductCardLayer
 {
 
 
+    public static function getProductId2CardIdByProductIds(array $productIds)
+    {
+        if ($productIds) {
+            $productIds = array_unique($productIds);
+            $sIds = implode(', ', array_map('intval', $productIds));
+            return QuickPdo::fetchAll("
+select id, product_card_id from ek_product where id in ($sIds)        
+        ", [], \PDO::FETCH_COLUMN|\PDO::FETCH_UNIQUE);
+        }
+        return [];
+    }
+
+
+    public static function getIdByProductId($productId)
+    {
+        $productId = (int)$productId;
+        return QuickPdo::fetch("select product_card_id from ek_product where id=$productId");
+    }
+
+
     public function getProductCardIdsByProductIds(array $productIds)
     {
         if ($productIds) {

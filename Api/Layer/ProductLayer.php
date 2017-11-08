@@ -76,57 +76,6 @@ class ProductLayer
         return $ret;
     }
 
-    /**
-     * @deprecated, use TaxLayer::getTaxInfo instead
-     *
-     *
-     *
-     * @param array $taxes , array of taxItem (defined at top of TaxLayer)
-     * @param $originalPrice , float, the price from shop_has_product or product tables.
-     *
-     * @return array
-     */
-//    public static function getTaxInfo(array $taxes, $originalPrice)
-//    {
-//        if ($taxes) {
-//            $groupName = $taxes[0]['group_name'];
-//            $groupLabel = $taxes[0]['group_label'];
-//
-//            $taxLayer = EkomApi::inst()->taxLayer();
-//            $taxDetails = [];
-//            $_priceWithTax = $taxLayer->applyTaxesToPrice($taxes, $originalPrice, $taxDetails);
-//            $_priceWithoutTax = $originalPrice;
-//            if (0.0 !== (float)$originalPrice) {
-//                $taxRatio = $_priceWithTax / $originalPrice;
-//            } else {
-//                $taxRatio = 1;
-//                XLog::error("[Ekom module] - ProductLayer: division by zero with taxes: " . ArrayToStringTool::toPhpArray($taxes));
-//            }
-//            $taxAmountUnit = $_priceWithTax - $_priceWithoutTax;
-//
-//        } else {
-//            $taxDetails = [];
-//            $taxRatio = 1;
-//            $_priceWithoutTax = $originalPrice;
-//            $_priceWithTax = $originalPrice;
-//            $groupName = '';
-//            $groupLabel = '';
-//            $taxAmountUnit = 0;
-//        }
-//
-//
-//        return [
-//            'taxDetails' => $taxDetails,
-//            'taxRatio' => $taxRatio,
-//            'taxGroupName' => $groupName,
-//            'taxGroupLabel' => $groupLabel,
-//            'taxAmountUnit' => $taxAmountUnit,
-//            'priceWithoutTax' => $_priceWithoutTax,
-//            'priceWithTax' => $_priceWithTax,
-//        ];
-//    }
-
-
     public function getProductTypeById($productId, $shopId = null)
     {
 

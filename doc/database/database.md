@@ -1606,8 +1606,8 @@ Then it was also used to create related product groups.
 
 
 - id: pk
-- shop_id: fk
-- name: uk, the name of the group.
+- shop_id: fk:uk2
+- name: uk2, the name of the group.
             If the group starts with the colon symbol (:),
             it's reserved for the ekom system.
             For instance, ekom use the ":related-" prefix followed

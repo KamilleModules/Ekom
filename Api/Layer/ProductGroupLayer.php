@@ -12,7 +12,7 @@ class ProductGroupLayer
 {
 
 
-    public function getProductIdsByGroup($groupName, $shopId = null)
+    public static function getProductIdsByGroup($groupName, $shopId = null)
     {
 
         if (null === $shopId) {

@@ -10,26 +10,30 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
 use Module\EkomUserProductHistory\UserProductHistory\UserProductHistoryInterface;
 
+/**
+ * @deprecated use ProductBoxLayer instead
+ * deprecation in progress...
+ */
 class ProductSelectionLayer
 {
 
 
-    public function getProductBoxModelsByGroup($productGroupName, $shopId = null)
-    {
-        if (null === $shopId) {
-            $shopId = E::getShopId();
-        }
-        $shopId = (int)$shopId;
-
-        return A::cache()->get("Ekom.ProductSelectionLayer.getProductBoxModelsByGroup.$shopId.$productGroupName", function () use ($productGroupName, $shopId) {
-            $ids = EkomApi::inst()->productGroupLayer()->getProductIdsByGroup($productGroupName, $shopId);
-            return $this->getBoxesByIds($ids, $shopId);
-        }, [
-            // ProductGroupLayer.getProductIdsByGroup
-            'ek_product_group_has_product',
-            'ek_product_group',
-        ]);
-    }
+//    public function getProductBoxModelsByGroup($productGroupName, $shopId = null)
+//    {
+//        if (null === $shopId) {
+//            $shopId = E::getShopId();
+//        }
+//        $shopId = (int)$shopId;
+//
+//        return A::cache()->get("Ekom.ProductSelectionLayer.getProductBoxModelsByGroup.$shopId.$productGroupName", function () use ($productGroupName, $shopId) {
+//            $ids = EkomApi::inst()->productGroupLayer()->getProductIdsByGroup($productGroupName, $shopId);
+//            return $this->getBoxesByIds($ids, $shopId);
+//        }, [
+//            // ProductGroupLayer.getProductIdsByGroup
+//            'ek_product_group_has_product',
+//            'ek_product_group',
+//        ]);
+//    }
 
 
     public function getProductBoxModelsByRelatedId($cardId, $shopId = null)

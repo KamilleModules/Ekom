@@ -31,8 +31,6 @@ class ProductBoxEntity
     private $cacheDeleteIdentifiers;
 
 
-    private $shopId;
-    private $langId;
     private $productCardId;
     private $productId;
     private $productDetails;
@@ -84,26 +82,16 @@ class ProductBoxEntity
     public function getNativeContext()
     {
         if (null === $this->_nativeContext) {
-            $shopId = $this->shopId;
-            $langId = $this->langId;
             $productCardId = $this->productCardId;
             $productId = $this->productId;
             $productDetails = $this->productDetails;
 
 
-            if (null === $shopId) {
-                $shopId = E::getShopId();
-            }
-            if (null === $langId) {
-                $langId = E::getLangId();
-            }
             if (null === $productDetails) {
                 $productDetails = [];
             }
 
             $this->_nativeContext = [
-                'shop_id' => $shopId,
-                'lang_id' => $langId,
                 'product_card_id' => $productCardId,
                 'product_id' => $productId,
                 'product_details' => $productDetails,
@@ -113,17 +101,6 @@ class ProductBoxEntity
         return $this->_nativeContext;
     }
 
-    public function setShopId($shopId)
-    {
-        $this->shopId = $shopId;
-        return $this;
-    }
-
-    public function setLangId($langId)
-    {
-        $this->langId = $langId;
-        return $this;
-    }
 
     public function setProductCardId($cardId)
     {
@@ -170,10 +147,7 @@ class ProductBoxEntity
         //--------------------------------------------
         // PREPARING THE CACHE IDENTIFIERS
         //--------------------------------------------
-        $nativeDeleteIdentifiers = $this->getDeleteIdentifiers();
-        $modulesDeleteIdentifiers = [];
-        Hooks::call("Ekom_ProductBox_getTabathaDeleteIdentifiers", $modulesDeleteIdentifiers);
-        $cacheIdentifiers = array_unique(array_merge($nativeDeleteIdentifiers, $modulesDeleteIdentifiers));
+        $cacheIdentifiers = self::getCacheDeleteIdentifiers();
 
 
         $generalContext = $this->generalContext;
@@ -182,13 +156,14 @@ class ProductBoxEntity
         /**
          * If the developer didn't set the generalContext manually, we create it automatically.
          */
+        az(__FILE__, $generalContext);
         if (null === $generalContext) {
             $generalContext = ProductBoxEntityUtil::getProductBoxGeneralContext();
         }
 
 
         $productBoxContext = array_replace($nativeContext, $generalContext);
-        $hash = $this->getHashByCacheContext($productBoxContext);
+        $hash = ProductBoxEntityUtil::getHashByCacheContext($productBoxContext);
         $hashString = "ekom-pbox-$hash";
 
 
@@ -216,9 +191,10 @@ class ProductBoxEntity
                     /**
                      * Let modules decorate the box model.
                      * Reminder: they can do things like:
-                     * - change original price
+                     * - change original price (using the priceOriginalRaw property)
                      * - change (stock) quantity
                      * - change taxGroup
+                     *          @modules: set taxGroup=false to not apply any tax to this product
                      * - change discount
                      * - ...express their intents or other things
                      */
@@ -227,7 +203,7 @@ class ProductBoxEntity
 
                     /**
                      * At this point, the model is considered definitive, especially the
-                     * originalPrice, taxGroup and discount.
+                     * priceOriginal, taxGroup and discount.
                      * So now, we just resolve the priceChain
                      */
                     $model = $primitiveModel;
@@ -255,15 +231,17 @@ class ProductBoxEntity
 
 
 
-
-
     //--------------------------------------------
     //
     //--------------------------------------------
-    private function getHashByCacheContext(array $context)
+    public static function getCacheDeleteIdentifiers()
     {
-        return HashTool::getHashByArray($context);
+        $nativeDeleteIdentifiers = self::getDeleteIdentifiers();
+        $modulesDeleteIdentifiers = [];
+        Hooks::call("Ekom_ProductBox_getTabathaDeleteIdentifiers", $modulesDeleteIdentifiers);
+        return array_unique(array_merge($nativeDeleteIdentifiers, $modulesDeleteIdentifiers));
     }
+
 
 
     //--------------------------------------------
@@ -273,7 +251,7 @@ class ProductBoxEntity
     private function resolvePriceChain(array &$model, $productBoxContext)
     {
 
-        $rawOriginalPrice = E::trimPrice($model['rawOriginalPrice']); // ensure that modules didn't parasite us with some lengthy floats
+        $rawOriginalPrice = E::trimPrice($model['priceOriginalRaw']); // ensure that modules didn't parasite us with some lengthy floats
         $taxGroup = $model['taxGroup'];
         $discount = $model['discount'];
 
@@ -286,12 +264,12 @@ class ProductBoxEntity
          *
          * // related to price
          * ------------------------
-         * - rawOriginalPrice (already set in the given model)
-         * - originalPrice
-         * - basePrice (assumed with applicable tax applied)
-         * - rawBasePrice
-         * - salePrice (assumed with applicable tax and discount applied)
-         * - rawSalePrice
+         * - priceOriginalRaw (already set in the given model)
+         * - priceOriginal
+         * - priceBase (assumed with applicable tax applied)
+         * - priceBaseRaw
+         * - priceSale (assumed with applicable tax and discount applied)
+         * - priceSaleRaw
          *
          *
          * @deprecated (as not useful for now)
@@ -313,7 +291,7 @@ class ProductBoxEntity
          *
          * // related to discount
          * ------------------------
-         * // Note: the discount price is the salePrice
+         * // Note: the discount price is the priceSale
          * // Note2: badgeDetails has been removed for now
          *
          * - discountHasDiscount: bool
@@ -342,6 +320,7 @@ class ProductBoxEntity
         $model["taxGroupName"] = $taxInfo['taxGroupName'];
         $model["taxGroupLabel"] = $taxInfo['taxGroupLabel'];
         $model["taxAmountUnit"] = $taxInfo['taxAmountUnit'];
+        $model["taxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
 
 
         //--------------------------------------------
@@ -377,11 +356,11 @@ class ProductBoxEntity
         // INCLUDING PRICE CHAIN
         //--------------------------------------------
         $salePrice = $discountPrice;
-        $model['originalPrice'] = E::price($rawOriginalPrice);
-        $model['rawBasePrice'] = $basePrice;
-        $model['basePrice'] = E::price($basePrice);
-        $model['rawSalePrice'] = $salePrice;
-        $model['salePrice'] = E::price($salePrice);
+        $model['priceOriginal'] = E::price($rawOriginalPrice);
+        $model['priceBaseRaw'] = $basePrice;
+        $model['priceBase'] = E::price($basePrice);
+        $model['priceSaleRaw'] = $salePrice;
+        $model['priceSale'] = E::price($salePrice);
     }
 
     private function getPrimitiveModel(array $productBoxContext, &$isErroneous = false)
@@ -598,7 +577,7 @@ class ProductBoxEntity
                         //--------------------------------------------
                         // PRICE RELATED
                         //--------------------------------------------
-                        "rawOriginalPrice" => $p['price'], // the original price (price from the shop_has_product table, or, if null, from product table)
+                        "priceOriginalRaw" => $p['price'], // the original price (price from the shop_has_product table, or, if null, from product table)
                         // tax
                         "taxGroup" => $taxGroup, // false|array
                         // discount
@@ -695,7 +674,7 @@ class ProductBoxEntity
     }
 
 
-    private function getDeleteIdentifiers()
+    private static function getDeleteIdentifiers()
     {
 
 

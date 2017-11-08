@@ -4,6 +4,7 @@
 namespace Module\Ekom\Api\Entity;
 
 
+use Bat\HashTool;
 use Core\Services\A;
 use Core\Services\Hooks;
 use QuickPdo\QuickPdo;
@@ -11,8 +12,21 @@ use QuickPdo\QuickPdo;
 class ProductBoxEntityUtil
 {
 
+    public static function hashify($string)
+    {
+        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext();
+        $hash = ProductBoxEntityUtil::getHashByCacheContext($gpc);
+        return $string . "-$hash";
+    }
 
+    public static function getHashByCacheContext(array $context)
+    {
+        return HashTool::getHashByArray($context);
+    }
 
+    /**
+     * @return array, return general product context, used by lists of product boxes and product boxes.
+     */
     public static function getProductBoxGeneralContext()
     {
         $data = [];
