@@ -45,9 +45,8 @@ class BundleLayer
      */
     public function getBundleModelByProductId($productId, array $removedProductIds = [], $shopId = null)
     {
-        EkomApi::inst()->initWebContext();
         $productId = (int)$productId;
-        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+        $shopId = E::getShopId($shopId);
 
 
         $sIds = '';
@@ -61,10 +60,9 @@ class BundleLayer
         return A::cache()->get("Ekom.BundleLayer.getBundleModelByProductId.$shopId.$productId.$sIds", function () use ($productId, $shopId, $removedProductIds) {
 
             $ret = [];
-            $totalsWithoutTax = [];
             $totalsWithTax = [];
-
             $bundleIds = $this->getBundleIdsByProductId($productId, $shopId);
+
 
             if (count($bundleIds) > 0) {
 
@@ -85,13 +83,12 @@ and b.active=1
         
         ");
 
-                $boxApi = EkomApi::inst()->productLayer();
                 $requiredProps = [
                     "label",
                     "ref",
-                    "salePriceWithTax",
-                    "salePriceWithoutTax",
-                    "salePrice",
+                    "priceSale",
+                    "priceBase",
+                    "discountHasDiscount",
                     "uriCard",
                 ];
 
@@ -110,7 +107,7 @@ and b.active=1
                     if (false === array_key_exists($bid, $ret)) {
                         $ret[$bid] = [];
                     }
-                    $model = $boxApi->getProductBoxModelByProductId($id, $shopId);
+                    $model = ProductBoxLayer::getProductBoxByProductId($id);
 
                     $img = $model['images'][$model['defaultImage']]['small'];
                     $qty = $row['quantity'];
@@ -131,8 +128,7 @@ and b.active=1
 
                     $ret[$bid]['items'][] = $bundleModel;
                     if (true === $isVisible) {
-                        $totalsWithoutTax[$bid][] = $model['rawSalePriceWithoutTax'] * $qty;
-                        $totalsWithTax[$bid][] = $model['rawSalePriceWithTax'] * $qty;
+                        $totalsWithTax[$bid][] = $model['priceSaleRaw'] * $qty;
                     }
                 }
 
@@ -141,17 +137,12 @@ and b.active=1
                 // applying totals
                 //--------------------------------------------
                 foreach ($rows as $row) {
-                    $totalWithoutTax = 0;
                     $totalWithTax = 0;
                     $bid = $row['product_bundle_id'];
-                    if (array_key_exists($bid, $totalsWithoutTax)) {
-                        $totalWithoutTax = array_sum($totalsWithoutTax[$bid]);
-                    }
                     if (array_key_exists($bid, $totalsWithTax)) {
                         $totalWithTax = array_sum($totalsWithTax[$bid]);
                     }
                     $ret[$bid]['totalSalePriceWithTax'] = E::price($totalWithTax);
-                    $ret[$bid]['totalSalePriceWithoutTax'] = E::price($totalWithoutTax);
                 }
 
             }
