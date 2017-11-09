@@ -43,8 +43,8 @@ bundleItemsLooseDiscount: bool=true.
 
 Then in terms of implementation, we rely on the bundle layer to create the model with the basePrice or salePrice (depending
 on the bundleItemsLooseDiscount value).
-When the item is added to the cart, the cart "marks" each individual item as bundled (an extra bundleId property is created
-with a unique bundle identifier created by the cart layer).
+When the item is added to the cart, the cart "marks" each individual item as bundled (an extra bundle property holds
+the bundle id).
 
 Plus, the cart also adds an extra property to keep the value of the bundleItemsLooseDiscount value (since the shop owner
 could change this value without the customer being aware of it, creating potential unsync problems, which would 

@@ -479,10 +479,6 @@ class ProductBoxEntity
                     //--------------------------------------------
                     $outOfStockText = $p['out_of_stock_text'];
                     $quantity = $p['quantity'];
-                    $isInStock = true; // isInStock handles qty=-1, it's a helper for the view
-                    if (0 === (int)$quantity) {
-                        $isInStock = false;
-                    }
 
                     //--------------------------------------------
                     // ATTRIBUTES
@@ -535,8 +531,8 @@ class ProductBoxEntity
                         "product_id" => (int)$productId,
                         "product_reference" => $productReference,
                         "product_type" => $p['product_type'],
-                        "quantity" => (int)$quantity,
-                        "is_in_stock" => $isInStock,
+                        "quantityStock" => (int)$quantity,
+//                        "is_in_stock" => $isInStock,
                         "images" => $images,
                         "defaultImage" => $defaultImage,
                         "imageThumb" => $imageThumb,
@@ -583,10 +579,7 @@ class ProductBoxEntity
                         "discount" => $discount, // false|array
 
                         /**
-                         * will be decorated by modules if present.
-                         * Format is defined in ekom doc:
-                         * - major: array of key => value
-                         * - minor: array of key => value
+                         * The product details array (major/minor), yet to be created by modules
                          */
                         "productDetails" => [],
                         "productDetailsArgs" => $productDetails,  // the product details from the uri if any

@@ -42,22 +42,22 @@ class ProductBoxLayer
     //--------------------------------------------
     // PRODUCT BOX
     //--------------------------------------------
-    public static function getProductBoxByCardId($cardId, $productId = null, array $productDetails = [])
+    public static function getProductBoxByCardId($cardId, $productId = null, array $productDetailsArgs = [])
     {
         return ProductBoxEntity::create()
             ->setProductCardId($cardId)
             ->setProductId($productId)
-            ->setProductDetails($productDetails)
+            ->setProductDetails($productDetailsArgs)
             ->getModel();
     }
 
-    public static function getProductBoxByProductId($productId, array $productDetails = [])
+    public static function getProductBoxByProductId($productId, array $productDetailsArgs = [])
     {
         if (false !== ($cardId = ProductCardLayer::getIdByProductId($productId))) {
             return ProductBoxEntity::create()
                 ->setProductCardId($cardId)
                 ->setProductId($productId)
-                ->setProductDetails($productDetails)
+                ->setProductDetails($productDetailsArgs)
                 ->getModel();
         }
 

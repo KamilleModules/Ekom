@@ -1126,10 +1126,16 @@ Represents the user's wishlist.
 
 ek_discount
 ===========
+
+See discounts.md for more info.
+
 - id: pk
-- type:
+- type: 
 - operand:
-- target: the type of price to affect (withTax or withoutTax), but it's not currently implemented (the price withTax is affected for now)                
+- target: the type of price to affect.
+            The only choice for now is:
+                    - originalPrice
+            Since it's unique, it's also the default choice                                    
 - shop_id: fk
 
     
@@ -1278,71 +1284,35 @@ ek_coupon
 ===========
 
 A code is entered by the user and triggers a cart discount if the code condition matches.
-The code condition is stored in the filesystem for now, in a file which name is based on the
-shop_id and the coupon code (it could also be stored in the database, but I believe the filesystem offers more 
-possibilities since we can use the full php language in an editor, at least we developers).
+
+As for now, the code condition always matches.
+The idea is that maybe later (when/if we need it), ekom triggers a hook to let modules decide.
+
+To define how a coupon combines with another (in case the user wants to add multiple coupons
+in his/her cart), ekom uses its own heuristics (i.e. see ekom source code for more info on that).
+
+Then the procedure_type and procedure_operand fields decide the effect of applying the coupon.
+See below for more details.
+            
+
 
 - code: uq1, a unique (per shop) code, like abc for instance 
 - shop_id: fk|uq1  
 - active: 0|1, whether or not the code is active.
                 If active is set to 0, the user won't be able to add it.
-                However, once the bindure between the coupon and the user is made,
+                However, once an user has added the coupon in his/her cart,
                 the coupon is always active, independently of the active value.
-                
-                In other words, this active field only serves as a "door keeper".
-                Once you are in, you are in for good.
-                
-- mode: define how the coupon behaves with other coupons, or with the same coupon added multiple times.
-            The metaphor is that each order or potential order is attached a coupon bag.
-            The user can put one or more coupons in her bag.
-            
-            The following modes are available:
-                - unique: the coupon cannot be used in combination with other coupons (including one with the same code).
-                            If one or more coupon(s) already exist in the bag when the unique coupon is added,
-                            the unique coupon will replace the other coupon(s) if its priority number (the priority
-                            column of this table) is greater or equal than the highest priority number in the bag.
-                            Otherwise, the unique coupon will be rejected/ignored.
-                            
-                - mergeWithSame: the coupon is only added if the bag contain only coupons with the same code, or no coupons at all.                            
-                - merge: the coupon is always added to the bag.
-                                            
-            If empty, unique is assumed.                                            
-                                            
-- priority: int, a helper number for mode (see mode column explanations for more details)
-
-
-ek_cart_discount
-=================
-
-The cart discount table stores a procedure which can be applied to a target price to raise/reduce it.
-
-- target: specify the target price.
-                This is an extendable field.
-                The values provided by ekom are:
-                
-                - linesTotalWithTax
-                - linesTotalWithTaxAndShipping
-                
-                (see ekom order model II to see where they apply).
-                This value must be specified (a non empty value is not valid).
-
-- procedure_type: the type of procedure to apply, can be one of:
-                    - fixedAmount: replace the targetPrice with the procedure_operand value
-                    - relativeAmount: affect the targetPrice by the procedure_operand amount (which can be negative or positive)
-                    - relativePercent: affect the targetPrice by a percentage defined by the procedure_operand (can be negative or positive)
-- procedure_operand: a helper for the procedure_type field
-- shop_id: fk
-
-
-ek_cart_discount_lang
-========================
-- label: 
-                     
-                     
-                     
-ek_coupon_has_cart_discount
-========================
-                     
+- procedure_type: string: fixed|percent|custom|... 
+                    Define the type of effect to apply.
+                    
+                    In case of fixed or percent, same as a regular ekom discount (read discounts.md for more info).
+                    In case of custom, ekom delegates the task of applying the effect to modules, and basically everything becomes possible. 
+                    For instance:
+                            - simple discount 
+                            - buy 2 get 3 
+                            - ...
+- target: string, indicates the target of the procedure effect.                            
+                                                
 
                      
 ek_country
@@ -1416,6 +1386,7 @@ ek_shop_has_carrier
 - carrier_id: fk
 - priority: int, priority number (usually ordered from the cheapest for the user to the most expensive).
                     Lowest number has precedence.
+                    The default carrier of a shop is the one with the lowest priority number.
 
 
 
@@ -1719,6 +1690,25 @@ The product slug is defined at two locations:
 
 History Log
 =================
+
+2017-11-09
+----------------
+
+
+### Coupons
+- add ek_coupon.procedure_type
+- add ek_coupon.procedure_operand
+- add ek_coupon.target
+- remove ek_coupon.mode
+- remove ek_coupon.priority
+
+
+### Cart discounts
+- removed ek_cart_discount
+- removed ek_cart_discount_lang
+- removed ek_coupon_has_cart_discount
+
+
 
 2017-11-05
 ----------------

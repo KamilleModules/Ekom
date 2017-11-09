@@ -15,50 +15,11 @@ use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Carrier\CarrierInterface;
 use Module\Ekom\Carrier\Collection\CarrierCollection;
 use Module\Ekom\Carrier\Collection\CarrierCollectionInterface;
-use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
-class CarrierLayer
+class CarrierLayerOld
 {
-
-
-    /**
-     * @param $shopId
-     * @return array of carrier id => name
-     */
-    public static function getCarriers($shopId = null)
-    {
-        $shopId = E::getShopId($shopId);
-        return A::cache()->get("Ekom.CarrierLayer.getCarriers.$shopId", function () use ($shopId) {
-            return QuickPdo::fetchAll("
-select c.id, c.name 
-        
-from ek_carrier c 
-inner join ek_shop_has_carrier h on h.carrier_id=c.id
- 
-where h.shop_id=$shopId         
-
-order by h.priority asc        
-        
-        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
-
-        }, [
-            "ek_carrier",
-            "ek_shop_has_carrier",
-            "ek_shop",
-        ]);
-    }
-
-    public static function getDefaultCarrier($shopId = null)
-    {
-        $carriers = self::getCarriers($shopId);
-        if ($carriers) {
-            return array_shift($carriers);
-        }
-        throw new EkomException("No carrier is set for shop with id $shopId");
-    }
-
 
     /**
      * Returns whether or not the customer should have the ability to
@@ -89,7 +50,7 @@ order by h.priority asc
              */
             EkomApi::inst()->initWebContext();
             $shopId = ApplicationRegistry::get("ekom.shop_id");
-            $carriers = self::getCarriers($shopId);
+            $carriers = $this->getCarriersByShop($shopId);
             if (count($carriers) > 0) {
                 return current($carriers);
             } else {
@@ -143,7 +104,7 @@ where c.name=:zename
             $shopId = ApplicationRegistry::get("ekom.shop_id");
         }
 
-        $carriers = self::getCarriers($shopId);
+        $carriers = $this->getCarriersByShop($shopId);
         if (in_array($name, $carriers, true)) { // available to the shop
             $coll = X::get("Ekom_getCarrierCollection");
             /**
@@ -309,7 +270,7 @@ where c.name=:zename
          */
         EkomApi::inst()->initWebContext();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $rows = self::getCarriers($shopId);
+        $rows = $this->getCarriersByShop($shopId);
 
         /**
          * @var $coll CarrierCollection
@@ -335,11 +296,41 @@ where c.name=:zename
 
     /**
      * @param $shopId
+     * @return array of carrier id => name
+     */
+    public function getCarriersByShop($shopId)
+    {
+        $shopId = (int)$shopId;
+        return A::cache()->get("Ekom.CarrierLayer.getCarriersByShop.$shopId", function () use ($shopId) {
+            return QuickPdo::fetchAll("
+select c.id, c.name 
+        
+from ek_carrier c 
+inner join ek_shop_has_carrier h on h.carrier_id=c.id
+ 
+where h.shop_id=$shopId         
+
+order by h.priority asc        
+        
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+
+        }, [
+            "ek_carrier.delete",
+            "ek_carrier.update",
+            "ek_shop_has_carrier.delete.$shopId",
+            "ek_shop_has_carrier.update.$shopId",
+            "ek_shop.delete.$shopId",
+        ]);
+    }
+
+
+    /**
+     * @param $shopId
      * @return array CarrierInterface[] (name => instance)
      */
     public function getCarrierInstancesByShop($shopId)
     {
-        $rows = self::getCarriers($shopId);
+        $rows = $this->getCarriersByShop($shopId);
         $ret = [];
         /**
          * @var $coll CarrierCollection
@@ -361,7 +352,7 @@ where c.name=:zename
      * a list of all available carriers to the user, along with some useful information such as
      * the estimated delivery date and the price of the order
      *
-     * @param $productInfos , same as estimateShippingCosts
+     * @param $productInfos, same as estimateShippingCosts
      * @return array of carrierName => carrierInfo
      *          - carrierInfo: array:
      *              - name: the carrierName
@@ -480,7 +471,7 @@ where c.name=:zename
 
     private function getCarrierInfoById($carrierId, $shopId)
     {
-        $rows = self::getCarriers($shopId);
+        $rows = $this->getCarriersByShop($shopId);
 
         /**
          * @var $coll CarrierCollection
@@ -567,6 +558,8 @@ where c.name=:zename
             'totalShippingCost' => $totalShippingCost,
         ];
     }
+
+
 
 
     private function getCarrierNameById($id)

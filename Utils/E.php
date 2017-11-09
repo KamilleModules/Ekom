@@ -77,10 +77,10 @@ class E
     /**
      * Return true if it's b2b, false otherwise
      */
-    public static function isB2b()
-    {
-        return EkomApi::inst()->userLayer()->hasGroup("b2b");
-    }
+//    public static function isB2b()
+//    {
+//        return EkomApi::inst()->userLayer()->hasGroup("b2b");
+//    }
 
     public static function slugify($word)
     {

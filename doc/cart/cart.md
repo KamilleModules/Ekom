@@ -1,6 +1,6 @@
 Cart
 ===========
-2017-09-19
+2017-09-19 -- 2017-11-09
 
 
 This document extends the cart-2017-09-19.md document and supersedes it in case of conflicts.
@@ -108,6 +108,46 @@ This takes a token and a quantity as input, and does the job of updating the qua
 Just what you would expect; takes the token as input.
 
 
+
+
+
+
+Structure
+----------------
+```txt
+- cart
+    - $shopId
+        - items
+            - 0: 
+                - token: token
+                - id: the product id
+                - quantity
+                - ?details: the product details array, see product-details.md for more info
+                - ?bundle: the bundle id if this product was added as part of a bundle
+                - ?...extra properties 
+            - ... 
+        - coupons: array of couponId
+    - ...
+```
+
+
+
+The cart and the ekom product box context
+-----------------------------------------
+
+When you think of the relationship between the cart and the ekom product box context, you might be surprised.
+Notice that the cart doesn't store the **ekom product box context**.
+
+That's because the ekom product box context is highly dynamical by nature and is affected by different things (for 
+instance if the user is connected, or if the lang switches from eng to fra, or if the currency changes, or the shop 
+changes,...).
+
+This means that the same item in the cart, could have a different look and price (different language to describe it,
+different price rules applied to it, different currency used, or even the product doesn't exist anymore if we
+jump to a shop that doesn't use the product, but that's rather an edge case) depending on the epbc.
+
+There is nothing wrong with that, it's just that the epbc is the context in which a product expresses itself,
+and that includes a product in the cart.
 
 
 

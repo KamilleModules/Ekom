@@ -38,6 +38,27 @@ class DiscountLayer
 {
 
 
+
+    public static function applyDiscountInfoToPrice($discountInfo, $price)
+    {
+        $operand = $discountInfo['operand'];
+        switch ($discountInfo['type']) {
+            case 'fixed':
+            case 'amount':
+                $price -= $operand;
+                break;
+            case 'percent':
+                $price -= ($operand * $price) / 100;
+                $price = E::trimPrice($price);
+                break;
+            default:
+                XLog::error("[Ekom module] - DiscountLayer: unknown procedure type: " . $discountInfo['type']);
+                break;
+        }
+        return E::trimPrice($price);
+    }
+
+
     /**
      * @param $discount (discount item as described at the top of this document)
      * @param $price
@@ -943,24 +964,5 @@ and l.lang_id=$langId
         }
     }
 
-
-    private static function applyDiscountInfoToPrice($discountInfo, $price)
-    {
-        $operand = $discountInfo['operand'];
-        switch ($discountInfo['type']) {
-            case 'fixed':
-            case 'amount':
-                $price -= $operand;
-                break;
-            case 'percent':
-                $price -= ($operand * $price) / 100;
-                $price = E::trimPrice($price);
-                break;
-            default:
-                XLog::error("[Ekom module] - DiscountLayer: unknown procedure type: " . $discountInfo['type']);
-                break;
-        }
-        return E::trimPrice($price);
-    }
 
 }
