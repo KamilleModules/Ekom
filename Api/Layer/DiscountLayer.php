@@ -17,7 +17,7 @@ use QuickPdo\QuickPdo;
 /**
  *
  *
- * A discount item
+ * discountItem
  * ======================
  * - discount_id: int
  * - label: string

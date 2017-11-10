@@ -14,9 +14,18 @@ use QuickPdo\QuickPdo;
 
 
 /**
- * physicalAddress
+ * shopPhysicalAddress
  * =====================
- * - (all fields in ek_address)
+ * - id
+ * - first_name
+ * - last_name
+ * - phone
+ * - address
+ * - city
+ * - postcode
+ * - supplement
+ * - active
+ * - country
  * - country_iso_code: the country iso code
  * - country: the country label
  *
@@ -30,31 +39,37 @@ class ShopLayer
      * Or false if the shop is virtual (no physical address).
      *
      *
-     * @param array $shippingAddress , an addressModel as defined in UserAddressLayer.
-     * @return array|false, a physical address as described at the top of this class.
-     *                  Or return false if the shop contains no physical address at all.
+     * @param $shippingAddress array|null, an addressModel as defined in UserAddressLayer,
+     *                          or null if the user has no shipping address (or he/she is not connected)
+     * @return array|null, a physical address as described at the top of this class.
+     *                  Or return null if the shop contains no physical address at all.
      */
-    public static function getClosestPhysicalAddress(array $shippingAddress)
+    public static function getClosestPhysicalAddress(array $shippingAddress = null)
     {
 
         $shopAddresses = self::getPhysicalAddresses();
         if ($shopAddresses) {
-            /**
-             * @var $estimator DistanceEstimatorInterface
-             */
-            $estimator = X::get("Ekom_DistanceEstimator");
-            $closest = false;
-            $distance = 30000; // impossible to reach distance
-            foreach ($shopAddresses as $shopAddress) {
-                $distanceToUserCountry = $estimator->estimate($shopAddress, $shippingAddress);
-                if ($distanceToUserCountry < $distance) {
-                    $distance = $distanceToUserCountry;
-                    $closest = $shopAddress;
+            if (null !== $shippingAddress) {
+
+                /**
+                 * @var $estimator DistanceEstimatorInterface
+                 */
+                $estimator = X::get("Ekom_DistanceEstimator");
+                $closest = false;
+                $distance = 30000; // impossible to reach distance
+                foreach ($shopAddresses as $shopAddress) {
+                    $distanceToUserCountry = $estimator->estimate($shopAddress, $shippingAddress);
+                    if ($distanceToUserCountry < $distance) {
+                        $distance = $distanceToUserCountry;
+                        $closest = $shopAddress;
+                    }
                 }
+                return $closest;
+            } else {
+                return array_shift($shopAddresses);
             }
-            return $closest;
         }
-        return false;
+        return null;
 
     }
 

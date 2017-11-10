@@ -57,45 +57,41 @@ class CartUtil
     public static function orderItemsBySeller(array $items)
     {
         $ret = [];
-        $b2b = E::isB2b();
 
         foreach ($items as $item) {
 
             $seller = $item['seller'];
 
             if (false === array_key_exists($seller, $ret)) {
+
+
                 $ret[$seller] = [
-                    'taxApplies' => $item['taxApplies'],
+                    /**
+                     * taxHint is a number indicating
+                     * the type of visual hint to display next to the price totals
+                     * for every seller.
+                     *
+                     * - 0: none
+                     * - 1: no tax (HT in french)
+                     * - 2: with tax (TTC in french)
+                     *
+                     */
+                    'taxHint' => 0,
                     'total' => 0,
-                    'totalWithoutTax' => 0,
-                    'totalWithTax' => 0,
                     'rawTotal' => 0,
-                    'rawTotalWithoutTax' => 0,
-                    'rawTotalWithTax' => 0,
                     'items' => [],
                 ];
             }
-
-            $ret[$seller]['rawTotalWithoutTax'] += $item['rawLinePriceWithoutTax'];
-            $ret[$seller]['rawTotalWithTax'] += $item['rawLinePriceWithTax'];
+            $ret[$seller]['rawTotal'] += $item['priceLineRaw'];
             $ret[$seller]['items'][] = $item;
         }
 
 
-        foreach ($ret as $k => $item) {
-            $ret[$k]['totalWithoutTax'] = E::price($item['rawTotalWithoutTax']);
-            $ret[$k]['totalWithTax'] = E::price($item['rawTotalWithTax']);
-
-
-            // false === vat applies <-equals?-> no tax
-            if (true === $b2b || false === $ret[$k]['taxApplies']) {
-                $rawTotal = $item['rawTotalWithoutTax'];
-
-            } else {
-                $rawTotal = $item['rawTotalWithTax'];
-            }
-            $ret[$k]['rawTotal'] = $rawTotal;
-            $ret[$k]['total'] = E::price($rawTotal);
+        foreach ($ret as $seller => $item) {
+            $ret[$seller]['total'] = E::price($item['rawTotal']);
+            $taxHint = 0;
+            Hooks::call("Ekom_Cart_getSellerTaxHint", $taxHint, $seller, $ret[$seller]["items"]);
+            $ret[$seller]['taxHint'] = $taxHint;
         }
         return $ret;
     }

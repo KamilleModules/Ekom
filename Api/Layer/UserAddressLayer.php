@@ -52,8 +52,8 @@ class UserAddressLayer
 
 
     /**
-     * @return array|false, an addressModel as described at the top of this document.
-     *          False is returned if for some reason the user doesn't have an address yet (which he/she should).
+     * @return array|null, an addressModel as described at the top of this document.
+     *          Null is returned if for some reason the user doesn't have an address yet (which he/she should).
      */
     public static function getCurrentShippingAddress()
     {

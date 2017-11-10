@@ -19,6 +19,70 @@ use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Utils\AttributeSelectorHelper;
 use Module\Ekom\Utils\E;
 
+
+/**
+ * productBoxModel (work in progress)
+ * ====================
+ * - attributes
+ * - attributesSelection
+ * - attributesString
+ * - card_id
+ * - card_slug
+ * - codes
+ * - defaultImage
+ * - description
+ * - discount
+ * - discountHasDiscount
+ * - discountPrice
+ * - discountRawPrice
+ * - discountRawSavingFixed
+ * - discountSavingFixed
+ * - discountSavingPercent
+ * - discountType
+ * - hasNovelty
+ * - imageLarge
+ * - imageMedium
+ * - imageSmall
+ * - imageThumb
+ * - images
+ * - label
+ * - label_escaped
+ * - metaDescription
+ * - metaKeywords
+ * - metaTitle
+ * - outOfStockText
+ * - priceBase
+ * - priceBaseRaw
+ * - priceOriginal
+ * - priceOriginalRaw
+ * - priceSale
+ * - priceSaleRaw
+ * - productDetails
+ * - productDetailsArgs
+ * - product_id
+ * - product_reference
+ * - product_type
+ * - quantityInStock
+ * - quantityStock
+ * - rating_amount
+ * - rating_nbVotes
+ * - ref
+ * - seller
+ * - taxAmountUnit
+ * - taxDetails
+ * - taxGroup
+ * - taxGroupLabel
+ * - taxGroupName
+ * - taxHasTax
+ * - taxRatio
+ * - uriCard
+ * - uriCardAjax
+ * - uriLogin
+ * - video_info
+ * - weight
+ *
+ *
+ */
 class ProductBoxEntity
 {
     /**
@@ -194,7 +258,7 @@ class ProductBoxEntity
                      * - change original price (using the priceOriginalRaw property)
                      * - change (stock) quantity
                      * - change taxGroup
-                     *          @modules: set taxGroup=false to not apply any tax to this product
+                     * @modules: set taxGroup=false to not apply any tax to this product
                      * - change discount
                      * - ...express their intents or other things
                      */
@@ -478,7 +542,8 @@ class ProductBoxEntity
                     // STOCK
                     //--------------------------------------------
                     $outOfStockText = $p['out_of_stock_text'];
-                    $quantity = $p['quantity'];
+                    $quantity = (int)$p['quantity'];
+                    $isInStock = ($quantity > 0 || -1 === $quantity);
 
                     //--------------------------------------------
                     // ATTRIBUTES
@@ -532,7 +597,7 @@ class ProductBoxEntity
                         "product_reference" => $productReference,
                         "product_type" => $p['product_type'],
                         "quantityStock" => (int)$quantity,
-//                        "is_in_stock" => $isInStock,
+                        "quantityInStock" => $isInStock,
                         "images" => $images,
                         "defaultImage" => $defaultImage,
                         "imageThumb" => $imageThumb,

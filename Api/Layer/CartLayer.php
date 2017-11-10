@@ -42,6 +42,36 @@ use QuickPdo\QuickPdo;
  *
  *
  *
+ * CartModel (work in progress)
+ * =================
+ * - couponDetails
+ * - couponHasCoupons
+ * - items
+ * - priceCartTotal
+ * - priceCartTotalRaw
+ * - priceCartTotalWithShipping
+ * - priceCartTotalWithShippingRaw
+ * - priceGrandTotal
+ * - priceGrandTotalRaw
+ *
+ * - shippingDetails
+ *      - estimated_delivery_date
+ *      - label
+ * - shippingShippingCost
+ *
+ * - shippingTaxAmountUnit
+ * - shippingTaxDetails
+ * - shippingTaxGroupLabel
+ * - shippingTaxGroupName
+ * - shippingTaxHasTax
+ * - shippingTaxRatio
+ *
+ * - totalCartQuantity
+ * - totalCartWeight
+ * - totalTaxAmount
+ * - totalTaxAmountRaw
+ *
+ *
  */
 class CartLayer
 {
@@ -518,28 +548,62 @@ class CartLayer
         $couponsDetails = [];
 
 
-        $cartTotal = self::applyCoupon("linesTotal", $model, $couponInfoItems, $couponsDetails);
+        $cartTotal = CouponLayer::applyCouponsByTarget($couponInfoItems, "linesTotal", $linesTotal, $model, $couponsDetails);
         $model['priceCartTotalRaw'] = $cartTotal;
-
-
-
-        $model['couponDetails'] = $couponsDetails;
-        $model['couponHasCoupons'] = (count($couponsDetails) > 0);
-        $model['couponSavingRaw'] = 0;
-
-
 
 
         //--------------------------------------------
         // SHIPPING
         //--------------------------------------------
-        $carrierGroups = EkomApi::inst()->carrierLayer()->estimateShippingCosts($modelItems);
+        $details = [];
+        $shippingCost = CarrierLayer::getShippingCost([
+            'boxes' => $modelItems,
+        ], $details);
+        //--------------------------------------------
+        // APPLYING SHIPPING TAXES
+        //--------------------------------------------
+        $shippingTaxGroup = null;
+        Hooks::call("Ekom_Cart_defineShippingTaxGroup", $shippingTaxGroup, $model);
+        $taxInfo = TaxLayer::applyTaxGroup($shippingTaxGroup, $shippingCost);
+        $shippingCostWithTax = $taxInfo['priceWithTax'];
+        $shippingCost = $taxInfo['priceWithoutTax'];
 
+
+        $model["shippingTaxDetails"] = $taxInfo['taxDetails'];
+        $model["shippingTaxRatio"] = $taxInfo['taxRatio'];
+        $model["shippingTaxGroupName"] = $taxInfo['taxGroupName'];
+        $model["shippingTaxGroupLabel"] = $taxInfo['taxGroupLabel'];
+        $model["shippingTaxAmountUnit"] = $taxInfo['taxAmountUnit'];
+        $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
+        $model["shippingDetails"] = $details;
+        $model["shippingShippingCost"] = $shippingCostWithTax;
+
+
+        //--------------------------------------------
+        // CART TOTAL WITH SHIPPING
+        //--------------------------------------------
+        $cartTotalWithShipping = $cartTotal + $shippingCost;
+        $model["priceCartTotalWithShippingRaw"] = $cartTotalWithShipping;
+
+
+        //--------------------------------------------
+        // GRAND TOTAL
+        //--------------------------------------------
+        $grandTotal = CouponLayer::applyCouponsByTarget($couponInfoItems, "cartTotalWithShipping", $cartTotalWithShipping, $model, $couponsDetails);
+        $model['priceGrandTotalRaw'] = $grandTotal;
+
+
+        //--------------------------------------------
+        // COMBINING ALL COUPONS
+        //--------------------------------------------
+        $model['couponDetails'] = $couponsDetails;
+        $model['couponHasCoupons'] = (count($couponsDetails) > 0);
+        $model['couponSavingRaw'] = 0;
 
         //--------------------------------------------
         // MODULES
         //--------------------------------------------
-        Hooks::call("Ekom_CartLayer_decorate_mini_cart_model", $model);
+        Hooks::call("Ekom_CartLayer_decorateCartModel", $model);
 
 
         //--------------------------------------------
@@ -551,7 +615,10 @@ class CartLayer
         $model['totalTaxAmount'] = E::price($model['totalTaxAmountRaw']);
         $model['priceLinesTotal'] = E::price($model['priceLinesTotalRaw']);
         $model['priceCartTotal'] = E::price($model['priceCartTotalRaw']);
+        $model['priceCartTotalWithShipping'] = E::price($model['priceCartTotalWithShippingRaw']);
+        $model['priceGrandTotal'] = E::price($model['priceGrandTotalRaw']);
 
+        ksort($model);
         return $model;
     }
 
@@ -584,6 +651,15 @@ class CartLayer
             $this->cartLocalStore = new CartLocalStore();
         }
         return $this->cartLocalStore;
+    }
+
+
+    private function isConfigurableProduct($productId, array $details)
+    {
+        return (
+            array_key_exists('minor', $details) &&
+            count($details['minor']) > 0 // assuming it's an array already..
+        );
     }
 
 
@@ -623,14 +699,6 @@ class CartLayer
                 }
             }
         }
-    }
-
-    private function isConfigurableProduct($productId, array $details)
-    {
-        return (
-            array_key_exists('minor', $details) &&
-            count($details['minor']) > 0 // assuming it's an array already..
-        );
     }
 
     private static function getClassShortName()
