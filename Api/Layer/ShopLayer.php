@@ -5,13 +5,101 @@ namespace Module\Ekom\Api\Layer;
 
 
 use Core\Services\A;
+use Core\Services\X;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Utils\DistanceEstimator\DistanceEstimatorInterface;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
+
+/**
+ * physicalAddress
+ * =====================
+ * - (all fields in ek_address)
+ * - country_iso_code: the country iso code
+ * - country: the country label
+ *
+ */
 class ShopLayer
 {
 
+
+    /**
+     * Return the closest shop physical address, given an user shipping address.
+     * Or false if the shop is virtual (no physical address).
+     *
+     *
+     * @param array $shippingAddress , an addressModel as defined in UserAddressLayer.
+     * @return array|false, a physical address as described at the top of this class.
+     *                  Or return false if the shop contains no physical address at all.
+     */
+    public static function getClosestPhysicalAddress(array $shippingAddress)
+    {
+
+        $shopAddresses = self::getPhysicalAddresses();
+        if ($shopAddresses) {
+            /**
+             * @var $estimator DistanceEstimatorInterface
+             */
+            $estimator = X::get("Ekom_DistanceEstimator");
+            $closest = false;
+            $distance = 30000; // impossible to reach distance
+            foreach ($shopAddresses as $shopAddress) {
+                $distanceToUserCountry = $estimator->estimate($shopAddress, $shippingAddress);
+                if ($distanceToUserCountry < $distance) {
+                    $distance = $distanceToUserCountry;
+                    $closest = $shopAddress;
+                }
+            }
+            return $closest;
+        }
+        return false;
+
+    }
+
+
+    public static function getPhysicalAddresses($type = null)
+    {
+        $shopId = E::getShopId();
+        $langId = E::getLangId();
+
+
+        return A::cache()->get("Ekom.ShopLayer.getPhysicalAddresses.$shopId.$langId.$type", function () use ($shopId, $langId, $type) {
+
+            $sType = "";
+            $markers = [];
+            if (null !== $type) {
+                $sType = "and h.type=:the_type";
+                $markers['the_type'] = $type;
+            }
+
+            $q = "
+            select 
+a.*,
+c.iso_code as country_iso_code,
+l.label as country
+
+from ek_shop_has_address h 
+inner join ek_address a on a.id=h.address_id 
+inner join ek_country c on c.id=a.country_id 
+inner join ek_country_lang l on l.country_id=c.id 
+
+where h.shop_id=$shopId
+$sType
+and a.active=1
+and l.lang_id=$langId
+
+order by h.`order` asc
+            ";
+
+
+            return QuickPdo::fetchAll($q, $markers);
+
+        }, [
+            "ek_shop_has_address",
+        ]);
+    }
 
     public function getShopInfoByHost($host)
     {
@@ -32,12 +120,8 @@ where s.host=:host
 
     public function getShopPhysicalAddress($shopId = null, $langId = null)
     {
-
-
-        EkomApi::inst()->initWebContext();
-        $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
-        $langId = (null === $langId) ? (int)ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
-
+        $shopId = E::getShopId($shopId);
+        $langId = E::getLangId($langId);
 
         return A::cache()->get("Ekom.ShopLayer.getShopPhysicalAddress.$shopId.$langId", function () use ($shopId, $langId) {
 

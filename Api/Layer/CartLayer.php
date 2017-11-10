@@ -533,7 +533,7 @@ class CartLayer
         //--------------------------------------------
         // SHIPPING
         //--------------------------------------------
-        $carrierGroups = EkomApi::inst()->carrierLayer()->estimateShippingCosts($items);
+        $carrierGroups = EkomApi::inst()->carrierLayer()->estimateShippingCosts($modelItems);
 
 
         //--------------------------------------------

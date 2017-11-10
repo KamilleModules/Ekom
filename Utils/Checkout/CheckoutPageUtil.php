@@ -78,6 +78,10 @@ class CheckoutPageUtil
     {
         EkomSession::set("checkoutProvider", $this->checkoutProvider);
 
+        if (false === CurrentCheckoutData::isStarted()) {
+            Hooks::call("Ekom_CheckoutPageUtil_onCheckoutNewSession");
+            CurrentCheckoutData::started();
+        }
 
         //--------------------------------------------
         // GET STEP ORDER
@@ -214,6 +218,7 @@ class CheckoutPageUtil
         }
         return $ret;
     }
+
     /**
      * @return array of completed stepNames => data
      * Note: if a step hasn't been completed, it does not appear in the returned array.
@@ -347,6 +352,7 @@ class CheckoutPageUtil
         $sessionVars = self::getSessionVars();
         $sessionVars['steps'][$stepName] = $data;
         $sessionVars['done'][$stepName] = true;
+        Hooks::call("Ekom_CheckoutPageUtil_onStepCompleted", $stepName, $data);
         $this->_setSessionVars($sessionVars);
         return $this;
     }
@@ -401,7 +407,6 @@ class CheckoutPageUtil
         EkomSession::set(self::$sessionName, $vars);
         return $this;
     }
-
 
 
     /**

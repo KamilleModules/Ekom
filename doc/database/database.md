@@ -1393,20 +1393,22 @@ ek_shop_has_carrier
 ek_shop_has_address
 ====================
 
+Physical addresses of the shop (if any).
+A physical address helps in computing shipping costs (some carriers need to know the 
+origin and the destination in order to evaluate the shipping cost).
+
 
 
 - user_id: pk
 - address_id: pk
-- type: string (physical), the type of the shop address, the following values are available:
-        - physical: the physical address of the store, this is the default address used by ekom 
-                to estimate the shipping costs of a non connected user.
+- type: string, the type of the address.
+            This is an arbitrary/organizational string.
 
 - order: int, just in case, isn't used yet
 
 
 
-Note to ekom implementor: a shop should always have a physical address attached to it (i.e. don't create a shop
-without a physical address).
+
 
 
 
@@ -1420,9 +1422,11 @@ ek_shop_has_payment_method
 ================
 - shop_id: fk
 - payment_method_id: fk
-- order: int, the lowest order is the preferred method payment for this shop
+- order: int, the lowest order is the preferred/default method payment for this shop
 - configuration: text(serialized), some payment methods require configuration (for instance a paypal key, etc...)
 
+
+There should always be at least one payment method per shop.
 
 
 

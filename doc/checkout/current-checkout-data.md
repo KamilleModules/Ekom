@@ -4,46 +4,29 @@ Current Checkout data
 
 
 
+The currentCheckoutData is THE (de-facto) accessor to the current checkout data, which are:
 
-A risk for unsynced data
-----------------------------
-
-The shipping costs are displayed at various locations in ekom: the cart, and the checkout tunnel.
-The prices are even displayed everywhere.
-
-What if the user was told that product X is 10€ on the checkout page, but then back on the product page, we give
-him a price of 8€.
-
-As the owners of the applications, we must ensure that those kind of data are always consistent throughout the
-whole application.
-
-However, there is a risk that this unsync problems occur.
-
-That's whenever the user (or even the application) changes those data without notifying the rest of the application.
+- started: bool: true if the checkout process is currently running, false otherwise
+- carrier: the name of the carrier used; null  
+- shipping_address: 
+- billing_address
+- payment_method
+- ?...possibly other properties added by modules 
 
 
 
-The ekom solution
----------------------
-
-The solution ekom chose is to provide one hook: onCheckoutDataUpdate ( type, data ).
-And ekom developers should always listen and react to it.
-
-The type is the type of event triggered, while the data is an array containing the relevant payload.
-
-The different types handled by ekom are the following (you can add your own):  
-
-- shippingAddress: the shipping address of the current user has been changed 
-                        This might happen when the user changes it from:
-                                - his/her account
-                                - the checkout tunnel
-- billingAddress: same as shipping address
-- carrier: the carrier was changed  (during the checkout tunnel)
-- paymentMethod: the payment method was changed (during the checkout tunnel)
+All values will return null if the checkout process isn't started,
+except the started property which always return a boolean.
 
 
+It has a simple get/set method pair.
 
-On top of that system, ekom adds its own listener, as to make the ekom module consistent with itself.
-The ekom listener stores the values in the session.
-And provides
+
+The currentCheckoutData uses the php session to store the data.
+
+The session bag is cleaned/flushed whenever the checkout process is completed (i.e. the user has purchased the items).
+
+The session bag is filled up with the default values whenever the user enters the checkout process with an empty 
+session bag (i.e. when the user enters a new checkout process for the first time).
+
 

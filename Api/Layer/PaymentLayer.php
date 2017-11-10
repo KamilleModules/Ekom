@@ -12,12 +12,36 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
+use Module\Ekom\Exception\EkomException;
 use Module\Ekom\PaymentMethodHandler\Collection\PaymentMethodHandlerCollectionInterface;
 use Module\Ekom\PaymentMethodHandler\PaymentMethodHandlerInterface;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 class PaymentLayer
 {
+
+
+    /**
+     * @return array
+     *      - id
+     *      - name
+     *      - configuration (array)
+     * @throws EkomException if something wrong happens
+     */
+    public static function getDefaultPaymentMethod($shopId = null)
+    {
+        $allMethods = self::getShopPaymentMethods($shopId);
+        if (count($allMethods) > 0) {
+            $row = array_shift($allMethods);
+            return [
+                'id' => $row['id'],
+                'name' => $row['name'],
+                'configuration' => unserialize($row['configuration']),
+            ];
+        }
+        throw new EkomException("This shop must have at least one payment method assigned to it before you can continue");
+    }
 
 
     public function getPaymentDetails($methodName, array $userMethodOptions = [])
@@ -26,8 +50,8 @@ class PaymentLayer
          * @var $coll PaymentMethodHandlerCollectionInterface
          */
         $coll = X::get("Ekom_getPaymentMethodHandlerCollection");
-        $handler =$coll->get($methodName, false);
-        if(null===$handler){
+        $handler = $coll->get($methodName, false);
+        if (null === $handler) {
             throw new EkomApiException("Handler not found with method $methodName");
         }
         /**
@@ -49,7 +73,6 @@ where shop_id=$shopId and payment_method_id=$id
         }
         return false;
     }
-
 
 
     /**
@@ -80,38 +103,15 @@ where shop_id=$shopId and payment_method_id=$id
     }
 
 
-    /**
-     * @return array|false, false if there is no payment method in the shop
-     *      - id
-     *      - name
-     *      - configuration (array)
-     */
-    public function getDefaultPaymentMethod($shopId = null)
-    {
-        $allMethods = $this->getShopPaymentMethods($shopId);
-        if (count($allMethods) > 0) {
-            $row = current($allMethods);
-            return [
-                'id' => $row['id'],
-                'name' => $row['name'],
-                'configuration' => unserialize($row['configuration']),
-            ];
-        }
-        return false;
-    }
-
-
-
-
     public function getPaymentMethods($shopId = null)
     {
-        return $this->getShopPaymentMethods($shopId);
+        return self::getShopPaymentMethods($shopId);
     }
 
     public function getPaymentMethodName2Ids($shopId = null)
     {
         $ret = [];
-        $methods = $this->getShopPaymentMethods($shopId);
+        $methods = self::getShopPaymentMethods($shopId);
         foreach ($methods as $method) {
             $ret[$method['name']] = $method['id'];
         }
@@ -121,7 +121,7 @@ where shop_id=$shopId and payment_method_id=$id
 
     public function getPaymentMethodNameById($id, $shopId = null)
     {
-        $methods = $this->getShopPaymentMethods($shopId);
+        $methods = self::getShopPaymentMethods($shopId);
         foreach ($methods as $method) {
             if ((int)$method['id'] === (int)$id) {
                 return $method['name'];
@@ -133,21 +133,15 @@ where shop_id=$shopId and payment_method_id=$id
 
 
 
-//--------------------------------------------
-//
-//--------------------------------------------
+    //--------------------------------------------
+    //
+    //--------------------------------------------
     /**
      * Return the payment methods available for a given shop.
      */
-    private function getShopPaymentMethods($shopId = null)
+    private static function getShopPaymentMethods($shopId = null)
     {
-        if (null === $shopId) {
-            EkomApi::inst()->initWebContext();
-            $shopId = ApplicationRegistry::get("ekom.shop_id");
-        }
-        $shopId = (int)$shopId;
-
-
+        $shopId = E::getShopId($shopId);
         return A::cache()->get("Ekom.PaymentLayer.getShopPaymentMethods.$shopId", function () use ($shopId) {
 
             return QuickPdo::fetchAll("

@@ -13,6 +13,7 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 use QuickPdo\QuickPdoExceptionTool;
@@ -48,6 +49,22 @@ use QuickPdo\QuickPdoExceptionTool;
 class UserAddressLayer
 {
 
+
+
+    /**
+     * @return array|false, an addressModel as described at the top of this document.
+     *          False is returned if for some reason the user doesn't have an address yet (which he/she should).
+     */
+    public static function getCurrentShippingAddress()
+    {
+        if (true === CurrentCheckoutData::isStarted()) {
+            return CurrentCheckoutData::get('shipping_address');
+        }
+        return self::getDefaultShippingAddress();
+    }
+
+
+
     /**
      * Return an array of user addresses.
      * Each address is an addressModel (see top of this document)
@@ -56,7 +73,12 @@ class UserAddressLayer
      */
     public static function getUserAddresses($userId = null, $langId = null)
     {
-        $userId = E::getUserId($userId);
+        if (null === $userId) {
+            $userId = E::getUserId(null);
+            if(null===$userId){
+                return [];
+            }
+        }
         $langId = E::getLangId($langId);
 
         return A::cache()->get("Ekom.UserAddressLayer.getUserAddresses.$langId.$userId", function () use ($userId, $langId) {
@@ -115,7 +137,7 @@ order by h.`order` asc
 
 
     /**
-     * @return false|array
+     * @return null|array
      */
     public static function getDefaultShippingAddress($userId = null, $langId = null)
     {
@@ -123,7 +145,7 @@ order by h.`order` asc
     }
 
     /**
-     * @return false|array
+     * @return null|array
      */
     public static function getDefaultBillingAddress($userId = null, $langId = null)
     {
@@ -444,7 +466,7 @@ and `type`=:zetype
     /**
      * @param $userId
      * @param null $langId
-     * @return false|array representing the default shipping address model
+     * @return null|array representing the default shipping address model
      *
      *
      */
@@ -456,7 +478,7 @@ and `type`=:zetype
                 return $userAddress;
             }
         }
-        return false;
+        return null;
 
     }
 }
