@@ -10,6 +10,18 @@ The **ekom product box context** is the array representing the information neces
 In other words, it's the ensemble of arguments you need to pass to a function to return a unique product.
 
 
+The primary goal behind the **product box context** is to display prices relevant to the current user profile.
+Depending on different factors (is the user connected, what's her/his origin country, what's the current lang,
+what's her/his shipping country...), the taxes and the discounts might be slightly different, thus affecting 
+the price. 
+By extracting those variables in the **product box context**, ekom is able to display a price that always matches
+the user profile.
+
+
+
+
+
+
 
 It is composed of two elements:
 

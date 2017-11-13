@@ -60,10 +60,10 @@ class CarrierLayer
         $carrier = $context['carrier'];
         $boxes = $context['boxes'];
 
+
         if (null === $carrier) {
             $carrier = self::getCurrentCarrier();
         }
-
 
         $userShippingAddress = UserAddressLayer::getCurrentShippingAddress(); // array|null
         $shopAddress = self::getShopPhysicalAddressForShipping([

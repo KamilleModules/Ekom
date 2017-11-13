@@ -30,6 +30,7 @@ class HooksHelper
         /**
          * @todo-ling: implement currency change in ekom !!
          */
+        $data["date"] = date('Y-m-d');
         $data["currency_id"] = ApplicationRegistry::get("ekom.currency_id");
     }
 

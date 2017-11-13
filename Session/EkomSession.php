@@ -39,6 +39,15 @@ class EkomSession
         return $default;
     }
 
+    public static function all()
+    {
+        SessionTool::start();
+        if (array_key_exists('ekom', $_SESSION)) {
+            return $_SESSION['ekom'];
+        }
+        return [];
+    }
+
 
     public static function has($k)
     {

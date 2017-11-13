@@ -20,6 +20,7 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\JsApiLoader\EkomJsApiLoader;
 use Module\Ekom\Notifier\EkomNotifier;
 use Module\Ekom\Session\EkomSession;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
@@ -190,7 +191,11 @@ class E
 
     public static function loadEkomJsApi()
     {
-        X::get("Ekom_jsApiLoader")->load();
+        /**
+         * @var $loader EkomJsApiLoader
+         */
+        $loader = X::get("Ekom_jsApiLoader");
+        $loader->load();
     }
 
     public static function link($routeId, array $params = [], $absolute = false, $https = null)

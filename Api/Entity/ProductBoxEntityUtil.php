@@ -41,6 +41,7 @@ class ProductBoxEntityUtil
         if (null === $gpc) {
             $gpc = [];
             Hooks::call("Ekom_ProductBox_collectGeneralContext", $gpc);
+            ApplicationRegistry::set("ekom.gpc", $gpc);
         }
         return $gpc;
     }

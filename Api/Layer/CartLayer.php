@@ -25,7 +25,7 @@ use QuickPdo\QuickPdo;
 
 /**
  *
- * cart item
+ * sessionCartItem
  * ====================
  * A typical item looks like this:
  *
@@ -46,19 +46,90 @@ use QuickPdo\QuickPdo;
  * =================
  * - couponDetails
  * - couponHasCoupons
+ * - couponSavingRaw
  * - items
+ *      - attributes
+ *      - attributesSelection
+ *      - attributesString
+ *      - card_id
+ *      - card_slug
+ *      - cartToken
+ *      - codes
+ *      - defaultImage
+ *      - description
+ *      - discount
+ *      - discountHasDiscount
+ *      - discountPrice
+ *      - discountRawPrice
+ *      - discountRawSavingFixed
+ *      - discountSavingFixed
+ *      - discountSavingPercent
+ *      - discountType
+ *      - hasNovelty
+ *      - imageLarge
+ *      - imageMedium
+ *      - imageSmall
+ *      - imageThumb
+ *      - images
+ *      - label
+ *      - label_escaped
+ *      - metaDescription
+ *      - metaKeywords
+ *      - metaTitle
+ *      - outOfStockText
+ *      - priceBase
+ *      - priceBaseRaw
+ *      - priceLine
+ *      - priceLineRaw
+ *      - priceOriginal
+ *      - priceOriginalRaw
+ *      - priceSale
+ *      - priceSaleRaw
+ *      - productDetails
+ *      - productDetailsArgs
+ *      - product_id
+ *      - product_reference
+ *      - product_type
+ *      - quantityCart
+ *      - quantityInStock
+ *      - quantityStock
+ *      - rating_amount
+ *      - rating_nbVotes
+ *      - ref
+ *      - seller
+ *      - taxAmount
+ *      - taxAmountUnit
+ *      - taxDetails
+ *      - taxGroup
+ *      - taxGroupLabel
+ *      - taxGroupName
+ *      - taxHasTax
+ *      - taxRatio
+ *      - uriCard
+ *      - uriCardAjax
+ *      - uriLogin
+ *      - uriProduct
+ *      - uriProductInstance
+ *      - uri_card_with_details
+ *      - video_info
+ *      - weight
+ * - itemsGroupedBySeller
+ *
  * - priceCartTotal
  * - priceCartTotalRaw
  * - priceCartTotalWithShipping
  * - priceCartTotalWithShippingRaw
  * - priceGrandTotal
  * - priceGrandTotalRaw
+ * - priceLinesTotal
+ * - priceLinesTotalRaw
+ * - priceLinesTotalWithoutTaxRaw
+ * - priceLinesTotalWithoutTax
  *
  * - shippingDetails
- *      - estimated_delivery_date
+ *      - ?estimated_delivery_date
  *      - label
  * - shippingShippingCost
- *
  * - shippingTaxAmountUnit
  * - shippingTaxDetails
  * - shippingTaxGroupLabel
@@ -68,8 +139,11 @@ use QuickPdo\QuickPdo;
  *
  * - totalCartQuantity
  * - totalCartWeight
- * - totalTaxAmount
- * - totalTaxAmountRaw
+ * - totalTaxCartAmount             // same as totalTaxItemsAmount, but includes shippingTaxAmountUnit
+ * - totalTaxCartAmountRaw
+ * - totalTaxItemsAmount
+ * - totalTaxItemsAmountRaw
+ *
  *
  *
  */
@@ -112,14 +186,16 @@ class CartLayer
         $this->initSessionCart();
         $shopId = E::getShopId();
 
-
         /**
          * The product details array (not productDetailsArgs)
          */
-        $details = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : null;
+        $details = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
         $bundle = array_key_exists('bundle', $extraArgs) ? $extraArgs['bundle'] : null;
 
-        if (is_array($details)) {
+        $isValidDetails = (array_key_exists('major', $details) && array_key_exists('minor', $details));
+
+
+        if ($isValidDetails) {
             $majorDetailsParams = $details['major'];
         } else {
             $majorDetailsParams = [];
@@ -142,7 +218,7 @@ class CartLayer
                     self::checkQuantityOverflow($productId, $existingQuantity, $quantity, $details);
 
                     $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] += $quantity;
-                    if ($details) {
+                    if ($isValidDetails) {
                         $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['details'] = $details;
                     }
                     $alreadyExists = true;
@@ -172,7 +248,7 @@ class CartLayer
             ];
 
 
-            if (count($details) > 0) {
+            if ($isValidDetails) {
                 $arr['details'] = $details;
             }
 
@@ -259,7 +335,7 @@ class CartLayer
 
         $wasUpdated = false;
         foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
-            if ((string)$item['id'] === $token) {
+            if ($item['token'] === $token) {
                 $existingQty = $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'];
                 $details = $this->getProductDetailsByToken($token);
                 self::checkQuantityOverflow($productId, $existingQty, $newQty, $details, true);
@@ -417,7 +493,7 @@ class CartLayer
     protected function writeToLocalStore()
     {
         if (true === SessionUser::isConnected()) {
-            $shopId = ApplicationRegistry::get("ekom.shop_id");
+            $shopId = E::getShopId();
             if (null !== ($userId = SessionUser::getValue('id'))) {
                 $this->getCartLocalStore()->saveUserCart($userId, $shopId, $_SESSION['ekom'][$this->sessionName][$shopId]);
             } else {
@@ -505,7 +581,7 @@ class CartLayer
                 //--------------------------------------------
                 // extending the box model to
                 //--------------------------------------------
-                $uriDetails = UriTool::uri($boxModel['uri_card_with_ref'], $productDetails, true);
+                $uriDetails = UriTool::uri($boxModel['uriProduct'], $productDetails, true);
                 $linePrice = E::trimPrice($cartQuantity * $boxModel['priceSaleRaw']);
                 $linesTotal += $linePrice;
                 $itemTaxAmount = E::trimPrice($cartQuantity * $boxModel['taxAmountUnit']);
@@ -537,8 +613,12 @@ class CartLayer
 
         $model['totalCartQuantity'] = $totalQty;
         $model['totalCartWeight'] = $totalWeight;
-        $model['totalTaxAmountRaw'] = $taxAmountTotal;
+        $model['totalTaxItemsAmountRaw'] = $taxAmountTotal;
         $model['priceLinesTotalRaw'] = $linesTotal;
+
+        // bonuses
+        $linesTotalWithoutTax = $linesTotal - $taxAmountTotal;
+        $model['priceLinesTotalWithoutTaxRaw'] = $linesTotalWithoutTax;
 
 
         //--------------------------------------------
@@ -578,6 +658,9 @@ class CartLayer
         $model["shippingDetails"] = $details;
         $model["shippingShippingCost"] = $shippingCostWithTax;
 
+        $taxAmountTotal += $taxInfo['taxAmountUnit'];
+        $model["totalTaxCartAmountRaw"] = $taxAmountTotal;
+
 
         //--------------------------------------------
         // CART TOTAL WITH SHIPPING
@@ -612,13 +695,19 @@ class CartLayer
         /**
          * Note: this allows modules to deal only with raw values (in case they change the cart model)
          */
-        $model['totalTaxAmount'] = E::price($model['totalTaxAmountRaw']);
+        $model['totalTaxItemsAmount'] = E::price($model['totalTaxItemsAmountRaw']);
+        $model['totalTaxCartAmount'] = E::price($model['totalTaxCartAmountRaw']);
         $model['priceLinesTotal'] = E::price($model['priceLinesTotalRaw']);
+        $model['priceLinesTotalWithoutTax'] = E::price($model['priceLinesTotalWithoutTaxRaw']);
         $model['priceCartTotal'] = E::price($model['priceCartTotalRaw']);
         $model['priceCartTotalWithShipping'] = E::price($model['priceCartTotalWithShippingRaw']);
         $model['priceGrandTotal'] = E::price($model['priceGrandTotalRaw']);
 
         ksort($model);
+//        foreach ($model as $k => $v) {
+//            echo '- ' . $k . PHP_EOL;
+//        }
+//        az("k");
         return $model;
     }
 
@@ -681,10 +770,11 @@ class CartLayer
         if (false === E::conf('acceptOutOfStockOrders', false)) {
 
             $productDetailsArgs = CartUtil::getMergedProductDetails($details);
+
             $boxModel = ProductBoxLayer::getProductBoxByProductId($productId, $productDetailsArgs);
 
 
-            $remainingStockQty = $boxModel['quantity'];
+            $remainingStockQty = $boxModel['quantityStock'];
 
             if (false === $isUpdate) {
                 $addedQty = $qty;

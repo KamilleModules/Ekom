@@ -266,6 +266,16 @@ class ProductBoxEntity
 
 
                     /**
+                     * The product instance can only be computed from productDetailsArray, which are created
+                     * from the Ekom_decorateBoxModel hook.
+                     */
+                    $primitiveModel['uriProductInstance'] = UriUtil::getProductBoxUriByCardSlugProductRef(
+                        $primitiveModel['card_slug'],
+                        $primitiveModel['product_reference'],
+                        $primitiveModel['productDetails']);
+
+
+                    /**
                      * At this point, the model is considered definitive, especially the
                      * priceOriginal, taxGroup and discount.
                      * So now, we just resolve the priceChain
@@ -587,6 +597,7 @@ class ProductBoxEntity
                     //--------------------------------------------
                     $discount = $api->discountLayer()->getApplicableDiscountByProductId($p['product_id'], $shopId, $langId);
 
+
                     $model = [
                         //--------------------------------------------
                         // BASIC DATA
@@ -607,6 +618,8 @@ class ProductBoxEntity
 
                         "uriCard" => $cardUri,
                         "uriCardAjax" => UriUtil::getProductBoxBaseAjaxUri($productId),
+                        "uriProduct" => UriUtil::getProductBoxUriByCardSlugProductRef($cardSlug, $productReference),
+
                         "label" => $label,
                         "seller" => $p['seller'],
 
