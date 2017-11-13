@@ -33,7 +33,6 @@ class ProductPageModel
      */
     public static function getModelByProductReference($reference)
     {
-
         $head = []; // product box model
         $tail = []; // tail box model
 
@@ -57,6 +56,19 @@ class ProductPageModel
                 'errorMessage' => "The product with reference $reference doesn't exist in our database",
             ];
         }
+
+        return [
+            'head' => $head,
+            'tail' => $tail,
+        ];
+    }
+
+
+    public static function getModelByProductId($productId)
+    {
+        $productDetails = ProductBoxEntityUtil::filterProductDetails($_GET);
+        $head = ProductBoxLayer::getProductBoxByProductId($productId, $productDetails);
+        $tail = self::getProductPageTailModel($head);
 
         return [
             'head' => $head,
@@ -132,8 +144,6 @@ class ProductPageModel
             "comments" => $comments,
             "average" => $avg,
         ];
-
-
 
 
         //--------------------------------------------

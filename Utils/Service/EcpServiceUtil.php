@@ -36,7 +36,7 @@ class EcpServiceUtil
     {
         if (array_key_exists("action", $_GET)) {
             $action = $_GET['action'];
-            $intent = (array_key_exists("intent", $_GET)) ? $_GET['intent'] : "";
+            $intent = (array_key_exists("intent", $_POST)) ? $_POST['intent'] : "";
 
             try {
                 $out = call_user_func($process, $action, $intent);
@@ -73,9 +73,10 @@ class EcpServiceUtil
 
     public static function get($key, $throwEx = true, $default = null)
     {
+        /**
+         * ecp recommends that all params are passed via $_POST, except the action param.
+         */
         $pool = $_POST;
-
-
         if (array_key_exists($key, $pool)) {
             $ret = $pool[$key];
             if ('true' === $ret) {

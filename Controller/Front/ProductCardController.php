@@ -29,24 +29,24 @@ class ProductCardController extends EkomFrontController
      *
      *
      */
-    public function render()
-    {
-
-        EkomApi::inst()->initWebContext();
-
-
-        if (null !== ($slug = Z::getUrlParam('slug'))) {
-            if (false !== ($cardId = EkomApi::inst()->productLayer()->getProductCardIdBySlug($slug))) {
-
-                ApplicationRegistry::set("ekom.cardId", $cardId);
-                return $this->renderByViewId("Ekom/productCard");
-            }
-        }
-        if (true === ApplicationParameters::get("debug")) {
-            XLog::debug("[Ekom module] - ProductCardController: product not found with slug: $slug");
-        }
-        return $this->renderByViewId("Ekom/productCardError");
-    }
+//    public function render()
+//    {
+//
+//        EkomApi::inst()->initWebContext();
+//
+//
+//        if (null !== ($slug = Z::getUrlParam('slug'))) {
+//            if (false !== ($cardId = EkomApi::inst()->productLayer()->getProductCardIdBySlug($slug))) {
+//
+//                ApplicationRegistry::set("ekom.cardId", $cardId);
+//                return $this->renderByViewId("Ekom/productCard");
+//            }
+//        }
+//        if (true === ApplicationParameters::get("debug")) {
+//            XLog::debug("[Ekom module] - ProductCardController: product not found with slug: $slug");
+//        }
+//        return $this->renderByViewId("Ekom/productCardError");
+//    }
 
 //    public function render(){
 //

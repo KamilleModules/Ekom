@@ -6,6 +6,7 @@ namespace Module\Ekom\Api;
 use Bat\SessionTool;
 use Core\Services\A;
 use Http4All\Header\AcceptLanguageHelper;
+use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
 use Kamille\Services\XLog;
@@ -275,6 +276,11 @@ and h.lang_id=$langId
                     ApplicationRegistry::set("ekom.currency_id", $currencyId);
                     ApplicationRegistry::set("ekom.currency_iso", $tripletRow['currency_iso']);
                     ApplicationRegistry::set("ekom.currency_rate", $tripletRow['currency_rate']);
+
+                    /**
+                     * Indicate to the application our wish to set the application lang to this value
+                     */
+                    ApplicationParameters::set("lang", $tripletRow['lang_iso']);
 
 
                 } else {

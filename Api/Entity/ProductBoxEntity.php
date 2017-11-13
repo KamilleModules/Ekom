@@ -59,6 +59,7 @@ use Module\Ekom\Utils\E;
  * - priceSaleRaw
  * - productDetails
  * - productDetailsArgs
+ * - productDetailsMap
  * - product_id
  * - product_reference
  * - product_type
@@ -276,6 +277,13 @@ class ProductBoxEntity
 
 
                     /**
+                     * The productDetailsMap is computed from the productDetailsArray, which is only
+                     * provided by the Ekom_decorateBoxModel hook.
+                     */
+                    $primitiveModel['productDetailsMap'] = ProductBoxEntityUtil::getMergedProductDetails($primitiveModel['productDetails']);
+
+
+                    /**
                      * At this point, the model is considered definitive, especially the
                      * priceOriginal, taxGroup and discount.
                      * So now, we just resolve the priceChain
@@ -445,8 +453,8 @@ class ProductBoxEntity
         //
         $productId = $productBoxContext["product_id"];
         $cardId = (int)$productBoxContext["product_card_id"];
-        $shopId = (int)$productBoxContext["shop_id"];
-        $langId = (int)$productBoxContext["lang_id"];
+        $shopId = E::getShopId($productBoxContext["shop_id"]);
+        $langId = E::getLangId($productBoxContext["lang_id"]);
         $productDetails = $productBoxContext["product_details"];
 
 
@@ -459,6 +467,7 @@ class ProductBoxEntity
                  * Take the list of attributes
                  */
                 $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($cardId, $shopId, $langId);
+
 
                 if (count($productsInfo) > 0) {
 
@@ -660,6 +669,7 @@ class ProductBoxEntity
                          * The product details array (major/minor), yet to be created by modules
                          */
                         "productDetails" => [],
+                        "productDetailsMap" => [], // this will be computed from productDetails by this class in a moment
                         "productDetailsArgs" => $productDetails,  // the product details from the uri if any
                     ];
 

@@ -15,22 +15,6 @@ class CartUtil
 {
 
 
-    /**
-     * Note: this method is just there so that I can find all the occurrences of it.
-     * There should be only one occurrence of it.
-     * But it's a key moment in the product details implementation:
-     * the product details go from being separated (major/minor) to be merged.
-     *
-     * Actually, two times.
-     *
-     */
-    public static function getMergedProductDetails(array $productDetails)
-    {
-        $majorDetailsParams = (array_key_exists('major', $productDetails)) ? $productDetails['major'] : [];
-        $minorDetailsParams = (array_key_exists('minor', $productDetails)) ? $productDetails['minor'] : [];
-        return array_merge($majorDetailsParams, $minorDetailsParams);
-    }
-
 
     public static function generateTokenByProductIdMajorProductDetails($productId, array $majorDetails = [])
     {

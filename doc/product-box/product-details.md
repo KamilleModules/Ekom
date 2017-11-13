@@ -99,12 +99,14 @@ on the desired product pages if necessary.)
 
 
 
-The product details have two forms:
+The product details have three forms:
 
 - product details args: this form is the ensemble of product details passed via the uri
 - product details array: this form is an array, created by concerned modules, which contains the following structure:
         - major: array key => value representing the major product details (product details representing a non-configurable product)
         - minor: array key => value representing the minor product details (product details representing a configurable product)
+- product details map: an array of key => value.
+                    This is useful to inject them as we want in the template.
 
 
 
@@ -118,10 +120,11 @@ We can divide product details in two groups:
 Product box
 -----------------
 
-The product details system is reflected throughout the product box model via two properties:
+The product details system is reflected throughout the product box model via three properties:
 
-- productDetailsArgs: the product details args
 - productDetails: the product details array
+- productDetailsArgs: the product details args
+- productDetailsMap: the product details map
 
 
 Cart

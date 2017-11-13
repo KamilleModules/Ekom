@@ -13,6 +13,7 @@ use Core\Services\Hooks;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Entity\ProductBoxEntityUtil;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Api\Util\HashUtil;
@@ -562,7 +563,7 @@ class CartLayer
             $cartQuantity = $item['quantity'];
             $cartToken = $item['token'];
             $details = (array_key_exists('details', $item)) ? $item['details'] : [];
-            $productDetails = CartUtil::getMergedProductDetails($details);
+            $productDetails = ProductBoxEntityUtil::getMergedProductDetails($details);
             $productId = self::getProductIdByCartToken($cartToken);
 
 
@@ -769,7 +770,7 @@ class CartLayer
     {
         if (false === E::conf('acceptOutOfStockOrders', false)) {
 
-            $productDetailsArgs = CartUtil::getMergedProductDetails($details);
+            $productDetailsArgs = ProductBoxEntityUtil::getMergedProductDetails($details);
 
             $boxModel = ProductBoxLayer::getProductBoxByProductId($productId, $productDetailsArgs);
 

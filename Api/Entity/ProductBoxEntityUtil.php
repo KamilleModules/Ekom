@@ -13,6 +13,18 @@ use QuickPdo\QuickPdo;
 class ProductBoxEntityUtil
 {
 
+
+
+    public static function getMergedProductDetails(array $productDetailsArr)
+    {
+        $majorDetailsParams = (array_key_exists('major', $productDetailsArr)) ? $productDetailsArr['major'] : [];
+        $minorDetailsParams = (array_key_exists('minor', $productDetailsArr)) ? $productDetailsArr['minor'] : [];
+        return array_merge($majorDetailsParams, $minorDetailsParams);
+    }
+
+
+
+
     public static function filterProductDetails(array $pool)
     {
         $availableProductDetails = [];
@@ -177,7 +189,7 @@ order by h.order asc
         return A::cache()->get("Ekom.ProductBoxEntityUtil.getProductCardProducts.$shopId.$langId.$cardId", function () use ($cardId, $shopId, $langId) {
 
 
-            $productRows = QuickPdo::fetchAll("
+            $q="
 select 
 p.id as product_id,
 p.reference,
@@ -206,17 +218,17 @@ from ek_product p
 inner join ek_product_lang ll on ll.product_id=p.id
 inner join ek_shop_has_product s on s.product_id=p.id 
 inner join ek_product_type t on t.id=s.product_type_id
-inner join ek_shop_has_product_lang l on l.shop_id=s.shop_id and l.product_id=s.product_id
+inner join ek_shop_has_product_lang l on l.shop_id=s.shop_id and l.product_id=s.product_id and l.lang_id=ll.lang_id
 inner join ek_seller se on se.id=s.seller_id
 
 where 
 l.lang_id=$langId
-and ll.lang_id=$langId
 and s.shop_id=$shopId
 and p.product_card_id=$cardId
 
 
-        ");
+        ";
+            $productRows = QuickPdo::fetchAll($q);
 
 
             return $productRows;

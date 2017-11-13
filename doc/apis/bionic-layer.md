@@ -227,6 +227,39 @@ This dash between details and courses makes details an array, and courses an ent
 Since we asked for an array (double dollar symbol), the value of courses will also be an array.
 
 
+ 
+Using the select AND the selected option as one bionic element
+---------------------
+
+Sometimes, the important bit of information is not only on the select, but also on the selected option.
+If that's the case, you can use the **data-merge-option** attribute (set it to 1 is fine).
+
+With this setup, bionic will parse both the select AND the selected option as one bionic element.
+It's like if we had a bionic element split in two.
+
+Here is an example snippet:
+
+```html
+<select name="any" class="bionic-select"
+    data-action="product.getInfo"
+    data-merge-option="1"
+>
+    <option value="any1" data-param-product_id="6">Any 1</option>
+    <option value="any2" data-param-product_id="7">Any 2</option>
+</select>
+```
+
+And now let's say the user select option any1, then the data collected by bionic would look like this:
+
+- action: product.getInfo
+- params:
+    - product_id: 6
+    
+
+
+
+
+
 
 Now that we know the basic principles, we can look at the interactions that bionic provides.
 
