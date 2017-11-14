@@ -13,9 +13,44 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
+
+/**
+ * CategoryInfo
+ * =================
+ * (data from ek_category)
+ * - id: the category id
+ * - name: the category name
+ *
+ */
 class CategoryLayer
 {
 
+
+    public static function getSelfAndChildrenIdsById($categoryId, $shopId = null, $langId = null)
+    {
+        $ids = [];
+        $allCatItems = CategoryCoreLayer::create()->getSelfAndChildrenByCategoryId($categoryId, -1, $shopId, $langId);
+        foreach ($allCatItems as $item) {
+            $ids[] = $item['id'];
+        }
+        return $ids;
+    }
+
+    public static function getInfoBySlug($slug, $shopId = null, $langId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        $langId = E::getLangId($langId);
+
+        return QuickPdo::fetch("
+select c.id, c.name from ek_category c 
+inner join ek_category_lang cl on cl.category_id=c.id 
+where cl.slug=:slug 
+and cl.lang_id=$langId 
+and c.shop_id=$shopId        
+        ", [
+            'slug' => $slug,
+        ]);
+    }
 
     public function getUpCategoryInfosById($categoryId, $topToBottom = true, $shopId = null, $langId = null)
     {

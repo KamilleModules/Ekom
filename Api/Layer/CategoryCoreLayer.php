@@ -67,6 +67,12 @@ class CategoryCoreLayer
     private static $cpt = 0;
     private static $max = 40;
 
+
+    public static function create()
+    {
+        return new static();
+    }
+
     /**
      * @param $parentName
      * @param int $maxLevel
@@ -91,6 +97,48 @@ class CategoryCoreLayer
             $row = QuickPdo::fetch($q,
                 ['name' => $parentName]
             );
+
+            if (false !== $row) {
+                $depth = 0;
+                $row['depth'] = $depth;
+                $ret[] = $row;
+                if (0 !== $maxLevel) {
+                    $this->collectChildrenByRow($row, $ret, $maxLevel, $depth + 1);
+                }
+                $this->applySort($ret, $options);
+            }
+
+
+            return $ret;
+        }, [
+            'ek_category',
+            'ek_category_lang',
+        ]);
+    }
+
+
+    /**
+     * @param $parentId
+     * @param int $maxLevel
+     * @param null $shopId
+     * @param bool $langId
+     * @param array $options
+     *          - order: [$field, asc|desc]
+     * @return array
+     */
+    public function getSelfAndChildrenByCategoryId($parentId, $maxLevel = -1, $shopId = null, $langId = false, array $options = [])
+    {
+
+        $hash = HashTool::getHashByArray($options);
+        $mix = "$parentId.$maxLevel.$shopId.$langId.$hash";
+        self::$cpt = 0;
+
+        return A::cache()->get("Ekom.CategoryCoreLayer.getSelfAndChildrenById.$mix", function () use ($shopId, $langId, $parentId, $maxLevel, $options) {
+            $ret = [];
+            $this->_shop_id = $shopId;
+            $this->_lang_id = $langId;
+            $q = $this->getQuery("id", $parentId);
+            $row = QuickPdo::fetch($q);
 
             if (false !== $row) {
                 $depth = 0;

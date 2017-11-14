@@ -137,20 +137,41 @@ What we have done is this:
         
         
         
-### Fetch value algorithm        
+### Fetch value algorithm
+        
 How is the value retrieved?
 Bionic uses the following algo called "fetch value algorithm" (simple but not foolproof, does not cover all the cases):
 
+- if the "target string" uses a special syntax, process the special syntax, otherwise continue the algorithm.
+        The special syntax is triggered when the "target string" is one of the following:
+        - $this, the target becomes the bionic object hosting the params     
+        - :function:arguments
+                If the "target string" has the following syntax, it's output is processed to a function (called valueFunction).
+                - functionSyntax: <:> <functionName> <:> <functionArgString>
+                - functionName: formValue | json
+                - functionArgString: the arguments as a string for the function
+                
+                If the function is formValue, then bionic returns the value of the control which name is 
+                the functionArgString. This function is useful if you work with non-scalar values, as it provides
+                a way to put an object (map of key => value) in your bionic parameters as a whole.
+                
+                If the function is json, the argString is the json data to parse, and bionic parses the json
+                data and the value becomes the parsed string. This is useful in cases where your parameter
+                is generated server side and is non-scalar (for instance).  
+                
+                                         
+        
+     
+            
+        
 - if the target has a name attribute ending with the double square brackets (indicating that this is an array),
     then bionic creates returns an array by collecting all elements with the same name (inside the given context)                
 - else if jquery's val method is applicable, bionic returns the result of the val method
 - else if jquery's val method is not applicable, bionic returns the text of the element                                        
-   
-             
-If the "target string" is the expression "$this", then the target is the bionic object hosting the params.
-     
-Note: as a consequence of the "fetch value algorithm", the value might be either a scalar value, or an array (in case 
-of checkboxes with the same name and ending with square brackets).
+
+
+
+Note: as a consequence of the "fetch value algorithm", the value might be either a scalar value, or an array.   
 
 
 Here is an example fetching an array:
@@ -179,6 +200,37 @@ Then the yielded data will look like this:
         - 0: 1          // assuming this checkbox was selected
         - 1: 2          // assuming this checkbox was selected
     
+
+
+Example using a value function:
+
+
+```html
+<form method="post" action="">
+    <select name="courses[1]"
+        class="bionic-select"
+        data-action="product.getInfo"
+        data-param-product_id="6"
+        data-param-details-courses=":formValue:courses"
+    >
+        <option value="1">Quantity: 1</option>
+        <option value="2">Quantity: 2</option>
+        <option value="3">Quantity: 3</option>
+    </select>
+    <select name="courses[2]"
+        class="bionic-select"
+        data-action="product.getInfo"
+        data-param-product_id="6"
+        data-param-details-courses=":formValue:courses"
+    >
+        <option value="1">Quantity: 1</option>
+        <option value="2">Quantity: 2</option>
+        <option value="3">Quantity: 3</option>
+    </select>
+</form>
+```      
+
+
 
  
 Creating arrays in the structure

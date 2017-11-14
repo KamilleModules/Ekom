@@ -73,6 +73,8 @@ class AttributesQueryFilterBox extends QueryFilterBox implements CollectableInte
         $model = [];
         $once = false;
         $attrApi = EkomApi::inst()->attributeLayer();
+
+        // note: changed to AttributeLayer::getAvailableAttributeByCategoryName
         $attributes = $attrApi->getAvailableAttributeByCategoryId($this->categoryId);
 
         $this->_attributes = $attributes;

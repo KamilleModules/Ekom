@@ -19,6 +19,34 @@ class ProductCardLayer
 {
 
 
+    public static function getProductCardIdsByCategoryId($categoryId)
+    {
+        return A::cache()->get("Ekom.ProductCardLayer.getProductCardIdsByCategoryId.$categoryId", function () use ($categoryId) {
+
+            $catIds = CategoryLayer::getSelfAndChildrenIdsById($categoryId);
+            return self::getProductCardIdsByCategoryIds($catIds);
+
+        }, [
+            "ek_category",
+            "ek_category_lang",
+            "ek_category_has_product_card",
+        ]);
+    }
+
+
+    public static function getProductCardIdsByCategoryIds(array $categoryIds)
+    {
+        $sCatIds = '"' . implode('", "', $categoryIds) . '"';
+        $ret = QuickPdo::fetchAll("
+select product_card_id from ek_category_has_product_card 
+where category_id in ($sCatIds)
+", [], \PDO::FETCH_COLUMN);
+        $ret = array_unique($ret);
+        sort($ret);
+        return $ret;
+    }
+
+
     public static function getProductId2CardIdByProductIds(array $productIds)
     {
         if ($productIds) {
@@ -26,7 +54,7 @@ class ProductCardLayer
             $sIds = implode(', ', array_map('intval', $productIds));
             return QuickPdo::fetchAll("
 select id, product_card_id from ek_product where id in ($sIds)        
-        ", [], \PDO::FETCH_COLUMN|\PDO::FETCH_UNIQUE);
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
         }
         return [];
     }
@@ -88,16 +116,6 @@ where shop_id=$shopId
         ", [], \PDO::FETCH_COLUMN);
     }
 
-
-    public function getProductCardIdsByCategoryIds(array $categoryIds)
-    {
-        $sCatIds = '"' . implode('", "', $categoryIds) . '"';
-        return QuickPdo::fetchAll("
-select product_card_id from ek_category_has_product_card 
-where category_id in ($sCatIds)
-", [], \PDO::FETCH_COLUMN);
-
-    }
 
     public function getProductCardInfosByCategoryIds(array $categoryIds, $langId = null)
     {
