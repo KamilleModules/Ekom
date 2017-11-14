@@ -79,6 +79,7 @@ use Module\Ekom\Utils\E;
  * - uriCard
  * - uriCardAjax
  * - uriLogin
+ * - uriProductInstance
  * - video_info
  * - weight
  *
@@ -267,21 +268,20 @@ class ProductBoxEntity
 
 
                     /**
+                     * The productDetailsMap is computed from the productDetailsArray, which is only
+                     * provided by the Ekom_decorateBoxModel hook.
+                     */
+                    $primitiveModel['productDetailsMap'] = ProductBoxEntityUtil::getMergedProductDetails($primitiveModel['productDetails']);
+
+
+                    /**
                      * The product instance can only be computed from productDetailsArray, which are created
                      * from the Ekom_decorateBoxModel hook.
                      */
                     $primitiveModel['uriProductInstance'] = UriUtil::getProductBoxUriByCardSlugProductRef(
                         $primitiveModel['card_slug'],
                         $primitiveModel['product_reference'],
-                        $primitiveModel['productDetails']);
-
-
-                    /**
-                     * The productDetailsMap is computed from the productDetailsArray, which is only
-                     * provided by the Ekom_decorateBoxModel hook.
-                     */
-                    $primitiveModel['productDetailsMap'] = ProductBoxEntityUtil::getMergedProductDetails($primitiveModel['productDetails']);
-
+                        $primitiveModel['productDetailsMap']);
 
                     /**
                      * At this point, the model is considered definitive, especially the
