@@ -170,16 +170,16 @@ where product_id=$pId
         ]);
     }
 
-    public function getAttrValueBySlug($slug)
-    {
-        return A::cache()->get("Ekom.AttributeLayer.getAttrValueBySlug.$slug", function () use ($slug) {
-            return QuickPdo::fetch("select id from ek_product_attribute_value where `value`=:slug", [
-                'slug' => $slug,
-            ], \PDO::FETCH_COLUMN);
-        }, [
-            "ek_product_attribute_value",
-        ]);
-    }
+//    public function getAttrValueBySlug($slug)
+//    {
+//        return A::cache()->get("Ekom.AttributeLayer.getAttrValueBySlug.$slug", function () use ($slug) {
+//            return QuickPdo::fetch("select id from ek_product_attribute_value where `value`=:slug", [
+//                'slug' => $slug,
+//            ], \PDO::FETCH_COLUMN);
+//        }, [
+//            "ek_product_attribute_value",
+//        ]);
+//    }
 
 
     public function getAvailableAttributeByCategorySlug($categorySlug, $groupByAttribute = true, $shopId = null, $langId = null)

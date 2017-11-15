@@ -993,52 +993,53 @@ order by h.order asc
     }
 
 
-    public function getMinMaxSalePrice($categoryId, $shopId = null)
-    {
-        EkomApi::inst()->initWebContext();
-        $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
-
-
-        return A::cache()->get("Ekom.ProductLayer.getMinMaxSalePrice.$shopId.$categoryId", function () use ($shopId, $categoryId) {
-
-
-            $catIds = EkomApi::inst()->categoryLayer()->getDescendantCategoryIdTree($categoryId);
-            $sJoin = "";
-            $sWhere = "";
-            if ($catIds) {
-                $sJoin = "
-inner join ek_product p on p.id=shp.product_id
-inner join ek_category_has_product_card chc on chc.product_card_id=p.product_card_id                
-                ";
-                $sWhere = "and chc.category_id in (" . implode(", ", $catIds) . ")";
-            }
-
-
-            if (false !== ($rows = QuickPdo::fetchAll("
-select 
-min(shp._sale_price_without_tax) as minSalePriceWithoutTax,        
-min(shp._sale_price_with_tax) as minSalePriceWithTax,
-max(shp._sale_price_without_tax) as maxSalePriceWithoutTax,        
-max(shp._sale_price_with_tax) as maxSalePriceWithTax
-
-
-from ek_shop_has_product shp
-$sJoin
-
-
-where shp.shop_id=$shopId
-
-$sWhere
-        "))
-            ) {
-                return $rows[0];
-            }
-            return false;
-        }, [
-            "ek_shop_has_product",
-        ]);
-
-    }
+    //@deprecated with dynamic prices...
+//    public function getMinMaxSalePrice($categoryId, $shopId = null)
+//    {
+//        EkomApi::inst()->initWebContext();
+//        $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
+//
+//
+//        return A::cache()->get("Ekom.ProductLayer.getMinMaxSalePrice.$shopId.$categoryId", function () use ($shopId, $categoryId) {
+//
+//
+//            $catIds = EkomApi::inst()->categoryLayer()->getDescendantCategoryIdTree($categoryId);
+//            $sJoin = "";
+//            $sWhere = "";
+//            if ($catIds) {
+//                $sJoin = "
+//inner join ek_product p on p.id=shp.product_id
+//inner join ek_category_has_product_card chc on chc.product_card_id=p.product_card_id
+//                ";
+//                $sWhere = "and chc.category_id in (" . implode(", ", $catIds) . ")";
+//            }
+//
+//
+//            if (false !== ($rows = QuickPdo::fetchAll("
+//select
+//min(shp._sale_price_without_tax) as minSalePriceWithoutTax,
+//min(shp._sale_price_with_tax) as minSalePriceWithTax,
+//max(shp._sale_price_without_tax) as maxSalePriceWithoutTax,
+//max(shp._sale_price_with_tax) as maxSalePriceWithTax
+//
+//
+//from ek_shop_has_product shp
+//$sJoin
+//
+//
+//where shp.shop_id=$shopId
+//
+//$sWhere
+//        "))
+//            ) {
+//                return $rows[0];
+//            }
+//            return false;
+//        }, [
+//            "ek_shop_has_product",
+//        ]);
+//
+//    }
 
     //--------------------------------------------
     //
