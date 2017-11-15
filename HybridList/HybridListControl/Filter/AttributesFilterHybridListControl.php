@@ -15,12 +15,14 @@ use Module\Ekom\HybridList\HybridListControl\HybridListControl;
 
 class AttributesFilterHybridListControl extends HybridListControl
 {
+    private $attributes;
     private $attrNames;
     private $_alreadyReacted;
 
     public function __construct()
     {
         parent::__construct();
+        $this->attributes = null;
         $this->attrNames = [];
         $this->_alreadyReacted = false;
     }
@@ -28,12 +30,28 @@ class AttributesFilterHybridListControl extends HybridListControl
     public function prepareHybridList(HybridListInterface $list, array $context)
     {
         $this->_alreadyReacted = false;
+        $categoryId = $context['category_id'];
+        $pool = $list->getListParameters();
         $this->attrNames = AttributeLayer::getAttributeNamesByShopId();
-        $this->decorateAttribute(
-            $list->getRequestGenerator(),
-            $context['category_id'],
-            $list->getListParameters()
-        );
+
+
+        //--------------------------------------------
+        // CREATING THE MODEL
+        //--------------------------------------------
+        if (null === $this->attributes) {
+            /**
+             * collect all attributes, we need them to create the control model anyway
+             */
+            $this->attributes = AttributeLayer::getAvailableAttributeByCategoryId($categoryId);
+            $this->prepareModel($pool);
+        }
+
+
+        //--------------------------------------------
+        // SHAPE THE REQUEST
+        //--------------------------------------------
+        $this->shapeRequest($list->getRequestGenerator(), $categoryId, $pool);
+
         return $this;
     }
 
@@ -43,12 +61,14 @@ class AttributesFilterHybridListControl extends HybridListControl
     //--------------------------------------------
     //
     //--------------------------------------------
-    private function decorateAttribute(RequestGeneratorInterface $requestGenerator, $categoryId, array $pool)
+    private function shapeRequest(RequestGeneratorInterface $requestGenerator, $categoryId, array $pool)
     {
+        //--------------------------------------------
+        // SHAPING THE REQUEST
+        //--------------------------------------------
         $requestGenerator->addRequestShaper(RequestShaper::create()
             ->reactsTo($this->attrNames)
             ->setExecuteCallback(function ($input, SqlRequestInterface $sqlRequest) use ($categoryId, $pool) {
-
                 /**
                  * The callback will be executed for every attribute (that's the way HybridList works).
                  * For attributes, we don't need that, we rather just want one call for all attributes.
@@ -58,11 +78,7 @@ class AttributesFilterHybridListControl extends HybridListControl
 
                     $this->_alreadyReacted = true;
 
-                    /**
-                     * collect all attributes, we need them to create the control model anyway
-                     */
-                    $attributes = AttributeLayer::getAvailableAttributeByCategoryId($categoryId);
-
+                    $attributes = $this->attributes;
 
                     //--------------------------------------------
                     // filtering only attributes that we actually use
@@ -77,75 +93,11 @@ class AttributesFilterHybridListControl extends HybridListControl
                     }
 
                     $already = [];
-                    $model = []; // preparing model
                     $atLeastOneAttribute = false;
-                    $attrApi = EkomApi::inst()->attributeLayer();
-
 
                     $c = 0;
                     foreach ($attributes as $attr) {
                         $name = $attr['name'];
-
-
-                        if (!array_key_exists($name, $model)) {
-                            $model[$name] = [
-                                'title' => $attr['name_label'],
-                                'type' => "items",
-                                'items' => [],
-                            ];
-                        }
-
-
-                        //--------------------------------------------
-                        // PREPARING THE MODEL
-                        //--------------------------------------------
-                        /**
-                         * The params are in the uri.
-                         * Example:
-                         * https://lee/category/tapis_de_marche?poids[0]=15_kg&poids[1]=4_kg
-                         *
-                         */
-                        $get = $pool;
-                        $getArr = (array_key_exists($name, $pool)) ? $pool[$name] : [];
-
-                        $value = $attr['value'];
-                        if (
-                            (is_array($getArr) && in_array($value, $getArr, true)) ||
-                            (!is_array($getArr) && $value === $getArr)
-                        ) {
-                            /**
-                             * If the attribute already exist in the uri, we remove it from the uri
-                             * params (toggle like behaviour)
-                             */
-                            $selected = true;
-                            if (is_array($getArr)) {
-                                if (false !== ($index = array_search($value, $getArr))) {
-                                    unset($get[$name][$index]);
-                                    if (0 === count($get[$name])) {
-                                        unset($get[$name]);
-                                    }
-                                }
-                            } else {
-                                unset($get[$name]);
-                            }
-                        } else {
-                            $selected = false;
-                            if (true === is_array($getArr)) {
-                                if (false === array_search($value, $getArr)) {
-                                    $get[$name][] = $value;
-                                }
-                            } else {
-                                $get[$name] = $value;
-                            }
-                        }
-
-                        $uri = UriTool::uri(null, $get);
-                        $model[$name]['items'][] = [
-                            "label" => $attr['value_label'],
-                            "value" => $attr['value'],
-                            "uri" => $uri,
-                            "selected" => $selected,
-                        ];
 
 
                         //--------------------------------------------
@@ -202,13 +154,83 @@ inner join ek_product_attribute a on a.id=h.product_attribute_id
 inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id                            
 ");
                     }
-
-
-                    $this->model = $model;
                 }
+
             })
         );
     }
 
 
+    private function prepareModel($pool)
+    {
+
+        $model = [];
+        foreach ($this->attributes as $attr) {
+            $name = $attr['name'];
+
+
+            if (!array_key_exists($name, $model)) {
+                $model[$name] = [
+                    'title' => $attr['name_label'],
+                    'type' => "items",
+                    'items' => [],
+                ];
+            }
+
+
+            //--------------------------------------------
+            // PREPARING THE MODEL
+            //--------------------------------------------
+            /**
+             * The params are in the uri.
+             * Example:
+             * https://lee/category/tapis_de_marche?poids[0]=15_kg&poids[1]=4_kg
+             *
+             */
+            $get = $pool;
+            $getArr = (array_key_exists($name, $pool)) ? $pool[$name] : [];
+
+            $value = $attr['value'];
+            if (
+                (is_array($getArr) && in_array($value, $getArr, true)) ||
+                (!is_array($getArr) && $value === $getArr)
+            ) {
+                /**
+                 * If the attribute already exist in the uri, we remove it from the uri
+                 * params (toggle like behaviour)
+                 */
+                $selected = true;
+                if (is_array($getArr)) {
+                    if (false !== ($index = array_search($value, $getArr))) {
+                        unset($get[$name][$index]);
+                        if (0 === count($get[$name])) {
+                            unset($get[$name]);
+                        }
+                    }
+                } else {
+                    unset($get[$name]);
+                }
+            } else {
+                $selected = false;
+                if (true === is_array($getArr)) {
+                    if (false === array_search($value, $getArr)) {
+                        $get[$name][] = $value;
+                    }
+                } else {
+                    $get[$name] = $value;
+                }
+            }
+
+            $uri = UriTool::uri(null, $get);
+            $model[$name]['items'][] = [
+                "label" => $attr['value_label'],
+                "value" => $attr['value'],
+                "uri" => $uri,
+                "selected" => $selected,
+            ];
+
+        }
+
+        $this->model = $model;
+    }
 }

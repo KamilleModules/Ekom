@@ -14,6 +14,8 @@ use Module\Ekom\Api\Layer\ProductCardLayer;
 use Module\Ekom\HybridList\CategoryHybridList;
 use Module\Ekom\HybridList\HybridListControl\Filter\AttributesFilterHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Filter\PriceFilterHybridListControl;
+use Module\Ekom\HybridList\HybridListControl\Slice\PaginateSliceHybridListControl;
+use Module\Ekom\HybridList\HybridListControl\Sort\ProductSortHybridListControl;
 use Module\Ekom\Utils\E;
 
 
@@ -56,31 +58,29 @@ class DynamicProductListModel
 
         $model = [];
         $pool = $_GET;
-        $pool = [
-            'badge' => "pt20",
-            'sort' => "wholesale_price_desc",
-            'boris' => "tamere",
-            'diametre' => "75_cm",
-            'price' => "20-200",
-            'pass all get RELEVANT TO THE LIST here (it has to be filtered, because its
-            used in formTrails by controls...',
-//        'sort' => "wholesale_price_asc",
-        ];
+//        $pool = [
+//            /**
+//             * 'pass all get RELEVANT TO THE LIST here (it has to be filtered, because its
+//             * used in formTrails by controls...',
+//             *
+//             * Note: the order here defines the order in which the shapers are called
+//             */
+//            'badge' => "pt20",
+//            'price' => "20-200",
+//            'sort' => "popularity",
+//            'boris' => "tamere",
+////            'diametre' => "75_cm",
+////        'sort' => "wholesale_price_asc",
+//        ];
 
 
         if (null !== $categorySlug) {
             if (false !== ($info = CategoryLayer::getInfoBySlug($categorySlug))) {
 
                 $categoryId = $info['id'];
-                $categoryName = $info['name'];
                 ApplicationRegistry::set("ekom.categoryId", $info['id']);
 
 
-                $shopId = E::getShopId();
-                $langId = E::getLangId();
-
-
-//                $attr = AttributeLayer::getAvailableAttributeByCategoryId($categoryId);
                 $cardIds = ProductCardLayer::getProductCardIdsByCategoryId($categoryId);
                 $unfilteredBoxes = []; // required by some filters/sort HybridListControl
                 foreach ($cardIds as $cardId) {
@@ -119,25 +119,32 @@ and chpc.product_card_id in ($sIds)
                 // ekom baked
                 $attributesFilterControl = AttributesFilterHybridListControl::create()->prepareHybridList($hybridList, $context);
                 $priceFilterControl = PriceFilterHybridListControl::create()->prepareHybridList($hybridList, $context);
+                $productSortControl = ProductSortHybridListControl::create()->prepareHybridList($hybridList, $context);
+                $pageControl = PaginateSliceHybridListControl::create()
+                    ->setNumberOfItemsPerPage(20)
+                    ->prepareHybridList($hybridList, $context);
 
                 // other modules
                 Hooks::call("Ekom_CategoryModel_decorateHybridList", $hybridList, $context);
 
 
                 $info = $hybridList->execute();
-                $items = $info['items'];
-                $model['listInfo'] = $info;
+                $model['bundle'] = [
+                    'general' => $info,
+                    'slice' => $pageControl->getModel(),
+                    'sort' => $productSortControl->getModel(),
+                    'filters' => [
+                        'attributes' => $attributesFilterControl->getModel(),
+                        'price' => $priceFilterControl->getModel(),
+                    ],
+                ];
                 $model['category_id'] = $categoryId;
-
-//                foreach ($items as $item) {
-//                    a($item['label'] . ":" . $item['priceSaleRaw']);
-//                }
-//                a($attributesFilterControl->getModel());
 
 
 
             }
         }
+//        az(__FILE__, $info);
         return $model;
     }
 

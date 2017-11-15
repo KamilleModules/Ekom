@@ -5,6 +5,7 @@ namespace Module\Ekom\Api\Entity;
 
 
 use Bat\HashTool;
+use Bat\StringTool;
 use ConditionResolver\SimpleConditionResolverUtil;
 use Core\Services\A;
 use Core\Services\Hooks;
@@ -46,11 +47,12 @@ use Module\Ekom\Utils\E;
  * - imageThumb
  * - images
  * - label
- * - label_escaped
+ * - label_flat
  * - metaDescription
  * - metaKeywords
  * - metaTitle
  * - outOfStockText
+ * - popularity
  * - priceBase
  * - priceBaseRaw
  * - priceOriginal
@@ -459,6 +461,7 @@ class ProductBoxEntity
 
 
         if (false !== ($row = ProductBoxEntityUtil::getProductCardInfoByCardId($cardId, $shopId, $langId))) {
+
             if ('1' === $row['active']) {
 
                 $api = EkomApi::inst();
@@ -467,7 +470,6 @@ class ProductBoxEntity
                  * Take the list of attributes
                  */
                 $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($cardId, $shopId, $langId);
-
 
                 if (count($productsInfo) > 0) {
 
@@ -528,6 +530,7 @@ class ProductBoxEntity
                     } else {
                         $label = ("" !== $p['default_label']) ? $p['default_label'] : $row['default_label'];
                     }
+
 
                     if ('' !== $p['description']) {
                         $description = $p['description'];
@@ -630,10 +633,10 @@ class ProductBoxEntity
                         "uriProduct" => UriUtil::getProductBoxUriByCardSlugProductRef($cardSlug, $productReference),
 
                         "label" => $label,
+                        "label_flat" => strtolower(StringTool::removeAccents($label)), // use this for dynamic sorting
                         "seller" => $p['seller'],
 
 
-                        "label_escaped" => htmlspecialchars($label),
                         "ref" => $p['reference'],
                         "weight" => $p['weight'],
                         "description" => $description,
@@ -650,9 +653,11 @@ class ProductBoxEntity
                         "attributesString" => $attrString,
                         "attributesSelection" => $attrSelection,
                         "attributes" => $attr,
-                        // rating
+
+                        // rating & popularity
                         "rating_amount" => $ratingInfo['average'], // percent
                         "rating_nbVotes" => $ratingInfo['count'],
+                        "popularity" => $p['_popularity'],
 
                         // codes
                         "codes" => $codes,

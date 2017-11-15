@@ -31,6 +31,12 @@ interface HybridListControlInterface
 {
 
     /**
+     *
+     * This method is used to shape the list of items.
+     * It can also be used to prepare some part of the model, in conjunction with the more
+     * dedicated getModel method, or all of it.
+     *
+     *
      * @param HybridListInterface $list
      * @param array $context, given by the caller: useful variables
      * @return HybridListControlInterface

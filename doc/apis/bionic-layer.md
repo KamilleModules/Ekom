@@ -85,7 +85,13 @@ The minimal markup for a click interaction looks like this:
 The bionic layer automatically intercepts clicks on elements with class **bionic-btn** (and or children).
 Once the click is intercepted, bionic process the element.
 
-This click will call an ecp service (see **doc/apis/ekom-service-api.md** for more details),
+The "data-action" defines the action to execute.
+
+If the action starts with the exclamation mark prefix (!), then what follows is the name of a 
+function (called actionFunction) to execute.
+
+If the action is not an actionFunction, then this click will call an 
+ecp service (see **doc/apis/ekom-service-api.md** for more details), 
 and so we need to specify the action and some params.
 
 This is done with the "data-*" attributes; in our example we yield the following:
@@ -307,6 +313,27 @@ And now let's say the user select option any1, then the data collected by bionic
 - params:
     - product_id: 6
     
+
+
+
+
+The actionFunction
+---------------------
+When the "data-action" value starts with the exclamation mark, what follows is the name of an internal ekom bionic
+function to execute.
+
+The available functions are the following:
+
+- post:
+        This function will look for the closest (parent) form and submit it.
+        This function actually only works if the method of the form is get.
+        If the **data-merge-with-uri-params** attribute is set to 1, ekom bionic
+        will first merge the form values with the uri params before sending the result via get.
+        This method was actually designed to work with form elements around a list, which work
+        together in shaping the list.
+        
+        
+
 
 
 
