@@ -14,15 +14,12 @@ class ProductBoxEntityUtil
 {
 
 
-
     public static function getMergedProductDetails(array $productDetailsArr)
     {
         $majorDetailsParams = (array_key_exists('major', $productDetailsArr)) ? $productDetailsArr['major'] : [];
         $minorDetailsParams = (array_key_exists('minor', $productDetailsArr)) ? $productDetailsArr['minor'] : [];
         return array_merge($majorDetailsParams, $minorDetailsParams);
     }
-
-
 
 
     public static function filterProductDetails(array $pool)
@@ -56,6 +53,11 @@ class ProductBoxEntityUtil
             ApplicationRegistry::set("ekom.gpc", $gpc);
         }
         return $gpc;
+    }
+
+    public static function setProductBoxGeneralContext(array $gpc)
+    {
+        ApplicationRegistry::set("ekom.gpc", $gpc);
     }
 
     public static function getProductCardInfoByCardId($cardId, $shopId, $langId)
@@ -189,7 +191,7 @@ order by h.order asc
         return A::cache()->get("Ekom.ProductBoxEntityUtil.getProductCardProducts.$shopId.$langId.$cardId", function () use ($cardId, $shopId, $langId) {
 
 
-            $q="
+            $q = "
 select 
 p.id as product_id,
 p.reference,

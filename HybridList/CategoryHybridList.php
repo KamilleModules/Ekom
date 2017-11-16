@@ -13,8 +13,10 @@ class CategoryHybridList extends HybridList{
     protected function preparePhpItems(array $items)
     {
         $ret = [];
-        foreach($items as $cardId){
-            $ret[$cardId] = ProductBoxLayer::getProductBoxByCardId($cardId);
+        foreach($items as $row){
+            $cardId = $row["product_card_id"];
+            $productId = $row["product_id"];
+            $ret[$cardId] = ProductBoxLayer::getProductBoxByCardId($cardId, $productId);
         }
         return $ret;
     }

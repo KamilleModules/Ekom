@@ -133,15 +133,19 @@ class PriceFilterHybridListControl extends HybridListControl implements SummaryF
     private static function getMinMax(array $boxes)
     {
         $prices = [];
-        foreach ($boxes as $box) {
-            if (array_key_exists('priceSaleRaw', $box)) {
-                $prices[] = $box['priceSaleRaw'];
+        if ($boxes) {
+            foreach ($boxes as $box) {
+                if (array_key_exists('priceSaleRaw', $box)) {
+                    $prices[] = $box['priceSaleRaw'];
+                }
             }
+
+            return [
+                min($prices),
+                max($prices),
+            ];
         }
-        return [
-            min($prices),
-            max($prices),
-        ];
+        return [0, 0];
     }
 
     private function formatPrice($n)

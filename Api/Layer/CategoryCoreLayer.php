@@ -65,7 +65,7 @@ class CategoryCoreLayer
     private $_shop_id;
     private $_lang_id;
     private static $cpt = 0;
-    private static $max = 40;
+    private static $max = 1000;
 
 
     public static function create()

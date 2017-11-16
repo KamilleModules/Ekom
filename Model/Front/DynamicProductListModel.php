@@ -4,6 +4,7 @@
 namespace Module\Ekom\Model\Front;
 
 
+use Bat\BdotTool;
 use Core\Services\Hooks;
 use HybridList\RequestGenerator\SqlRequestGenerator;
 use HybridList\SqlRequest\SqlRequest;
@@ -16,6 +17,7 @@ use Module\Ekom\HybridList\HybridListControl\Filter\AttributesFilterHybridListCo
 use Module\Ekom\HybridList\HybridListControl\Filter\DiscountFilterHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Filter\PriceFilterHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Filter\SummaryFilterHybridListControl;
+use Module\Ekom\HybridList\HybridListControl\HybridListControlInterface;
 use Module\Ekom\HybridList\HybridListControl\Slice\PaginateSliceHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Sort\ProductSortHybridListControl;
 use Module\Ekom\Utils\E;
@@ -81,6 +83,7 @@ class DynamicProductListModel
 
                 $categoryId = $info['id'];
                 ApplicationRegistry::set("ekom.categoryId", $info['id']);
+                $shopId = E::getShopId();
 
 
                 $cardIds = ProductCardLayer::getProductCardIdsByCategoryId($categoryId);
@@ -94,19 +97,25 @@ class DynamicProductListModel
                 //--------------------------------------------
                 // HYBRID LIST
                 //--------------------------------------------
+                $sSql = (count($cardIds) > 0) ? "and chpc.product_card_id in ($sIds)" : "and chpc.product_card_id = -1";
                 $sqlRequest = SqlRequest::create();
                 $hybridList = CategoryHybridList::create()
                     ->setListParameters($pool)
                     ->setRequestGenerator(SqlRequestGenerator::create()
-                        ->setPdoFetchStyle(\PDO::FETCH_COLUMN)
                         ->setSqlRequest($sqlRequest
-                            ->addField("distinct chpc.product_card_id")
+                            ->addField("distinct chpc.product_card_id, p.id as product_id")
                             ->setTable("ek_category_has_product_card chpc")
                             ->addJoin("
-inner join ek_product p on p.product_card_id=chpc.product_card_id                    
+inner join ek_category c on c.id=chpc.category_id                            
+inner join ek_product p on p.product_card_id=chpc.product_card_id   
+inner join ek_shop_has_product_card shpc on shpc.shop_id=c.shop_id and shpc.product_card_id=p.product_card_id
+inner join ek_shop_has_product shp on shp.shop_id=c.shop_id and shp.product_id=p.id             
                     ")
                             ->addWhere("
-and chpc.product_card_id in ($sIds)                            
+$sSql
+and c.shop_id=$shopId             
+and shpc.active=1               
+and shp.active=1               
                             ")
                         ));
 
@@ -131,13 +140,18 @@ and chpc.product_card_id in ($sIds)
                     ->addSummaryFilterAwareItem($priceFilterControl)
                     ->prepareHybridList($hybridList, $context);
 
+                $context['summaryFilterControl'] = $summaryFilterControl;
 
 
                 // other modules
-                Hooks::call("Ekom_CategoryModel_decorateHybridList", $hybridList, $context);
+                $dotKey2Control = [];
+                Hooks::call("Ekom_CategoryModel_prepareModelWithHybridList", $dotKey2Control, $hybridList, $context);
 
 
                 $info = $hybridList->execute();
+//                az(__FILE__, $sqlRequest->getSqlRequest());
+
+
                 $model['bundle'] = [
                     'general' => $info,
                     'slice' => $pageControl->getModel(),
@@ -149,13 +163,19 @@ and chpc.product_card_id in ($sIds)
                         'summary' => $summaryFilterControl->getModel(),
                     ],
                 ];
+                foreach ($dotKey2Control as $dotKey => $control) {
+                    /**
+                     * @var $control HybridListControlInterface
+                     */
+                    BdotTool::setDotValue($dotKey, $control->getModel(), $model);
+                }
                 $model['category_id'] = $categoryId;
-
+                $model['context'] = $context;
 
 
             }
         }
-//        az(__FILE__, $info);
+//        az(__FILE__, $info['items']);
         return $model;
     }
 
