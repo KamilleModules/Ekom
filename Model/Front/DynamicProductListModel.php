@@ -13,7 +13,9 @@ use Module\Ekom\Api\Layer\ProductBoxLayer;
 use Module\Ekom\Api\Layer\ProductCardLayer;
 use Module\Ekom\HybridList\CategoryHybridList;
 use Module\Ekom\HybridList\HybridListControl\Filter\AttributesFilterHybridListControl;
+use Module\Ekom\HybridList\HybridListControl\Filter\DiscountFilterHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Filter\PriceFilterHybridListControl;
+use Module\Ekom\HybridList\HybridListControl\Filter\SummaryFilterHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Slice\PaginateSliceHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Sort\ProductSortHybridListControl;
 use Module\Ekom\Utils\E;
@@ -119,10 +121,17 @@ and chpc.product_card_id in ($sIds)
                 // ekom baked
                 $attributesFilterControl = AttributesFilterHybridListControl::create()->prepareHybridList($hybridList, $context);
                 $priceFilterControl = PriceFilterHybridListControl::create()->prepareHybridList($hybridList, $context);
+                $discountFilterControl = DiscountFilterHybridListControl::create()->prepareHybridList($hybridList, $context);
                 $productSortControl = ProductSortHybridListControl::create()->prepareHybridList($hybridList, $context);
                 $pageControl = PaginateSliceHybridListControl::create()
-                    ->setNumberOfItemsPerPage(20)
+                    ->setNumberOfItemsPerPage(50)
                     ->prepareHybridList($hybridList, $context);
+                $summaryFilterControl = SummaryFilterHybridListControl::create()
+                    ->addSummaryFilterAwareItem($attributesFilterControl)
+                    ->addSummaryFilterAwareItem($priceFilterControl)
+                    ->prepareHybridList($hybridList, $context);
+
+
 
                 // other modules
                 Hooks::call("Ekom_CategoryModel_decorateHybridList", $hybridList, $context);
@@ -136,6 +145,8 @@ and chpc.product_card_id in ($sIds)
                     'filters' => [
                         'attributes' => $attributesFilterControl->getModel(),
                         'price' => $priceFilterControl->getModel(),
+                        'discounts' => $discountFilterControl->getModel(),
+                        'summary' => $summaryFilterControl->getModel(),
                     ],
                 ];
                 $model['category_id'] = $categoryId;

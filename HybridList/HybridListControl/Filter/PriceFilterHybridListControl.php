@@ -16,7 +16,7 @@ use Module\Ekom\HybridList\HiddenFormFieldsHelper;
 use Module\Ekom\HybridList\HybridListControl\HybridListControl;
 use Module\Ekom\Utils\E;
 
-class PriceFilterHybridListControl extends HybridListControl
+class PriceFilterHybridListControl extends HybridListControl implements SummaryFilterAwareInterface
 {
 
     private $_alreadyReacted;
@@ -57,6 +57,7 @@ class PriceFilterHybridListControl extends HybridListControl
                             $price = $box['priceSaleRaw'];
                             if ($price < $min || $price > $max) {
                                 unset($boxes[$k]);
+                                $info['totalNumberOfItems'] = $info['totalNumberOfItems'] - 1;
                             }
                         }
                     }
@@ -72,6 +73,15 @@ class PriceFilterHybridListControl extends HybridListControl
     }
 
 
+    public function getSummaryFilterItem($param, $value)
+    {
+        if ('price' === $param) {
+            $p = explode('-', $value);
+            return 'Prix: ' . E::price($p[0]) . " - " . E::price($p[1]);
+        }
+    }
+
+
     public function getModel()
     {
         if (empty($this->model)) {
@@ -81,7 +91,6 @@ class PriceFilterHybridListControl extends HybridListControl
             //--------------------------------------------
             $removeParams = $this->context['pool'];
             unset($removeParams['price']);
-
 
 
             list($originMin, $originMax) = self::getMinMax($this->context['unfilteredBoxes']);

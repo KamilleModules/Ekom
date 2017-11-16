@@ -33,11 +33,51 @@ use QuickPdo\QuickPdo;
  *
  *
  *
+ * Badge syntax
+ * ==================
+ *
+ * - badgeSyntax: <typeLetter> <levelLetter> <operand>
+ * - typeLetter: one letter representing the procedure type applied:
+ *                  - p: percent
+ *                  - f: fixed
+ *                  - u: unknown
+ *
+ * - levelLetter: one letter representing the level on which the discount was applied:
+ *                  - p: product
+ *                  - c: card
+ *                  - t: category
+ *                  - u: unknown
+ * - operand: the procedure operand (see database.md for more info)
+ *
+ *
  */
 class DiscountLayer
 {
 
+    public static function getBadge(array $discount)
+    {
+        $symbol = "u"; // unknown
+        if ('percent' === $discount['type']) {
+            $symbol = "p";
+        } elseif ('fixed' === $discount['type']) {
+            $symbol = "f";
+        }
+        $level = "u";
+        switch ($discount['level']) {
+            case "product":
+                $level = "p";
+                break;
+            case "card":
+                $level = "c";
+                break;
+            case "category":
+                $level = "t";
+                break;
+        }
 
+
+        return $symbol . $level . $discount['operand'];
+    }
 
     public static function applyDiscountInfoToPrice($discountInfo, $price)
     {

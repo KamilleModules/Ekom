@@ -33,6 +33,7 @@ use Module\Ekom\Utils\E;
  * - defaultImage
  * - description
  * - discount
+ * - discountBadge
  * - discountHasDiscount
  * - discountPrice
  * - discountRawPrice
@@ -307,6 +308,7 @@ class ProductBoxEntity
 
 
             ksort($model);
+//            az(__FILE__, $model);
             return $model;
 
 
@@ -608,6 +610,13 @@ class ProductBoxEntity
                     // DISCOUNT
                     //--------------------------------------------
                     $discount = $api->discountLayer()->getApplicableDiscountByProductId($p['product_id'], $shopId, $langId);
+                    /**
+                     * Reminder: for now, only one discount per product is applied.
+                     */
+                    $discountBadge = "";
+                    if(is_array($discount)){
+                        $discountBadge = DiscountLayer::getBadge($discount);
+                    }
 
 
                     $model = [
@@ -669,6 +678,7 @@ class ProductBoxEntity
                         "taxGroup" => $taxGroup, // false|array
                         // discount
                         "discount" => $discount, // false|array
+                        "discountBadge" => $discountBadge, // string
 
                         /**
                          * The product details array (major/minor), yet to be created by modules

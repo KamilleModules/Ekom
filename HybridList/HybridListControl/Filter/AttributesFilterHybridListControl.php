@@ -13,7 +13,7 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Layer\AttributeLayer;
 use Module\Ekom\HybridList\HybridListControl\HybridListControl;
 
-class AttributesFilterHybridListControl extends HybridListControl
+class AttributesFilterHybridListControl extends HybridListControl implements SummaryFilterAwareInterface
 {
     private $attributes;
     private $attrNames;
@@ -56,6 +56,14 @@ class AttributesFilterHybridListControl extends HybridListControl
     }
 
 
+    public function getSummaryFilterItem($param, $value)
+    {
+        foreach ($this->attributes as $info) {
+            if ($param === $info['name'] && $value === $info['value']) {
+                return $info["name_label"] . ": " . $info['value_label'];
+            }
+        }
+    }
 
 
     //--------------------------------------------
