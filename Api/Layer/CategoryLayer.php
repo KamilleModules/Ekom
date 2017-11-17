@@ -25,6 +25,18 @@ use QuickPdo\QuickPdo;
 class CategoryLayer
 {
 
+    public static function getIdByName($name, $shopId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        return QuickPdo::fetch("
+select id 
+from ek_category 
+where shop_id=$shopId
+and `name`=:name
+        ", [
+            "name" => $name,
+        ], \PDO::FETCH_COLUMN);
+    }
 
     public static function getSelfAndChildrenIdsById($categoryId, $shopId = null, $langId = null)
     {

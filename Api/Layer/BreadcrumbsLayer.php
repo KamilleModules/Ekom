@@ -35,6 +35,7 @@ class BreadcrumbsLayer
         //--------------------------------------------
         $cardId = ApplicationRegistry::get("ekom.cardId");
         $categoryId = ApplicationRegistry::get("ekom.categoryId");
+//        az($categoryId);
 
 
         $label = null;

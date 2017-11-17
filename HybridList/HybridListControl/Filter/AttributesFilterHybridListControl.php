@@ -5,13 +5,13 @@ namespace Module\Ekom\HybridList\HybridListControl\Filter;
 
 
 use Bat\UriTool;
+use HybridList\HybridListControl\HybridListControl;
 use HybridList\HybridListInterface;
 use HybridList\RequestGenerator\RequestGeneratorInterface;
 use HybridList\RequestShaper\RequestShaper;
 use HybridList\SqlRequest\SqlRequestInterface;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Layer\AttributeLayer;
-use Module\Ekom\HybridList\HybridListControl\HybridListControl;
 
 class AttributesFilterHybridListControl extends HybridListControl implements SummaryFilterAwareInterface
 {

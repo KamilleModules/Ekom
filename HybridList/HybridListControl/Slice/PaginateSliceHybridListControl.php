@@ -5,9 +5,9 @@ namespace Module\Ekom\HybridList\HybridListControl\Slice;
 
 
 use Bat\UriTool;
+use HybridList\HybridListControl\HybridListControl;
 use HybridList\HybridListInterface;
 use HybridList\ListShaper\ListShaper;
-use Module\Ekom\HybridList\HybridListControl\HybridListControl;
 
 
 /**
@@ -22,12 +22,14 @@ class PaginateSliceHybridListControl extends HybridListControl
     private $userPage; // user (tried) page
     private $nipp;
     private $linkCallback;
+    private $pageName;
 
 
     public function __construct()
     {
         $this->userPage = 1;
         $this->nipp = 20;
+        $this->pageName = "page";
     }
 
 
@@ -49,15 +51,21 @@ class PaginateSliceHybridListControl extends HybridListControl
         return $this;
     }
 
+    public function setPageName($pageName)
+    {
+        $this->pageName = $pageName;
+        return $this;
+    }
+
 
     public function prepareHybridList(HybridListInterface $list, array $context)
     {
         $pool = $context['pool'];
 
         $list->addListShaper(ListShaper::create()
-            ->reactsTo(["*", "page"])
+            ->reactsTo(["*", $this->pageName])
+            ->setPriority(1000)
             ->setExecuteCallback(function ($input, array &$boxes, array &$info = [], array $originalBoxes) use ($pool) {
-
                 if ('*' !== $input) {
                     $this->userPage = $input;
                 } else {
@@ -66,8 +74,8 @@ class PaginateSliceHybridListControl extends HybridListControl
                     $linkFn = $this->linkCallback;
                     if (null === $linkFn) {
                         $uriParams = $pool;
-                        $uriParams['page'] = '%s';
-                        $uri = UriTool::uri(null, $uriParams, true);
+                        $uriParams[$this->pageName] = '%s';
+                        $uri = UriTool::uri(null, $uriParams, false);
                         $linkFn = function ($i, $isSelected) use ($uri) {
                             return sprintf($uri, $i);
 

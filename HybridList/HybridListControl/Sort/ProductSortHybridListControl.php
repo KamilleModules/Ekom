@@ -4,9 +4,9 @@
 namespace Module\Ekom\HybridList\HybridListControl\Sort;
 
 
+use HybridList\HybridListControl\HybridListControl;
 use HybridList\HybridListInterface;
 use HybridList\ListShaper\ListShaper;
-use Module\Ekom\HybridList\HybridListControl\HybridListControl;
 
 
 /**
@@ -21,6 +21,7 @@ class ProductSortHybridListControl extends HybridListControl
     private $attrNames;
     private $_alreadyReacted;
     private $_input;
+    private $sortName;
 
     public function __construct()
     {
@@ -28,6 +29,7 @@ class ProductSortHybridListControl extends HybridListControl
         $this->attrNames = [];
         $this->_alreadyReacted = false;
         $this->_input = null;
+        $this->sortName = 'sort';
     }
 
     public function prepareHybridList(HybridListInterface $list, array $context)
@@ -39,7 +41,7 @@ class ProductSortHybridListControl extends HybridListControl
         //--------------------------------------------
         $list
             ->addListShaper(ListShaper::create()
-                ->reactsTo("sort")
+                ->reactsTo($this->sortName)
                 ->setExecuteCallback(function ($input, array &$boxes, array &$info = [], $originalBoxes) use ($context) {
 
                     $sortFn = null;
@@ -84,6 +86,13 @@ class ProductSortHybridListControl extends HybridListControl
         return $this;
     }
 
+    public function setSortName($sortName)
+    {
+        $this->sortName = $sortName;
+        return $this;
+    }
+
+
 
     //--------------------------------------------
     //
@@ -115,7 +124,7 @@ class ProductSortHybridListControl extends HybridListControl
                 ];
             }
             $this->model = [
-                'sortName' => "sort",
+                'sortName' => $this->sortName,
                 'items' => $items,
             ];
 

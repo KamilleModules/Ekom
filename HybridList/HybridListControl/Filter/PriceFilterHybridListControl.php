@@ -5,15 +5,9 @@ namespace Module\Ekom\HybridList\HybridListControl\Filter;
 
 
 use Bat\UriTool;
+use HybridList\HybridListControl\HybridListControl;
 use HybridList\HybridListInterface;
 use HybridList\ListShaper\ListShaper;
-use HybridList\RequestGenerator\RequestGeneratorInterface;
-use HybridList\RequestShaper\RequestShaper;
-use HybridList\SqlRequest\SqlRequestInterface;
-use Module\Ekom\Api\EkomApi;
-use Module\Ekom\Api\Layer\AttributeLayer;
-use Module\Ekom\HybridList\HiddenFormFieldsHelper;
-use Module\Ekom\HybridList\HybridListControl\HybridListControl;
 use Module\Ekom\Utils\E;
 
 class PriceFilterHybridListControl extends HybridListControl implements SummaryFilterAwareInterface
@@ -43,6 +37,7 @@ class PriceFilterHybridListControl extends HybridListControl implements SummaryF
         //--------------------------------------------
         $list
             ->addListShaper(ListShaper::create()
+                ->setPriority(100)
                 ->reactsTo("price")
                 ->setExecuteCallback(function ($input, array &$boxes, array &$info = [], $originalBoxes) use ($context) {
                     $p = explode('-', $input, 2);
