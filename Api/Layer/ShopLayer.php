@@ -33,6 +33,52 @@ use QuickPdo\QuickPdo;
 class ShopLayer
 {
 
+    public static function getShopItemById($shopId)
+    {
+        $shopId = (int)$shopId;
+        return QuickPdo::fetch("
+select * from ek_shop where id=$shopId        
+        ");
+    }
+
+    public static function getShopInfoById($shopId)
+    {
+        $shopId = (int)$shopId;
+
+        return A::cache()->get("Ekom.ShopLayer.getShopInfoById.$shopId", function () use ($shopId) {
+
+
+            return QuickPdo::fetch("
+select s.*,
+c.iso_code,
+h.exchange_rate,
+t.name as timezone
+
+from ek_shop s
+inner join ek_shop_has_currency h on h.shop_id=s.id
+inner join ek_currency c on c.id=h.currency_id
+inner join ek_timezone t on t.id=s.timezone_id
+
+where s.id=$shopId
+");
+
+        }, [
+            "ek_shop.create",
+            "ek_shop.delete.$shopId",
+            "ek_shop.update.$shopId",
+            "ek_shop_has_currency.create",
+            "ek_shop_has_currency.delete.$shopId",
+            "ek_shop_has_currency.update.$shopId",
+        ]);
+    }
+
+
+    public static function getShopEntries()
+    {
+        return QuickPdo::fetchAll("
+select * from ek_shop order by id asc        
+        ");
+    }
 
     /**
      * Return the closest shop physical address, given an user shipping address.
@@ -74,10 +120,10 @@ class ShopLayer
     }
 
 
-    public static function getPhysicalAddresses($type = null)
+    public static function getPhysicalAddresses($type = null, $shopId = null, $langId = null)
     {
-        $shopId = E::getShopId();
-        $langId = E::getLangId();
+        $shopId = E::getShopId($shopId);
+        $langId = E::getLangId($langId);
 
 
         return A::cache()->get("Ekom.ShopLayer.getPhysicalAddresses.$shopId.$langId.$type", function () use ($shopId, $langId, $type) {
@@ -169,36 +215,7 @@ order by h.`order` asc
     }
 
 
-    public function getShopInfoById($shopId)
-    {
-        $shopId = (int)$shopId;
 
-        return A::cache()->get("Ekom.ShopLayer.getShopInfoById.$shopId", function () use ($shopId) {
-
-
-            return QuickPdo::fetch("
-select s.*,
-c.iso_code,
-h.exchange_rate,
-t.name as timezone
-
-from ek_shop s
-inner join ek_shop_has_currency h on h.shop_id=s.id
-inner join ek_currency c on c.id=h.currency_id
-inner join ek_timezone t on t.id=s.timezone_id
-
-where s.id=$shopId
-");
-
-        }, [
-            "ek_shop.create",
-            "ek_shop.delete.$shopId",
-            "ek_shop.update.$shopId",
-            "ek_shop_has_currency.create",
-            "ek_shop_has_currency.delete.$shopId",
-            "ek_shop_has_currency.update.$shopId",
-        ]);
-    }
 
 
     public function allIds()

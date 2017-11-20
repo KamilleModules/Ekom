@@ -11,15 +11,17 @@ use QuickPdo\QuickPdo;
 class ProductGroupLayer
 {
 
+    public static function getAllGroupNames($shopId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        return QuickPdo::fetchAll("
+select name from ek_product_group where shop_id=$shopId        
+        ", [], \PDO::FETCH_COLUMN);
+    }
 
     public static function getProductIdsByGroup($groupName, $shopId = null)
     {
-
-        if (null === $shopId) {
-            $shopId = E::getShopId();
-        }
-        $shopId = (int)$shopId;
-
+        $shopId = E::getShopId($shopId);
         return A::cache()->get("Ekom.ProductGroupLayer.getProductIdsByGroup.$shopId.$groupName", function () use ($groupName, $shopId) {
             return QuickPdo::fetchAll("
 select h.product_id from ek_product_group_has_product h
@@ -29,10 +31,7 @@ and pg.shop_id=$shopId
 ", [
                 'name' => $groupName,
             ], \PDO::FETCH_COLUMN);
-        }, [
-            'ek_product_group_has_product',
-            'ek_product_group',
-        ]);
+        });
     }
 }
 

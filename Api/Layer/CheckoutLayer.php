@@ -434,7 +434,7 @@ class CheckoutLayer
             $userInfo['groups'] = $userGroups;
 
 
-            $shopInfo = $shopLayer->getShopInfoById($shopId);
+            $shopInfo = ShopLayer::getShopInfoById($shopId);
             $shopAddress = $shopLayer->getShopPhysicalAddress($shopId);
             $shopInfo['address'] = $shopAddress;
 

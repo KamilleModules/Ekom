@@ -32,7 +32,6 @@ class DiscountFilterHybridListControl extends HybridListControl implements Summa
 
     public function prepareHybridList(HybridListInterface $list, array $context)
     {
-        az(__FILE__);
         $this->pool = $context['pool'];
         //--------------------------------------------
         // shape request

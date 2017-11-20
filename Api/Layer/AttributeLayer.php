@@ -62,7 +62,7 @@ and shp.active=1
         $shopId = E::getShopId($shopId);
         $langId = E::getLangId($langId);
 
-        return A::cache()->get("Ekom.AttributeLayer.getAvailableAttributeByCategoryName.$shopId.$langId.$categoryId.", function () use ($categoryId, $langId, $shopId) {
+        return A::cache()->get("Ekom.AttributeLayer.getAvailableAttributeByCategoryId.$shopId.$langId.$categoryId", function () use ($categoryId, $langId, $shopId) {
             $catIds = CategoryLayer::getSelfAndChildrenIdsById($categoryId, $shopId, $langId);
 
             $rows = QuickPdo::fetchAll("

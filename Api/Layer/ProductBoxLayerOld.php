@@ -35,7 +35,7 @@ use Module\EkomUserProductHistory\UserProductHistory\UserProductHistoryInterface
  *
  *
  */
-class ProductBoxLayer
+class ProductBoxLayerOld
 {
 
 
@@ -72,7 +72,7 @@ class ProductBoxLayer
     //--------------------------------------------
     // PRODUCT BOX LIST
     //--------------------------------------------
-    public static function getProductBoxListByCardIds(array $cardIds, array $gpc = null)
+    public static function getProductBoxListByCardIds(array $cardIds, array $generalProductContext = null)
     {
         /**
          * This is a low level method and is not cached.
@@ -86,17 +86,19 @@ class ProductBoxLayer
          * You should use a wrapper if speed is an issue.
          */
         $boxes = [];
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
+        if (null === $generalProductContext) {
+            $generalProductContext = ProductBoxEntityUtil::getProductBoxGeneralContext();
+        }
         foreach ($cardIds as $cardId) {
             $boxes[] = ProductBoxEntity::create()
                 ->setProductCardId($cardId)
-                ->setGeneralContext($gpc)
+                ->setGeneralContext($generalProductContext)
                 ->getModel();
         }
         return $boxes;
     }
 
-    public static function getProductBoxListByProductIds(array $productIds, array $gpc = null)
+    public static function getProductBoxListByProductIds(array $productIds)
     {
         /**
          * This is a low level method and is not cached.
@@ -111,7 +113,7 @@ class ProductBoxLayer
          */
         $id2cardIds = ProductCardLayer::getProductId2CardIdByProductIds($productIds);
         $boxes = [];
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
+        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext();
         foreach ($id2cardIds as $productId => $cardId) {
             $boxes[] = ProductBoxEntity::create()
                 ->setProductCardId($cardId)
@@ -123,15 +125,13 @@ class ProductBoxLayer
     }
 
 
-    public static function getProductBoxListByCategoryName($categoryName, array $gpc = null)
+    public static function getProductBoxListByCategoryName($categoryName, $shopId = null)
     {
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
-        $shopId = $gpc['shop_id'];
-        $langId = $gpc['lang_id'];
-        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getProductBoxListByCategoryName.$shopId.$langId.$categoryName");
-        return A::cache()->get($hashString, function () use ($categoryName, $shopId, $gpc) {
+        $shopId = E::getShopId($shopId);
+        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getProductBoxListByCategoryName.$categoryName.$shopId");
+        return A::cache()->get($hashString, function () use ($categoryName, $shopId) {
             $ids = CategoryLayer::getCardIdsByCategoryName($categoryName, $shopId, true);
-            return self::getProductBoxListByCardIds($ids, $gpc);
+            return self::getProductBoxListByCardIds($ids);
         });
     }
 
@@ -140,15 +140,13 @@ class ProductBoxLayer
      * @param $groupName
      * @return array
      */
-    public static function getProductBoxListByGroupName($groupName, array $gpc = null)
+    public static function getProductBoxListByGroupName($groupName, $shopId = null)
     {
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
-        $shopId = $gpc['shop_id'];
-        $langId = $gpc['lang_id'];
-        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getProductBoxListByGroupName.$shopId.$langId.$groupName");
-        return A::cache()->get($hashString, function () use ($groupName, $shopId, $gpc) {
+        $shopId = E::getShopId($shopId);
+        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getProductBoxListByGroupName.$groupName.$shopId");
+        return A::cache()->get($hashString, function () use ($groupName, $shopId) {
             $ids = ProductGroupLayer::getProductIdsByGroup($groupName, $shopId);
-            return self::getProductBoxListByProductIds($ids, $gpc);
+            return self::getProductBoxListByProductIds($ids);
         });
     }
 
@@ -157,25 +155,21 @@ class ProductBoxLayer
      * @param $cardId , int
      * @return array
      */
-    public static function getRelatedProductBoxListByCardId($cardId, array $gpc = null)
+    public static function getRelatedProductBoxListByCardId($cardId, $shopId = null)
     {
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
-        $shopId = $gpc['shop_id'];
-        $langId = $gpc['lang_id'];
-        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getRelatedProductBoxListByCardId.$shopId.$langId.$cardId");
-        return A::cache()->get($hashString, function () use ($cardId, $shopId, $gpc) {
+        $shopId = E::getShopId($shopId);
+        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getRelatedProductBoxListByCardId.$cardId.$shopId");
+        return A::cache()->get($hashString, function () use ($cardId, $shopId) {
             $ids = RelatedProductLayer::getRelatedProductIds($cardId, $shopId);
-            return self::getProductBoxListByProductIds($ids, $gpc);
+            return self::getProductBoxListByProductIds($ids);
         });
     }
 
 
-    public static function getLastVisitedProductBoxList($userId,  array $gpc = null)
+    public static function getLastVisitedProductBoxList($userId, $shopId = null)
     {
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
-        $shopId = $gpc['shop_id'];
-        $langId = $gpc['lang_id'];
-        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getLastVisitedProductBoxListByCardId.$shopId.$langId.$userId");
+        $shopId = E::getShopId($shopId);
+        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getLastVisitedProductBoxListByCardId.$shopId.$userId");
         $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext();
         return A::cache()->get($hashString, function () use ($userId, $shopId, $gpc) {
             /**

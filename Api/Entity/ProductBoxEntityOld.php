@@ -22,8 +22,6 @@ use Module\Ekom\Utils\E;
 
 
 /**
- *
- *
  * productBoxModel (work in progress)
  * ====================
  * - attributes
@@ -90,7 +88,7 @@ use Module\Ekom\Utils\E;
  *
  *
  */
-class ProductBoxEntity
+class ProductBoxEntityOld
 {
     /**
      * @var null|array
@@ -150,15 +148,38 @@ class ProductBoxEntity
     }
 
 
+    public function getNativeContext()
+    {
+        if (null === $this->_nativeContext) {
+            $productCardId = $this->productCardId;
+            $productId = $this->productId;
+            $productDetails = $this->productDetails;
+
+
+            if (null === $productDetails) {
+                $productDetails = [];
+            }
+
+            $this->_nativeContext = [
+                'product_card_id' => $productCardId,
+                'product_id' => $productId,
+                'product_details' => $productDetails,
+            ];
+
+        }
+        return $this->_nativeContext;
+    }
+
+
     public function setProductCardId($cardId)
     {
-        $this->productCardId = (int)$cardId;
+        $this->productCardId = $cardId;
         return $this;
     }
 
     public function setProductId($productId)
     {
-        $this->productId = (int)$productId;
+        $this->productId = $productId;
         return $this;
     }
 
@@ -192,6 +213,12 @@ class ProductBoxEntity
         }
 
 
+        //--------------------------------------------
+        // PREPARING THE CACHE IDENTIFIERS
+        //--------------------------------------------
+        $cacheIdentifiers = self::getCacheDeleteIdentifiers();
+
+
         $generalContext = $this->generalContext;
 
 
@@ -205,19 +232,15 @@ class ProductBoxEntity
 
 
         $productBoxContext = array_replace($nativeContext, $generalContext);
-
+//        az($productBoxContext);
         $hash = ProductBoxEntityUtil::getHashByCacheContext($productBoxContext);
-        $cardId = $nativeContext["product_card_id"];
-        $productId = $nativeContext["product_id"];
-        $shopId = $productBoxContext['shop_id']; // exists by definition in ekom
-        $langId = $productBoxContext['lang_id'];
-        $cacheId = "Ekom/figure/productBox-$shopId-$langId-$cardId-$productId--$hash";
+        $hashString = "ekom-pbox-$hash";
 
 
         //--------------------------------------------
         // RETURN THE PRODUCT BOX MODEL
         //--------------------------------------------
-        return A::cache()->get($cacheId, function () use ($productBoxContext) {
+        return A::cache()->get($hashString, function () use ($productBoxContext) {
 
 
             $model = [];
@@ -237,14 +260,6 @@ class ProductBoxEntity
 //                Hooks::call("Ekom_decorateBoxModelCachable", $model);
                     /**
                      * Let modules decorate the box model.
-                     *
-                     * ---------------
-                     * !!! THEY MUST BE CONSISTENT WITH THE GIVEN PRODUCT BOX CONTEXT (SHOP ID, LANG ID, ...)
-                     * (otherwise, consistency is broken)
-                     * ---------------
-                     *
-                     *
-                     *
                      * Reminder: they can do things like:
                      * - change original price (using the priceOriginalRaw property)
                      * - change (stock) quantity
@@ -298,10 +313,21 @@ class ProductBoxEntity
             return $model;
 
 
-        });
+        }, $cacheIdentifiers);
     }
 
 
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    public static function getCacheDeleteIdentifiers()
+    {
+        $nativeDeleteIdentifiers = self::getDeleteIdentifiers();
+        $modulesDeleteIdentifiers = [];
+        Hooks::call("Ekom_ProductBox_getTabathaDeleteIdentifiers", $modulesDeleteIdentifiers);
+        return array_unique(array_merge($nativeDeleteIdentifiers, $modulesDeleteIdentifiers));
+    }
 
 
 
@@ -561,7 +587,7 @@ class ProductBoxEntity
                     //--------------------------------------------
                     // RATING
                     //--------------------------------------------
-                    $ratingInfo = $api->commentLayer()->getRatingInfo($cardId, $shopId);
+                    $ratingInfo = $api->commentLayer()->getRatingInfo($cardId);
 
 
                     //--------------------------------------------
@@ -589,7 +615,7 @@ class ProductBoxEntity
                      * Reminder: for now, only one discount per product is applied.
                      */
                     $discountBadge = "";
-                    if (is_array($discount)) {
+                    if(is_array($discount)){
                         $discountBadge = DiscountLayer::getBadge($discount);
                     }
 
@@ -750,26 +776,45 @@ class ProductBoxEntity
         return $ret;
     }
 
-    private function getNativeContext()
+
+    private static function getDeleteIdentifiers()
     {
-        if (null === $this->_nativeContext) {
-            $productCardId = $this->productCardId;
-            $productId = $this->productId;
-            $productDetails = $this->productDetails;
 
 
-            if (null === $productDetails) {
-                $productDetails = [];
-            }
+        return [
 
-            $this->_nativeContext = [
-                'product_card_id' => $productCardId,
-                'product_id' => $productId,
-                'product_details' => $productDetails,
-            ];
 
-        }
-        return $this->_nativeContext;
+            "ek_shop_has_product_card_lang",
+            "ek_shop_has_product_card",
+            "ek_product_card_lang",
+            "ek_product_card",
+            "ek_shop",
+            "ek_product_has_product_attribute",
+            "ek_product_attribute_lang",
+            "ek_product_attribute_value_lang",
+            "ek_product.delete",
+            "ek_product.update",
+            "ekomApi.image.product",
+            "ekomApi.image.productCard",
+
+            // taxes
+            "ek_tax",
+            "ek_tax_group_has_tax",
+            "ek_tax_group",
+            "ek_product_card_has_tax_group",
+
+
+            // discounts
+            "ek_product",
+            'ek_discount',
+            'ek_discount_lang',
+            'ek_product_has_discount',
+            'ek_product_card_has_discount',
+            'ek_category_has_discount',
+            'ek_category.delete',
+            'ek_product_card.delete',
+            "ek_user_has_user_group",
+        ];
     }
 }
 

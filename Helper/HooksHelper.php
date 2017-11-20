@@ -5,6 +5,7 @@ namespace Module\Ekom\Helper;
 
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
+use Module\Ekom\Utils\E;
 
 class HooksHelper
 {
@@ -24,8 +25,8 @@ class HooksHelper
 
     public static function Ekom_ProductBox_collectGeneralContext(array &$data)
     {
-        $data["shop_id"] = ApplicationRegistry::get("ekom.shop_id");
-        $data["lang_id"] = ApplicationRegistry::get("ekom.lang_id");
+        $data["shop_id"] = E::getShopId();
+        $data["lang_id"] = E::getLangId();
 
         /**
          * @todo-ling: implement currency change in ekom !!

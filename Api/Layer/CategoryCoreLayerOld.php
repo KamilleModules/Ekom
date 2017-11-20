@@ -14,10 +14,16 @@ use QuickPdo\QuickPdo;
  * In this class,
  * I'm trying to use the parent/children keywords
  *
- * There are two types of items that this class returns:
+ * shop_id and lang_id
+ * ======================
+ * The values can be one of:
+ * - false, will not be used
+ * - null, the current shop_id/lang_id will be used if any
+ * - int, your value
  *
- * the basic item
- * -----------------
+ * The default shop_id is null.
+ * The default lang_id is false.
+ * If lang_id is false,
  *      the return data set will contain the following data:
  *          - id
  *          - name
@@ -26,8 +32,7 @@ use QuickPdo\QuickPdo;
  *          - order
  *          - depth
  *
- * the extended item
- * -----------------
+ * If land_id is not false, then the returned data will have the following structure:
  *          - id
  *          - name
  *          - category_id
@@ -55,11 +60,10 @@ use QuickPdo\QuickPdo;
  * - if my boss ask me a complex request, I will feel more comfortable with the adjacency model
  *
  */
-class CategoryCoreLayer
+class CategoryCoreLayerOld
 {
     private $_shop_id;
     private $_lang_id;
-    private $_extended;
     private static $cpt = 0;
     private static $max = 1000;
 
@@ -78,13 +82,15 @@ class CategoryCoreLayer
      *          - order: [$field, asc|desc]
      * @return array
      */
-    public function getSelfAndChildren($parentName, $maxLevel = -1, $shopId = null, $langId = null, array $options = [])
+    public function getSelfAndChildren($parentName, $maxLevel = -1, $shopId = null, $langId = false, array $options = [])
     {
-        $this->_extended = (array_key_exists('extended', $options)) ? (bool)$options['extended'] : false;
         $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
+        if (false !== $langId) {
+            $langId = E::getLangId($langId);
+        }
+        $mlangId = (int)$langId;
         $hash = HashTool::getHashByArray($options);
-        $mix = "$shopId.$langId.$parentName.$maxLevel--$hash";
+        $mix = "$shopId.$mlangId.$parentName.$maxLevel--$hash";
         self::$cpt = 0;
 
         return A::cache()->get("Ekom/CategoryCoreLayer/getSelfAndChildren-$mix", function () use ($shopId, $langId, $parentName, $maxLevel, $options) {
@@ -121,13 +127,15 @@ class CategoryCoreLayer
      *          - order: [$field, asc|desc]
      * @return array
      */
-    public function getSelfAndChildrenByCategoryId($parentId, $maxLevel = -1, $shopId = null, $langId = null, array $options = [])
+    public function getSelfAndChildrenByCategoryId($parentId, $maxLevel = -1, $shopId = null, $langId = false, array $options = [])
     {
-        $this->_extended = (array_key_exists('extended', $options)) ? (bool)$options['extended'] : false;
         $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
+        if (false !== $langId) {
+            $langId = E::getLangId($langId);
+        }
+        $mlangId = (int)$langId;
         $hash = HashTool::getHashByArray($options);
-        $mix = "$shopId.$langId.$parentId.$maxLevel--$hash";
+        $mix = "$shopId.$mlangId.$parentId.$maxLevel--$hash";
         self::$cpt = 0;
 
         return A::cache()->get("Ekom/CategoryCoreLayer/getSelfAndChildrenByCategoryId-$mix", function () use ($shopId, $langId, $parentId, $maxLevel, $options) {
@@ -159,13 +167,16 @@ class CategoryCoreLayer
     }
 
 
-    public function getSelfAndParents($catName, $maxLevel = -1, $shopId = null, $langId = null, $options = [])
+    public function getSelfAndParents($catName, $maxLevel = -1, $shopId = null, $langId = false, $options = [])
     {
-        $this->_extended = (array_key_exists('extended', $options)) ? (bool)$options['extended'] : false;
+
         $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
+        if (false !== $langId) {
+            $langId = E::getLangId($langId);
+        }
+        $mlangId = (int)$langId;
         $hash = HashTool::getHashByArray($options);
-        $mix = "$shopId.$langId.$catName.$maxLevel--$hash";
+        $mix = "$shopId.$mlangId.$catName.$maxLevel--$hash";
         self::$cpt = 0;
 
         return A::cache()->get("Ekom/CategoryCoreLayer/getSelfAndParents-$mix", function () use ($shopId, $langId, $catName, $maxLevel, $options) {
@@ -193,13 +204,16 @@ class CategoryCoreLayer
 
     }
 
-    public function getSelfAndParentsByCategoryId($catId, $maxLevel = -1, $shopId = null, $langId = null, $options = [])
+    public function getSelfAndParentsByCategoryId($catId, $maxLevel = -1, $shopId = null, $langId = false, $options = [])
     {
-        $this->_extended = (array_key_exists('extended', $options)) ? (bool)$options['extended'] : false;
+        throw new \Exception("ji");
         $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
+        if (false !== $langId) {
+            $langId = E::getLangId($langId);
+        }
+        $mlangId = (int)$langId;
         $hash = HashTool::getHashByArray($options);
-        $mix = "$shopId.$langId.$catId.$maxLevel--$hash";
+        $mix = "$shopId.$mlangId.$catId.$maxLevel--$hash";
         self::$cpt = 0;
 
         return A::cache()->get("Ekom/CategoryCoreLayer/getSelfAndParentsByCategoryId-$mix", function () use ($shopId, $langId, $catId, $maxLevel, $options) {
@@ -301,7 +315,7 @@ class CategoryCoreLayer
         $langId = $this->_lang_id;
 
         $what = "c.*";
-        if (true === $this->_extended) {
+        if (false !== $langId) {
             $what .= ",
 cl.lang_id,            
 cl.label,            
@@ -317,7 +331,7 @@ select $what
 from ek_category c         
         ";
 
-        if (true === $this->_extended) {
+        if (false !== $langId) {
             $q .= "
 inner join ek_category_lang cl on cl.category_id=c.id
             ";
@@ -346,12 +360,13 @@ where c.id=$extra
         }
 
 
-        $shopId = E::getShopId($shopId);
-        $q .= "
+        if (false !== $shopId) {
+            $shopId = E::getShopId($shopId);
+            $q .= "
 and c.shop_id=$shopId            
             ";
-
-        if (true === $this->_extended) {
+        }
+        if (false !== $langId) {
             $langId = E::getShopId($langId);
             $q .= "
 and cl.lang_id=$langId            

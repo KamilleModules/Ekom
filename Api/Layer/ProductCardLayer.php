@@ -18,19 +18,22 @@ use RowsGenerator\ArrayRowsGenerator;
 class ProductCardLayer
 {
 
-
-    public static function getProductCardIdsByCategoryId($categoryId)
+    public static function getProductIds($cardId)
     {
-        return A::cache()->get("Ekom.ProductCardLayer.getProductCardIdsByCategoryId.$categoryId", function () use ($categoryId) {
+        $cardId = (int)$cardId;
+        return QuickPdo::fetchAll("
+select id from ek_product where product_card_id=$cardId        
+        ", [], \PDO::FETCH_COLUMN);
+    }
 
-            $catIds = CategoryLayer::getSelfAndChildrenIdsById($categoryId);
+    public static function getProductCardIdsByCategoryId($categoryId, $shopId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        return A::cache()->get("Ekom.ProductCardLayer.getProductCardIdsByCategoryId.$shopId.$categoryId", function () use ($categoryId, $shopId) {
+            $catIds = CategoryLayer::getSelfAndChildrenIdsById($categoryId, $shopId);
             return self::getProductCardIdsByCategoryIds($catIds);
 
-        }, [
-            "ek_category",
-            "ek_category_lang",
-            "ek_category_has_product_card",
-        ]);
+        });
     }
 
 

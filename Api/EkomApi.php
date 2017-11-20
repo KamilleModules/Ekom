@@ -14,6 +14,7 @@ use Module\Ekom\Api\Layer\AjaxHandlerLayer;
 use Module\Ekom\Api\Layer\AttributeLayer;
 use Module\Ekom\Api\Layer\BreadcrumbsLayer;
 use Module\Ekom\Api\Layer\BundleLayer;
+use Module\Ekom\Api\Layer\CacheLayer;
 use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\CategoryCoreLayer;
@@ -101,6 +102,17 @@ class EkomApi extends GeneratedEkomApi
      * - ekom.currency_rate
      *
      *
+     * Once they are here, NEVER change them in the applicationRegistry manually,
+     * otherwise you will compromise the consistency of the app (we want modules to be able to call E::getShopId,
+     * and/or ApplicationRegistry::get(shop_id), and/or other methods like those from any where,
+     * and always with the SAME result).
+     *
+     * In other words, once the initWebContext is called, the context shouldn't change until the process dies.
+     * That being said, authors can add shopId and langId parameters to their methods, so that accessing the
+     * other shop's data is not a problem.
+     *
+     *
+     *
      *
      * Should be called by every ekom web controller that displays a page.
      *
@@ -136,7 +148,7 @@ class EkomApi extends GeneratedEkomApi
      *
      *
      */
-    public function initWebContext()
+    public function initWebContext($shopId = null)
     {
         if (false === $this->initialized) {
             $this->initialized = true;
@@ -146,13 +158,15 @@ class EkomApi extends GeneratedEkomApi
             /**
              * Trying to get the shop id from the host
              */
-            $host = Z::request()->host();
+            if (null === $shopId) {
+                $host = Z::request()->host();
+            } else {
+                $info = ShopLayer::getShopItemById($shopId);
+                $host = $info['host'];
+            }
             $shopRow = A::cache()->get("Module.Ekom.Api.EkomApi.initWebContext.$host", function () use ($host) {
                 return $this->shopLayer()->getShopInfoByHost($host);
-            }, [
-                "ek_shop",
-                "ek_timezone",
-            ]);
+            });
 
 
             if (false !== $shopRow) {
@@ -208,7 +222,7 @@ class EkomApi extends GeneratedEkomApi
                  * those info don't depend on the user, but only on the shop configuration (the "host-lang_id-currency_id" triplet),
                  * so we can cache it :)
                  */
-                $tripletRow = A::cache()->get("Module.Ekom.Api.EkomApi.initWebContext.quartet.$host-$shopId-$langId-$currencyId", function () use ($currencyId, $shopId, $langId) {
+                $tripletRow = A::cache()->get("Module.Ekom.Api.EkomApi.initWebContext.quartet.$shopId-$langId-$currencyId", function () use ($currencyId, $shopId, $langId) {
 
                     $currencyId = (int)$currencyId;
                     $currencyRow = QuickPdo::fetch("
@@ -270,10 +284,10 @@ and h.lang_id=$langId
 
                     date_default_timezone_set($timezone);
                     ApplicationRegistry::set("ekom.host", $host);
-                    ApplicationRegistry::set("ekom.shop_id", $shopId);
-                    ApplicationRegistry::set("ekom.lang_id", $langId);
+                    ApplicationRegistry::set("ekom.shop_id", (int)$shopId);
+                    ApplicationRegistry::set("ekom.lang_id", (int)$langId);
                     ApplicationRegistry::set("ekom.lang_iso", $tripletRow['lang_iso']);
-                    ApplicationRegistry::set("ekom.currency_id", $currencyId);
+                    ApplicationRegistry::set("ekom.currency_id", (int)$currencyId);
                     ApplicationRegistry::set("ekom.currency_iso", $tripletRow['currency_iso']);
                     ApplicationRegistry::set("ekom.currency_rate", $tripletRow['currency_rate']);
 
@@ -334,6 +348,14 @@ and h.lang_id=$langId
     public function bundleLayer()
     {
         return $this->getLayer('bundleLayer');
+    }
+
+    /**
+     * @return CacheLayer
+     */
+    public function cacheLayer()
+    {
+        return $this->getLayer('cacheLayer');
     }
 
     /**

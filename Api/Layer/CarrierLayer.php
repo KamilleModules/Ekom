@@ -34,6 +34,33 @@ class CarrierLayer
 {
 
     /**
+     * @param $shopId
+     * @return array of carrier id => name
+     */
+    public static function getCarriers($shopId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        return A::cache()->get("Ekom.CarrierLayer.getCarriers.$shopId", function () use ($shopId) {
+            return QuickPdo::fetchAll("
+select c.id, c.name 
+        
+from ek_carrier c 
+inner join ek_shop_has_carrier h on h.carrier_id=c.id
+ 
+where h.shop_id=$shopId         
+
+order by h.priority asc        
+        
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+
+        }, [
+            "ek_carrier",
+            "ek_shop_has_carrier",
+            "ek_shop",
+        ]);
+    }
+
+    /**
      * Get the shipping cost of the $carrier for a given context.
      *
      *
@@ -164,35 +191,10 @@ class CarrierLayer
 
 
 
+
     //--------------------------------------------
     //
     //--------------------------------------------
-    /**
-     * @param $shopId
-     * @return array of carrier id => name
-     */
-    private static function getCarriers($shopId = null)
-    {
-        $shopId = E::getShopId($shopId);
-        return A::cache()->get("Ekom.CarrierLayer.getCarriers.$shopId", function () use ($shopId) {
-            return QuickPdo::fetchAll("
-select c.id, c.name 
-        
-from ek_carrier c 
-inner join ek_shop_has_carrier h on h.carrier_id=c.id
- 
-where h.shop_id=$shopId         
-
-order by h.priority asc        
-        
-        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
-
-        }, [
-            "ek_carrier",
-            "ek_shop_has_carrier",
-            "ek_shop",
-        ]);
-    }
 
 
     /**

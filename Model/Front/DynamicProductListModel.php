@@ -6,6 +6,7 @@ namespace Module\Ekom\Model\Front;
 
 use Bat\BdotTool;
 use HybridList\HybridListControl\HybridListControlInterface;
+use Kamille\Services\XLog;
 use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\HybridList\HybridListFactory;
 use Module\Ekom\Utils\E;

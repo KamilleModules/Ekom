@@ -42,17 +42,23 @@ class ProductBoxEntityUtil
     }
 
     /**
+     * @param array =null $gpc,
+     *              if defined, will be merged to the gpc returned by this call (but not subsequent call)
      * @return array, return general product context, used by lists of product boxes and product boxes.
      */
-    public static function getProductBoxGeneralContext()
+    public static function getProductBoxGeneralContext(array $gpc = null)
     {
-        $gpc = ApplicationRegistry::get("ekom.gpc");
-        if (null === $gpc) {
-            $gpc = [];
-            Hooks::call("Ekom_ProductBox_collectGeneralContext", $gpc);
-            ApplicationRegistry::set("ekom.gpc", $gpc);
+        $thisGpc = ApplicationRegistry::get("ekom.gpc");
+        if (null === $thisGpc) {
+            $thisGpc = [];
+            Hooks::call("Ekom_ProductBox_collectGeneralContext", $thisGpc);
+            ApplicationRegistry::set("ekom.gpc", $thisGpc);
         }
-        return $gpc;
+
+        if (null !== $gpc) {
+            $thisGpc = array_replace($thisGpc, $gpc);
+        }
+        return $thisGpc;
     }
 
     public static function setProductBoxGeneralContext(array $gpc)

@@ -29,6 +29,19 @@ use QuickPdo\QuickPdo;
 
 class ProductLayer
 {
+
+
+    public static function getIds($shopId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        return QuickPdo::fetchAll("
+select product_id from ek_shop_has_product 
+where shop_id=$shopId
+order by product_id asc        
+        ", [], \PDO::FETCH_COLUMN);
+
+    }
+
     public static function getProductIdByRef($ref)
     {
         return QuickPdo::fetch("select id from ek_product where reference=:ref", [

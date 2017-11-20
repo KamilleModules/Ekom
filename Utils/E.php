@@ -31,6 +31,13 @@ class E
 
     private static $conf = null;
 
+
+    public static function cacheMark($msg)
+    {
+        XLog::log($msg, "cache.log");
+    }
+
+
     /**
      * Return the userId, or a default value, or throws an exception.
      *
