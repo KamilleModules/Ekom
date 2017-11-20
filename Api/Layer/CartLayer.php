@@ -131,6 +131,7 @@ use QuickPdo\QuickPdo;
  *      - ?estimated_delivery_date
  *      - label
  * - shippingShippingCost
+ * - shippingShippingCostRaw
  * - shippingTaxAmountUnit
  * - shippingTaxDetails
  * - shippingTaxGroupLabel
@@ -353,18 +354,6 @@ class CartLayer
     }
 
 
-    /**
-     * @param array $bag , array of coupon ids
-     * @return $this
-     */
-//    public function setCouponBag(array $bag)
-//    {
-//        $this->initSessionCart();
-//        $shopId = ApplicationRegistry::get("ekom.shop_id");
-//        $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'] = $bag;
-//        return $this;
-//    }
-
     public function addCoupon($code)
     {
         $this->initSessionCart();
@@ -372,19 +361,7 @@ class CartLayer
 
         $couponInfo = CouponLayer::getCouponInfoByCode($code);
         if (false !== $couponInfo) {
-            $currentBag = $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'];
-            $ball = [
-                "overrideEkom" => false,
-                "coupons" => $currentBag,
-            ];
-            Hooks::call("Ekom_Cart_handleAddCoupon", $ball, $couponInfo);
-            if (false === $ball['overrideEkom']) {
-                // the newest coupon replaces all the other ones; only one coupon in the cart at a time
-                $currentBag = [$couponInfo['id']];
-            } else {
-                $currentBag = $ball['coupons'];
-            }
-            $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'] = $currentBag;
+            $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'] = [$couponInfo['id']];
         }
         return $this;
     }
@@ -418,15 +395,6 @@ class CartLayer
             $this->_cartModel = $ret;
         }
         return $this->_cartModel;
-    }
-
-    public function getExtendedCartModel()
-    {
-        $this->initSessionCart();
-        $shopId = E::getShopId();
-        $cartModel = $this->getCartModel();
-        $coupons = $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'];
-        throw new \Exception("todo");
     }
 
 
@@ -646,7 +614,7 @@ class CartLayer
         $shippingTaxGroup = null;
         Hooks::call("Ekom_Cart_defineShippingTaxGroup", $shippingTaxGroup, $model);
         $taxInfo = TaxLayer::applyTaxGroup($shippingTaxGroup, $shippingCost);
-        $shippingCostWithTax = $taxInfo['priceWithTax'];
+        $shippingCostWithTax = E::trimPrice($taxInfo['priceWithTax']);
         $shippingCost = $taxInfo['priceWithoutTax'];
 
 
@@ -657,10 +625,12 @@ class CartLayer
         $model["shippingTaxAmountUnit"] = $taxInfo['taxAmountUnit'];
         $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
         $model["shippingDetails"] = $details;
-        $model["shippingShippingCost"] = $shippingCostWithTax;
+        $model["shippingShippingCostRaw"] = $shippingCostWithTax;
+        $model["shippingShippingCost"] = E::price($shippingCostWithTax);
 
         $taxAmountTotal += $taxInfo['taxAmountUnit'];
         $model["totalTaxCartAmountRaw"] = $taxAmountTotal;
+
 
 
         //--------------------------------------------
@@ -717,41 +687,6 @@ class CartLayer
     //--------------------------------------------
     //
     //--------------------------------------------
-    private function getProductDetailsByToken($token)
-    {
-        $details = [
-            'major' => [],
-            'minor' => [],
-        ];
-        if (false !== ($item = $this->getCartItemByToken($token))) {
-            if (array_key_exists('details', $item)) {
-                $details = $item['details'];
-            }
-        }
-        return $details;
-    }
-
-
-    /**
-     * @return CartLocalStore
-     */
-    private function getCartLocalStore()
-    {
-        if (null === $this->cartLocalStore) {
-            $this->cartLocalStore = new CartLocalStore();
-        }
-        return $this->cartLocalStore;
-    }
-
-
-    private function isConfigurableProduct($productId, array $details)
-    {
-        return (
-            array_key_exists('minor', $details) &&
-            count($details['minor']) > 0 // assuming it's an array already..
-        );
-    }
-
 
     /**
      *
@@ -798,4 +733,43 @@ class CartLayer
         $p = explode('\\', $s);
         return array_pop($p);
     }
+
+
+
+    private function getProductDetailsByToken($token)
+    {
+        $details = [
+            'major' => [],
+            'minor' => [],
+        ];
+        if (false !== ($item = $this->getCartItemByToken($token))) {
+            if (array_key_exists('details', $item)) {
+                $details = $item['details'];
+            }
+        }
+        return $details;
+    }
+
+
+    /**
+     * @return CartLocalStore
+     */
+    private function getCartLocalStore()
+    {
+        if (null === $this->cartLocalStore) {
+            $this->cartLocalStore = new CartLocalStore();
+        }
+        return $this->cartLocalStore;
+    }
+
+
+    private function isConfigurableProduct($productId, array $details)
+    {
+        return (
+            array_key_exists('minor', $details) &&
+            count($details['minor']) > 0 // assuming it's an array already..
+        );
+    }
+
+
 }

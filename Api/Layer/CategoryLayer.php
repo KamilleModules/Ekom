@@ -98,7 +98,7 @@ and `name`=:name
         $langId = E::getLangId($langId);
 
         return QuickPdo::fetch("
-select c.id, c.name from ek_category c 
+select c.id, c.name, c.shop_id from ek_category c 
 inner join ek_category_lang cl on cl.category_id=c.id 
 where cl.slug=:slug 
 and cl.lang_id=$langId 

@@ -46,7 +46,7 @@ class DynamicProductListModel
             if (false !== ($info = CategoryLayer::getInfoBySlug($categorySlug))) {
 
                 $categoryId = $info['id'];
-                $shopId = E::getShopId();
+                $shopId = $info['shop_id'];
 
                 $return = [];
                 $hybridList = HybridListFactory::getCategoryHybridList($categoryId, $pool, $return, $shopId);
@@ -57,6 +57,7 @@ class DynamicProductListModel
 
                 $dotKey2Control = $return['dotKey2Control'];
                 $context = $return['context'];
+
 
 
                 $model['bundle'] = [

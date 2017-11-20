@@ -15,7 +15,6 @@ class CartUtil
 {
 
 
-
     public static function generateTokenByProductIdMajorProductDetails($productId, array $majorDetails = [])
     {
         $token = (string)$productId;
@@ -33,8 +32,20 @@ class CartUtil
      * @param array $items
      * @return array of seller => info, with info having the following structure:
      *
+     * - taxHint: int, a number indicating
+     *                  the type of visual hint to display next to the price totals for every seller.
+     *                  Whether or not the tax was globally applied.
+     *
      * - total: the total to display
-     * - rawTotal: the internal total used for computation
+     * - totalRaw: the internal total used for computation
+     * - taxAmountTotal: the total amount of tax for this seller
+     * - taxAmountTotalRaw: the internal total of tax for this seller
+     * - taxDetails: an array, each entry representing a tax group applied to at least one product for this seller.
+     *              Each entry is an array of taxGroupName to item, each item being an array with the following structure:
+     *              - taxGroupLabel: string, the tax group label
+     *              - taxAmountTotalRaw: number, the cumulated amount coming from this tax group for this seller
+     *              - taxAmountTotal: the formatted version of taxAmountTotalRaw
+     *
      * - items: the items for the current seller
      *
      */
@@ -62,17 +73,43 @@ class CartUtil
                      */
                     'taxHint' => 0,
                     'total' => 0,
-                    'rawTotal' => 0,
+                    'taxAmountTotalRaw' => 0,
+                    'taxAmountTotal' => 0,
+                    'totalRaw' => 0,
+                    'taxDetails' => [],
                     'items' => [],
                 ];
             }
-            $ret[$seller]['rawTotal'] += $item['priceLineRaw'];
+
+            if (!array_key_exists($item['taxGroupName'], $ret[$seller]['taxDetails'])) {
+                $ret[$seller]['taxDetails'][$item['taxGroupName']] = [
+                    'taxGroupLabel' => $item['taxGroupLabel'],
+                    'taxAmountTotalRaw' => 0,
+                    'taxAmountTotal' => 0,
+                ];
+            }
+
+
+            $ret[$seller]['taxDetails'][$item['taxGroupName']]['taxAmountTotalRaw'] += $item['taxAmount'];
+            $ret[$seller]['taxAmountTotalRaw'] += $item['taxAmount'];
+            $ret[$seller]['totalRaw'] += $item['priceLineRaw'];
             $ret[$seller]['items'][] = $item;
         }
 
 
         foreach ($ret as $seller => $item) {
-            $ret[$seller]['total'] = E::price($item['rawTotal']);
+            $ret[$seller]['total'] = E::price($item['totalRaw']);
+            $ret[$seller]['taxAmountTotal'] = E::price($item['taxAmountTotalRaw']);
+
+            $taxDetails = $ret[$seller]['taxDetails'];
+            if ($taxDetails) {
+                foreach ($taxDetails as $k => $v) {
+                    $v['taxAmountTotal'] = E::price($v['taxAmountTotalRaw']);
+                    $taxDetails[$k] = $v;
+                }
+                $ret[$seller]['taxDetails'] = $taxDetails;
+            }
+
             $taxHint = 0;
             Hooks::call("Ekom_Cart_getSellerTaxHint", $taxHint, $seller, $ret[$seller]["items"]);
             $ret[$seller]['taxHint'] = $taxHint;

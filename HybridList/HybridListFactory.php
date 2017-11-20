@@ -8,6 +8,7 @@ use HybridList\HybridListInterface;
 use HybridList\RequestGenerator\SqlRequestGenerator;
 use HybridList\SqlRequest\SqlRequest;
 use Kamille\Architecture\Registry\ApplicationRegistry;
+use Module\Ekom\Api\Entity\ProductBoxEntityUtil;
 use Module\Ekom\Api\Layer\ProductBoxLayer;
 use Module\Ekom\Api\Layer\ProductCardLayer;
 use Module\Ekom\HybridList\HybridListControl\Filter\AttributesFilterHybridListControl;
@@ -48,15 +49,18 @@ class HybridListFactory
     public static function getCategoryHybridList($categoryId, array $pool, array &$return = null, $shopId = null)
     {
 
-        E::getShopId($shopId);
+        $shopId = E::getShopId($shopId);
 
         ApplicationRegistry::set("ekom.categoryId", $categoryId);
 
         $cardIds = ProductCardLayer::getProductCardIdsByCategoryId($categoryId);
 
+        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext([
+            'shop_id' => $shopId,
+        ]);
         $unfilteredBoxes = []; // required by some filters/sort HybridListControl
         foreach ($cardIds as $cardId) {
-            $box = ProductBoxLayer::getProductBoxByCardId($cardId);
+            $box = ProductBoxLayer::getProductBoxByCardId($cardId, null, [], $gpc);
             if (!array_key_exists('errorCode', $box)) {
                 $unfilteredBoxes[$cardId] = ProductBoxLayer::getProductBoxByCardId($cardId);
             }
@@ -91,14 +95,17 @@ and shp.active=1
         // ekom baked
         $attributesFilterControl = AttributesFilterHybridListControl::create();
         $priceFilterControl = PriceFilterHybridListControl::create();
+        $discountsFilterControl = DiscountFilterHybridListControl::create();
         $summaryFilterControl = SummaryFilterHybridListControl::create()
             ->addSummaryFilterAwareItem($attributesFilterControl)
-            ->addSummaryFilterAwareItem($priceFilterControl);
+            ->addSummaryFilterAwareItem($priceFilterControl)
+            ->addSummaryFilterAwareItem($discountsFilterControl)
+        ;
 
 
         $hybridList->addControl("attributes", $attributesFilterControl);
         $hybridList->addControl("price", $priceFilterControl);
-        $hybridList->addControl("discounts", DiscountFilterHybridListControl::create());
+        $hybridList->addControl("discounts", $discountsFilterControl);
         $hybridList->addControl("sort", ProductSortHybridListControl::create());
         $hybridList->addControl("slice", PaginateSliceHybridListControl::create()->setNumberOfItemsPerPage(50));
         $hybridList->addControl("summary", $summaryFilterControl);
@@ -109,6 +116,7 @@ and shp.active=1
             'unfilteredBoxes' => $unfilteredBoxes,
             'pool' => $pool,
             'summaryFilterControl' => $summaryFilterControl,
+            'shop_id' => $shopId,
         ];
         $hybridList->setControlsContext($context);
 

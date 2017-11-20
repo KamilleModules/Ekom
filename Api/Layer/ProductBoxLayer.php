@@ -42,23 +42,30 @@ class ProductBoxLayer
     //--------------------------------------------
     // PRODUCT BOX
     //--------------------------------------------
-    public static function getProductBoxByCardId($cardId, $productId = null, array $productDetailsArgs = [])
+    public static function getProductBoxByCardId($cardId, $productId = null, array $productDetailsArgs = [], array $gpc = null)
     {
-        return ProductBoxEntity::create()
+        $e = ProductBoxEntity::create()
             ->setProductCardId($cardId)
             ->setProductId($productId)
-            ->setProductDetails($productDetailsArgs)
-            ->getModel();
+            ->setProductDetails($productDetailsArgs);
+        if (null !== $gpc) {
+            $e->setGeneralContext($gpc);
+        }
+
+        return $e->getModel();
     }
 
-    public static function getProductBoxByProductId($productId, array $productDetailsArgs = [])
+    public static function getProductBoxByProductId($productId, array $productDetailsArgs = [], array $gpc = null)
     {
         if (false !== ($cardId = ProductCardLayer::getIdByProductId($productId))) {
-            return ProductBoxEntity::create()
+            $e = ProductBoxEntity::create()
                 ->setProductCardId($cardId)
                 ->setProductId($productId)
-                ->setProductDetails($productDetailsArgs)
-                ->getModel();
+                ->setProductDetails($productDetailsArgs);
+            if (null !== $gpc) {
+                $e->setGeneralContext($gpc);
+            }
+            return $e->getModel();
         }
 
         return [
@@ -170,7 +177,7 @@ class ProductBoxLayer
     }
 
 
-    public static function getLastVisitedProductBoxList($userId,  array $gpc = null)
+    public static function getLastVisitedProductBoxList($userId, array $gpc = null)
     {
         $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
         $shopId = $gpc['shop_id'];

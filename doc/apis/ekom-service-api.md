@@ -42,8 +42,9 @@ ECP
 ========
 
 Ecp codifies the different outcomes of a script.
-When an ecp service is called, it always return a json payload containing the following:
+When an ecp service is called, it always return a json payload potentially containing the following:
 
+- $$success$$: if this key exists, it's a success notification message intended for the public user 
 - $$error$$: if this key exists, this is an error message intended for the 
             public user (i.e. the customer).
             It's assumed that a js layer displays this error message to the user.

@@ -108,10 +108,24 @@ the injection method?, ...).
 Actually, I missed one piece of the puzzle: the intent.
 
 The caller js code should pass the intent to the ekomJsApi.
+
 The intent expresses with an arbitrary string what we try to render (a sidebar?, a cartItem?, a list of items?, ...).
 
 The ekomJsApi transmits the intent to the service, and finally the modules hooks catch it and NOW know what renderer
 they should use.
+
+Also, on a page, multiple widgets might work together.
+For instance, if you update the quantity of an item in your cart, and maybe you're on the checkout page, then
+the prices on the checkout widget should update as well.
+
+It is therefore recommended that another js tool collects all the intents on the page before transmitting
+the payload to the target service.
+
+See this figure:
+
+[![rendering-templates-with-intent-markers.jpg](https://s19.postimg.org/l4wuhxikz/rendering-templates-with-intent-markers.jpg)](https://postimg.org/image/a5bn6bs5r/)
+
+
 
 Note: this means that the ekomJsApi always allows for an intent option where appropriate.
 
