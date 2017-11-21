@@ -679,6 +679,7 @@ class CartLayer
 //            echo '- ' . $k . PHP_EOL;
 //        }
 //        az("k");
+        az($model);
         return $model;
     }
 

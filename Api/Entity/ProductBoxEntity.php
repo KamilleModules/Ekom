@@ -659,7 +659,11 @@ class ProductBoxEntity
                          * The product details array (major/minor), yet to be created by modules
                          */
                         "productDetails" => [],
-                        "productDetailsMap" => [], // this will be computed from productDetails by this class in a moment
+                        /**
+                         * The product details identifying the product.
+                         * This will be computed from productDetails by this class in a moment.
+                         */
+                        "productDetailsMap" => [],
                         "productDetailsArgs" => $productDetails,  // the product details from the uri if any
                     ];
 
