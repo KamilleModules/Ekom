@@ -82,12 +82,7 @@ order by h.order asc
             ]);
 
             return self::getTaxGroupInfoByRows($rows);
-        }, [
-            "ek_tax",
-            "ek_tax_group_has_tax",
-            "ek_tax_group",
-            "ek_shop_has_product_card",
-        ]);
+        });
     }
 
 
@@ -131,12 +126,7 @@ order by h.order asc
         ");
 
             return self::getTaxGroupInfoByRows($rows);
-        }, [
-            "ek_tax",
-            "ek_tax_group_has_tax",
-            "ek_tax_group",
-            "ek_shop_has_product_card",
-        ]);
+        });
     }
 
 

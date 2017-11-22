@@ -43,19 +43,11 @@ use QuickPdo\QuickPdo;
  *
  *
  *
- * cartModel (work in progress)
+ * CartModel (work in progress)
  * =================
- *
- * - cartTotalQuantity
- * - cartTotalWeight
- * - cartTaxAmount
- * - cartTaxAmountRaw
- *
  * - couponDetails
  * - couponHasCoupons
  * - couponSavingRaw
- *
- *
  * - items
  *      - attributes
  *      - attributesSelection
@@ -90,8 +82,6 @@ use QuickPdo\QuickPdo;
  *      - priceBaseRaw
  *      - priceLine
  *      - priceLineRaw
- *      - priceLineWithoutTax
- *      - priceLineWithoutTaxRaw
  *      - priceOriginal
  *      - priceOriginalRaw
  *      - priceSale
@@ -124,37 +114,18 @@ use QuickPdo\QuickPdo;
  *      - uri_card_with_details
  *      - video_info
  *      - weight
- *
- *
- * - itemsGroupedBySeller  (see CartUtil), array of seller => item, each item:
- *      - taxHint: int, a number indicating
- *                       the type of visual hint to display next to the price totals for every seller.
- *                       Whether or not the tax was globally applied.
- *
- *      - total: the total to display
- *      - totalRaw: the internal total used for computation
- *      - taxAmountTotal: the total amount of tax for this seller
- *      - taxAmountTotalRaw: the internal total of tax for this seller
- *      - taxDetails: an array, each entry representing a tax group applied to at least one product for this seller.
- *                   Each entry is an array of taxGroupName to item, each item being an array with the following structure:
- *                   - taxGroupLabel: string, the tax group label
- *                   - taxAmountTotalRaw: number, the cumulated amount coming from this tax group for this seller
- *                   - taxAmountTotal: the formatted version of taxAmountTotalRaw
- *
- *      - items: the items for the current seller
- *
+ * - itemsGroupedBySeller
  *
  * - priceCartTotal
  * - priceCartTotalRaw
- * - priceCartTotalWithoutTax
- * - priceCartTotalWithoutTaxRaw
- *
- * - priceOrderTotal
- * - priceOrderTotalRaw
- * - priceOrderGrandTotal
- * - priceOrderGrandTotalRaw
- *
- *
+ * - priceCartTotalWithShipping
+ * - priceCartTotalWithShippingRaw
+ * - priceGrandTotal
+ * - priceGrandTotalRaw
+ * - priceLinesTotal
+ * - priceLinesTotalRaw
+ * - priceLinesTotalWithoutTaxRaw
+ * - priceLinesTotalWithoutTax
  *
  * - shippingDetails
  *      - ?estimated_delivery_date
@@ -168,12 +139,17 @@ use QuickPdo\QuickPdo;
  * - shippingTaxHasTax
  * - shippingTaxRatio
  *
- *
+ * - totalCartQuantity
+ * - totalCartWeight
+ * - totalTaxCartAmount             // same as totalTaxItemsAmount, but includes shippingTaxAmountUnit
+ * - totalTaxCartAmountRaw
+ * - totalTaxItemsAmount
+ * - totalTaxItemsAmountRaw
  *
  *
  *
  */
-class CartLayer
+class CartLayerOld2
 {
 
 
@@ -541,17 +517,14 @@ class CartLayer
     {
         $model = [];
         $modelItems = [];
-
-
         $totalQty = 0;
         $totalWeight = 0;
-        $cartTotal = 0;
-        $cartTotalWithoutTax = 0;
-        $cartTaxAmount = 0;
+        $linesTotal = 0;
+        $taxAmountTotal = 0;
 
 
         //--------------------------------------------
-        // BOXES
+        // CALCULATING LINE PRICES AND TOTAL
         //--------------------------------------------
         foreach ($items as $item) {
 
@@ -578,25 +551,16 @@ class CartLayer
                 // extending the box model to
                 //--------------------------------------------
                 $uriDetails = UriTool::uri($boxModel['uriProduct'], $productDetails, true);
-
-
                 $linePrice = E::trimPrice($cartQuantity * $boxModel['priceSaleRaw']);
-                $cartTotal += $linePrice;
-
-                $linePriceWithoutTax = E::trimPrice($cartQuantity * $boxModel['priceBaseRaw']);
-                $cartTotalWithoutTax += $linePriceWithoutTax;
-
-                $itemTaxAmount = E::trimPrice($cartQuantity * $boxModel['taxAmount']);
-                $cartTaxAmount += $itemTaxAmount;
-
+                $linesTotal += $linePrice;
+                $itemTaxAmount = E::trimPrice($cartQuantity * $boxModel['taxAmountUnit']);
+                $taxAmountTotal += $itemTaxAmount;
 
                 $boxModel['cartToken'] = $cartToken;
                 $boxModel['quantityCart'] = $cartQuantity;
                 $boxModel['uri_card_with_details'] = $uriDetails;
                 $boxModel['priceLineRaw'] = $linePrice;
                 $boxModel['priceLine'] = E::price($linePrice);
-                $boxModel['priceLineWithoutTaxRaw'] = $linePriceWithoutTax;
-                $boxModel['priceLineWithoutTax'] = E::price($linePriceWithoutTax);
                 $boxModel['taxAmount'] = $itemTaxAmount;
 
 
@@ -609,27 +573,36 @@ class CartLayer
 
         }
 
-//        az($modelItems);
 
         //--------------------------------------------
-        // CART
+        // injecting cart level properties
         //--------------------------------------------
         $totalWeight = round($totalWeight, 2);
         $model['items'] = $modelItems;
-        $model['cartTotalQuantity'] = $totalQty;
-        $model['cartTotalWeight'] = $totalWeight;
-        $model['cartTaxAmountRaw'] = $cartTaxAmount;
+
+        $model['totalCartQuantity'] = $totalQty;
+        $model['totalCartWeight'] = $totalWeight;
+        $model['totalTaxItemsAmountRaw'] = $taxAmountTotal;
+        $model['priceLinesTotalRaw'] = $linesTotal;
+
+        // bonuses
+        $linesTotalWithoutTax = $linesTotal - $taxAmountTotal;
+        $model['priceLinesTotalWithoutTaxRaw'] = $linesTotalWithoutTax;
+
+
+        //--------------------------------------------
+        // CART TOTAL
+        //--------------------------------------------
+        $couponInfoItems = CouponLayer::getCouponInfoItemsByIds($couponBag);
+        $couponsDetails = [];
+
+
+        $cartTotal = CouponLayer::applyCouponsByTarget($couponInfoItems, "linesTotal", $linesTotal, $model, $couponsDetails);
         $model['priceCartTotalRaw'] = $cartTotal;
-        $model['priceCartTotalWithoutTaxRaw'] = $cartTotal - $cartTaxAmount;
-
 
 
         //--------------------------------------------
-        // ORDER
-        //--------------------------------------------
-
-        //--------------------------------------------
-        // shipping
+        // SHIPPING
         //--------------------------------------------
         $details = [];
         $shippingCost = CarrierLayer::getShippingCost([
@@ -653,31 +626,25 @@ class CartLayer
         $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
         $model["shippingDetails"] = $details;
         $model["shippingShippingCostRaw"] = $shippingCostWithTax;
+        $model["shippingShippingCost"] = E::price($shippingCostWithTax);
 
+        $taxAmountTotal += $taxInfo['taxAmountUnit'];
+        $model["totalTaxCartAmountRaw"] = $taxAmountTotal;
 
-        // order total
-        $orderTotal = $cartTotal + $shippingCostWithTax;
-        $model["priceOrderTotalRaw"] = $orderTotal;
 
 
         //--------------------------------------------
-        // coupons
+        // CART TOTAL WITH SHIPPING
         //--------------------------------------------
-        $couponInfoItems = CouponLayer::getCouponInfoItemsByIds($couponBag);
-        $couponsDetails = [];
-        /**
-         * @todo-ling, the coupons potentially can change ANYTHING in the model.
-         * To handle this versatility, we use php Classes which will be able to do ANYTHING.
-         *
-         * However, we use an array as the model, which makes it painful for evolution: if the ekom cartModel
-         * changes (and I bet it will), then all existing code needs to be re-written.
-         * To mitigate this, I suggest a Helper class provided by Ekom with standard methods taking care of
-         * doing the dirty work (for instance if you do a 2 bought, 1 free, the Helper will let you call a simple
-         * method for that).
-         *
-         */
-        $orderGrandTotal = CouponLayer::applyCoupons($couponInfoItems,  $orderTotal, $model, $couponsDetails);
-        $model['priceOrderGrandTotalRaw'] = $orderGrandTotal;
+        $cartTotalWithShipping = $cartTotal + $shippingCost;
+        $model["priceCartTotalWithShippingRaw"] = $cartTotalWithShipping;
+
+
+        //--------------------------------------------
+        // GRAND TOTAL
+        //--------------------------------------------
+        $grandTotal = CouponLayer::applyCouponsByTarget($couponInfoItems, "cartTotalWithShipping", $cartTotalWithShipping, $model, $couponsDetails);
+        $model['priceGrandTotalRaw'] = $grandTotal;
 
 
         //--------------------------------------------
@@ -685,7 +652,7 @@ class CartLayer
         //--------------------------------------------
         $model['couponDetails'] = $couponsDetails;
         $model['couponHasCoupons'] = (count($couponsDetails) > 0);
-        $model['couponSavingRaw'] = $orderGrandTotal - $orderTotal;
+        $model['couponSavingRaw'] = 0;
 
         //--------------------------------------------
         // MODULES
@@ -699,24 +666,13 @@ class CartLayer
         /**
          * Note: this allows modules to deal only with raw values (in case they change the cart model)
          */
-        $model['cartTaxAmount'] = E::price($model['cartTaxAmountRaw']);
+        $model['totalTaxItemsAmount'] = E::price($model['totalTaxItemsAmountRaw']);
+        $model['totalTaxCartAmount'] = E::price($model['totalTaxCartAmountRaw']);
+        $model['priceLinesTotal'] = E::price($model['priceLinesTotalRaw']);
+        $model['priceLinesTotalWithoutTax'] = E::price($model['priceLinesTotalWithoutTaxRaw']);
         $model['priceCartTotal'] = E::price($model['priceCartTotalRaw']);
-        $model['priceCartTotalWithoutTax'] = E::price($model['priceCartTotalWithoutTaxRaw']);
-
-        // order
-        $model["shippingShippingCost"] = E::price($model["shippingShippingCostRaw"]);
-        $model["priceOrderTotal"] = E::price($model["priceOrderTotalRaw"]);
-        $model["priceOrderGrandTotal"] = E::price($model["priceOrderGrandTotalRaw"]);
-
-
-        // older
-//        $model['totalTaxItemsAmount'] = E::price($model['totalTaxItemsAmountRaw']);
-//        $model['totalTaxCartAmount'] = E::price($model['totalTaxCartAmountRaw']);
-//        $model['priceLinesTotal'] = E::price($model['priceLinesTotalRaw']);
-//        $model['priceLinesTotalWithoutTax'] = E::price($model['priceLinesTotalWithoutTaxRaw']);
-//        $model['priceCartTotal'] = E::price($model['priceCartTotalRaw']);
-//        $model['priceCartTotalWithShipping'] = E::price($model['priceCartTotalWithShippingRaw']);
-//        $model['priceGrandTotal'] = E::price($model['priceGrandTotalRaw']);
+        $model['priceCartTotalWithShipping'] = E::price($model['priceCartTotalWithShippingRaw']);
+        $model['priceGrandTotal'] = E::price($model['priceGrandTotalRaw']);
 
         ksort($model);
 //        foreach ($model as $k => $v) {
@@ -778,6 +734,7 @@ class CartLayer
         $p = explode('\\', $s);
         return array_pop($p);
     }
+
 
 
     private function getProductDetailsByToken($token)

@@ -34,10 +34,8 @@ use Module\Ekom\Utils\E;
  * - codes
  * - defaultImage
  * - description
- *
  * - discount
- * - discountBadge  (pc20)
- * - discountLabel
+ * - discountBadge
  * - discountHasDiscount
  * - discountPrice
  * - discountRawPrice
@@ -45,7 +43,6 @@ use Module\Ekom\Utils\E;
  * - discountSavingFixed
  * - discountSavingPercent
  * - discountType
- *
  * - hasNovelty
  * - imageLarge
  * - imageMedium
@@ -65,9 +62,6 @@ use Module\Ekom\Utils\E;
  * - priceOriginalRaw
  * - priceSale
  * - priceSaleRaw
- *
- * - productBoxContext      // array for dev
- *
  * - productDetails
  * - productDetailsArgs
  * - productDetailsMap
@@ -80,13 +74,13 @@ use Module\Ekom\Utils\E;
  * - rating_nbVotes
  * - ref
  * - seller
- *
- * - taxAmount
+ * - taxAmountUnit
+ * - taxDetails
+ * - taxGroup
  * - taxGroupLabel
  * - taxGroupName
  * - taxHasTax
  * - taxRatio
- *
  * - uriCard
  * - uriCardAjax
  * - uriLogin
@@ -96,7 +90,7 @@ use Module\Ekom\Utils\E;
  *
  *
  */
-class ProductBoxEntity
+class ProductBoxEntityOld2
 {
     /**
      * @var null|array
@@ -333,10 +327,27 @@ class ProductBoxEntity
          * ------------------------
          * - priceOriginalRaw (already set in the given model)
          * - priceOriginal
-         * - priceBase (discounts applied on original price)
+         * - priceBase (assumed with applicable tax applied)
          * - priceBaseRaw
-         * - priceSale (applicable taxes applied on base price)
+         * - priceSale (assumed with applicable tax and discount applied)
          * - priceSaleRaw
+         *
+         *
+         * @deprecated (as not useful for now)
+         * - basePriceWithoutTax
+         * - rawBasePriceWithoutTax
+         * - salePriceWithoutTax (who needs that?)
+         * - rawSalePriceWithoutTax
+         *
+         *
+         *
+         * // related to taxes
+         * ------------------------
+         * - taxDetails
+         * - taxRatio
+         * - taxGroupName
+         * - taxGroupLabel
+         * - taxAmountUnit
          *
          *
          * // related to discount
@@ -349,32 +360,38 @@ class ProductBoxEntity
          * - discountSavingPercent
          * - discountSavingFixed
          * - discountRawSavingFixed
-         * - discountLabel
-         *
-         *
-         *
-         *
-         * // related to taxes
-         * ------------------------
-         * - taxAmount
-         * - taxGroupLabel
-         * - taxGroupName
-         * - taxHasTax
-         * - taxRatio
-         *
-         *
          *
          *
          */
         //--------------------------------------------
-        // APPLYING DISCOUNTS
+        // APPLYING TAXES
+        //--------------------------------------------
+        $taxInfo = TaxLayer::applyTaxGroup($taxGroup, $rawOriginalPrice);
+        /**
+         * Note that if the taxGroup was refuted by modules (=false),
+         * the base price used by ekom is still the taxInfo.priceWithTax (which happens to be the
+         * same as the taxInfo.priceWithoutTax)
+         */
+        $basePrice = $taxInfo['priceWithTax'];
+        $basePriceWithoutTax = $taxInfo['priceWithoutTax'];
+
+
+        $model["taxDetails"] = $taxInfo['taxDetails'];
+        $model["taxRatio"] = $taxInfo['taxRatio'];
+        $model["taxGroupName"] = $taxInfo['taxGroupName'];
+        $model["taxGroupLabel"] = $taxInfo['taxGroupLabel'];
+        $model["taxAmountUnit"] = $taxInfo['taxAmountUnit'];
+        $model["taxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
+
+
+        //--------------------------------------------
+        // NOW APPLYING DISCOUNT
         //--------------------------------------------
         $discountInfo = [];
         if (false !== $discount) {
             $conditions = $discount['conditions'];
             if (true === SimpleConditionResolverUtil::create()->evaluate($conditions, $productBoxContext)) {
-                $discountInfo = DiscountLayer::applyDiscount($discount, $rawOriginalPrice);
-                $discountInfo['label'] = $discount['label'];
+                $discountInfo = DiscountLayer::applyDiscount($discount, $basePrice);
             }
         }
         if (!$discountInfo) {
@@ -382,46 +399,24 @@ class ProductBoxEntity
                 "type" => "fixed",
                 "savingPercent" => 0,
                 "savingFixed" => 0,
-                "discountPrice" => $rawOriginalPrice,
-                "label" => "",
+                "discountPrice" => $basePrice,
             ];
         }
         $discountPrice = $discountInfo['discountPrice'];
 
         $model['discountHasDiscount'] = ($discountInfo['savingFixed'] > 0);
-        $model['discountLabel'] = $discountInfo['label'];
         $model['discountType'] = $discountInfo['type'];
         $model['discountPrice'] = E::price($discountPrice);
         $model['discountRawPrice'] = $discountPrice;
         $model['discountSavingPercent'] = $discountInfo['savingPercent'];
         $model['discountSavingFixed'] = E::price($discountInfo['savingFixed']);
         $model['discountRawSavingFixed'] = $discountInfo['savingFixed'];
-        $basePrice = $discountPrice;
-
-
-        //--------------------------------------------
-        // APPLYING TAXES
-        //--------------------------------------------
-        $taxInfo = TaxLayer::applyTaxGroup($taxGroup, $basePrice);
-        /**
-         * Note that if the taxGroup was refuted by modules (=false),
-         * the base price used by ekom is still the taxInfo.priceWithTax (which happens to be the
-         * same as the taxInfo.priceWithoutTax)
-         */
-        $salePrice = $taxInfo['priceWithTax'];
-
-
-//        $model["taxDetails"] = $taxInfo['taxDetails'];
-        $model["taxRatio"] = $taxInfo['taxRatio'];
-        $model["taxGroupName"] = $taxInfo['taxGroupName'];
-        $model["taxGroupLabel"] = $taxInfo['taxGroupLabel'];
-        $model["taxAmount"] = $taxInfo['taxAmountUnit'];
-        $model["taxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
 
 
         //--------------------------------------------
         // INCLUDING PRICE CHAIN
         //--------------------------------------------
+        $salePrice = $discountPrice;
         $model['priceOriginal'] = E::price($rawOriginalPrice);
         $model['priceBaseRaw'] = $basePrice;
         $model['priceBase'] = E::price($basePrice);
@@ -670,9 +665,6 @@ class ProductBoxEntity
                          */
                         "productDetailsMap" => [],
                         "productDetailsArgs" => $productDetails,  // the product details from the uri if any
-
-                        // for dev/debug
-                        "productBoxContext" => $productBoxContext,
                     ];
 
 

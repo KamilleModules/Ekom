@@ -1302,7 +1302,7 @@ See below for more details.
                 If active is set to 0, the user won't be able to add it.
                 However, once an user has added the coupon in his/her cart,
                 the coupon is always active, independently of the active value.
-- procedure_type: string: fixed|percent|custom|... 
+- procedure_type: string: fixed|percent|custom|...your own
                     Define the type of effect to apply.
                     
                     In case of fixed or percent, same as a regular ekom discount (read discounts.md for more info).
@@ -1311,7 +1311,11 @@ See below for more details.
                             - simple discount 
                             - buy 2 get 3 
                             - ...
-- target: string, indicates the target of the procedure effect.                            
+- procedure_operand: string, a number for the procedure type to work with (like an argument of a function).
+                        It usually indicates the amount of discount to apply.  
+- target: string, another string for your heuristics (like operand).
+                    Originally, it had another use, but now it's just there in case you need it.
+                    You could for instance pass the name of a class.                            
                                                 
 
                      

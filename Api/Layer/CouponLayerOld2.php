@@ -8,7 +8,6 @@ use Bat\FileSystemTool;
 use Bat\StringTool;
 use Bat\UriTool;
 use Core\Services\A;
-use Core\Services\Hooks;
 use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
@@ -31,22 +30,15 @@ use QuickPdo\QuickPdo;
  *
  * couponDetailsItem
  * ===============
+ * - target, the target being used
  * - code: coupon code
  * - label: coupon label
  * - savingRaw: the unformatted amount of saving for the ensemble of the discounts for this coupon
  * - saving: the formatted version of savingRaw
- * - details: array, free form. Example:
- *          - sellerDetails:
- *                  - seller1:
- *                      - amount: 2.51
- *                      - label: 25.15 % de 1336
- *                  - seller2:
- *                      - amount: 7.49
- *                      - label: 74.85 % de 1336
  *
  *
  */
-class CouponLayer
+class CouponLayerOld2
 {
 
     public static function getCouponInfoItemsByIds(array $ids)
@@ -75,12 +67,12 @@ class CouponLayer
 
     /**
      *
-     * Apply coupon(s) to the given cartModel (as defined at the top of the CartLayer class).
-     *
+     * Apply coupon(s) with target $target on the given $price and return the discount price.
      *
      * @param array $couponInfoItems , array of couponInfo (defined at the top of the CouponLayer class)
+     * @param $target
      * @param $price
-     * @param array $cartModel (in case the coupon needs to execute some heuristics)
+     * @param array $currentCartModel (in case the coupon needs to execute some heuristics)
      *                  the cartModel being built, which structure might be slightly different depending
      *                  on the target (i.e. if target=cartTotalWithShipping, the model will contain a few more
      *                  properties than if target=linesTotal).
@@ -89,29 +81,22 @@ class CouponLayer
      *                              is attached to $couponsDetails
      * @return number, the discount price
      */
-    public static function applyCoupons(array $couponInfoItems, $price, array &$cartModel, array &$couponsDetails)
+    public static function applyCouponsByTarget(array $couponInfoItems, $target, $price, array $currentCartModel, array &$couponsDetails)
     {
         $discountPrice = $price;
         foreach ($couponInfoItems as $couponInfoItem) {
-            $discountPrice = self::applyCoupon($couponInfoItem, $discountPrice, $cartModel, $couponsDetails);
+            if ($target === $couponInfoItem['target']) {
+                $discountPrice = self::applyCoupon($couponInfoItem, $discountPrice, $currentCartModel, $couponsDetails);
+            }
         }
         return $discountPrice;
     }
 
 
-    /**
-     * Apply the given coupon to the given basePrice,
-     * return the discount price, and add a couponDetailsItem (see at the top of this document)
-     * to the $couponsDetails parameter (only if the coupon was actually applied).
-     *
-     *
-     * @param array $couponInfoItem
-     * @param $price
-     * @param array $currentCartModel
-     * @param array $couponsDetails
-     * @return float
-     */
-    public static function applyCoupon(array $couponInfoItem, $price, array $currentCartModel, array &$couponsDetails)
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    private static function applyCoupon(array $couponInfoItem, $price, array $currentCartModel, array &$couponsDetails)
     {
         $discountPrice = $price;
         if ("1" === $couponInfoItem['active']) {
@@ -119,22 +104,13 @@ class CouponLayer
                 "type" => $couponInfoItem['procedure_type'],
                 "operand" => $couponInfoItem['procedure_operand'],
             ];
-
-
             $discountPrice = DiscountLayer::applyDiscountInfoToPrice($discountInfo, $discountPrice);
-
-            $details = [];
-            Hooks::call("Ekom_Coupon_collectCouponDetails", $details, $price, $discountPrice, $currentCartModel);
-
-
-            $saving = E::trimPrice($price - $discountPrice);
             $couponsDetails[] = [
                 "target" => $couponInfoItem['target'],
-                "details" => $details,
                 "code" => $couponInfoItem['code'],
                 "label" => $couponInfoItem['label'],
-                "savingRaw" => $saving,
-                "saving" => E::price($saving),
+                "savingRaw" => $discountPrice,
+                "saving" => E::price($discountPrice),
             ];
 
         }

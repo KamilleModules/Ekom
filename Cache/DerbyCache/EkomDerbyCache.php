@@ -91,11 +91,13 @@ use Kamille\Services\XLog;
 class EkomDerbyCache extends WithRelatedFileSystemDerbyCache
 {
     private $debug;
+    private $alwaysForceRegenerate;
 
     public function __construct()
     {
         parent::__construct();
         $this->debug = false;
+        $this->alwaysForceRegenerate = false;
     }
 
     public function setDebug($debug)
@@ -104,6 +106,20 @@ class EkomDerbyCache extends WithRelatedFileSystemDerbyCache
         return $this;
     }
 
+    public function setAlwaysForceRegenerate($alwaysForceRegenerate)
+    {
+        $this->alwaysForceRegenerate = $alwaysForceRegenerate;
+        return $this;
+    }
+
+
+    public function get($cacheIdentifier, callable $cacheItemGenerator, $forceGenerate = false)
+    {
+        if (true === $this->alwaysForceRegenerate) {
+            $forceGenerate = true;
+        }
+        return parent::get($cacheIdentifier, $cacheItemGenerator, $forceGenerate);
+    }
 
     protected function hook($hookName, $argument) // override me
     {
