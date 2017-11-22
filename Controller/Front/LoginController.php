@@ -11,6 +11,7 @@ use FormModel\FormModelInterface;
 use Kamille\Architecture\Response\Web\RedirectResponse;
 use Kamille\Utils\Laws\Config\LawsConfig;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Layer\PasswordLayer;
 use Module\Ekom\Utils\E;
 
 class LoginController extends EkomFrontController
@@ -52,7 +53,9 @@ class LoginController extends EkomFrontController
             ) {
                 if ('1' === $row['active']) {
                     $hash = $row['pass'];
-                    if (true === EkomApi::inst()->passwordLayer()->passwordVerify($model['valuePass'], $hash)) {
+                    if (true === PasswordLayer::passwordVerify($model['valuePass'], $hash)) {
+
+
 
 
                         EkomApi::inst()->userLayer()->connectUser(['id' => $row['id']]);

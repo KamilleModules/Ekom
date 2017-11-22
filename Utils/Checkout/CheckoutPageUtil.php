@@ -13,7 +13,20 @@ use Module\Ekom\Utils\Checkout\Step\LoginCheckoutStep;
 use Module\Ekom\Utils\Checkout\Step\PaymentCheckoutStep;
 use Module\Ekom\Utils\Checkout\Step\ShippingCheckoutStep;
 
-
+/**
+ *
+ *
+ * //--------------------------------------------
+ * // checkoutPageModel
+ * //--------------------------------------------
+ * - cartModel: the cartModel, defined at the top of CartLayer
+ * - checkoutModel: (a model for a visual representation of a one page checkout)
+ *      - model: free form array containing
+ *
+ *
+ *
+ *
+ */
 class CheckoutPageUtil
 {
 

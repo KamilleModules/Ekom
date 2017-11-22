@@ -32,8 +32,9 @@ class GeneratedCoupon extends TableCrudObject
         $base = [
 			'code' => '',
 			'active' => 0,
-			'mode' => '',
-			'priority' => 0,
+			'procedure_type' => '',
+			'procedure_operand' => '',
+			'target' => '',
 			'shop_id' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));

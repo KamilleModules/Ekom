@@ -139,7 +139,7 @@ use QuickPdo\QuickPdo;
  * - shippingTaxHasTax
  * - shippingTaxRatio
  *
- * - totalCartQuantity
+ * - cartTotalQuantity
  * - totalCartWeight
  * - totalTaxCartAmount             // same as totalTaxItemsAmount, but includes shippingTaxAmountUnit
  * - totalTaxCartAmountRaw
@@ -580,7 +580,7 @@ class CartLayerOld2
         $totalWeight = round($totalWeight, 2);
         $model['items'] = $modelItems;
 
-        $model['totalCartQuantity'] = $totalQty;
+        $model['cartTotalQuantity'] = $totalQty;
         $model['totalCartWeight'] = $totalWeight;
         $model['totalTaxItemsAmountRaw'] = $taxAmountTotal;
         $model['priceLinesTotalRaw'] = $linesTotal;

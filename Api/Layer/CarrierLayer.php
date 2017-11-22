@@ -92,7 +92,9 @@ order by h.priority asc
             $carrier = self::getCurrentCarrier();
         }
 
-        $userShippingAddress = UserAddressLayer::getCurrentShippingAddress(); // array|null
+        $userShippingAddress = UserAddressLayer::getCurrentShippingAddress(); // array|false
+
+
         $shopAddress = self::getShopPhysicalAddressForShipping([
             'userShippingAddress' => $userShippingAddress,
         ]); // array|null
@@ -222,7 +224,11 @@ order by h.priority asc
         $shopAddress = [];
         Hooks::call("Ekom_Carrier_getShopPhysicalAddressForShipping", $shopAddress, $data);
         if (empty($shopAddress)) {
-            $shopAddress = ShopLayer::getClosestPhysicalAddress($data['userShippingAddress']);
+            $userShippingAddress = $data['userShippingAddress'];
+            if (false === $userShippingAddress) {
+                $userShippingAddress = null;
+            }
+            $shopAddress = ShopLayer::getClosestPhysicalAddress($userShippingAddress);
         }
         return $shopAddress;
     }

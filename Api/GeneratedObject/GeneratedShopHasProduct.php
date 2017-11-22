@@ -36,10 +36,12 @@ class GeneratedShopHasProduct extends TableCrudObject
 			'wholesale_price' => '',
 			'quantity' => 0,
 			'active' => 0,
-			'_sale_price_without_tax' => '',
-			'_sale_price_with_tax' => '',
+			'_discount_badge' => '',
 			'seller_id' => 0,
 			'product_type_id' => 0,
+			'reference' => '',
+			'_popularity' => '',
+			'codes' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

@@ -51,9 +51,10 @@ use QuickPdo\QuickPdo;
  * - cartTaxAmount
  * - cartTaxAmountRaw
  *
- * - couponDetails
+ * - couponDetails, array of couponDetailsItem (defined in CouponLayer)
  * - couponHasCoupons
  * - couponSavingRaw
+ * - couponSaving
  *
  *
  * - items
@@ -374,6 +375,7 @@ class CartLayer
 
 
         $this->writeToLocalStore();
+//        az($_SESSION['ekom'][$this->sessionName]);
         return (true === $wasUpdated);
     }
 
@@ -386,6 +388,19 @@ class CartLayer
         $couponInfo = CouponLayer::getCouponInfoByCode($code);
         if (false !== $couponInfo) {
             $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'] = [$couponInfo['id']];
+        }
+        return $this;
+    }
+
+    public function removeCoupon($code)
+    {
+        $this->initSessionCart();
+        $shopId = ApplicationRegistry::get("ekom.shop_id");
+
+        $couponInfo = CouponLayer::getCouponInfoByCode($code);
+        if (false !== $couponInfo) {
+            $index = array_search($couponInfo['id'], $_SESSION['ekom'][$this->sessionName][$shopId]['coupons']);
+            unset($_SESSION['ekom'][$this->sessionName][$shopId]['coupons'][$index]);
         }
         return $this;
     }
@@ -415,7 +430,8 @@ class CartLayer
             $this->initSessionCart();
             $shopId = E::getShopId();
             $items = $_SESSION['ekom'][$this->sessionName][$shopId]['items'];
-            $ret = self::getCartModelByItems($items);
+            $coupons = $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'];
+            $ret = self::deGetCartModel($items, $coupons);
             $this->_cartModel = $ret;
         }
         return $this->_cartModel;
@@ -537,8 +553,18 @@ class CartLayer
     }
 
 
-    private static function getCartModelByItems(array $items, array $couponBag = [])
+    private static function deGetCartModel(array $items, array $couponBag = [])
     {
+
+        /**
+         * @todo-ling: lang should be taken from the gcp I believe, since
+         * gpc is what drives the display of products inside the cart.
+         * Often, it should be the same as E::getLangId (which I use temporarily below),
+         * but in the long term I believe langId should be taken from gpc directly.
+         */
+        $langId = E::getLangId();
+
+
         $model = [];
         $modelItems = [];
 
@@ -604,7 +630,7 @@ class CartLayer
                 $modelItems[] = $boxModel;
             } else {
                 $className = self::getClassShortName();
-                XLog::error("[Ekom module] - $className.getCartModelByItems: errorCode: " . $boxModel['errorCode'] . ", msg: " . $boxModel['errorMessage']);
+                XLog::error("[Ekom module] - $className.deGetCartModel: errorCode: " . $boxModel['errorCode'] . ", msg: " . $boxModel['errorMessage']);
             }
 
         }
@@ -623,7 +649,6 @@ class CartLayer
         $model['priceCartTotalWithoutTaxRaw'] = $cartTotal - $cartTaxAmount;
 
 
-
         //--------------------------------------------
         // ORDER
         //--------------------------------------------
@@ -632,27 +657,40 @@ class CartLayer
         // shipping
         //--------------------------------------------
         $details = [];
-        $shippingCost = CarrierLayer::getShippingCost([
-            'boxes' => $modelItems,
-        ], $details);
-        //--------------------------------------------
-        // APPLYING SHIPPING TAXES
-        //--------------------------------------------
-        $shippingTaxGroup = null;
-        Hooks::call("Ekom_Cart_defineShippingTaxGroup", $shippingTaxGroup, $model);
-        $taxInfo = TaxLayer::applyTaxGroup($shippingTaxGroup, $shippingCost);
-        $shippingCostWithTax = E::trimPrice($taxInfo['priceWithTax']);
-        $shippingCost = $taxInfo['priceWithoutTax'];
+        if (E::userIsConnected() && false !== UserAddressLayer::getDefaultShippingAddress(E::getUserId())) {
+
+            $shippingCost = CarrierLayer::getShippingCost([
+                'boxes' => $modelItems,
+            ], $details);
+            //--------------------------------------------
+            // APPLYING SHIPPING TAXES
+            //--------------------------------------------
+            $shippingTaxGroup = null;
+            Hooks::call("Ekom_Cart_defineShippingTaxGroup", $shippingTaxGroup, $model);
 
 
-        $model["shippingTaxDetails"] = $taxInfo['taxDetails'];
-        $model["shippingTaxRatio"] = $taxInfo['taxRatio'];
-        $model["shippingTaxGroupName"] = $taxInfo['taxGroupName'];
-        $model["shippingTaxGroupLabel"] = $taxInfo['taxGroupLabel'];
-        $model["shippingTaxAmountUnit"] = $taxInfo['taxAmountUnit'];
-        $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
-        $model["shippingDetails"] = $details;
-        $model["shippingShippingCostRaw"] = $shippingCostWithTax;
+            $taxInfo = TaxLayer::applyTaxGroup($shippingTaxGroup, $shippingCost);
+            $shippingCostWithTax = E::trimPrice($taxInfo['priceWithTax']);
+            $shippingCost = $taxInfo['priceWithoutTax'];
+            $model["shippingTaxDetails"] = $taxInfo['taxDetails'];
+            $model["shippingTaxRatio"] = $taxInfo['taxRatio'];
+            $model["shippingTaxGroupName"] = $taxInfo['taxGroupName'];
+            $model["shippingTaxGroupLabel"] = $taxInfo['taxGroupLabel'];
+            $model["shippingTaxAmountUnit"] = $taxInfo['taxAmountUnit'];
+            $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
+            $model["shippingDetails"] = $details;
+            $model["shippingShippingCostRaw"] = $shippingCostWithTax;
+        } else {
+            $shippingCostWithTax = 0;
+            $model["shippingTaxDetails"] = [];
+            $model["shippingTaxRatio"] = 1;
+            $model["shippingTaxGroupName"] = "";
+            $model["shippingTaxGroupLabel"] = "";
+            $model["shippingTaxAmountUnit"] = 0;
+            $model["shippingTaxHasTax"] = false;
+            $model["shippingDetails"] = [];
+            $model["shippingShippingCostRaw"] = $shippingCostWithTax;
+        }
 
 
         // order total
@@ -663,7 +701,8 @@ class CartLayer
         //--------------------------------------------
         // coupons
         //--------------------------------------------
-        $couponInfoItems = CouponLayer::getCouponInfoItemsByIds($couponBag);
+//        az(__FILE__, $couponBag);
+        $couponInfoItems = CouponLayer::getCouponInfoItemsByIds($couponBag, $langId);
         $couponsDetails = [];
         /**
          * @todo-ling, the coupons potentially can change ANYTHING in the model.
@@ -676,7 +715,7 @@ class CartLayer
          * method for that).
          *
          */
-        $orderGrandTotal = CouponLayer::applyCoupons($couponInfoItems,  $orderTotal, $model, $couponsDetails);
+        $orderGrandTotal = CouponLayer::applyCoupons($couponInfoItems, $orderTotal, $model, $couponsDetails);
         $model['priceOrderGrandTotalRaw'] = $orderGrandTotal;
 
 
@@ -685,7 +724,7 @@ class CartLayer
         //--------------------------------------------
         $model['couponDetails'] = $couponsDetails;
         $model['couponHasCoupons'] = (count($couponsDetails) > 0);
-        $model['couponSavingRaw'] = $orderGrandTotal - $orderTotal;
+        $model['couponSavingRaw'] = $orderTotal - $orderGrandTotal;
 
         //--------------------------------------------
         // MODULES
@@ -702,6 +741,7 @@ class CartLayer
         $model['cartTaxAmount'] = E::price($model['cartTaxAmountRaw']);
         $model['priceCartTotal'] = E::price($model['priceCartTotalRaw']);
         $model['priceCartTotalWithoutTax'] = E::price($model['priceCartTotalWithoutTaxRaw']);
+        $model['couponSaving'] = E::price($model['couponSavingRaw']);
 
         // order
         $model["shippingShippingCost"] = E::price($model["shippingShippingCostRaw"]);
@@ -723,7 +763,7 @@ class CartLayer
 //            echo '- ' . $k . PHP_EOL;
 //        }
 //        az("k");
-//        az($model);
+//        az(__FILE__, $model);
         return $model;
     }
 

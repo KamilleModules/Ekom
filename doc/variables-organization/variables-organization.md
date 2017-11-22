@@ -114,8 +114,8 @@ We use it to promote variables to a state where they get immediately accessible 
 ----- lang_id:
 ----- currency_id:
 ----- ThisApp_isPro: bool
------ ThisApp_userShippingCountry: FR
------ ThisApp_userOriginCountry: FR
+----- ThisApp_userShippingArea: FR
+----- ThisApp_userOriginArea: FR
 ```
  
  

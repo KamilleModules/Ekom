@@ -52,7 +52,7 @@ class UserAddressLayer
 
 
     /**
-     * @return array|null, an addressModel as described at the top of this document.
+     * @return array|false, an addressModel as described at the top of this document.
      *          Null is returned if for some reason the user doesn't have an address yet (which he/she should).
      */
     public static function getCurrentShippingAddress()
@@ -137,7 +137,7 @@ order by h.`order` asc
 
 
     /**
-     * @return null|array
+     * @return false|array
      */
     public static function getDefaultShippingAddress($userId = null, $langId = null)
     {
@@ -145,7 +145,7 @@ order by h.`order` asc
     }
 
     /**
-     * @return null|array
+     * @return false|array
      */
     public static function getDefaultBillingAddress($userId = null, $langId = null)
     {
@@ -466,7 +466,8 @@ and `type`=:zetype
     /**
      * @param $userId
      * @param null $langId
-     * @return null|array representing the default shipping address model
+     * @return false|array representing the default shipping address model.
+     *              Or false if the user has no address yet.
      *
      *
      */
@@ -478,7 +479,7 @@ and `type`=:zetype
                 return $userAddress;
             }
         }
-        return null;
+        return false;
 
     }
 }

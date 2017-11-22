@@ -63,7 +63,7 @@ class ProductLink extends EkomApiLink
             'slug',
             'product_id',
         ];
-        $this->handleMissing($mandatories, $data);
+        self::handleMissing($mandatories, $data);
 
 
         $shop_id = $data['shop_id'];

@@ -45,14 +45,16 @@ class ConnexionLayer
 
         $userGroupNames = EkomApi::inst()->userLayer()->getUserGroupNames($userId);
         $shippingAddress = UserAddressLayer::getDefaultShippingAddress($userId);
-//        az($shippingAddress);
-        $userShippingCountry = $shippingAddress['country_iso_code'];
+        $userShippingCountry = false;
+        if (false !== $shippingAddress) {
+            $userShippingCountry = $shippingAddress['country_iso_code'];
+        }
 
 
         $userConnexionData = [
             'id' => $userId,
             'userBrowserCountry' => Http4AllHeader::getUserPreferredCountry("FR"),
-            'userShippingCountry' => $userShippingCountry,
+            'userShippingCountry' => $userShippingCountry, // false|string
             /**
              * array of groupId => groupName
              */
@@ -60,7 +62,6 @@ class ConnexionLayer
         ];
 
         Hooks::call("Ekom_Connexion_decorateUserConnexionData", $userConnexionData);
-
         return $userConnexionData;
     }
 
@@ -169,7 +170,6 @@ class ConnexionLayer
                 setcookie("ekom-login-pass", $model['valuePass'], $t);
             }
 
-
             $mail = $model['valueEmail'];
             if (false !== ($row = EkomApi::inst()->user()->readOne([
                     'where' => [
@@ -179,11 +179,14 @@ class ConnexionLayer
             ) {
                 if ('1' === $row['active']) {
                     $hash = $row['pass'];
+
                     if (true === EkomApi::inst()->passwordLayer()->passwordVerify($model['valuePass'], $hash)) {
 
 
                         $userId = $row['id'];
                         $data = self::getConnexionDataByUserId($userId);
+
+
                         EkomApi::inst()->connexionLayer()->connect($data);
 
 

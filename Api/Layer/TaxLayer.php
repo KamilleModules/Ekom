@@ -148,7 +148,7 @@ order by h.order asc
             $taxDetails = [];
             $_priceWithTax = $taxLayer->applyTaxesToPrice($groupTaxes, $price, $taxDetails);
             $_priceWithoutTax = $price;
-            if (0.0 !== (float)$price) {
+            if (false === empty($price)) {
                 $taxRatio = $_priceWithTax / $price;
             } else {
                 $taxRatio = 1;

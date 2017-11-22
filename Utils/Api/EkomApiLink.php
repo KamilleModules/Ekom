@@ -16,7 +16,7 @@ class EkomApiLink
 
 
 
-    protected function handleMissing($mandatories, $data)
+    protected static function handleMissing($mandatories, $data)
     {
         $missing = ArrayTool::getMissingKeys($data, $mandatories);
         if (false !== $missing) {
@@ -24,7 +24,7 @@ class EkomApiLink
         }
     }
 
-    protected function get($k, array $data, $default = "")
+    protected static function get($k, array $data, $default = "")
     {
         if (array_key_exists($k, $data)) {
             return $data[$k];

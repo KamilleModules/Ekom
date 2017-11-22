@@ -32,7 +32,7 @@ class GeneratedProductHasDiscount extends TableCrudObject
         $base = [
 			'product_id' => 0,
 			'discount_id' => 0,
-			'order_phase' => 0,
+			'conditions' => '',
 			'active' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));

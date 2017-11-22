@@ -33,10 +33,14 @@ class GeneratedShopHasProductCard extends TableCrudObject
 			'shop_id' => 0,
 			'product_card_id' => 0,
 			'product_id' => 0,
+			'tax_group_id' => null,
 			'active' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
+        if (0 === (int)$ret["tax_group_id"]) {
+            $ret["tax_group_id"] = null;
+        }
 
 
         return $ret;

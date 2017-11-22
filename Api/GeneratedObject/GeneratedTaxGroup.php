@@ -30,8 +30,8 @@ class GeneratedTaxGroup extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'name' => '',
 			'label' => '',
-			'condition' => '',
 			'shop_id' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
