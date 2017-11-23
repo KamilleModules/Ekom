@@ -4,7 +4,7 @@
 namespace Module\Ekom\Model\Front;
 
 
-use Bat\BdotTool;
+use Bat\BDotTool;
 use HybridList\HybridListControl\HybridListControlInterface;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\Layer\CategoryLayer;
