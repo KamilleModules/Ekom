@@ -4,24 +4,56 @@
 namespace Module\Ekom\Utils\Checkout\Step;
 
 
-
-use Kamille\Architecture\Response\ResponseInterface;
-
-interface CheckoutStepInterface{
+/**
+ * Synopsis
+ * -----------
+ *
+ *
+ *      prepare
+ *
+ *      if isSuccessfullyPosted
+ *          then getStepData
+ *      else
+ *          then getFormModel
+ *      endif
+ *
+ *
+ *
+ */
+interface CheckoutStepInterface
+{
 
 
     /**
-     * @param array $stepData,
-     *                  if the form induced by the model is successfully posted,
-     *                  the step must return an array of data to save.
-     *                  Note: if your step don't have meaningful data to return,
-     *                  just return an array with an 1 for instance (or any data).
-     * @param array $defaults,
-     *                  some default value to configure the step
-     *
-     *
-     *
-     * @return array|ResponseInterface, the model to return to the view, or a response.
+     * @return string, a label representing this step
      */
-    public function listen(array &$stepData=null, array $defaults=[]);
+    public function getLabel();
+
+
+    /**
+     * Initialize the step
+     *
+     * @param $stepData, see definition in CheckoutPageUtil
+     * @param $context, see definition in CheckoutPageUtil
+     */
+    public function prepare(array $stepData, array $context);
+
+    /**
+     * @return bool, whether or not the formData posted by the user is valid
+     *
+     */
+    public function isSuccessfullyPosted();
+
+    public function getStepData();
+
+
+    /**
+     * Return the model of the form for this step.
+     *
+     *
+     * @return array, the step's form model
+     */
+    public function getFormModel();
+
+
 }

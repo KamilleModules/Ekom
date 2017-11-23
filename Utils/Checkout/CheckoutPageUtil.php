@@ -7,22 +7,64 @@ namespace Module\Ekom\Utils\Checkout;
 use Core\Services\Hooks;
 use Kamille\Architecture\Response\ResponseInterface;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Utils\Checkout\Step\CheckoutStepInterface;
-use Module\Ekom\Utils\Checkout\Step\LoginCheckoutStep;
-use Module\Ekom\Utils\Checkout\Step\PaymentCheckoutStep;
-use Module\Ekom\Utils\Checkout\Step\ShippingCheckoutStep;
 
 /**
+ *
+ * Basic idea
+ * -------------
+ *
+ * This class is an object to which you bind steps (CheckoutStepInterface).
+ * Then it returns a model representing a checkout process with all the steps attached to it.
+ *
+ * Example steps are: login, billing, shipping, carrier, payment, ...
+ *
+ *
+ * Internally, this class uses different storage:
+ *
+ * - the CurrentCheckoutData object (see CurrentCheckoutData class notes for more info) is used
+ *          to store the step data (explained below).
+ *          Using CurrentCheckoutData ensures that modules will be able to access the checkout data
+ *          when we wrap up the checkout process and create an order (in the db) out of it.
+ *
+ * - the steps part of the checkoutPageModel (explained below) is (also) stored in the session
+ *          (using a reserved namespace), as we need to "remember" the user's progress during
+ *          the different steps of the checkout process (what step is the current step? for instance)
+ *
+ *
+ *
  *
  *
  * //--------------------------------------------
  * // checkoutPageModel
  * //--------------------------------------------
  * - cartModel: the cartModel, defined at the top of CartLayer
- * - checkoutModel: (a model for a visual representation of a one page checkout)
- *      - model: free form array containing
+ * - steps: array of stepItem, each of which:
+ *      - label: string
+ *      - isCurrent: bool, whether or not this step currently has the focus
+ *      - isDone: bool, whether or not the step was successfully completed by the user
+ *      - model: array, depends on the step (the model is only displayed if the step
+ *                  is the current one)
  *
+ *
+ *
+ *
+ *
+ * stepData
+ * -----------------
+ * stepData is the data collected by the step when its form is successfully submitted.
+ * This data will be accessible later by modules.
+ *
+ * The stepData is also re-injected in the step's form when available.
+ *
+ *
+ * context
+ * ------------
+ * The ensemble of variables from which steps should take their data from.
+ * Like a pool if you will.
+ * Typically, it's the $_POST array, or a merge between $_GET, $_POST and $_FILES.
  *
  *
  *
@@ -30,44 +72,23 @@ use Module\Ekom\Utils\Checkout\Step\ShippingCheckoutStep;
 class CheckoutPageUtil
 {
 
-    private static $sessionName = "Ekom-checkout-stepManager-2017-10-26";
 
-
-    protected $useTraining;
-    protected $usePayment;
-    protected $useEvent;
     /**
+     * @ling-deprecated
      * Allows us to switch between the checkoutLayer and the estimateCheckoutLayer
      * without actually changing the code (when possible) of the json/gscp services.
      *
      * See inside AjaxHandlerLayer, called by Hooks.Ekom_configureCheckoutLayerProvider
      */
     protected $checkoutProvider;
-
-
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    private $_stepNames;
-
-    /**
-     * @var CheckoutStepInterface[]
-     */
-    private $steps;
+    private $steps; // step objects
+    private $stepItems; // the steps part of the checkoutPageModel, coming from session and built during the getModel method
+    private $sessionName = "Ekom_CheckoutPageUtil";
 
 
     public function __construct()
     {
-//        $this->_cleanSessionVars();
-        $this->useTraining = true;
-        $this->usePayment = true;
-        $this->useEvent = true;
-        $this->checkoutProvider = 'ekom';
-        $this->steps = []; // registered steps
-
-
-        // cache
-        $this->_stepNames = null;
+        $this->steps = [];
     }
 
     public static function create()
@@ -78,183 +99,124 @@ class CheckoutPageUtil
 
     public function registerStep($name, CheckoutStepInterface $step, $position)
     {
-        $this->_stepNames[$position] = $name;
-        $this->steps[$name] = $step;
+        $this->steps[] = [$name, $step, $position];
         return $this;
     }
 
-
     /**
-     * @return array|ResponseInterface, the model to display, or a response to return to a controller
+     * @param array|null $context ,
+     *                  If null, the context will be a mix of: get, post and files php super arrays
+     *                  If array, the context is set to this array.
+     *
+     *
+     *
+     *
+     * @return array, the checkoutPageModel defined at the top of this class
+     * @throws \Exception
      */
-    public function getModel()
+    public function getModel(array $context = null)
     {
-        EkomSession::set("checkoutProvider", $this->checkoutProvider);
-
         if (false === CurrentCheckoutData::isStarted()) {
             Hooks::call("Ekom_CheckoutPageUtil_onCheckoutNewSession");
             CurrentCheckoutData::started();
         }
 
-        //--------------------------------------------
-        // GET STEP ORDER
-        //--------------------------------------------
-        /**
-         * Those positions (0,1000,2000) are my defaults.
-         * If you use this class, you can assume that those numbers won't change.
-         */
-        $this->registerStep("login", LoginCheckoutStep::create(), 1000);
-        $this->registerStep("shipping", ShippingCheckoutStep::create(), 2000);
-        $this->registerStep("payment", PaymentCheckoutStep::create(), 3000);
 
-        Hooks::call("Ekom_CheckoutPageUtil_registerSteps", $this);
+        if ($this->steps) {
 
 
-        // be sure to do this once only, and AFTER steps are registered
-        ksort($this->_stepNames);
-//        az($this->_stepNames); // be sure the step names are those you want, and in the correct order
+            // order step by ascending position
+            $steps = $this->steps;
+            usort($steps, function ($stepA, $stepB) {
+                return $stepA[2] < $stepB[2];
+            });
 
-        //--------------------------------------------
-        // WHICH STEP TO DISPLAY NOW
-        //--------------------------------------------
-        /**
-         * Either the user clicked on a step, or otherwise we use the natural algorithm
-         */
-        $clickedStep = $this->getClickedStep();
-        $currentStep = null;
-        if (null === $clickedStep) {
+
+            //--------------------------------------------
+            // WHICH STEP TO DISPLAY NOW?
+            //--------------------------------------------
             /**
-             * Natural step choosing algorithm
+             * Either the user clicked on a step, or otherwise we use the natural algorithm
              */
-            $states = $this->getStepToDoneStates();
-            foreach ($states as $stepName => $isAlreadyDone) {
-                if (true === $isAlreadyDone) {
-                    // note that if all steps are done, currentStep is still null
-                    continue;
-                } else {
-                    $currentStep = $stepName;
-                    break;
-                }
+            $clickedStep = (array_key_exists("_step", $_GET)) ? $_GET['_step'] : null;
+
+
+            // prepare context
+            /**
+             * @todo-ling, make this work with ajax, so get the $_FILES from ajax?
+             */
+            if (null === $context) {
+                $context = array_replace($_GET, $_POST, $_FILES);
             }
-        } else {
-            /**
-             * Clicked step
-             */
-            throw new \Exception("Not implemented yet");
-        }
+            // unset all variables prefixed with _?
+            unset($context['_step']);
 
 
-        $model = null;
-        //--------------------------------------------
-        // NOW PROCESSING THE CURRENT STEP
-        //--------------------------------------------
-        if (null !== $currentStep) {
+            $currentStep = null;
+            $isCompleted = false;
+            if (null === $clickedStep) {
+                $currentStep = $this->getFirstNonDoneStep($steps);
+                if (null === $currentStep) {
+                    $this->onAllStepsCompleted();
+                    $isCompleted = true;
+                    // $currentStep is still null
+                } else {
 
-            $stepObject = $this->getStepObjectByName($currentStep);
-            $stepData = null;
-            $defaults = $this->_getStepData($currentStep);
-            $model = $stepObject->listen($stepData, $defaults);
 
+                    /**
+                     * If the step form is submitted, we save its data and
+                     * select the VERY NEXT step (because that's what the user expects)
+                     */
+                    $stepData = $this->getStepData($currentStep);
+                    $stepObject = $this->getStepObject($currentStep);
+                    $stepObject->prepare($stepData, $context);
 
-            if (null === $stepData) {
-                /**
-                 * means the step is not completed.
-                 * The model will be returned to the view.
-                 */
+                    if (true === $stepObject->isSuccessfullyPosted()) {
+                        $stepData = $stepObject->getStepData();
 
+                        $this->saveStep($currentStep, $stepData);
+                        $currentStep = self::getNextStep($currentStep, $steps);
+                        if (null === $currentStep) {
+                            $this->onAllStepsCompleted();
+                            $isCompleted = true;
+                            // $currentStep is still null
+                        }
+                    }
+                }
             } else {
-                //--------------------------------------------
-                // SUCCESSFUL STEP GOES TO NEXT STEP
-                //--------------------------------------------
-                /**
-                 * means the step was successfully completed,
-                 * we save the step data to acknowledge that the step was completed.
-                 *
-                 * we also go to the next step,
-                 * which means we need to ask the next step object for the new model.
-                 */
-                // saving current data
-                $this->saveStepData($currentStep, $stepData);
+                $currentStep = $clickedStep;
+            }
 
-                // find next step
-                $currentStep = self::getNextStep($currentStep, $this->_stepNames);
+
+            if (false === $isCompleted) {
+                //--------------------------------------------
+                // NOW DISPLAYING THE CURRENT STEP's MODEL
+                //--------------------------------------------
                 if (null !== $currentStep) {
-                    $stepObject = $this->getStepObjectByName($currentStep);
-                    $stepData = null;
-                    $defaults = $this->_getStepData($currentStep);
-                    $model = $stepObject->listen($stepData, $defaults);
+                    $this->setCurrentStep($currentStep);
+
+
+                    $stepData = $this->getStepData($currentStep);
+                    $stepObject = $this->getStepObject($currentStep);
+                    $stepObject->prepare($stepData, $context);
+                    $model = $stepObject->getFormModel();
+                    $this->setStepItemValue($currentStep, "model", $model);
+
                 } else {
                     /**
-                     * Code shouldn't go there, because the last step should redirect the user elsewhere.
-                     * Or, if not, update this code block...
+                     * This means that all steps are completed
                      */
-                    return null;
                 }
+
             }
-
-
-        } else {
-            /**
-             * Do we come from natural step algorithm or from clicked step?
-             */
-            throw new \Exception("Not implemented now");
         }
 
-        return $this->getReturnByModel($model, $currentStep); // the model could be a ResponseInterface
 
-    }
+        return [
+            'steps' => $this->getStepItemsFromSession(),
+            'cartModel' => EkomApi::inst()->cartLayer()->getCartModel(),
+        ];
 
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    public static function cleanSessionVars()
-    {
-        EkomSession::remove(self::$sessionName);
-//        EventStep::cleanSessionVars();
-    }
-
-    public static function getSessionVars()
-    {
-        $ret = EkomSession::get(self::$sessionName, null);
-        if (null === $ret) {
-            $ret = [
-                /**
-                 * array of stepName => isDone,
-                 */
-                'done' => [],
-                /**
-                 * array of stepName => stepDoneData
-                 */
-                'steps' => [],
-//                'active' => null,
-            ];
-        }
-        return $ret;
-    }
-
-    /**
-     * @return array of completed stepNames => data
-     * Note: if a step hasn't been completed, it does not appear in the returned array.
-     */
-    public static function getStepsData()
-    {
-        return self::getSessionVars()['steps']; // php 5.4+
-    }
-
-
-    /**
-     * @param $stepName
-     * @return mixed|false,
-     *          false is returned when the key is not found (i.e. the stepName was not completed yet).
-     *          Otherwise, return the data collected when the step $stepName was completed.
-     */
-    public static function getStepData($stepName)
-    {
-        $stepDatas = self::getStepsData();
-        if (array_key_exists($stepName, $stepDatas)) {
-            return $stepDatas[$stepName];
-        }
-        return false;
     }
 
 
@@ -267,13 +229,16 @@ class CheckoutPageUtil
     }
 
 
+
     //--------------------------------------------
+
     //
     //--------------------------------------------
+
     /**
      * @return string|null,
      *          return the next step.
-     *          If null, it can mean one of two things:
+     *          If false, it can mean one of two things:
      *              - there is no step at all
      *              - there is no next step
      */
@@ -292,144 +257,137 @@ class CheckoutPageUtil
         return null;
     }
 
-
-    private function addNavigationToModel(array &$model, $step, array $steps)
+    private function onAllStepsCompleted()
     {
-        $model['nameCurrent'] = 'current';
-        $model['namePrev'] = 'prev';
-        $model['nameNext'] = 'next';
-
-        $prev = null;
-        $next = null;
-
-        if (false !== ($index = array_search($step, $steps))) {
-            if (array_key_exists($index - 1, $steps)) {
-                $prev = $steps[$index - 1];
-            }
-            if (array_key_exists($index + 1, $steps)) {
-                $next = $steps[$index + 1];
-            }
-        }
-        $model['valueCurrent'] = $step;
-        $model['valuePrev'] = $prev;
-        $model['valueNext'] = $next;
+        /**
+         * Modules? do something?
+         */
+        $this->setCurrentStep(false); // ensure that no step is current
     }
 
 
-
-
-
-
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    private function getClickedStep()
+    private function setStepData($stepName, array $data)
     {
-        return null;
+        /**
+         * We use the CurrentCheckoutData util to store all the step data,
+         * so that they are statically available later in the checkout process
+         * (for instance modules will need details of the payment method chosen by the user).
+         *
+         */
+        $allData = CurrentCheckoutData::get("CheckoutPageUtil", []);
+        $allData[$stepName] = $data;
+        CurrentCheckoutData::set("CheckoutPageUtil", $allData);
     }
 
-    private function getStepToDoneStates()
+    private function getStepData($stepName)
     {
-        $ret = [];
-        $sessionVars = self::getSessionVars();
-        $dones = $sessionVars['done'];
-        foreach ($this->_stepNames as $stepName) {
-            $ret[$stepName] = (array_key_exists($stepName, $dones) && true === $dones[$stepName]);
-        }
-        return $ret;
-    }
-
-
-    /**
-     * @param $name
-     * @return CheckoutStepInterface
-     */
-    private function getStepObjectByName($name)
-    {
-        return $this->steps[$name];
-    }
-
-
-    private function _getStepData($stepName)
-    {
-        $sessionVars = self::getSessionVars();
-        $data = $sessionVars['steps'];
-        if (array_key_exists($stepName, $data)) {
-            return $data[$stepName];
+        $allData = CurrentCheckoutData::get("CheckoutPageUtil", []);
+        if (array_key_exists($stepName, $allData)) {
+            return $allData[$stepName];
         }
         return [];
     }
 
-    private function saveStepData($stepName, array $data)
+    private function saveStep($stepName, array $stepData)
     {
-        $sessionVars = self::getSessionVars();
-        $sessionVars['steps'][$stepName] = $data;
-        $sessionVars['done'][$stepName] = true;
-        Hooks::call("Ekom_CheckoutPageUtil_onStepCompleted", $stepName, $data);
-        $this->_setSessionVars($sessionVars);
-        return $this;
+        $this->setStepData($stepName, $stepData);
+        $this->setStepItemValue($stepName, "isDone", true);
     }
 
-    private function getReturnByModel($mixed, $currentStep)
+
+    private function getStepItemsFromSession()
     {
-        if ($mixed instanceof ResponseInterface) {
-            return $mixed;
-        }
-        $cartModel = $this->getCartLayer()->getCartModel();
+        $stepItems = EkomSession::get($this->sessionName);
+        if (null === $stepItems) {
 
-        $steps = array_keys($this->steps);
-        $step2DoneStates = $this->getStepToDoneStates();
-        $barClickStep = null;
-        $sessVars = self::getSessionVars();
+            /**
+             * It's expected that we prepare ALL items before hand
+             */
+            $stepItems = [];
+            foreach ($this->steps as $stepName => $info) {
 
-        $stepsInfo = [
-            'model' => $mixed,
-            'step' => $currentStep,
-            'barClickStep' => $barClickStep,
-            'sessVars' => $sessVars, // debug tool, when set
-        ];
-
-        /**
-         * Feeding stepsInfo with dynamic data
-         */
-        foreach ($steps as $stepName) {
-            if ($currentStep === $stepName) {
-                $state = 'active';
-            } else {
-                $state = (true === $step2DoneStates[$stepName]) ? 'done' : "inactive";
+                /**
+                 * @var $step CheckoutStepInterface
+                 */
+                $step = $info[1];
+                $stepItems[$stepName] = [
+                    "label" => $step->getLabel(),
+                    "isDone" => false,
+                    "isCurrent" => false,
+                    "model" => [],
+                ];
             }
-            $uc = ucfirst($stepName);
-            $stepsInfo["id" . $uc] = $stepName;
-            $stepsInfo["state" . $uc] = $state;
+            EkomSession::set($this->sessionName, $stepItems);
         }
-        ksort($stepsInfo);
-
-
-        $conf = [
-            "cartModel" => $cartModel,
-            "stepsInfo" => $stepsInfo,
-        ];
-        return $conf;
+        return $stepItems;
     }
 
-    //--------------------------------------------
-    // 
-    //--------------------------------------------
-    private function _setSessionVars(array $vars)
+
+    private function setStepItemValue($stepName, $key, $value)
     {
-        EkomSession::set(self::$sessionName, $vars);
-        return $this;
+        $item = $this->getStepItem($stepName);
+        $item[$key] = $value;
+        $this->setStepItem($stepName, $item);
+    }
+
+    private function setStepItem($stepName, array $item)
+    {
+        $items = $this->getStepItemsFromSession();
+        $items[$stepName] = $item;
+        EkomSession::set($this->sessionName, $items);
+    }
+
+    private function getStepItem($name)
+    {
+        $items = $this->getStepItemsFromSession();
+        if (array_key_exists($name, $items)) {
+            return $items[$name];
+        }
+        throw new EkomException("Invalid step name: " . $name);
+    }
+
+    /**
+     * @param $stepName
+     * @return CheckoutStepInterface
+     */
+    private function getStepObject($stepName)
+    {
+        $item = $this->getStepItem($stepName);
+        return $item[1];
+    }
+
+
+    private function setCurrentStep($stepName)
+    {
+        $items = $this->getStepItemsFromSession();
+        foreach ($items as $k => $item) {
+            if ($stepName === $k) {
+                $item['isCurrent'] = true;
+            } else {
+                $item['isCurrent'] = false;
+            }
+        }
+        EkomSession::set($this->sessionName, $items);
     }
 
 
     /**
-     * Keep this in case you want to debug and quickly remove all sessions variables
-     * pertaining to this class.
+     * @return string|null, the name of the first non done step,
+     *                  or false if all steps are completed.
      */
-    private function _cleanSessionVars()
+    private function getFirstNonDoneStep(array $orderedSteps)
     {
-        EkomSession::remove(self::$sessionName);
-        return $this;
+        /**
+         * Natural step choosing algorithm
+         */
+        foreach ($orderedSteps as $info) {
+            $stepName = $info[0];
+            $stepItem = $this->getStepItem($stepName);
+            if (false === $stepItem['isDone']) {
+                return $stepName;
+            }
+        }
+        return null;
     }
 
 }

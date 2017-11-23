@@ -9,6 +9,18 @@ use Module\Ekom\Api\Layer\PaymentLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Session\EkomSession;
 
+
+/**
+ * This class is responsible for holding the data collected during the checkout process.
+ *
+ * It's a central static registry sitting in the middle of modules, and modules
+ * can communicate with it should they need to.
+ *
+ * It's unique in ekom (i.e. it's the reference class that you should use if you need
+ * data about the current checkout process).
+ *
+ *
+ */
 class CurrentCheckoutData
 {
 

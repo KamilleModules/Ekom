@@ -388,8 +388,9 @@ class CartLayer
         $couponInfo = CouponLayer::getCouponInfoByCode($code);
         if (false !== $couponInfo) {
             $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'] = [$couponInfo['id']];
+            return true;
         }
-        return $this;
+        return false;
     }
 
     public function removeCoupon($code)
