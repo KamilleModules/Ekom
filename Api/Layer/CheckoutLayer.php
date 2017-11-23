@@ -644,9 +644,10 @@ class CheckoutLayer
 
                 // choose default carrier
                 $carrierName = null;
-                if (false !== ($name = EkomApi::inst()->carrierLayer()->getDefaultCarrierName())) {
-                    $carrierName = $name;
-                }
+//                if (false !== ($name = EkomApi::inst()->carrierLayer()->getDefaultCarrierName())) {
+//                    $carrierName = $name;
+//                }
+                $carrierName = "default";
 
                 $paymentMethod = null;
                 $paymentMethodOptions = null;

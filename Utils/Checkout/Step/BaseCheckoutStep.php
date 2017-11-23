@@ -8,12 +8,14 @@ abstract class BaseCheckoutStep implements CheckoutStepInterface
 {
 
     protected $label;
-    protected $stepsData;
+    protected $stepData;
+    protected $context;
 
     public function __construct()
     {
         $this->label = "";
-        $this->stepsData = [];
+        $this->stepData = [];
+        $this->context = [];
     }
 
     public static function create()
@@ -28,7 +30,14 @@ abstract class BaseCheckoutStep implements CheckoutStepInterface
 
     public function getStepData()
     {
-        return $this->stepsData;
+        return $this->stepData;
+    }
+
+    public function prepare(array $stepData, array $context)
+    {
+        $this->stepData = $stepData;
+        $this->context = $context;
+
     }
 
 }

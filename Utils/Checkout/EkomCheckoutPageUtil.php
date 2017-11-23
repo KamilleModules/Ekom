@@ -42,16 +42,23 @@ class EkomCheckoutPageUtil extends CheckoutPageUtil
 
 
 
+
+        Hooks::call("Ekom_CheckoutPageUtil_registerSteps", $this);
+    }
+
+
+    public function getModel(array $context = null){
+
+
         /**
          * Those positions (0,1000,2000) are my defaults.
          * If you use this class, you can assume that those numbers won't change.
          */
         $this->registerStep("login", LoginCheckoutStep::create(), 1000);
         $this->registerStep("shipping", ShippingCheckoutStep::create(), 2000);
-        $this->registerStep("payment", PaymentCheckoutStep::create(), 3000);
+//        $this->registerStep("payment", PaymentCheckoutStep::create(), 3000);
 
-        Hooks::call("Ekom_CheckoutPageUtil_registerSteps", $this);
+        return parent::getModel($context);
     }
-
 
 }

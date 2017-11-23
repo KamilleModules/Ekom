@@ -8,15 +8,36 @@ use Module\Ekom\Api\EkomApi;
 
 class LoginCheckoutStep extends BaseCheckoutStep
 {
-    public function listen(array &$doneData = null, array $defaults = [])
+
+    private $model;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->label = "Identification";
+    }
+
+
+    public function isSuccessfullyPosted()
     {
         $response = null;
-        $formModel = EkomApi::inst()->connexionLayer()->handleLoginForm($response);
+
+        $this->model = EkomApi::inst()->connexionLayer()->handleLoginForm($response);
         if (null !== $response) {
-            $doneData = ['ok'];
-            return $response;
+            /**
+             * But we need to reload the page for the connected action to take effect?
+             */
+            $this->stepData = [
+                "login" => "ok",
+            ];
+            return true;
         }
-        return $formModel;
+        return false;
+    }
+
+    public function getFormModel()
+    {
+        return $this->model;
     }
 
 

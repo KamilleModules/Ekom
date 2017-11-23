@@ -192,7 +192,80 @@ order by h.priority asc
 
 
 
-
+    /**
+     *
+     * This method is used during the checkout process, where you want to display
+     * a list of all available carriers to the user, along with some useful information such as
+     * the estimated delivery date and the price of the order
+     *
+     * @param $productInfos, same as estimateShippingCosts
+     * @return array of carrierName => carrierInfo
+     *          - carrierInfo: array:
+     *              - name: the carrierName
+     *              - shippingCost:
+     *              - rawShippingCost:
+     *              - estimatedDeliveryDate:
+     *              - carrierLabel:
+     *              - productsInfo: handled products info **
+     *              - notHandled:  not handled products info **
+     *              - trackingNumber:
+     *
+     *
+     *              ** product info depends on the given productInfos argument.
+     *
+     *
+     *
+     */
+    public function getAllCarriersShippingCost(array $productInfos, array $shippingAddress)
+    {
+        $shopId = E::getShopId();
+        $carriers = $this->getCarrierInstancesByShop($shopId);
+        $shopAddress = EkomApi::inst()->shopLayer()->getShopPhysicalAddress();
+        if (false === $shopAddress) {
+            $msg = "[Ekom module] - CarrierLayer.getAllCarriersShippingCost: ekom config error, shop address is not defined";
+            XLog::error($msg);
+            $shopAddress = null;
+        }
+        $sections = [];
+        foreach ($carriers as $name => $carrier) {
+            /**
+             * @var $carrier CarrierInterface
+             */
+            $handledProductsInfo = [];
+            $notHandled = [];
+            $rejected = [];
+            $info = $carrier->getShippingCost([
+                'forReal' => false, // this is just an estimation
+                'products' => $productInfos,
+                'shopAddress' => $shopAddress,
+                'shippingAddress' => $shippingAddress,
+            ], $rejected);
+            $shippingCost = $info["shipping_cost"];
+            $trackingNumber = "";
+            if (array_key_exists("tracking_number", $info)) {
+                $trackingNumber = $info['tracking_number'];
+            }
+            $estimatedDeliveryDate = (array_key_exists('estimated_delivery_date', $info)) ? $info['estimated_delivery_date'] : null;
+            foreach ($productInfos as $id => $info) {
+                if (true === in_array($id, $rejected, true)) {
+                    $notHandled[$id] = $info;
+                } else {
+                    $handledProductsInfo[$id] = $info;
+                }
+            }
+            $sections[$name] = [
+                'name' => $name,
+                'shippingCost' => E::price($shippingCost),
+                'rawShippingCost' => $shippingCost,
+                'estimatedDeliveryDate' => $estimatedDeliveryDate,
+                "carrierLabel" => $carrier->getLabel(),
+                'productsInfo' => $handledProductsInfo,
+                'trackingNumber' => $trackingNumber,
+                'notHandled' => $notHandled,
+            ];
+        }
+        return $sections;
+    }
 
     //--------------------------------------------
     //

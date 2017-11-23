@@ -14,10 +14,10 @@ class CustomCheckoutStep extends BaseCheckoutStep
     {
         parent::__construct();
         $this->returns = [
-            'isSuccessfullyPosted' => true, // callback|bool
+            'isSuccessfullyPosted' => false, // callback|bool
             'getFormModel' => [], // callback|array
             'getLabel' => "", // callback|string
-            'getStepData' => "", // callback|array
+            'getStepData' => [], // callback|array
         ];
     }
 
