@@ -9,7 +9,7 @@ use Module\Ekom\Utils\CheckoutProcess\CheckoutProcessInterface;
 use Module\Ekom\Utils\CheckoutProcess\Step\BaseCheckoutProcessStep;
 use Module\Ekom\Utils\E;
 
-class SokoLoginCheckoutProcessStep extends BaseCheckoutProcessStep
+class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
 {
 
     private $model;
@@ -24,23 +24,16 @@ class SokoLoginCheckoutProcessStep extends BaseCheckoutProcessStep
 
     public function isPostedSuccessfully(CheckoutProcessInterface $cp, array $context)
     {
-        $this->getModel();
-        return (null !== $this->response);
+        return false;
     }
 
     public function isValid()
     {
-        return E::userIsConnected();
+        return false;
     }
 
     public function getModel()
     {
-        if (null === $this->model) {
-            $response = null;
-            $this->model = SokoLoginFormModel::getFormModel($response);
-            $this->response = $response;
-        }
-        return $this->model;
+        return [];
     }
-
 }

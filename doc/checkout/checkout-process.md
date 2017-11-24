@@ -54,112 +54,36 @@ and explain the rules from that example, since the rules come from that example 
 
 
 
-So, this example is actually a real life example that I had to deal with in the company I'm currently working in 
-todo: /
+So, this example is actually a real life example that I had to deal with in the company I'm currently working in.
+
+Basically, we have the following steps:
+
+- login 
+- shipping 
+- training1 
+- training2 
+- training3 
+- payment 
+
+
+Visually, training1, training2 and training3 are displayed in the same space.
+
+
+The rules are the following:
+
+- by default: we display either the lastVisitedStep if there is one, or the very first step otherwise
+                The lastVisitedStep is actually useful to prevent inconsistencies if you REFRESH the page (don't forget
+                that this is possible)
+- also, the user can click on a step (and go to this step), but only if this step was already reached before.
+        This promotes the idea that there is an order to the steps, and that order should be respected
+- when a step is posted successfully, we immediately display the very next step in the order (and not the next "non valid" step).
+        This rule is actually important for the user, especially in regard with the substeps (training1, 
+            training2 and training3), because an user completing substep1 expects substep2 to be coming next, 
+            even though it might have already been completed (I believe).
+                
 
 
 
-
-
-
-The static script idea
-===========================
-
-The idea, when using the CheckoutProcess inside a static script is the following algorithm (assumed inside 
-a Controller):
-
-```txt
-
-model = []
-CP = CheckoutProcess::create
-if CP.isComplete 
-    try
-        CP.placeOrder ( function(){
-            // on success, we redirect the user
-            return SomeHttpResponse( "checkout_thankyou" )
-        })
-    catch 
-        model[error] = Couldn't contact the bank, please retry later
-else
-    model[steps] = CP.getStepsModel
-
-
-// ----------
-View::displayModel(model)
-```
-
-
-The CheckoutProcess has various methods.
-The accessors for the checkout data, like:
- 
-- setShippingAddressId 
-- getShippingAddressId 
-- hasShippingAddressId 
-- setBillingAddressId 
-- setPaymentMethod 
-- setCarrier 
-- set 
-
-
-Note that the philosophy is to not check the values (trust the user) until the order is placed (placeOrder),
-because otherwise we would have to much checking, plus we would still have the checking of the placeOrder method.
-
-
-Then we have the main methods:
-
-- setContext
-    The context will be passed to constraints (see later) 
-- isComplete
-    This is the main method that execute the steps in order and checks whether or not they are valid.
-    If a step is not valid, it fails and returns a model that is used to collect the data from the user.
-    This is also a key concept of the CheckoutProcess implementation.
-    
-- getStepsModel
-    returns a model (array) containing all the steps basic information (whether the step is done, current, and/or the
-    model in case it's the current "failing" step which need to be redisplayed)
-- placeOrder
-    actually does place the order (potentially interact with external bank apis...)
-- setCheckoutProcessStep 
-
-
-   
-
-
-
-
-The ajax script idea
-===========================
-
-When used inside an ajax script, the idea is quite simple:
-
-```txt
-CheckoutProcess::create->setShippingAddressId ( 6 )
-
-// intent?
-model[steps] = CP.getStepsModel
-```
-
-
-Note that this will impact the Constraint
-
-
-
-
-The CheckoutProcessStep idea
-==============================
-
-The CheckoutProcessStep has the following main methods:
-
-- prepare
-    will check whether or not the form is posted, and if the form is valid, will update the 
-    given CheckoutProcess instance so that the upcoming isValid method will pass
-- isValid
-    check constraints based on the CheckoutProcess instance (things like if false === CheckoutProcess.getShippingAddressId)
-    This is also a key concept of this new CheckoutProcess idea: we don't need a third party medium to collect the 
-    checkout data (as we did before) 
-- getModel
-    if the step is not valid, this method will be called.
-    It will return the model of the form/thing necessary to collect the relevant checkout data that will make the step valid
 
 
 

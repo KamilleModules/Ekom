@@ -7,6 +7,9 @@ namespace Module\Ekom\Utils\CheckoutProcess;
 /**
  * @doc: class-modules/Ekom/doc/checkout/checkout-process.md
  * Note: this is a singleton
+ *
+ *
+ *
  */
 interface CheckoutProcessInterface
 {

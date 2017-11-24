@@ -203,6 +203,11 @@ class CartLayer
     }
 
 
+    public static function create()
+    {
+        return new static();
+    }
+
     /**
      *
      * @throws EkomUserMessageException when something wrong that the user should know happens
@@ -388,6 +393,7 @@ class CartLayer
         $couponInfo = CouponLayer::getCouponInfoByCode($code);
         if (false !== $couponInfo) {
             $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'] = [$couponInfo['id']];
+            $this->writeToLocalStore();
             return true;
         }
         return false;
@@ -402,6 +408,7 @@ class CartLayer
         if (false !== $couponInfo) {
             $index = array_search($couponInfo['id'], $_SESSION['ekom'][$this->sessionName][$shopId]['coupons']);
             unset($_SESSION['ekom'][$this->sessionName][$shopId]['coupons'][$index]);
+            $this->writeToLocalStore();
         }
         return $this;
     }
@@ -418,6 +425,7 @@ class CartLayer
     public function clean()
     {
         $_SESSION['ekom'][$this->sessionName] = [];
+        $this->writeToLocalStore();
     }
 
 
@@ -510,6 +518,10 @@ class CartLayer
                 XLog::error("[$this->moduleName] - $this->className: in shop#$shopId, this user doesn't have an id: " . ArrayToStringTool::toPhpArray($_SESSION));
             }
         }
+        /**
+         * A change in the cart should invalidate the cache
+         */
+        $this->_cartModel = null;
     }
 
     protected function initSessionCart()

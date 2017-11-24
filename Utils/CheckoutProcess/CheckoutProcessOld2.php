@@ -4,8 +4,6 @@
 namespace Module\Ekom\Utils\CheckoutProcess;
 
 
-use ArrayToString\ArrayToStringTool;
-use Kamille\Services\XLog;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\CheckoutProcess\Step\CheckoutProcessStepInterface;
@@ -23,9 +21,10 @@ use Module\Ekom\Utils\CheckoutProcess\Step\CheckoutProcessStepInterface;
  *                  array if the step has focus
  *
  *
+ * @deprecated works, but the flow is not optimal (loss of consistency after page refresh)
  *
  */
-class CheckoutProcess implements CheckoutProcessInterface
+class CheckoutProcessOld2 implements CheckoutProcessInterface
 {
 
     private static $inst = null;
@@ -35,10 +34,17 @@ class CheckoutProcess implements CheckoutProcessInterface
      * array of name => CheckoutProcessStepInterface
      */
     private $steps;
+    /**
+     * The first failing step might become the current step (depending on your preferences)
+     */
+    private $firstFailingStepName;
+    private $isCompleteWasCalled;
 
     private function __construct()
     {
         $this->steps = [];
+        $this->firstFailingStepName = null;
+        $this->isCompleteWasCalled = false;
         $this->init();
     }
 
@@ -68,13 +74,6 @@ class CheckoutProcess implements CheckoutProcessInterface
     public function setCarrierId($id)
     {
         // TODO: Implement setCarrierId() method.
-    }
-
-
-    public function reset()
-    {
-        CurrentCheckoutData::set("CheckoutProcess", []);
-        return $this;
     }
 
     public function set($key, $value)
@@ -108,84 +107,54 @@ class CheckoutProcess implements CheckoutProcessInterface
     public function execute(callable $onStepsComplete = null, array $context = null)
     {
 
-        $this->debug("CheckoutProcess:execute");
         if ($this->steps) {
 
             if (null === $context) {
                 $context = array_replace($_GET, $_POST, $_FILES);
             }
-            $this->debug("Context: " . ArrayToStringTool::toPhpArray($context));
+
+            $this->isCompleteWasCalled = true;
+            $this->firstFailingStepName = null;
+
+
+            $clickedStep = (array_key_exists('_step', $context)) ? $context['_step'] : null;
+
+            $firstNonValidStep = $this->getFirstNonValidStep();
 
             /**
-             * What's the current step.
-             * The algorithm is described in
-             * class-modules/Ekom/doc/checkout/checkout-process.md
+             * If $currentStep is still null at the end of this block below,
+             * this means that all steps have been successfully completed.
              */
             $currentStep = null;
-            $clickedStep = (array_key_exists('_step', $context)) ? $context['_step'] : null;
-            $this->debug("clickedStep: $clickedStep");
 
-            //--------------------------------------------
-            // DEFINE THE CURRENT STEP
-            //--------------------------------------------
-            /**
-             * Note that the current step might be actually posted, but we handle that in the next block
-             */
-            /**
-             * Clicked step?
-             */
-            $couldBePosted = true;
-            if (null !== $clickedStep && true === $this->stepWasReached($clickedStep)) {
-                $currentStep = $clickedStep;
-                $couldBePosted = false;
-                $this->debug("currentStep becomes clicked step $currentStep");
-            } else {
-                /**
-                 * The default current step is either the lastVisitedStep (if it exists),
-                 * or the very first step otherwise.
-                 */
-                $lastVisitedStep = $this->get("_lastVisitedStep");
-                $this->debug("lastVisitedStep: $lastVisitedStep");
-                if (null !== $lastVisitedStep) {
-                    $currentStep = $lastVisitedStep;
-                    $this->debug("currentStep becomes last visited step $currentStep");
+
+            if (null !== $firstNonValidStep) {
+
+
+                if (null !== $clickedStep && $this->getStep($clickedStep)->isValid()) {
+                    /**
+                     * If the user clicked on a step he/she already validated, we will display this step
+                     */
+                    $currentStep = $clickedStep;
                 } else {
-                    $currentStep = $this->getVeryFirstStep();
-                    $this->debug("currentStep becomes the very first step $currentStep");
+                    /**
+                     * If the step was not clicked, we use the default algorithm (the first non valid step)
+                     */
+                    $currentStep = $firstNonValidStep;
+
+                    /**
+                     * If that step is being posted just now and validates though,
+                     * we will display the next step.
+                     */
+                    if ($this->getStep($currentStep)->isPostedSuccessfully($this, $context)) {
+                        $currentStep = $this->getNextStep($currentStep);
+                    }
                 }
+
             }
 
 
-            //--------------------------------------------
-            // HANDLE IF IT'S POSTED
-            //--------------------------------------------
-            if (true === $couldBePosted && $this->getStep($currentStep)->isPostedSuccessfully($this, $context)) {
-                $this->debug("Step $currentStep was actually posted successfully, moving to next step...");
-                /**
-                 * If the step is successfully posted, we automatically go to the very next step
-                 */
-                $currentStep = $this->getNextStep($currentStep); // null|string
-                $this->debug("...$currentStep");
-            }
-
-
-            //--------------------------------------------
-            // SAVE THE lastVisitedStep for the next time
-            //--------------------------------------------
-            $this->set("_lastVisitedStep", $currentStep);
-
-
-            //--------------------------------------------
-            // SAVING THAT THIS POSITION WAS REACHED
-            //--------------------------------------------
-            $this->markAsReached($currentStep);
-
-
-            //--------------------------------------------
-            // END CALLBACK?
-            //--------------------------------------------
-            if (null === $currentStep && null !== $onStepsComplete) { // no next step? it's over
-                $this->debug("process completed, executing onStepsComplete callback");
+            if (null === $currentStep && null !== $onStepsComplete) {
                 call_user_func($onStepsComplete);
             }
 
@@ -231,11 +200,6 @@ class CheckoutProcess implements CheckoutProcessInterface
 
     }
 
-    protected function debug($msg)
-    {
-//        XLog::log($msg, "debug.log");
-    }
-
     //--------------------------------------------
 
     //
@@ -257,13 +221,14 @@ class CheckoutProcess implements CheckoutProcessInterface
         }
     }
 
-
-    private function getVeryFirstStep()
+    private function getFirstNonValidStep()
     {
         foreach ($this->steps as $stepName => $step) {
-            return $stepName;
+            if (false === $step->isValid()) {
+                return $stepName;
+            }
         }
-        throw new EkomException("There is no very first step, have you set at least ONE step?");
+        return null;
     }
 
 
@@ -318,33 +283,4 @@ class CheckoutProcess implements CheckoutProcessInterface
         }
         return $ret;
     }
-
-
-    private function markAsReached($stepName)
-    {
-        /**
-         * Note: in development, I had the case where steps BEFORE the current step were not reached,
-         * and it bothered me for testing.
-         * Although this situation might not occur in prod, I prefer to mark not only the currentStep,
-         * but also all previous steps as reached, as to workaround my little annoyance, and
-         * preventing the problem to occur again anyway.
-         */
-        $reached = $this->get("reached", []);
-        foreach ($this->steps as $name => $step) {
-            $reached[$name] = true;
-            if ($stepName === $name) {
-                break;
-            }
-        }
-        $this->set("reached", $reached);
-    }
-
-    private function stepWasReached($stepName)
-    {
-        $reached = $this->get("reached", []);
-        $this->debug("stepWasReached?");
-        $this->debug($reached);
-        return array_key_exists($stepName, $reached);
-    }
-
 }
