@@ -20,117 +20,104 @@ use SokoForm\ValidationRule\SokoValidationRule;
 class SokoLoginFormModel
 {
 
-    public static function handleLoginForm(&$response = null)
+    public static function getFormModel(&$response = null)
     {
 
 
-        $form = SokoForm::create()
-            ->addControl(SokoInputControl::create()
-                ->setName("email")
-            )
-            ->addControl(SokoInputControl::create()
-                ->setName("pass")
-            )
-            ->addControl(SokoChoiceControl::create()
-                ->setName("memorize")
-            )
-            ->addValidationRule("email", SokoValidationRule::create()
-                /**
-                 * If value is null, it means that the control was not posted.
-                 * This behaviour might be useful in the case of checkboxes.
-                 */
-                ->setValidationFunction(function ($value, array &$preferences, &$error = null, SokoFormInterface $form, SokoControlInterface $control, array $context) {
-
-
-                    $value = (string)$value;
-                    if (strlen($value) < $preferences['minChar']) {
-                        $errors[] = "This field requires at least {minChar} characters";
-                        return false;
-                    }
-                    return true;
-                })
-            );
-
-
-        $key = "Ekom_Front_LoginController_render";
-        $hashFragment = null;
-        if (array_key_exists('hash', $_GET)) {
-            $hashFragment = $_GET['hash'];
-        }
-
+        //--------------------------------------------
+        // PRE-FILLED VALUES
+        //--------------------------------------------
         $email = "";
         $pass = "";
-        $checked = "";
+        $memorize = "";
         if (array_key_exists('ekom-login-email', $_COOKIE)) {
             $email = $_COOKIE['ekom-login-email'];
             if (array_key_exists('ekom-login-pass', $_COOKIE)) {
                 $pass = $_COOKIE['ekom-login-pass'];
             }
-            $checked = "checked";
+            $memorize = "1";
         }
 
-        $model = [
-            "formAction" => "",
-            "formMethod" => "post",
-            "errorForm" => "",
 
-            "nameEmail" => "email",
-            "namePass" => "pass",
+        //--------------------------------------------
+        // FORM CREATION
+        //--------------------------------------------
+        /**
+         * @todo-ling: add some validation rules (email)
+         */
+        $form = SokoForm::create()
+            ->addControl(SokoInputControl::create()
+                ->setName("email")
+                ->setValue($email)
+                ->setPlaceholder("Votre email")
+            )
+            ->addControl(SokoInputControl::create()
+                ->setName("pass")
+                ->setValue($pass)
+                ->setPlaceholder("Mot de passe")
+                ->setType("password")
+            )
+            ->addControl(SokoChoiceControl::create()
+                ->setName("memorize")
+                ->setChoices([
+                    "1" => "Mémoriser mes informations sur cet ordinateur",
+                ])
 
-            "nameKey" => "ekom-login-key",
-
-            "nameMemorize" => "memorize",
-
-            "valueEmail" => $email,
-            "valuePass" => $pass,
-            "valueKey" => $key,
-            "checkedMemorize" => $checked,
-            "uriCreateAccount" => E::link("Ekom_createAccount"),
-            "uriForgotPassword" => E::link("Ekom_forgotPassword"),
-        ];
+                ->setValue($memorize)
+            );
 
 
-        if (array_key_exists($model['nameKey'], $_POST) && $key === $_POST[$model['nameKey']]) {
+        //--------------------------------------------
+        // FORM HANDLING
+        //--------------------------------------------
+        $response = null;
+        $form->process(function (array $context, SokoFormInterface $form) use (&$response) {
 
 
+            $email = $context['email'];
+            $pass = $context['pass'];
             $errorMsg = "The entry does not not exist in the database, or the password doesn't match";
 
-            $model['valueEmail'] = $_POST[$model['nameEmail']];
-            $model['valuePass'] = $_POST[$model['namePass']];
-            $model['checkedMemorize'] = (array_key_exists($model['nameMemorize'], $_POST)) ? 'checked' : '';
 
-
-            if ('checked' === $model['checkedMemorize']) {
-                $t = time() + 86400 * 356;
-                setcookie("ekom-login-email", $model['valueEmail'], $t);
-                setcookie("ekom-login-pass", $model['valuePass'], $t);
+            //--------------------------------------------
+            // REMEMBER ME
+            //--------------------------------------------
+            if (array_key_exists('memorize', $context) && '1' === $context['memorize']) {
+                $t = time() + 86400 * 365; // memorize one year
+                setcookie("ekom-login-email", $email, $t);
+                setcookie("ekom-login-pass", $pass, $t);
+            } else {
+                unset($_COOKIE['ekom-login-email']);
+                unset($_COOKIE['ekom-login-pass']);
+                setcookie('ekom-login-email', null, -1, '/');
+                setcookie('ekom-login-pass', null, -1, '/');
             }
 
-            $mail = $model['valueEmail'];
-            if (false !== ($row = EkomApi::inst()->user()->readOne([
-                    'where' => [
-                        ["email", "=", $mail],
-                    ],
-                ]))
-            ) {
+
+            if (false !== ($row = UserLayer::getUserInfoByEmail($email))) {
                 if ('1' === $row['active']) {
+
                     $hash = $row['pass'];
 
-                    if (true === EkomApi::inst()->passwordLayer()->passwordVerify($model['valuePass'], $hash)) {
-
+                    if (true === EkomApi::inst()->passwordLayer()->passwordVerify($pass, $hash)) {
 
                         $userId = $row['id'];
+                        //--------------------------------------------
+                        // CONNECT THE USER
+                        //--------------------------------------------
                         $data = ConnexionLayer::getConnexionDataByUserId($userId);
-
-
                         EkomApi::inst()->connexionLayer()->connect($data);
-
-
                         Hooks::call("Ekom_onUserConnectedAfter");
 
 
+                        //--------------------------------------------
+                        // FOR THIS FORM, WE ALSO WOULD LIKE TO REDIRECT THE USER
+                        //--------------------------------------------
                         $target = E::pickUpReferer();
-
+                        $hashFragment = null;
+                        if (array_key_exists('hash', $_GET)) {
+                            $hashFragment = $_GET['hash'];
+                        }
                         if (null !== $hashFragment) {
                             $target .= '#' . $hashFragment;
                         }
@@ -138,15 +125,29 @@ class SokoLoginFormModel
 
 
                     } else {
-                        $model['errorForm'] = $errorMsg;
+                        $form->addNotification($errorMsg, "warning");
                     }
                 } else {
-                    $model['errorForm'] = "This user has been de-activated";
+                    $form->addNotification("This user has been de-activated", "warning");
                 }
             } else {
-                $model['errorForm'] = $errorMsg;
+                $form->addNotification($errorMsg, "warning");
             }
-        }
+
+        });
+
+        $model = $form->getModel();
+
+        $model["uriCreateAccount"] = E::link("Ekom_createAccount");
+        $model["uriForgotPassword"] = E::link("Ekom_forgotPassword");
+
+        //--------------------------------------------
+        // DECORATE MODEL DEPENDING ON THE THEME
+        //--------------------------------------------
+        Hooks::call("Ekom_Theme_decorate_SokoLoginFormModel", $model);
+
+
         return $model;
+
     }
 }

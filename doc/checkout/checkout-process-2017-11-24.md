@@ -1,8 +1,7 @@
 Checkout process
 =====================
-2017-11-24
+2017-11-23
 
-Work in progress
 
 
 
@@ -11,20 +10,6 @@ Overview
 =============
 
 The checkout process is a helper for displaying the checkout tunnel.
-
-
-
-There are two main ideas:
-
-- the singleton CheckoutProcess
-- the CheckoutProcess flow
-
-
-the singleton CheckoutProcess
----------------------------
-How many checkout processes we can do in parallel in an e-commerce?
-
-In ekom, just one.
 
 The main idea is that the CheckoutProcess acts like a Registry (singleton): it's accessible at any time by any object.
 Plus, it's stored in session.
@@ -35,28 +20,6 @@ which makes it quite flexible to work with.
 This schema illustrates this idea of an always available CheckoutProcess:
 
 [![ekom-checkout-process.jpg](https://s19.postimg.org/hcps8ik8j/ekom-checkout-process.jpg)](https://postimg.org/image/eimmv2i27/)
-
-
-
-the CheckoutProcess flow
----------------------------
-
-I learned it the hard way, but the flow is VERY important.
-
-There are some rules that governs how the steps can be navigated and handled by the CheckoutProcess.
-
-Those rules originates from practical concerns for the end users.
-
-Knowing those rules is fundamental for conceiving this flow.
-
-I believe the best way to understand those rules is to give the most complex but practical example I can think of,
-and explain the rules from that example, since the rules come from that example in the first place.
-
-
-
-So, this example is actually a real life example that I had to deal with in the company I'm currently working in 
-todo: /
-
 
 
 

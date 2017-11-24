@@ -49,6 +49,13 @@ class UserLayer
 {
 
 
+    public static function getUserInfoByEmail($email)
+    {
+        return QuickPdo::fetch("select * from ek_user where email=:email", [
+            'email' => $email,
+        ]);
+    }
+
     /**
      * The current shipping address is
      */
