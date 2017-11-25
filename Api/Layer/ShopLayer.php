@@ -8,6 +8,7 @@ use Core\Services\A;
 use Core\Services\X;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\DistanceEstimator\DistanceEstimatorInterface;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
@@ -29,9 +30,12 @@ use QuickPdo\QuickPdo;
  * - country_iso_code: the country iso code
  * - country: the country label
  *
+ *
+
  */
 class ShopLayer
 {
+
 
     public static function getShopItemById($shopId)
     {
@@ -213,9 +217,6 @@ order by h.`order` asc
             "ek_shop_has_address.update.$shopId",
         ]);
     }
-
-
-
 
 
     public function allIds()

@@ -149,10 +149,25 @@ class CheckoutProcess implements CheckoutProcessInterface
                 if (null !== $lastVisitedStep) {
                     $currentStep = $lastVisitedStep;
                     $this->debug("currentStep becomes last visited step $currentStep");
+
+
                 } else {
                     $currentStep = $this->getVeryFirstStep();
                     $this->debug("currentStep becomes the very first step $currentStep");
                 }
+            }
+
+            //--------------------------------------------
+            // POTENTIAL DOWNGRADE
+            //--------------------------------------------
+            /**
+             * Whatever step we've chosen above, if there is a non valid step BEFORE,
+             * we want to display that non valid step.
+             */
+            if (null !== ($previousFailingStep = $this->findPreviousFailingStep($currentStep))) {
+                $currentStep = $previousFailingStep;
+                $this->debug("regression detected: a previous step failed");
+                $this->debug("currentStep becomes $currentStep");
             }
 
 
@@ -233,7 +248,7 @@ class CheckoutProcess implements CheckoutProcessInterface
 
     protected function debug($msg)
     {
-//        XLog::log($msg, "debug.log");
+        XLog::log($msg, "debug.log");
     }
 
     //--------------------------------------------
@@ -342,9 +357,20 @@ class CheckoutProcess implements CheckoutProcessInterface
     private function stepWasReached($stepName)
     {
         $reached = $this->get("reached", []);
-        $this->debug("stepWasReached?");
-        $this->debug($reached);
         return array_key_exists($stepName, $reached);
+    }
+
+    private function findPreviousFailingStep($currentStep)
+    {
+        foreach ($this->steps as $stepName => $step) {
+            if ($stepName === $currentStep) {
+                break;
+            }
+            if (false === $step->isValid()) {
+                return $stepName;
+            }
+        }
+        return null;
     }
 
 }

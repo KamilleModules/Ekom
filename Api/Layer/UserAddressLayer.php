@@ -13,6 +13,7 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
@@ -21,34 +22,12 @@ use QuickPdo\QuickPdoExceptionTool;
 
 /**
  *
- *
- *
- * addressModel
- * ==================
- * - address_id
- * - first_name
- * - last_name
- * - phone
- * - address
- * - city
- * - postcode
- * - supplement
- * - country
- * - country_id
- * - country_iso_code
- * //
- * - is_default_shipping_address, bool
- * - is_default_billing_address, bool
- * - fName, string: a full name, which format depends on some locale parameters
- * - fAddress, string: a full address, which format depends on some locale parameters
- *
- *
+ * addressModel -- @see EkomModels::addressModel()
  *
  *
  */
 class UserAddressLayer
 {
-
 
 
     /**
@@ -64,7 +43,6 @@ class UserAddressLayer
     }
 
 
-
     /**
      * Return an array of user addresses.
      * Each address is an addressModel (see top of this document)
@@ -75,7 +53,7 @@ class UserAddressLayer
     {
         if (null === $userId) {
             $userId = E::getUserId(null);
-            if(null===$userId){
+            if (null === $userId) {
                 return [];
             }
         }
@@ -137,7 +115,7 @@ order by h.`order` asc
 
 
     /**
-     * @return false|array
+     * @return null|array:addressModel (@top)
      */
     public static function getDefaultShippingAddress($userId = null, $langId = null)
     {
@@ -145,7 +123,7 @@ order by h.`order` asc
     }
 
     /**
-     * @return false|array
+     * @return null|array:addressModel (@top)
      */
     public static function getDefaultBillingAddress($userId = null, $langId = null)
     {
@@ -466,8 +444,9 @@ and `type`=:zetype
     /**
      * @param $userId
      * @param null $langId
-     * @return false|array representing the default shipping address model.
-     *              Or false if the user has no address yet.
+     * @return null|array:addressModel
+     * @see UserAddressLayer
+     *
      *
      *
      */
@@ -479,7 +458,7 @@ and `type`=:zetype
                 return $userAddress;
             }
         }
-        return false;
+        return null;
 
     }
 }

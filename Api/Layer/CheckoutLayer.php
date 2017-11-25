@@ -15,9 +15,11 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Exception\IncompleteOrderException;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Models\EkomModels;
 use Module\Ekom\PaymentMethodHandler\Collection\PaymentMethodHandlerCollectionInterface;
 use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Status\Action\EkomStatusAction;
+use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use Module\ThisApp\Ekom\Utils\CheckoutPage\CheckoutPageUtil;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
@@ -27,10 +29,16 @@ use QuickPdo\QuickPdo;
 class CheckoutLayer
 {
 
+    /**
+     * cache (for the current process)
+     * @see EkomModels::addressModel()
+     */
+    private static $shippingAddress = null;
+
+    private $_cartLayer;
     protected $sessionName;
     protected $usePayment;
     protected $uniqueReferenceType;
-    private $_cartLayer;
 
 
     public function __construct()
@@ -41,6 +49,31 @@ class CheckoutLayer
     }
 
 
+    public static function getUserShippingAddress($userId = null)
+    {
+        if (null === self::$shippingAddress) {
+            $addressId = CurrentCheckoutData::getShippingAddressId();
+            if (null === $addressId) {
+                if (null === $userId) {
+                    $userId = E::getUserId(null);
+                }
+
+                if (null !== $userId) {
+                    $addressId = UserLayer::getPreferredShippingAddressId($userId);
+                }
+            }
+            if (null !== $addressId) {
+                self::$shippingAddress = UserAddressLayer::getAddressById($addressId);
+            }
+        }
+        return self::$shippingAddress;
+    }
+
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
     /**
      * @return false|array orderModel,
      *              return false if the user is not connected

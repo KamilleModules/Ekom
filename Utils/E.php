@@ -23,6 +23,7 @@ use Module\Ekom\Exception\EkomException;
 use Module\Ekom\JsApiLoader\EkomJsApiLoader;
 use Module\Ekom\Notifier\EkomNotifier;
 use Module\Ekom\Session\EkomSession;
+use Module\Ekom\Utils\DataChange\EkomDataChangeDispatcher;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
 use Umail\UmailInterface;
 
@@ -37,6 +38,18 @@ class E
         XLog::log($msg, "cache.log");
     }
 
+
+    /**
+     * @link https://github.com/KamilleModules/Ekom/tree/master/doc/cache/data-change-and-derby-cache.md
+     */
+    public static function dataChange($dataIdentifier)
+    {
+        /**
+         * @var $dispatcher EkomDataChangeDispatcher
+         */
+        $dispatcher = X::get('Ekom_DataChangeDispatcher');
+        $dispatcher->trigger("dataChange", $dataIdentifier);
+    }
 
     /**
      * Return the userId, or a default value, or throws an exception.

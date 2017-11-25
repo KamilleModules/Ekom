@@ -4,34 +4,66 @@
 namespace Module\Ekom\Api\Layer;
 
 
-use Authenticate\SessionUser\SessionUser;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Core\Services\X;
-use Ekom\Carrier\MockCarrier;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Carrier\CarrierInterface;
 use Module\Ekom\Carrier\Collection\CarrierCollection;
-use Module\Ekom\Carrier\Collection\CarrierCollectionInterface;
-use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 
 /**
- * Carrier vs CarrierInstance
- * ===============================
- * In this class,
- * CarrierInstance represents an instance of CarrierInterface,
- * while Carrier is just the carrier name (i.e. a string).
+ *
+ *
+ * currentCarrierModel
+ * ----------------------
+ * - id: int, carrier id
+ * - name: string, carrier name
+ *
  *
  */
 class CarrierLayer
 {
+
+    /**
+     * @return string, the name of the current carrier
+     */
+    public static function getCurrentCarrier()
+    {
+        if (true === CurrentCheckoutData::isStarted()) {
+            return CurrentCheckoutData::get('carrier');
+        }
+        return self::getDefaultCarrier();
+    }
+
+
+    /**
+     *
+     * Return the default carrier name, or null if not set.
+     * Note: It's possible (although I've never seen it so far) that an e-commerce does not use a carrier,
+     * and instead entice customers to fetch items directly from the physical store.
+     * That's why we don't throw an exception from this level, and let the method caller deal with the problem
+     * at his/her higher level.
+     *
+     *
+     * @param null $shopId
+     * @return null|string
+     */
+    public static function getDefaultCarrier($shopId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        $carriers = CarrierLayer::getCarriers($shopId);
+        if ($carriers) {
+            return array_shift($carriers);
+        }
+        return null;
+    }
 
     /**
      * @param $shopId
@@ -122,27 +154,6 @@ order by h.priority asc
 
 
     /**
-     * @return string, the name of the current carrier
-     */
-    public static function getCurrentCarrier()
-    {
-        if (true === CurrentCheckoutData::isStarted()) {
-            return CurrentCheckoutData::get('carrier');
-        }
-        return self::getDefaultCarrier();
-    }
-
-    public static function getDefaultCarrier($shopId = null)
-    {
-        $carriers = self::getCarriers($shopId);
-        if ($carriers) {
-            return array_shift($carriers);
-        }
-        throw new EkomException("No carrier is set for shop with id $shopId");
-    }
-
-
-    /**
      *
      * Calculate the shipping costs for an order with checkoutMode=singleAddress
      *
@@ -190,15 +201,13 @@ order by h.priority asc
     }
 
 
-
-
     /**
      *
      * This method is used during the checkout process, where you want to display
      * a list of all available carriers to the user, along with some useful information such as
      * the estimated delivery date and the price of the order
      *
-     * @param $productInfos, same as estimateShippingCosts
+     * @param $productInfos , same as estimateShippingCosts
      * @return array of carrierName => carrierInfo
      *          - carrierInfo: array:
      *              - name: the carrierName

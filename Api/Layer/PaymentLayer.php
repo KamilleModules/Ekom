@@ -18,15 +18,23 @@ use Module\Ekom\PaymentMethodHandler\PaymentMethodHandlerInterface;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
+
+/**
+ * paymentMethodModel
+ * ========================
+ * - id: int,
+ * - name: int,
+ * - configuration: array (depends on the payment method)
+ *
+ *
+ */
 class PaymentLayer
 {
 
 
     /**
-     * @return array
-     *      - id
-     *      - name
-     *      - configuration (array)
+     * @return array:paymentMethodModel
+     * @see PaymentLayer
      * @throws EkomException if something wrong happens
      */
     public static function getDefaultPaymentMethod($shopId = null)

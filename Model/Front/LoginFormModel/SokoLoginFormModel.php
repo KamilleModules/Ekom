@@ -46,6 +46,7 @@ class SokoLoginFormModel
          * @todo-ling: add some validation rules (email)
          */
         $form = SokoForm::create()
+            ->setName("SokoLoginFormModel")
             ->addControl(SokoInputControl::create()
                 ->setName("email")
                 ->setValue($email)

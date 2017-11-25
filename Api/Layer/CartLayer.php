@@ -160,6 +160,11 @@ use QuickPdo\QuickPdo;
  * - shippingDetails
  *      - ?estimated_delivery_date
  *      - label
+ * - shippingIsApplicable: bool, whether or not at least one product requires shipping
+ *                              (If weight is more than 0 is the current algorithm used)
+ *
+ * - shippingIsApplied: bool, whether the shipping cost currently applies to the cart amount
+ *                              (it does not apply until the user is connected AND has at least one shipping address)
  * - shippingShippingCost
  * - shippingShippingCostRaw
  * - shippingTaxAmountUnit
@@ -670,8 +675,10 @@ class CartLayer
         // shipping
         //--------------------------------------------
         $details = [];
-        if (E::userIsConnected() && false !== UserAddressLayer::getDefaultShippingAddress(E::getUserId())) {
-
+        $shippingIsApplicable = ($totalWeight > 0);
+        $shippingIsApplied = false;
+        if (E::userIsConnected() && null !== ($address = UserAddressLayer::getDefaultShippingAddress(E::getUserId()))) {
+            $shippingIsApplied = true;
             $shippingCost = CarrierLayer::getShippingCost([
                 'boxes' => $modelItems,
             ], $details);
@@ -704,6 +711,8 @@ class CartLayer
             $model["shippingDetails"] = [];
             $model["shippingShippingCostRaw"] = $shippingCostWithTax;
         }
+        $model["shippingIsApplicable"] = $shippingIsApplicable;
+        $model["shippingIsApplied"] = $shippingIsApplied;
 
 
         // order total

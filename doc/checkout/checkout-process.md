@@ -69,11 +69,59 @@ Basically, we have the following steps:
 Visually, training1, training2 and training3 are displayed in the same space.
 
 
-The rules are the following:
 
-- by default: we display either the lastVisitedStep if there is one, or the very first step otherwise
+Different sets of rules are possible.
+I chose the following:
+
+
+- by default we display either the lastVisitedStep if there is a lastVisitedStep, or the very first step otherwise.
+
                 The lastVisitedStep is actually useful to prevent inconsistencies if you REFRESH the page (don't forget
-                that this is possible)
+                that this is possible).
+                
+                Note that if the user completes the checkout tunnel successfully, the checkout data flushes, including
+                the lastVisitedStep record, and so the whole process restarts, meaning when the user steps back again 
+                onto the checkout tunnel, he/she will see the very first step again. 
+                 
+                
+- also, the user can click on a step (and go to this step), but only if this step was already reached before.
+        This promotes the idea that there is an order to the steps, and that order should be respected
+- when a step is posted successfully, we immediately display the very next step in the order (and not the next "non valid" step).
+        This rule is actually important for the user, especially in regard with the substeps (training1, 
+            training2 and training3), because an user completing substep1 expects substep2 to be coming next, 
+            even though it might have already been completed (I believe).
+                
+- the exception (otherwise this wouldn't be fun, would it?):
+    whatever step we've chosen to display, if there is a previous step failing then we display the failing step.
+    That's because the user might log out, and when he/she comes back on the checkout tunnel, we need to display
+    the login step again.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Delete below
+- by default we use either the lastVisitedStep algorithm is there is a lastVisitedStep, or the very first step 
+                if this is the user's first time on the checkout tunnel.
+                
+                The lastVisitedStep is actually useful to prevent inconsistencies if you REFRESH the page (don't forget
+                that this is possible).
+                
+                Note that if the user completes the checkout tunnel successfully, the checkout data flushes, including
+                the lastVisitedStep record, and so the whole process restarts, meaning when the user steps back again 
+                onto the checkout tunnel, he/she will see the very first step again. 
+                 
+                
+                
+                
 - also, the user can click on a step (and go to this step), but only if this step was already reached before.
         This promotes the idea that there is an order to the steps, and that order should be respected
 - when a step is posted successfully, we immediately display the very next step in the order (and not the next "non valid" step).
@@ -83,7 +131,11 @@ The rules are the following:
                 
 
 
-
+lastVisitedStep algorithm
+--------------------------
+we use the lastVisitedStep, unless there is a previous step failing, in which case we display the failing step
+(that's because the user might log out, and when he/she comes back on the checkout tunnel, we need to display
+the login step again).
 
 
 
