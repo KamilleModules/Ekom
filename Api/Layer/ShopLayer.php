@@ -8,6 +8,8 @@ use Core\Services\A;
 use Core\Services\X;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Model\EkomModel;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\DistanceEstimator\DistanceEstimatorInterface;
@@ -74,46 +76,44 @@ select * from ek_shop order by id asc
         ");
     }
 
+
+
+
     /**
-     * Return the closest shop physical address, given an user shipping address.
-     * Or false if the shop is virtual (no physical address).
+     * Return the shop physical address for the given address id.
      *
+     * @param $addressId
+     * @param $shopId
+     * @param null $langId
      *
-     * @param $shippingAddress array|null, an addressModel as defined in UserAddressLayer,
-     *                          or null if the user has no shipping address (or he/she is not connected)
-     * @return array|null, a physical address as described at the top of this class.
-     *                  Or return null if the shop contains no physical address at all.
+     * @return array:shopPhysicalAddress
+     * @see EkomModels::shopPhysicalAddress()
+     * @throws EkomException
      */
-    public static function getClosestPhysicalAddress(array $shippingAddress = null)
+    public static function getPhysicalAddressById($addressId, $shopId, $langId = null)
     {
-
-        $shopAddresses = self::getPhysicalAddresses();
-        if ($shopAddresses) {
-            if (null !== $shippingAddress) {
-
-                /**
-                 * @var $estimator DistanceEstimatorInterface
-                 */
-                $estimator = X::get("Ekom_DistanceEstimator");
-                $closest = false;
-                $distance = 30000; // impossible to reach distance
-                foreach ($shopAddresses as $shopAddress) {
-                    $distanceToUserCountry = $estimator->estimate($shopAddress, $shippingAddress);
-                    if ($distanceToUserCountry < $distance) {
-                        $distance = $distanceToUserCountry;
-                        $closest = $shopAddress;
-                    }
-                }
-                return $closest;
-            } else {
-                return array_shift($shopAddresses);
+        $addresses = self::getPhysicalAddresses(null, $shopId, $langId);
+        $addressId = (int)$addressId;
+        foreach ($addresses as $address) {
+            if ($addressId === (int)$address['id']) {
+                return $address;
             }
         }
-        return null;
-
+        throw new EkomException("The address was not found with addressId: $addressId, shopId: $shopId, langId: $langId");
     }
 
 
+    /**
+     * @param null $type , the type of physical address.
+     *              By default, if it's null (or empty in the database),
+     *              it represents a warehouse address, meaning that the address is used for shipping cost calculations.
+     *              As for now, this is the only type of shop address ekom uses, but we can imagine that other types
+     *              might exist, such as administrative types.
+     *
+     * @param null $shopId
+     * @param null $langId
+     * @return mixed
+     */
     public static function getPhysicalAddresses($type = null, $shopId = null, $langId = null)
     {
         $shopId = E::getShopId($shopId);
@@ -151,9 +151,7 @@ order by h.`order` asc
 
             return QuickPdo::fetchAll($q, $markers);
 
-        }, [
-            "ek_shop_has_address",
-        ]);
+        });
     }
 
     public function getShopInfoByHost($host)

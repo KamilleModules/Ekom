@@ -28,6 +28,16 @@ interface CheckoutProcessStepInterface
     public function isValid();
 
     /**
+     *
+     * @param array $context : the array representing the posted data.
+     *          Hint: by default, it's array_replace($_GET, $_POST, $_FILES)
+     *          Plus, it also contains the following:
+     *          - shop_id
+     *          - lang_id
+     *          - currency_id
+     *
+     *
+     *
      * @return bool
      */
     public function isPostedSuccessfully(CheckoutProcessInterface $cp, array $context);

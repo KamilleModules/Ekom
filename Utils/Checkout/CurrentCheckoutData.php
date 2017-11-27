@@ -31,10 +31,6 @@ use Module\Ekom\Session\EkomSession;
  * currentCheckoutDataModel
  * =========================
  *
- * - started: bool, whether or not the session has started.
- *              Once started, data stays for ever until you clean them manually
- *              with the clean method (you generally call this method at the very end
- *              of a successful checkout process).
  * - carrier_id: int|null, the id of the carrier
  * - shipping_address_id: int|null, the id of the shipping address
  * - billing_address_id: int|null, the id of the billing address
@@ -42,6 +38,11 @@ use Module\Ekom\Session\EkomSession;
  * - ...your own
  *
  *
+ * Note about security
+ * ========================
+ * Notice that this class don't to any checking about the user identity.
+ * So be careful when displaying confidential information: you should always ensure
+ * that the user is really who she/he pretends to be.
  *
  */
 class CurrentCheckoutData
@@ -53,9 +54,50 @@ class CurrentCheckoutData
         return self::get("carrier_id", null);
     }
 
+    public static function setCarrierId($id)
+    {
+        self::set("carrier_id", $id);
+    }
+
     public static function getShippingAddressId()
     {
+
         return self::get("shipping_address_id", null);
+    }
+
+    public static function setShippingAddressId($id)
+    {
+        self::set("shipping_address_id", $id);
+    }
+
+    public static function getBillingAddressId()
+    {
+        return self::get("billing_address_id", null);
+    }
+
+    public static function setBillingAddressId($id)
+    {
+        self::set("billing_address_id", $id);
+    }
+
+    public static function getShopAddressId()
+    {
+        return self::get("shop_address_id", null);
+    }
+
+    public static function setShopAddressId($id)
+    {
+        self::set("shop_address_id", $id);
+    }
+
+    public static function getPaymentMethodId()
+    {
+        return self::get("payment_method_id", null);
+    }
+
+    public static function setPaymentMethodId($id)
+    {
+        self::set("payment_method_id", $id);
     }
 
     public static function get($key, $default = null)
@@ -71,6 +113,13 @@ class CurrentCheckoutData
     {
         $data = self::getData();
         $data[$key] = $value;
+        EkomSession::set("currentCheckoutData", $data);
+    }
+
+    public static function remove($key)
+    {
+        $data = self::getData();
+        unset($data[$key]);
         EkomSession::set("currentCheckoutData", $data);
     }
 

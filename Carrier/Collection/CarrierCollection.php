@@ -24,6 +24,7 @@ class CarrierCollection implements CarrierCollectionInterface
 
     public function addCarrier($name, CarrierInterface $carrier)
     {
+        $carrier->setName($name);
         $this->carriers[$name] = $carrier;
         return $this;
     }

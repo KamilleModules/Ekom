@@ -9,6 +9,8 @@ use Kamille\Services\XLog;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\CheckoutProcess\Step\CheckoutProcessStepInterface;
+use Module\Ekom\Utils\E;
+use Module\Ekom\Utils\Traits\EkomContextAwareTrait;
 
 
 /**
@@ -28,6 +30,9 @@ use Module\Ekom\Utils\CheckoutProcess\Step\CheckoutProcessStepInterface;
 class CheckoutProcess implements CheckoutProcessInterface
 {
 
+    use EkomContextAwareTrait;
+
+
     private static $inst = null;
 
     /**
@@ -35,6 +40,7 @@ class CheckoutProcess implements CheckoutProcessInterface
      * array of name => CheckoutProcessStepInterface
      */
     private $steps;
+
 
     private function __construct()
     {
@@ -49,6 +55,12 @@ class CheckoutProcess implements CheckoutProcessInterface
         }
         return self::$inst;
     }
+
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
 
     public function setShippingAddressId($id)
     {
@@ -108,12 +120,21 @@ class CheckoutProcess implements CheckoutProcessInterface
     public function execute(callable $onStepsComplete = null, array $context = null)
     {
 
+        $shopId = E::getShopId($this->shopId);
+        $langId = E::getLangId($this->langId);
+        $currencyId = E::getCurrencyId($this->currencyId);
+
         $this->debug("CheckoutProcess:execute");
         if ($this->steps) {
 
             if (null === $context) {
                 $context = array_replace($_GET, $_POST, $_FILES);
             }
+
+            $context['shop_id'] = $shopId;
+            $context['lang_id'] = $langId;
+            $context['currency_id'] = $currencyId;
+
             $this->debug("Context: " . ArrayToStringTool::toPhpArray($context));
 
             /**

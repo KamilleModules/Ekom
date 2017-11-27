@@ -51,8 +51,9 @@ class UserAddressLayer
     }
 
     /**
-     * @return null|array:addressModel
+     * @return array:addressModel
      * @see EkomModels::addressModel()
+     * @throws EkomException
      */
     public static function getAddressById($userId, $addressId, $langId = null)
     {
@@ -63,7 +64,7 @@ class UserAddressLayer
                 return $addr;
             }
         }
-        return null;
+        throw new EkomException("Address not found with userId: $userId, addressId: $addressId and langId: $langId");
     }
 
     /**

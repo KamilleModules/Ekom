@@ -19,6 +19,7 @@ use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Api\Util\HashUtil;
 use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Utils\CartLocalStore;
+use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\EkomLinkHelper;
 use QuickPdo\QuickPdo;
@@ -40,137 +41,6 @@ use QuickPdo\QuickPdo;
  *
  * - ?bundle: int, the bundle id
  * - ...
- *
- *
- *
- * cartModel (work in progress)
- * =================
- *
- * - cartTotalQuantity
- * - cartTotalWeight
- * - cartTaxAmount
- * - cartTaxAmountRaw
- *
- * - couponDetails, array of couponDetailsItem (defined in CouponLayer)
- * - couponHasCoupons
- * - couponSavingRaw
- * - couponSaving
- *
- *
- * - items
- *      - attributes
- *      - attributesSelection
- *      - attributesString
- *      - card_id
- *      - card_slug
- *      - cartToken
- *      - codes
- *      - defaultImage
- *      - description
- *      - discount
- *      - discountHasDiscount
- *      - discountPrice
- *      - discountRawPrice
- *      - discountRawSavingFixed
- *      - discountSavingFixed
- *      - discountSavingPercent
- *      - discountType
- *      - hasNovelty
- *      - imageLarge
- *      - imageMedium
- *      - imageSmall
- *      - imageThumb
- *      - images
- *      - label
- *      - label_escaped
- *      - metaDescription
- *      - metaKeywords
- *      - metaTitle
- *      - outOfStockText
- *      - priceBase
- *      - priceBaseRaw
- *      - priceLine
- *      - priceLineRaw
- *      - priceLineWithoutTax
- *      - priceLineWithoutTaxRaw
- *      - priceOriginal
- *      - priceOriginalRaw
- *      - priceSale
- *      - priceSaleRaw
- *      - productDetails
- *      - productDetailsArgs
- *      - product_id
- *      - product_reference
- *      - product_type
- *      - quantityCart
- *      - quantityInStock
- *      - quantityStock
- *      - rating_amount
- *      - rating_nbVotes
- *      - ref
- *      - seller
- *      - taxAmount
- *      - taxAmountUnit
- *      - taxDetails
- *      - taxGroup
- *      - taxGroupLabel
- *      - taxGroupName
- *      - taxHasTax
- *      - taxRatio
- *      - uriCard
- *      - uriCardAjax
- *      - uriLogin
- *      - uriProduct
- *      - uriProductInstance
- *      - uri_card_with_details
- *      - video_info
- *      - weight
- *
- *
- * - itemsGroupedBySeller  (see CartUtil), array of seller => item, each item:
- *      - taxHint: int, a number indicating
- *                       the type of visual hint to display next to the price totals for every seller.
- *                       Whether or not the tax was globally applied.
- *
- *      - total: the total to display
- *      - totalRaw: the internal total used for computation
- *      - taxAmountTotal: the total amount of tax for this seller
- *      - taxAmountTotalRaw: the internal total of tax for this seller
- *      - taxDetails: an array, each entry representing a tax group applied to at least one product for this seller.
- *                   Each entry is an array of taxGroupName to item, each item being an array with the following structure:
- *                   - taxGroupLabel: string, the tax group label
- *                   - taxAmountTotalRaw: number, the cumulated amount coming from this tax group for this seller
- *                   - taxAmountTotal: the formatted version of taxAmountTotalRaw
- *
- *      - items: the items for the current seller
- *
- *
- * - priceCartTotal
- * - priceCartTotalRaw
- * - priceCartTotalWithoutTax
- * - priceCartTotalWithoutTaxRaw
- *
- * - priceOrderTotal
- * - priceOrderTotalRaw
- * - priceOrderGrandTotal
- * - priceOrderGrandTotalRaw
- *
- *
- *
- * - shippingDetails
- *      - ?estimated_delivery_date
- *      - label
- *
- * - shippingIsApplied: bool, whether the shipping cost currently applies to the cart amount
- * - shippingShippingCost
- * - shippingShippingCostRaw
- * - shippingTaxAmountUnit
- * - shippingTaxDetails
- * - shippingTaxGroupLabel
- * - shippingTaxGroupName
- * - shippingTaxHasTax
- * - shippingTaxRatio
- *
  *
  *
  *
@@ -568,6 +438,13 @@ class CartLayer
     }
 
 
+    /**
+     * @param array $items
+     * @param array $couponBag
+     * @return array:cartModel
+     * @see EkomModels::cartModel()
+     *
+     */
     private static function deGetCartModel(array $items, array $couponBag = [])
     {
 
@@ -578,6 +455,7 @@ class CartLayer
          * but in the long term I believe langId should be taken from gpc directly.
          */
         $langId = E::getLangId();
+        $shopId = E::getShopId();
 
 
         $model = [];
@@ -669,42 +547,58 @@ class CartLayer
         //--------------------------------------------
 
         //--------------------------------------------
-        // shipping
+        // SHIPPING
         //--------------------------------------------
 
         /**
          * @see https://github.com/KamilleModules/Ekom/tree/master/doc/cart/cart-shipping-cost-algorithm.md
          */
-        $details = [];
-        $shippingIsApplied = false;
-
+        $shippingInfo = false;
+        $shopAddress = null;
+        $carrier = null;
         if ($totalWeight > 0) {
+            /**
+             * Is there a carrier available?
+             */
+            $carrier = self::getCheckoutCarrier($shopId);
+
 
             /**
-             * @todo-ling, don't forget shippingIsApplied
+             * Can the carrier calculate the shippingInfo?
              */
+            $context = CartUtil::getCarrierShippingInfoContext($model);
+            $shippingInfo = $carrier->getShippingInfo($context);
+        }
 
-            $shippingCost = CarrierLayer::getShippingCost([
-                'boxes' => $modelItems,
-            ], $details);
-            //--------------------------------------------
-            // APPLYING SHIPPING TAXES
+
+        if (false !== $shippingInfo) {
+
+
+            // applying shipping taxes
             //--------------------------------------------
             $shippingTaxGroup = null;
             Hooks::call("Ekom_Cart_defineShippingTaxGroup", $shippingTaxGroup, $model);
+            $shippingCost = $shippingInfo['shipping_cost'];
 
 
             $taxInfo = TaxLayer::applyTaxGroup($shippingTaxGroup, $shippingCost);
             $shippingCostWithTax = E::trimPrice($taxInfo['priceWithTax']);
             $shippingCost = $taxInfo['priceWithoutTax'];
+
             $model["shippingTaxDetails"] = $taxInfo['taxDetails'];
             $model["shippingTaxRatio"] = $taxInfo['taxRatio'];
             $model["shippingTaxGroupName"] = $taxInfo['taxGroupName'];
             $model["shippingTaxGroupLabel"] = $taxInfo['taxGroupLabel'];
             $model["shippingTaxAmountUnit"] = $taxInfo['taxAmountUnit'];
             $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
-            $model["shippingDetails"] = $details;
+            $model["shippingDetails"] = [
+                "estimated_delivery_date" => $shippingInfo["estimated_delivery_date"],
+                "label" => $carrier->getLabel(),
+//                "shop_address" => $shopAddress, // not sure?
+                "carrier_id" => $carrier->getId(),
+            ];
             $model["shippingShippingCostRaw"] = $shippingCostWithTax;
+            $model["shippingIsApplied"] = true;
         } else {
             $shippingCostWithTax = 0;
             $model["shippingTaxDetails"] = [];
@@ -715,8 +609,8 @@ class CartLayer
             $model["shippingTaxHasTax"] = false;
             $model["shippingDetails"] = [];
             $model["shippingShippingCostRaw"] = $shippingCostWithTax;
+            $model["shippingIsApplied"] = false;
         }
-        $model["shippingIsApplied"] = $shippingIsApplied;
 
 
         // order total
@@ -880,6 +774,17 @@ class CartLayer
             count($details['minor']) > 0 // assuming it's an array already..
         );
     }
+
+    private static function getCheckoutCarrier($shopId)
+    {
+        $carrierId = CurrentCheckoutData::getCarrierId();
+        if (null !== $carrierId) {
+            return CarrierLayer::getCarrierInstanceById($carrierId, $shopId);
+        }
+        $carrierId = CarrierLayer::getShopDefaultCarrierId($shopId);
+        return CarrierLayer::getCarrierInstanceById($carrierId, $shopId);
+    }
+
 
 
 }

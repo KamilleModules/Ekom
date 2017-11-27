@@ -34,11 +34,7 @@ use QuickPdo\QuickPdo;
 class CheckoutLayer
 {
 
-    /**
-     * cache (for the current process)
-     * @see EkomModels::addressModel()
-     */
-    private static $userShippingAddress = null;
+
 
     private $_cartLayer;
     protected $sessionName;
@@ -52,58 +48,6 @@ class CheckoutLayer
         $this->uniqueReferenceType = 'ekom';
         $this->usePayment = true;
     }
-
-
-    //--------------------------------------------
-    // CHECKOUT METHODS
-    //--------------------------------------------
-    /**
-     * Those represent the values that should be used on the checkout page
-     * and/or on the cart (for some of them: the shipping cost).
-     */
-
-    /**
-     * @return null|CarrierInterface
-     */
-    public static function getCheckoutCarrier(){
-        $carrier=null;
-        $carrierId = CurrentCheckoutData::getCarrierId();
-        if(null!==$carrierId){
-            $carrier = CarrierLayer::getCarrierInstanceById($carrierId);
-        }
-    }
-
-    /**
-     * Return the shipping address of the connected user for the checkout process.
-     * It might be the one selected on the checkout process, or if none is selected yet the user preferred address.
-     *
-     * @param int $userId
-     * @return null|array:addressModel
-     * @see EkomModels::addressModel()
-     */
-    public static function getCheckoutShippingAddress($userId, $langId = null)
-    {
-        if (null === self::$userShippingAddress) {
-            $address = null;
-            $addressId = CurrentCheckoutData::getShippingAddressId();
-            if (null !== $addressId) {
-                $address = UserAddressLayer::getAddressById($addressId, $userId, $langId);
-                if (null === $address) {
-                    XLog::error("Didn't expect that: the user address was not found for addressId=$addressId and userId=$addressId and langId=$langId");
-                }
-            }
-
-            if (null === $address) { // assuming the user didn't start the checkout process yet
-                // then we take her preferred address here if any
-                $address = UserAddressLayer::getPreferredShippingAddress($userId, $langId);
-            }
-            if (null !== $address) {
-                self::$userShippingAddress = $address;
-            }
-        }
-        return self::$userShippingAddress;
-    }
-
 
 
     //--------------------------------------------

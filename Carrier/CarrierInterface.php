@@ -4,38 +4,45 @@
 namespace Module\Ekom\Carrier;
 
 
-use Module\Ekom\Exception\EkomException;
-
 interface CarrierInterface
 {
 
 
     /**
-     * @param array $context , the context in which the shipping cost should be applied.
-     *                It's an array with the following structure:
      *
-     *      - cartItems: as defined at the top of CartLayer (cartModel.items)
-     *      - ?cartWeight: number
-     *      - ?shopAddress: array|null, a shopPhysicalAddress as defined at the top of the ShopLayer class
-     *      - ?shippingAddress: array|null, the addressModel, as defined at the top of the UserAddressLayer class
+     * Return the shippingInfoModel array corresponding to the given context,
+     * or false if the carrier is unable to compute this array correctly (probably because some
+     * info are missing in the context)
      *
-     *          Note: even if the user has no address, and/or the shop has no address, some carriers might use
-     *              a flat rate. That explains why those properties are optional.
+     * @see EkomModels::shippingInfoModel().
      *
      *
-     * @param array $rejected , array of productInfo representing the rejected products (those which the carrier couldn't handle)
+     * @param array :shippingContextModel $context
+     * @see EkomModels::shippingContextModel().
      *
      *
-     * @return array, an array with the following info:
-     *      - shipping_cost: float, the cost of the shipping of the accepted products
-     *      - ?estimated_delivery_date: datetime|null, the estimated delivery date or null if it cannot be estimated
+     * @return false|array:shippingInfoModel
+     * @see EkomModels::shippingInfoModel().
      *
      *
-     * @throws EkomException if there is some missing data in the context, or another error
+     *
+     * Note: there was a rejected second argument to this method before,
+     * but for now I've dropped it.
+     * The idea was that a carrier might handle SOME of the products in the cart but not all.
+     *
+     *
      *
      */
-    public function getShippingInfo(array $context, array &$rejected = []);
+    public function getShippingInfo(array $context);
 
 
     public function getLabel();
+
+    public function setName($name);
+
+    public function getName();
+
+    public function setId($id);
+
+    public function getId();
 }

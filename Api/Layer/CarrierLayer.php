@@ -5,7 +5,6 @@ namespace Module\Ekom\Api\Layer;
 
 
 use Core\Services\A;
-use Core\Services\Hooks;
 use Core\Services\X;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
@@ -13,6 +12,7 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Carrier\CarrierInterface;
 use Module\Ekom\Carrier\Collection\CarrierCollection;
+use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
@@ -31,7 +31,32 @@ class CarrierLayer
 {
 
     /**
-     * @return CarrierInterface|null
+     * @param $shopId
+     * @return CarrierInterface[] (id => instance)
+     */
+    public static function getCarrierInstancesByShop($shopId)
+    {
+        $rows = self::getCarriers($shopId);
+        $ret = [];
+        /**
+         * @var $coll CarrierCollection
+         */
+        $coll = X::get("Ekom_getCarrierCollection");
+        foreach ($rows as $id => $name) {
+            if (false !== ($instance = $coll->getCarrier($name))) {
+                $instance->setId($id);
+                $ret[$id] = $instance;
+            } else {
+                XLog::error("[Ekom module] - CarrierLayer: carrier $name found in database, but not as a class in the fileSystem");
+            }
+        }
+        return $ret;
+    }
+
+
+    /**
+     * @return CarrierInterface
+     * @throws EkomException
      */
     public static function getCarrierInstanceById($carrierId, $shopId = null)
     {
@@ -42,11 +67,12 @@ class CarrierLayer
          */
         if (array_key_exists($carrierId, $rows)) {
             $carrierName = $rows[$carrierId];
-            return self::getCarrierInstanceByName($carrierName);
-        } else {
-            XLog::error("[Ekom module] - CarrierLayer.getCarrierInstanceById: the carrier with 
-            id $carrierId was not found in the database");
+            $ret= self::getCarrierInstanceByName($carrierName);
+            $ret->setId($carrierId);
+            return $ret;
         }
+        throw new EkomException("[Ekom module] - CarrierLayer.getCarrierInstanceById: the carrier with 
+            id $carrierId was not found in the database");
     }
 
 
@@ -70,14 +96,25 @@ order by h.priority asc
         
         ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
 
-        }, [
-            "ek_carrier",
-            "ek_shop_has_carrier",
-            "ek_shop",
-        ]);
+        });
+    }
+
+
+    public static function getShopDefaultCarrierId($shopId)
+    {
+        $carriers = self::getCarriers($shopId);
+        if ($carriers) {
+            foreach ($carriers as $id => $name) {
+                return $id;
+            }
+        }
+        throw new EkomException("The shop $shopId doesn't have any default carrier");
     }
 
     /**
+     *
+     * @deprecated
+     *
      * Get the shipping cost of the $carrier for a given context.
      *
      *
@@ -94,48 +131,48 @@ order by h.priority asc
      *          - ?estimated_delivery_date: the estimated delivery date provided by the carrier
      * @return number: the raw shipping cost without tax
      */
-    public static function getShippingCost(array $context = [], array &$details = [])
-    {
-        $context = array_replace([
-            'boxes' => [],
-            'carrier' => null,
-        ], $context);
-
-        $carrier = $context['carrier'];
-        $boxes = $context['boxes'];
-
-
-        if (null === $carrier) {
-            $carrier = self::getCurrentCarrier();
-        }
-
-        $userShippingAddress = UserAddressLayer::getCurrentShippingAddress(); // array|false
-
-
-        $shopAddress = self::getShopPhysicalAddressForShipping([
-            'userShippingAddress' => $userShippingAddress,
-        ]); // array|null
-
-        //--------------------------------------------
-        // CALCULATING THE COSTS
-        //--------------------------------------------
-        $carrierInstance = self::getCarrierInstanceByName($carrier);
-        $carrierLabel = $carrierInstance->getLabel();
-        $rejected = [];
-        $shippingInfo = $carrierInstance->getShippingCost([
-            'products' => $boxes,
-            'shopAddress' => $shopAddress,
-            'shippingAddress' => $userShippingAddress,
-        ], $rejected);
-        if ($rejected) {
-            $details['notHandled'] = $rejected;
-        }
-        if (array_key_exists("estimated_delivery_date", $shippingInfo)) {
-            $details['estimated_delivery_date'] = $shippingInfo['estimated_delivery_date'];
-        }
-        $details['label'] = $carrierLabel;
-        return E::trimPrice($shippingInfo['shipping_cost']);
-    }
+//    public static function getShippingCost(array $context = [], array &$details = [])
+//    {
+//        $context = array_replace([
+//            'boxes' => [],
+//            'carrier' => null,
+//        ], $context);
+//
+//        $carrier = $context['carrier'];
+//        $boxes = $context['boxes'];
+//
+//
+//        if (null === $carrier) {
+//            $carrier = self::getCurrentCarrier();
+//        }
+//
+//        $userShippingAddress = UserAddressLayer::getCurrentShippingAddress(); // array|false
+//
+//
+//        $shopAddress = self::getShopPhysicalAddressForShipping([
+//            'userShippingAddress' => $userShippingAddress,
+//        ]); // array|null
+//
+//        //--------------------------------------------
+//        // CALCULATING THE COSTS
+//        //--------------------------------------------
+//        $carrierInstance = self::getCarrierInstanceByName($carrier);
+//        $carrierLabel = $carrierInstance->getLabel();
+//        $rejected = [];
+//        $shippingInfo = $carrierInstance->getShippingCost([
+//            'products' => $boxes,
+//            'shopAddress' => $shopAddress,
+//            'shippingAddress' => $userShippingAddress,
+//        ], $rejected);
+//        if ($rejected) {
+//            $details['notHandled'] = $rejected;
+//        }
+//        if (array_key_exists("estimated_delivery_date", $shippingInfo)) {
+//            $details['estimated_delivery_date'] = $shippingInfo['estimated_delivery_date'];
+//        }
+//        $details['label'] = $carrierLabel;
+//        return E::trimPrice($shippingInfo['shipping_cost']);
+//    }
 
 
     /**
@@ -269,6 +306,10 @@ order by h.priority asc
     /**
      * @param $carrierName
      * @return null|CarrierInterface
+     *
+     *
+     * @dev: do not set this public, because a CarrierInstance has a getId method, which should always provide
+     * a real value (not 0).
      */
     private static function getCarrierInstanceByName($carrierName)
     {
@@ -281,62 +322,6 @@ order by h.priority asc
         } else {
             XLog::error("[Ekom module] - CarrierLayer: carrier $carrierName found in database, but not as a class in the fileSystem");
         }
-    }
-
-
-    private static function getShopPhysicalAddressForShipping(array $data)
-    {
-        /**
-         * Here we decide the physical address of the shop which might be involved
-         * in shipping cost calculation.
-         */
-        $shopAddress = [];
-        Hooks::call("Ekom_Carrier_getShopPhysicalAddressForShipping", $shopAddress, $data);
-        if (empty($shopAddress)) {
-            $userShippingAddress = $data['userShippingAddress'];
-            if (false === $userShippingAddress) {
-                $userShippingAddress = null;
-            }
-            $shopAddress = ShopLayer::getClosestPhysicalAddress($userShippingAddress);
-        }
-        return $shopAddress;
-    }
-
-
-    /**
-     * @param $shopId
-     * @return array CarrierInterface[] (name => instance)
-     */
-    private static function getCarrierInstancesByShop($shopId = null)
-    {
-        $rows = self::getCarriers($shopId);
-        $ret = [];
-        /**
-         * @var $coll CarrierCollection
-         */
-        $coll = X::get("Ekom_getCarrierCollection");
-        foreach ($rows as $id => $name) {
-            if (false !== ($instance = $coll->getCarrier($name))) {
-                $ret[$name] = $instance;
-            } else {
-                XLog::error("[Ekom module] - CarrierLayer: carrier $name found in database, but not as a class in the fileSystem");
-            }
-        }
-        return $ret;
-    }
-
-
-    /**
-     * @return CarrierInterface
-     * @throws EkomApiException
-     */
-    private static function getCarrierInstanceByName($name, $shopId = null)
-    {
-        $instances = self::getCarrierInstancesByShop($shopId);
-        if (array_key_exists($name, $instances)) {
-            return $instances[$name];
-        }
-        throw new EkomApiException("carrier instance not found with name $name in shop $shopId");
     }
 
 

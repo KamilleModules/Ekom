@@ -39,14 +39,14 @@ class ConnexionLayer
     }
 
 
-    public static function getConnexionDataByUserId($userId)
+    public static function getConnexionDataByUserId($userId, $langId=null)
     {
-
+        $langId = E::getLangId($langId);
 
         $userGroupNames = EkomApi::inst()->userLayer()->getUserGroupNames($userId);
-        $shippingAddress = UserAddressLayer::getDefaultShippingAddress($userId);
+        $shippingAddress = UserAddressLayer::getPreferredShippingAddress($userId, $langId);
         $userShippingCountry = false;
-        if (false !== $shippingAddress) {
+        if (null !== $shippingAddress) {
             $userShippingCountry = $shippingAddress['country_iso_code'];
         }
 

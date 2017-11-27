@@ -126,6 +126,15 @@ class E
         return (int)ApplicationRegistry::get("ekom.lang_id");
     }
 
+    public static function getCurrencyId($currencyId = null)
+    {
+        if (null !== $currencyId) {
+            return (int)$currencyId;
+        }
+        EkomApi::inst()->initWebContext();
+        return (int)ApplicationRegistry::get("ekom.currency_id");
+    }
+
     public static function getLangIso()
     {
         EkomApi::inst()->initWebContext();
