@@ -48,7 +48,6 @@ use QuickPdo\QuickPdoExceptionTool;
 class UserLayer
 {
 
-
     public static function getUserInfoByEmail($email)
     {
         return QuickPdo::fetch("select * from ek_user where email=:email", [
@@ -56,17 +55,6 @@ class UserLayer
         ]);
     }
 
-    /**
-     * The current shipping address is
-     */
-    public function getCurrentShippingAddress($userId = null, $langId = null)
-    {
-        $shipping = CheckoutPageUtil::getStepData("shipping");
-        if (false !== $shipping) {
-            throw new \Exception("not implemented yet");
-        }
-        return EkomApi::inst()->userAddressLayer()->getDefaultShippingAddress($userId, $langId);
-    }
 
 
     /**

@@ -14,6 +14,7 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Exception\IncompleteOrderException;
+use Module\Ekom\Carrier\CarrierInterface;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\PaymentMethodHandler\Collection\PaymentMethodHandlerCollectionInterface;
@@ -25,7 +26,11 @@ use Module\ThisApp\Ekom\Utils\CheckoutPage\CheckoutPageUtil;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
 use QuickPdo\QuickPdo;
 
-
+/**
+ * Be sure to read the following first:
+ * @link https://github.com/KamilleModules/Ekom/tree/master/doc/checkout/checkout-placeorder-and-currentcheckoutdata.md
+ *
+ */
 class CheckoutLayer
 {
 
@@ -33,7 +38,7 @@ class CheckoutLayer
      * cache (for the current process)
      * @see EkomModels::addressModel()
      */
-    private static $shippingAddress = null;
+    private static $userShippingAddress = null;
 
     private $_cartLayer;
     protected $sessionName;
@@ -49,24 +54,54 @@ class CheckoutLayer
     }
 
 
-    public static function getUserShippingAddress($userId = null)
-    {
-        if (null === self::$shippingAddress) {
-            $addressId = CurrentCheckoutData::getShippingAddressId();
-            if (null === $addressId) {
-                if (null === $userId) {
-                    $userId = E::getUserId(null);
-                }
+    //--------------------------------------------
+    // CHECKOUT METHODS
+    //--------------------------------------------
+    /**
+     * Those represent the values that should be used on the checkout page
+     * and/or on the cart (for some of them: the shipping cost).
+     */
 
-                if (null !== $userId) {
-                    $addressId = UserLayer::getPreferredShippingAddressId($userId);
+    /**
+     * @return null|CarrierInterface
+     */
+    public static function getCheckoutCarrier(){
+        $carrier=null;
+        $carrierId = CurrentCheckoutData::getCarrierId();
+        if(null!==$carrierId){
+            $carrier = CarrierLayer::getCarrierInstanceById($carrierId);
+        }
+    }
+
+    /**
+     * Return the shipping address of the connected user for the checkout process.
+     * It might be the one selected on the checkout process, or if none is selected yet the user preferred address.
+     *
+     * @param int $userId
+     * @return null|array:addressModel
+     * @see EkomModels::addressModel()
+     */
+    public static function getCheckoutShippingAddress($userId, $langId = null)
+    {
+        if (null === self::$userShippingAddress) {
+            $address = null;
+            $addressId = CurrentCheckoutData::getShippingAddressId();
+            if (null !== $addressId) {
+                $address = UserAddressLayer::getAddressById($addressId, $userId, $langId);
+                if (null === $address) {
+                    XLog::error("Didn't expect that: the user address was not found for addressId=$addressId and userId=$addressId and langId=$langId");
                 }
             }
-            if (null !== $addressId) {
-                self::$shippingAddress = UserAddressLayer::getAddressById($addressId);
+
+            if (null === $address) { // assuming the user didn't start the checkout process yet
+                // then we take her preferred address here if any
+                $address = UserAddressLayer::getPreferredShippingAddress($userId, $langId);
+            }
+            if (null !== $address) {
+                self::$userShippingAddress = $address;
             }
         }
-        return self::$shippingAddress;
+        return self::$userShippingAddress;
     }
 
 

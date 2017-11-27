@@ -160,11 +160,8 @@ use QuickPdo\QuickPdo;
  * - shippingDetails
  *      - ?estimated_delivery_date
  *      - label
- * - shippingIsApplicable: bool, whether or not at least one product requires shipping
- *                              (If weight is more than 0 is the current algorithm used)
  *
  * - shippingIsApplied: bool, whether the shipping cost currently applies to the cart amount
- *                              (it does not apply until the user is connected AND has at least one shipping address)
  * - shippingShippingCost
  * - shippingShippingCostRaw
  * - shippingTaxAmountUnit
@@ -674,11 +671,19 @@ class CartLayer
         //--------------------------------------------
         // shipping
         //--------------------------------------------
+
+        /**
+         * @see https://github.com/KamilleModules/Ekom/tree/master/doc/cart/cart-shipping-cost-algorithm.md
+         */
         $details = [];
-        $shippingIsApplicable = ($totalWeight > 0);
         $shippingIsApplied = false;
-        if (E::userIsConnected() && null !== ($address = UserAddressLayer::getDefaultShippingAddress(E::getUserId()))) {
-            $shippingIsApplied = true;
+
+        if ($totalWeight > 0) {
+
+            /**
+             * @todo-ling, don't forget shippingIsApplied
+             */
+
             $shippingCost = CarrierLayer::getShippingCost([
                 'boxes' => $modelItems,
             ], $details);
@@ -711,7 +716,6 @@ class CartLayer
             $model["shippingDetails"] = [];
             $model["shippingShippingCostRaw"] = $shippingCostWithTax;
         }
-        $model["shippingIsApplicable"] = $shippingIsApplicable;
         $model["shippingIsApplied"] = $shippingIsApplied;
 
 

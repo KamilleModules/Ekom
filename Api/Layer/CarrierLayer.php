@@ -13,7 +13,6 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Carrier\CarrierInterface;
 use Module\Ekom\Carrier\Collection\CarrierCollection;
-use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
@@ -32,38 +31,24 @@ class CarrierLayer
 {
 
     /**
-     * @return string, the name of the current carrier
+     * @return CarrierInterface|null
      */
-    public static function getCurrentCarrier()
+    public static function getCarrierInstanceById($carrierId, $shopId = null)
     {
-        if (true === CurrentCheckoutData::isStarted()) {
-            return CurrentCheckoutData::get('carrier');
+        $carrierId = (int)$carrierId;
+        $rows = self::getCarriers($shopId);
+        /**
+         * If the user SELECTED (in the checkout) a carrier, use this carrier
+         */
+        if (array_key_exists($carrierId, $rows)) {
+            $carrierName = $rows[$carrierId];
+            return self::getCarrierInstanceByName($carrierName);
+        } else {
+            XLog::error("[Ekom module] - CarrierLayer.getCarrierInstanceById: the carrier with 
+            id $carrierId was not found in the database");
         }
-        return self::getDefaultCarrier();
     }
 
-
-    /**
-     *
-     * Return the default carrier name, or null if not set.
-     * Note: It's possible (although I've never seen it so far) that an e-commerce does not use a carrier,
-     * and instead entice customers to fetch items directly from the physical store.
-     * That's why we don't throw an exception from this level, and let the method caller deal with the problem
-     * at his/her higher level.
-     *
-     *
-     * @param null $shopId
-     * @return null|string
-     */
-    public static function getDefaultCarrier($shopId = null)
-    {
-        $shopId = E::getShopId($shopId);
-        $carriers = CarrierLayer::getCarriers($shopId);
-        if ($carriers) {
-            return array_shift($carriers);
-        }
-        return null;
-    }
 
     /**
      * @param $shopId
@@ -282,18 +267,20 @@ order by h.priority asc
 
 
     /**
-     * @return false|int
+     * @param $carrierName
+     * @return null|CarrierInterface
      */
-    private static function getCarrierIdByName($name, $shopId = null)
+    private static function getCarrierInstanceByName($carrierName)
     {
-
-        $carriers = self::getCarriers($shopId);
-        foreach ($carriers as $id => $carrierName) {
-            if ($carrierName === $name) {
-                return (int)$id;
-            }
+        /**
+         * @var $coll CarrierCollection
+         */
+        $coll = X::get("Ekom_getCarrierCollection");
+        if (false !== ($instance = $coll->getCarrier($carrierName))) {
+            return $instance;
+        } else {
+            XLog::error("[Ekom module] - CarrierLayer: carrier $carrierName found in database, but not as a class in the fileSystem");
         }
-        return false;
     }
 
 
@@ -418,5 +405,6 @@ order by h.priority asc
             'totalShippingCost' => $totalShippingCost,
         ];
     }
+
 
 }

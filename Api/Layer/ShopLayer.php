@@ -8,6 +8,7 @@ use Core\Services\A;
 use Core\Services\X;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\DistanceEstimator\DistanceEstimatorInterface;
 use Module\Ekom\Utils\E;
@@ -15,23 +16,12 @@ use QuickPdo\QuickPdo;
 
 
 /**
+ *
  * shopPhysicalAddress
- * =====================
- * - id
- * - first_name
- * - last_name
- * - phone
- * - address
- * - city
- * - postcode
- * - supplement
- * - active
- * - country
- * - country_iso_code: the country iso code
- * - country: the country label
+ * --------------------
+ * @see EkomModels::shopPhysicalAddress()
  *
  *
-
  */
 class ShopLayer
 {

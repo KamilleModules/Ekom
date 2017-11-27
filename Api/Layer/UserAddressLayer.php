@@ -22,26 +22,49 @@ use QuickPdo\QuickPdoExceptionTool;
 
 /**
  *
- * addressModel -- @see EkomModels::addressModel()
- *
+ * addressModel
+ * -----------------
+ * @see EkomModels::addressModel()
  *
  */
 class UserAddressLayer
 {
 
+    private static $userAddresses = null;
 
     /**
-     * @return array|false, an addressModel as described at the top of this document.
-     *          Null is returned if for some reason the user doesn't have an address yet (which he/she should).
+     * @return null|array:addressModel
+     * @see EkomModels::addressModel()
      */
-    public static function getCurrentShippingAddress()
+    public static function getPreferredShippingAddress($userId, $langId = null)
     {
-        if (true === CurrentCheckoutData::isStarted()) {
-            return CurrentCheckoutData::get('shipping_address');
-        }
-        return self::getDefaultShippingAddress();
+        return self::getPreferredAddress($userId, 'shipping', $langId);
     }
 
+    /**
+     * @return null|array:addressModel
+     * @see EkomModels::addressModel()
+     */
+    public static function getPreferredBillingAddress($userId, $langId = null)
+    {
+        return self::getPreferredAddress($userId, 'billing', $langId);
+    }
+
+    /**
+     * @return null|array:addressModel
+     * @see EkomModels::addressModel()
+     */
+    public static function getAddressById($userId, $addressId, $langId = null)
+    {
+        $addressId = (int)$addressId;
+        $addresses = self::getUserAddresses($userId, $langId);
+        foreach ($addresses as $addr) {
+            if ($addressId === (int)$addr['address_id']) {
+                return $addr;
+            }
+        }
+        return null;
+    }
 
     /**
      * Return an array of user addresses.
@@ -49,20 +72,15 @@ class UserAddressLayer
      *
      *
      */
-    public static function getUserAddresses($userId = null, $langId = null)
+    public static function getUserAddresses($userId, $langId = null)
     {
-        if (null === $userId) {
-            $userId = E::getUserId(null);
-            if (null === $userId) {
-                return [];
-            }
-        }
-        $langId = E::getLangId($langId);
+        if (null === self::$userAddresses) { // assuming the userAddresses is not changed during the script
 
-        return A::cache()->get("Ekom.UserAddressLayer.getUserAddresses.$langId.$userId", function () use ($userId, $langId) {
+            $langId = E::getLangId($langId);
+            self::$userAddresses = A::cache()->get("Ekom.UserAddressLayer.getUserAddresses.$langId.$userId", function () use ($userId, $langId) {
 
 
-            $rows = QuickPdo::fetchAll("
+                $rows = QuickPdo::fetchAll("
 select 
 a.id as address_id,        
 a.first_name,        
@@ -95,39 +113,20 @@ order by h.`order` asc
         
         ");
 
-            // depending on the shop's country?
-            foreach ($rows as $k => $row) {
+                // depending on the shop's country?
+                foreach ($rows as $k => $row) {
 
 
-                list($fName, $fAddress) = self::getFormattedNameAndAddress($row);
-                $rows[$k]['fName'] = $fName;
-                $rows[$k]['fAddress'] = $fAddress;
-            }
+                    list($fName, $fAddress) = self::getFormattedNameAndAddress($row);
+                    $rows[$k]['fName'] = $fName;
+                    $rows[$k]['fAddress'] = $fAddress;
+                }
 
-            return $rows;
-        }, [
-            "ek_address",
-            "ek_user_has_address",
-            "ek_country_lang.delete",
-            "ek_country_lang.update",
-        ]);
-    }
+                return $rows;
+            });
 
-
-    /**
-     * @return null|array:addressModel (@top)
-     */
-    public static function getDefaultShippingAddress($userId = null, $langId = null)
-    {
-        return self::getDefaultAddress($userId, 'shipping', $langId);
-    }
-
-    /**
-     * @return null|array:addressModel (@top)
-     */
-    public static function getDefaultBillingAddress($userId = null, $langId = null)
-    {
-        return self::getDefaultAddress($userId, 'billing', $langId);
+        }
+        return self::$userAddresses;
     }
 
 
@@ -450,13 +449,16 @@ and `type`=:zetype
      *
      *
      */
-    private static function getDefaultAddress($userId, $type, $langId = null)
+    private static function getPreferredAddress($userId, $type, $langId = null)
     {
         $userAddresses = self::getUserAddresses($userId, $langId);
-        foreach ($userAddresses as $userAddress) {
-            if ('1' === $userAddress['is_default_' . $type . '_address']) {
-                return $userAddress;
+        if ($userAddresses) {
+            foreach ($userAddresses as $userAddress) {
+                if ('1' === $userAddress['is_default_' . $type . '_address']) {
+                    return $userAddress;
+                }
             }
+            return array_shift($userAddresses); // first address if no default address
         }
         return null;
 

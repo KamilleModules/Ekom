@@ -35,4 +35,27 @@ class EkomModels{
     private function addressModel(){
         return [];
     }
+
+
+    /**
+     * shopPhysicalAddress
+     * =====================
+     * - id
+     * - first_name
+     * - last_name
+     * - phone
+     * - address
+     * - city
+     * - postcode
+     * - supplement
+     * - active
+     * - country
+     * - country_iso_code: the country iso code
+     * - country: the country label
+     *
+     *
+     */
+    private function shopPhysicalAddress(){
+
+    }
 }
