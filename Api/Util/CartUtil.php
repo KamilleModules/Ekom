@@ -251,7 +251,7 @@ class CartUtil
         $userId = E::getUserId();
         $addressId = CurrentCheckoutData::getShippingAddressId();
         if (null !== $addressId) {
-            return UserAddressLayer::getAddressById($addressId, $userId, $langId);
+            return UserAddressLayer::getAddressById($userId, $addressId, $langId);
         }
 
         /**

@@ -20,6 +20,7 @@ use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 use QuickPdo\QuickPdoExceptionTool;
+use SaveOrmObject\Object\Ek\AddressObject;
 
 
 /**
@@ -71,8 +72,9 @@ class UserAddressLayer
 
     /**
      * Return an array of user addresses.
-     * Each address is an addressModel (see top of this document)
+     * Each address is an addressModel
      *
+     * @see EkomModels::addressModel()
      *
      */
     public static function getUserAddresses($userId, $langId = null)
@@ -87,6 +89,7 @@ a.id as address_id,
 a.first_name,        
 a.last_name,        
 a.phone,        
+a.phone_prefix,        
 a.address,        
 a.city,        
 a.postcode,        
@@ -272,7 +275,6 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
         $addresses = self::getUserAddresses($userId);
         if (count($addresses) < $maxAddresses) {
 
-
             if (null === $addressId) {
                 $ret = $this->createNewAddress($userId, $data);
             } else {
@@ -314,10 +316,8 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
     //--------------------------------------------
     public function updateAddress($userId, $addressId, array $data)
     {
-
         return QuickPdo::transaction(function () use ($userId, $data, $addressId) {
             $userId = (int)$userId;
-
 
             EkomApi::inst()->address()->update($data, [
                 "id" => $addressId,
@@ -340,8 +340,6 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
     {
         return QuickPdo::transaction(function () use ($userId, $data) {
             $userId = (int)$userId;
-
-
             $data['active'] = 1;
 
             $addressId = EkomApi::inst()->address()->create($data);

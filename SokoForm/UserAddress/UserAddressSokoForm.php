@@ -20,8 +20,13 @@ class UserAddressSokoForm
     /**
      * @return SokoFormInterface
      */
-    public static function getForm()
+    public static function getForm($name = null)
     {
+
+
+        if (null === $name) {
+            $name = "UserAddressSokoForm";
+        }
 
         /**
          * @todo-ling: add validation rules
@@ -37,7 +42,7 @@ class UserAddressSokoForm
         ];
 
         $form = SokoForm::create()
-            ->setName("UserAddressSokoForm")
+            ->setName($name)
             ->setValidationRulesLang(ApplicationRegistry::get("ekom.lang_iso"))
             ->addControl(SokoInputControl::create()
                 ->setName("first_name")
@@ -59,6 +64,10 @@ class UserAddressSokoForm
             ->addControl(SokoInputControl::create()
                 ->setName("city")
                 ->setLabel('Ville')
+            )
+            ->addControl(SokoInputControl::create()
+                ->setName("address")
+                ->setLabel('Adresse')
             )
             ->addControl(SokoInputControl::create()
                 ->setName("postcode")
@@ -87,6 +96,7 @@ class UserAddressSokoForm
         $form
             ->addValidationRule("first_name", SokoNotEmptyValidationRule::create())
             ->addValidationRule("last_name", SokoNotEmptyValidationRule::create())
+            ->addValidationRule("address", SokoNotEmptyValidationRule::create())
             ->addValidationRule("city", SokoNotEmptyValidationRule::create())
             ->addValidationRule("postcode", SokoNotEmptyValidationRule::create())
             /**

@@ -21,7 +21,6 @@ class EkomDataChangeDispatcher extends BasicDispatcher
                     // Ekom.UserAddressLayer.getUserAddresses.$userId.
 
                     $userId = array_shift($p);
-            E::dlog("ji $userId");
                     EkomDerbyCache::create()->deleteByPrefix("Ekom.UserAddressLayer.getUserAddresses.$userId");
 
                     break;

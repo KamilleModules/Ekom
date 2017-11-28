@@ -132,7 +132,7 @@ class CurrentCheckoutData
 
     public static function clean()
     {
-        EkomSession::set("currentCheckoutData", null);
+        EkomSession::set("currentCheckoutData", []);
     }
 
 
