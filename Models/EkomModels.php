@@ -14,7 +14,7 @@ class EkomModels
     /**
      * addressModel
      * ==================
-     * - address_id
+     * - address_id: string
      * - first_name
      * - last_name
      * - phone

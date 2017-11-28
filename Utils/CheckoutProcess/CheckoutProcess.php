@@ -14,6 +14,9 @@ use Module\Ekom\Utils\Traits\EkomContextAwareTrait;
 
 
 /**
+ *
+ *
+ *
  * checkoutProcessModel
  * -------------------------
  * - steps: an array of stepItem models, each of which having the following structure:
@@ -137,6 +140,8 @@ class CheckoutProcess implements CheckoutProcessInterface
 
             $this->debug("Context: " . ArrayToStringTool::toPhpArray($context));
 
+            $this->spreadContext($context);
+
             /**
              * What's the current step.
              * The algorithm is described in
@@ -160,6 +165,7 @@ class CheckoutProcess implements CheckoutProcessInterface
                 $currentStep = $clickedStep;
                 $couldBePosted = false;
                 $this->debug("currentStep becomes clicked step $currentStep");
+
             } else {
                 /**
                  * The default current step is either the lastVisitedStep (if it exists),
@@ -195,13 +201,16 @@ class CheckoutProcess implements CheckoutProcessInterface
             //--------------------------------------------
             // HANDLE IF IT'S POSTED
             //--------------------------------------------
-            if (true === $couldBePosted && $this->getStep($currentStep)->isPostedSuccessfully($this, $context)) {
-                $this->debug("Step $currentStep was actually posted successfully, moving to next step...");
-                /**
-                 * If the step is successfully posted, we automatically go to the very next step
-                 */
-                $currentStep = $this->getNextStep($currentStep); // null|string
-                $this->debug("...$currentStep");
+            if (true === $couldBePosted) {
+                $this->debug("Is $currentStep posted successfully?");
+                if ($this->getStep($currentStep)->isPostedSuccessfully($this, $context)) {
+                    $this->debug("Step $currentStep was actually posted successfully.");
+                    /**
+                     * If the step is successfully posted, we automatically go to the very next step
+                     */
+                    $currentStep = $this->getNextStep($currentStep); // null|string
+                    $this->debug("Moving to next active step: $currentStep");
+                }
             }
 
 
@@ -269,7 +278,7 @@ class CheckoutProcess implements CheckoutProcessInterface
 
     protected function debug($msg)
     {
-        XLog::log($msg, "debug.log");
+//        XLog::log($msg, "debug.log");
     }
 
     //--------------------------------------------
@@ -279,6 +288,7 @@ class CheckoutProcess implements CheckoutProcessInterface
     private function getStepModel($stepName)
     {
         if (null !== $stepName && array_key_exists($stepName, $this->steps)) {
+            $this->debug("Call $stepName.getModel");
             return $this->steps[$stepName]->getModel();
         }
         return [];
@@ -341,8 +351,10 @@ class CheckoutProcess implements CheckoutProcessInterface
          * Next, we will define those properties, but only for the relevant step.
          */
         foreach ($this->steps as $name => $step) {
+            $this->debug("Call $name.isValid");
             $ret[$name] = [
                 "name" => $name,
+//                "isActive" => $step->isActive(),
                 "isDone" => $step->isValid(),
                 "isCurrent" => false,
                 "model" => null,
@@ -392,6 +404,13 @@ class CheckoutProcess implements CheckoutProcessInterface
             }
         }
         return null;
+    }
+
+    private function spreadContext(array $context)
+    {
+        foreach ($this->steps as $step) {
+            $step->prepare($context);
+        }
     }
 
 }

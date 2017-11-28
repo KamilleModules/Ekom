@@ -5,6 +5,7 @@ namespace Module\Ekom\SokoForm\UserAddress;
 
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Layer\CountryLayer;
 use Module\Ekom\Utils\E;
 use SokoForm\Control\SokoChoiceControl;
 use SokoForm\Control\SokoInputControl;
@@ -15,6 +16,10 @@ use SokoForm\ValidationRule\SokoNotEmptyValidationRule;
 
 class UserAddressSokoForm
 {
+
+    /**
+     * @return SokoFormInterface
+     */
     public static function getForm()
     {
 
@@ -22,6 +27,7 @@ class UserAddressSokoForm
          * @todo-ling: add validation rules
          */
         $countryChoices = self::getCountryChoices();
+
 
         $isDefaultShippingChoice = [
             "1" => "En faire mon adresse de livraison par défaut",
@@ -63,17 +69,17 @@ class UserAddressSokoForm
                 ->setLabel('Supplément')
             )
             ->addControl(SokoChoiceControl::create()
-                ->setName("country")
+                ->setName("country_id")
                 ->setLabel('Pays de résidence')
-                ->setValue("FR")
+                ->setValue(CountryLayer::getCountryIdByIso("FR"))
                 ->setChoices($countryChoices)
             )
             ->addControl(SokoChoiceControl::create()
-                ->setName("is_default_shipping")
+                ->setName("is_default_shipping_address")
                 ->setChoices($isDefaultShippingChoice)
             )
             ->addControl(SokoChoiceControl::create()
-                ->setName("is_default_billing")
+                ->setName("is_default_billing_address")
                 ->setChoices($isDefaultBillingChoice)
             );
 
@@ -86,8 +92,8 @@ class UserAddressSokoForm
             /**
              * @todo-ling: allow modules to decide their phone prefixes and country (rush now)
              */
-            ->addValidationRule("phone_prefix_b2b", SokoInArrayValidationRule::create()->setArray(["33", "32"]))
-            ->addValidationRule("phone_b2b", SokoNotEmptyValidationRule::create())
+            ->addValidationRule("phone_prefix", SokoInArrayValidationRule::create()->setArray(["33", "32"]))
+            ->addValidationRule("phone", SokoNotEmptyValidationRule::create())
             ->addValidationRule("country", SokoInArrayValidationRule::create()
                 ->setErrorMessage("Veuillez choisir un pays")
                 ->setArray($countryChoices)
@@ -103,7 +109,7 @@ class UserAddressSokoForm
     private static function getCountryChoices($langId = null)
     {
         $langId = E::getLangId($langId);
-        $list = EkomApi::inst()->countryLayer()->getCountryList($langId, true);
+        $list = EkomApi::inst()->countryLayer()->getCountryList($langId);
         array_unshift($list, "Veuillez choisir un pays");
         return $list;
     }

@@ -38,6 +38,10 @@ class E
         XLog::log($msg, "cache.log");
     }
 
+    public static function dlog($msg)
+    {
+        XLog::log($msg, "debug.log");
+    }
 
     /**
      * @link https://github.com/KamilleModules/Ekom/tree/master/doc/cache/data-change-and-derby-cache.md

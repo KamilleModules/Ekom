@@ -9,10 +9,12 @@ use Bat\ArrayTool;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Kamille\Architecture\Registry\ApplicationRegistry;
+use Kamille\Services\XConfig;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
@@ -75,13 +77,11 @@ class UserAddressLayer
      */
     public static function getUserAddresses($userId, $langId = null)
     {
-        if (null === self::$userAddresses) { // assuming the userAddresses is not changed during the script
-
-            $langId = E::getLangId($langId);
-            self::$userAddresses = A::cache()->get("Ekom.UserAddressLayer.getUserAddresses.$langId.$userId", function () use ($userId, $langId) {
+        $langId = E::getLangId($langId);
+        return A::cache()->get("Ekom.UserAddressLayer.getUserAddresses.$userId.$langId", function () use ($userId, $langId) {
 
 
-                $rows = QuickPdo::fetchAll("
+            $rows = QuickPdo::fetchAll("
 select 
 a.id as address_id,        
 a.first_name,        
@@ -114,20 +114,17 @@ order by h.`order` asc
         
         ");
 
-                // depending on the shop's country?
-                foreach ($rows as $k => $row) {
+            // depending on the shop's country?
+            foreach ($rows as $k => $row) {
 
 
-                    list($fName, $fAddress) = self::getFormattedNameAndAddress($row);
-                    $rows[$k]['fName'] = $fName;
-                    $rows[$k]['fAddress'] = $fAddress;
-                }
+                list($fName, $fAddress) = self::getFormattedNameAndAddress($row);
+                $rows[$k]['fName'] = $fName;
+                $rows[$k]['fAddress'] = $fAddress;
+            }
 
-                return $rows;
-            });
-
-        }
-        return self::$userAddresses;
+            return $rows;
+        }, true);
     }
 
 
@@ -256,6 +253,7 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
      * - first_name
      * - last_name
      * - phone
+     * - phone_prefix
      * - address
      * - city
      * - postcode
@@ -270,11 +268,22 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
      */
     public function createAddress($userId, array $data, $addressId = null)
     {
-        if (null === $addressId) {
-            return $this->createNewAddress($userId, $data);
-        } else {
-            return $this->updateAddress($userId, $addressId, $data);
+        $maxAddresses = XConfig::get("Ekom.maxUserAddresses");
+        $addresses = self::getUserAddresses($userId);
+        if (count($addresses) < $maxAddresses) {
+
+
+            if (null === $addressId) {
+                $ret = $this->createNewAddress($userId, $data);
+            } else {
+                $ret = $this->updateAddress($userId, $addressId, $data);
+            }
+            if (true === $ret) {
+                E::dataChange("userAddress-$userId");
+            }
+            return $ret;
         }
+        throw new EkomUserMessageException("Vous ne pouvez pas avoir plus de $maxAddresses adresses");
     }
 
     /**

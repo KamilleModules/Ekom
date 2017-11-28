@@ -17,6 +17,7 @@ class SokoLoginCheckoutProcessStep extends BaseCheckoutProcessStep
 
     public function __construct()
     {
+        parent::__construct();
         $this->model = null;
         $this->response = null;
     }

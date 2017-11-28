@@ -11,6 +11,7 @@ use Kamille\Architecture\Response\Web\RedirectResponse;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Exception\UserNotConnectedException;
+use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 
 class ConnexionLayer
@@ -76,6 +77,10 @@ class ConnexionLayer
     public function connect(array $data)
     {
         SessionUser::connect($data, E::conf("sessionTimeout"));
+        /**
+         * @proposal: We start the checkout data over every time the user connects.
+         */
+        CurrentCheckoutData::clean();
     }
 
     public function isConnected()

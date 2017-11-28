@@ -21,10 +21,12 @@ use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoShippingCheckoutProcessStep;
  */
 class EkomCheckoutProcess extends CheckoutProcess
 {
+
+
     protected function init()
     {
         $this->addStep(SokoLoginCheckoutProcessStep::create(), "login");
-        $this->addStep(SokoFirstShippingAddressCheckoutProcessStep::create(), "atLeastOneAddress");
+//        $this->addStep(SokoFirstShippingAddressCheckoutProcessStep::create(), "firstShippingAddress");
         $this->addStep(SokoShippingCheckoutProcessStep::create(), "shipping");
     }
 

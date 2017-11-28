@@ -40,6 +40,7 @@ class ProductPageModel
         if (false !== ($productId = ProductLayer::getProductIdByRef($reference))) {
             $productDetails = ProductBoxEntityUtil::filterProductDetails($_GET);
             $head = ProductBoxLayer::getProductBoxByProductId($productId, $productDetails);
+//            az($head);
             //--------------------------------------------
             // PREPARING TAIL
             //--------------------------------------------

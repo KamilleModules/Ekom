@@ -39,6 +39,7 @@ class GeneratedUser extends TableCrudObject
 			'date_creation' => '',
 			'mobile' => '',
 			'phone' => '',
+			'phone_prefix' => '',
 			'newsletter' => 0,
 			'gender' => 0,
 			'birthday' => null,

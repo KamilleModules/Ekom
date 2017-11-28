@@ -1,6 +1,6 @@
 Checkout process
 =====================
-2017-11-28
+2017-11-24
 
 Work in progress
 
@@ -40,9 +40,6 @@ This schema illustrates this idea of an always available CheckoutProcess:
 
 the CheckoutProcess flow
 ---------------------------
-
-[checkout-process-algorithm.pdf](https://github.com/KamilleModules/Ekom/tree/master/doc/ekom-schemas/checkout-process-algorithm.pdf)
-
 
 I learned it the hard way, but the flow is VERY important.
 

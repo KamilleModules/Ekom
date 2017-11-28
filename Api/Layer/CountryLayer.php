@@ -51,7 +51,7 @@ order by cl.label asc
     }
 
 
-    public function getCountryIdByIso($iso)
+    public static function getCountryIdByIso($iso)
     {
         return QuickPdo::fetch("select id from ek_country where iso_code=:iso", [
             "iso" => $iso,

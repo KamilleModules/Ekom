@@ -9,21 +9,30 @@ use Module\Ekom\Utils\CheckoutProcess\CheckoutProcessInterface;
 /**
  * Order of calls of this class' methods (synopsis):
  * --------------------------------------
+ * - prepare
  * - isValid
- * - isPostedSuccessfully (like right now)
- *      This method actually asks to:
- *          - check whether or not this (step) form was posted
- *          - if it's posted, is it successful (return the result)
+ * - ?isPostedSuccessfully
+ *          This method is called, except for one case:
+ *          if the "non last" step's form is successfully posted, then the "next step"'s  isPostedSuccessfully
+ *          method is not called.
  *
- *      So, yes, this method handles the form submission.
+ *          After a successful isPostedSuccessfully method, every step gets the opportunity to update its
+ *          state (active/inactive) with updateState method.
+ *
+ *          When a step is inactive, it's not displayed in the view at all.
  *
  * - getModel
+ *
+ *
+ *
  *
  *
  */
 interface CheckoutProcessStepInterface
 {
 
+
+    public function prepare(array $context);
 
     public function isValid();
 
@@ -44,4 +53,15 @@ interface CheckoutProcessStepInterface
 
 
     public function getModel();
+
+    //--------------------------------------------
+    // ACTIVE/NOT ACTIVE
+    // allow us to dynamically disable/re-enable steps
+    //--------------------------------------------
+//    public function updateState();
+//
+//    /**
+//     * @return bool
+//     */
+//    public function isActive();
 }

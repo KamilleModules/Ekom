@@ -4,6 +4,8 @@ namespace Module\Ekom\Utils\DataChange;
 
 
 use Dispatcher\Basic\BasicDispatcher;
+use Module\Ekom\Cache\DerbyCache\EkomDerbyCache;
+use Module\Ekom\Utils\E;
 
 class EkomDataChangeDispatcher extends BasicDispatcher
 {
@@ -11,12 +13,22 @@ class EkomDataChangeDispatcher extends BasicDispatcher
     {
         parent::__construct();
         $this->on("dataChange", function ($identifier) {
-            switch ($identifier) {
-                case "":
+            $p = explode('-', $identifier);
+            $firstPart = array_shift($p);
+            switch ($firstPart) {
+                case "userAddress":
+
+                    // Ekom.UserAddressLayer.getUserAddresses.$userId.
+
+                    $userId = array_shift($p);
+            E::dlog("ji $userId");
+                    EkomDerbyCache::create()->deleteByPrefix("Ekom.UserAddressLayer.getUserAddresses.$userId");
+
                     break;
                 default:
                     break;
             }
+
         });
     }
 
