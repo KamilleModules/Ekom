@@ -100,9 +100,16 @@ class CurrentCheckoutData
         self::set("payment_method_id", $id);
     }
 
+
+    public static function all()
+    {
+        return EkomSession::get("currentCheckoutData", []);
+    }
+
+
     public static function get($key, $default = null)
     {
-        $data = self::getData();
+        $data = self::all();
         if (array_key_exists($key, $data)) {
             return $data[$key];
         }
@@ -111,14 +118,14 @@ class CurrentCheckoutData
 
     public static function set($key, $value)
     {
-        $data = self::getData();
+        $data = self::all();
         $data[$key] = $value;
         EkomSession::set("currentCheckoutData", $data);
     }
 
     public static function remove($key)
     {
-        $data = self::getData();
+        $data = self::all();
         unset($data[$key]);
         EkomSession::set("currentCheckoutData", $data);
     }
@@ -133,15 +140,5 @@ class CurrentCheckoutData
     public static function clean()
     {
         EkomSession::set("currentCheckoutData", []);
-    }
-
-
-
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    private static function getData()
-    {
-        return EkomSession::get("currentCheckoutData", []);
     }
 }

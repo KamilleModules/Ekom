@@ -4,6 +4,7 @@
 namespace Module\Ekom\Api\Layer;
 
 use Authenticate\SessionUser\SessionUser;
+use Bat\ArrayTool;
 use Bat\SessionTool;
 use Core\Services\Hooks;
 use Core\Services\X;
@@ -14,8 +15,10 @@ use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Exception\IncompleteOrderException;
+use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Carrier\CarrierInterface;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\PaymentMethodHandler\Collection\PaymentMethodHandlerCollectionInterface;
 use Module\Ekom\Session\EkomSession;
@@ -35,7 +38,6 @@ class CheckoutLayer
 {
 
 
-
     private $_cartLayer;
     protected $sessionName;
     protected $usePayment;
@@ -48,6 +50,66 @@ class CheckoutLayer
         $this->uniqueReferenceType = 'ekom';
         $this->usePayment = true;
     }
+
+    /**
+     * This method places an order in the database and returns the id of the order.
+     * It
+     *
+     *
+     * @param array $data
+     * - user_id
+     * - shop_id
+     * - lang_id
+     * - currency_id
+     * - ?carrier_id              (only if at least an item needs to be shipped)
+     * - ?shipping_address_id    (only if at least an item needs to be shipped)
+     * - ?shop_address_id        (only if the shipping_address_id is defined)
+     * - billing_address_id
+     * - payment_method_id
+     *
+     * @todo-ling: ensure that shop_address_id is sent
+     *
+     * @param array $cartModel
+     * @see EkomModels::cartModel()
+     *
+     * @throws EkomUserMessageException
+     */
+    public static function placeOrder(array $data, array $cartModel)
+    {
+        /**
+         * 1. check (and hooks)
+         * 2. collect (&) (and hooks)
+         * 3. db insert
+         */
+        //--------------------------------------------
+        // CHECKING DATA
+        //--------------------------------------------
+        $importantKeys = [
+            'user_id',
+            'shop_id',
+            'lang_id',
+            'currency_id',
+            'billing_address_id',
+            'payment_method_id',
+        ];
+        if (true === CartUtil::hasAtLeastOneShippableItem($cartModel)) {
+            $importantKeys = array_merge($importantKeys, [
+                'carrier_id',
+                'shipping_address_id',
+                'shop_address_id',
+            ]);
+        }
+        $missing = ArrayTool::getMissingKeys($data, $importantKeys);
+        if(0===count($missing)){
+
+        }
+        else{
+
+        }
+
+    }
+
+
 
 
     //--------------------------------------------
@@ -294,120 +356,6 @@ class CheckoutLayer
             }
         }
         return false;
-    }
-
-
-    public function setShippingAddressId($id)
-    {
-//        $this->setSessionValue("shipping_address_id", $id, $options); // old amazon style
-        $this->initOrderModel();
-        $_SESSION['ekom'][$this->sessionName]['shipping_address_id'] = $id;
-    }
-
-
-    /**
-     * A general comment pertaining to the order, not to a specific address.
-     */
-    public function setShippingComment($comment)
-    {
-        $this->initOrderModel();
-        $_SESSION['ekom'][$this->sessionName]['shipping_comment'] = $comment;
-    }
-
-
-    public function setBillingAddressId($id)
-    {
-        $this->initOrderModel();
-        $_SESSION['ekom'][$this->sessionName]['billing_address_id'] = $id;
-    }
-
-    public function setShippingAndBillingAreSynced($bool)
-    {
-
-        $this->initOrderModel();
-        $_SESSION['ekom'][$this->sessionName]['shipping_billing_synced'] = $bool;
-        if (true === $bool) {
-            $_SESSION['ekom'][$this->sessionName]['billing_address_id'] = $_SESSION['ekom'][$this->sessionName]['shipping_address_id'];
-        }
-    }
-
-
-    public function setShippingAndBillingAddressId($id)
-    {
-        $this->initOrderModel();
-        $_SESSION['ekom'][$this->sessionName]['shipping_address_id'] = $id;
-        $_SESSION['ekom'][$this->sessionName]['billing_address_id'] = $id;
-    }
-
-    public function setPaymentMethod($id, array $paymentMethodOptions = [])
-    {
-        $this->initOrderModel();
-        $_SESSION['ekom'][$this->sessionName]['payment_method_id'] = $id;
-        $_SESSION['ekom'][$this->sessionName]['payment_method_options'] = $paymentMethodOptions;
-    }
-
-//    /**
-//     * If you use this method, it is assumed that your payment_method_options is an array.
-//     * (usually, this should be the case)
-//     */
-//    public function setPaymentOptionProperty($key, $value)
-//    {
-//        $this->initOrderModel();
-//        $_SESSION['ekom'][$this->sessionName]['payment_method_options'][$key] = $value;
-//    }
-
-
-    /**
-     * @return array
-     *          - billing_address_id: int|null,
-     *                                  null if the user has no address
-     *                                  int if the user has at least one address
-     *          - shipping_address_id: int|null, same logic as billing_address
-     *          - carrier_id: int|null, the carrier id chosen by the user, or a default carrier id otherwise,
-     *                              or null if there is no carrier at all (should not happen).
-     *
-     */
-    public function getShippingInfo()
-    {
-        $this->initOrderModel();
-        $a = EkomSession::get($this->sessionName);
-        $ret = [];
-        $ret["billing_address_id"] = $a["billing_address_id"];
-        $ret["shipping_address_id"] = $a["shipping_address_id"];
-        $ret["carrier_name"] = $a["carrier_name"];
-        $ret["shipping_billing_synced"] = $a["shipping_billing_synced"];
-        return $ret;
-    }
-
-
-    /**
-     * @return array
-     *          - payment_method_id: int|null
-     *          - payment_method_options: array
-     *
-     */
-    public function getPaymentInfo()
-    {
-        $this->initOrderModel();
-        $a = EkomSession::get($this->sessionName);
-        $ret = [
-            'payment_method_id' => $a['payment_method_id'],
-            'payment_method_options' => $a['payment_method_options'],
-        ];
-        return $ret;
-    }
-
-    public function setPaymentMethodFeedback(array $feedBack)
-    {
-        $this->initOrderModel();
-        $_SESSION['ekom'][$this->sessionName]['payment_method_feedback'] = $feedBack;
-    }
-
-
-    public function setCarrierName($name)
-    {
-        $this->initOrderModel();
-        $_SESSION['ekom'][$this->sessionName]['carrier_name'] = $name;
     }
 
 

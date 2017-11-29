@@ -22,6 +22,25 @@ use Module\ThisApp\ThisAppConfig;
 class CartUtil
 {
 
+
+    /**
+     *
+     * Return whether or not the cart contains at least one item that needs to be shipped.
+     * This is useful for instance for:
+     * - checkout: knowing whether or not to display the shipping step
+     * - cart: do we have shipping fee?
+     *
+     *
+     * @param array $cartModel
+     * @see EkomModels::cartModel()
+     * @return bool
+     *
+     */
+    public static function hasAtLeastOneShippableItem(array $cartModel)
+    {
+        return ($cartModel['cartTotalWeight'] > 0);
+    }
+
     /**
      * @param null $shopId
      * @param null $langId
