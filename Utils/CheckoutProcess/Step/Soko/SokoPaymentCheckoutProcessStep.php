@@ -6,6 +6,7 @@ namespace Module\Ekom\Utils\CheckoutProcess\Step\Soko;
 
 use Kamille\Utils\Claws\Error\ClawsWidgetError;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Layer\PaymentLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Exception\EkomUserMessageException;
@@ -39,7 +40,7 @@ class SokoPaymentCheckoutProcessStep extends BaseCheckoutProcessStep
 
     public function isPostedSuccessfully(CheckoutProcessInterface $cp, array $context)
     {
-
+        $this->shopId = $context['shop_id'];
         return false;
     }
 
@@ -51,7 +52,8 @@ class SokoPaymentCheckoutProcessStep extends BaseCheckoutProcessStep
     public function getModel()
     {
         return [
-            "empty" => "for now",
+            "paymentMethodItems" => PaymentLayer::getPaymentMethodHandlersItems($this->shopId),
+            "uriPaymentThankYou" => E::link("Ekom_checkoutOnePageThankYou"),
         ];
     }
 }

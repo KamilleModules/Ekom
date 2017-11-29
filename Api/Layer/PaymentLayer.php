@@ -5,16 +5,14 @@ namespace Module\Ekom\Api\Layer;
 
 
 use ArrayToString\ArrayToStringTool;
-use Authenticate\SessionUser\SessionUser;
 use Core\Services\A;
 use Core\Services\X;
-use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
-use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\PaymentMethodHandler\Collection\PaymentMethodHandlerCollectionInterface;
 use Module\Ekom\PaymentMethodHandler\PaymentMethodHandlerInterface;
+use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
@@ -32,6 +30,111 @@ class PaymentLayer
 {
 
 
+    /**
+     * @return array of id => item, each of which:
+     *      - id: the id of the handler
+     *      - name: the name of the handler
+     *      - model: array ( the model returned by the PaymentMethodHandlerInterface.getModel method )
+     *      - config: array (from the database ek_shop_has_payment_method.configuration )
+     *      - selected: bool, whether this payment method item has focus
+     */
+    public static function getPaymentMethodHandlersItems($shopId = null)
+    {
+        $methods = self::getShopPaymentMethods($shopId);
+        $ret = [];
+        /**
+         * @var $collection PaymentMethodHandlerCollectionInterface
+         */
+        $collection = X::get("Ekom_getPaymentMethodHandlerCollection");
+
+        $paymentMethodId = CurrentCheckoutData::getPaymentMethodId();
+        if (null === $paymentMethodId) {
+            $paymentMethodId = self::getPreferredPaymentMethodId($shopId);
+        }
+
+
+        foreach ($methods as $method) {
+            $id = $method['id'];
+            $name = $method['name'];
+            $conf = $method['configuration'];
+            $handler = $collection->get($name);
+            $model = $handler->getModel();
+
+
+            $ret[$id] = [
+                "id" => $id,
+                "name" => $name,
+                "model" => $model,
+                "config" => $conf,
+                "selected" => (int)$id === (int)$paymentMethodId,
+            ];
+        }
+        return $ret;
+    }
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    /**
+     * Return the payment methods available for a given shop.
+     * Each item:
+     * - id: string
+     * - name: string
+     * - configuration: array
+     */
+    private static function getShopPaymentMethods($shopId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        return A::cache()->get("Ekom.PaymentLayer.getShopPaymentMethods.$shopId", function () use ($shopId) {
+
+            $ret = QuickPdo::fetchAll("
+select
+m.id, 
+m.name,
+h.configuration
+
+from ek_shop_has_payment_method h 
+inner join ek_payment_method m on m.id=h.payment_method_id 
+
+where h.shop_id=$shopId
+order by h.`order` asc 
+        ");
+
+            foreach ($ret as $k => $item) {
+                $conf = unserialize($item['configuration']);
+                if (false === $conf) {
+                    $conf = [];
+                }
+                $item['configuration'] = $conf;
+                $ret[$k] = $item;
+            }
+
+            return $ret;
+
+        });
+    }
+
+    /**
+     * @param null $shopId
+     * @return int
+     * @throws EkomException
+     */
+    private static function getPreferredPaymentMethodId($shopId = null)
+    {
+        $allMethods = self::getShopPaymentMethods($shopId);
+        if (count($allMethods) > 0) {
+            $row = array_shift($allMethods);
+            return (int)$row['id'];
+        }
+        throw new EkomException("This shop must have at least one payment method assigned to it before you can continue");
+    }
+
+
+
+    //--------------------------------------------
+    // DEPRECATED BELOW
+    //--------------------------------------------
     /**
      * @return array:paymentMethodModel
      * @see PaymentLayer
@@ -83,47 +186,9 @@ where shop_id=$shopId and payment_method_id=$id
     }
 
 
-    /**
-     * @return array
-     *              - name => [
-     *                  - id: the payment method id
-     *                  - (all properties of payment config)
-     *              ]
-     */
-    public function getPaymentMethodHandlers()
-    {
-        $ret = [];
-        /**
-         * @var $coll PaymentMethodHandlerCollectionInterface
-         */
-        $coll = X::get("Ekom_getPaymentMethodHandlerCollection");
-        $all = $coll->all();
-        $name2Ids = $this->getPaymentMethodName2Ids();
-        foreach ($all as $name => $item) {
-            $ret[$name] = $item->getConfig();
-            if (!array_key_exists($name, $name2Ids)) {
-                XLog::error("[Ekom module] - name $name doesn't exist in this shop: " . ArrayToStringTool::toPhpArray($name2Ids));
-            }
-            $ret[$name]['id'] = $name2Ids[$name];
-
-        }
-        return $ret;
-    }
-
-
     public function getPaymentMethods($shopId = null)
     {
         return self::getShopPaymentMethods($shopId);
-    }
-
-    public function getPaymentMethodName2Ids($shopId = null)
-    {
-        $ret = [];
-        $methods = self::getShopPaymentMethods($shopId);
-        foreach ($methods as $method) {
-            $ret[$method['name']] = $method['id'];
-        }
-        return $ret;
     }
 
 
@@ -138,38 +203,14 @@ where shop_id=$shopId and payment_method_id=$id
         return false;
     }
 
-
-
-
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    /**
-     * Return the payment methods available for a given shop.
-     */
-    private static function getShopPaymentMethods($shopId = null)
+    private static function getPaymentMethodName2Ids($shopId = null)
     {
-        $shopId = E::getShopId($shopId);
-        return A::cache()->get("Ekom.PaymentLayer.getShopPaymentMethods.$shopId", function () use ($shopId) {
-
-            return QuickPdo::fetchAll("
-select
-m.id, 
-m.name,
-h.configuration
-
-from ek_shop_has_payment_method h 
-inner join ek_payment_method m on m.id=h.payment_method_id 
-
-where h.shop_id=$shopId
-order by h.`order` asc 
-        ");
-
-        }, [
-            "ek_shop_has_payment_method.create",
-            "ek_shop_has_payment_method.delete.$shopId",
-            "ek_shop_has_payment_method.update.$shopId",
-            "ek_payment_method",
-        ]);
+        $ret = [];
+        $methods = self::getShopPaymentMethods($shopId);
+        foreach ($methods as $method) {
+            $ret[$method['name']] = $method['id'];
+        }
+        return $ret;
     }
+
 }

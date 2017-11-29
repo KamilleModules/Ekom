@@ -181,6 +181,31 @@ class EkomModels
 
 
     /**
+     * creditCartItem
+     * ====================
+     * - id
+     * - user_id
+     * - type  (VISA, ...given by ingenico Card_Brand)
+     * - last_four_digits
+     * - owner
+     * - expiration_date
+     * - alias
+     * - active
+     * - is_default: bool
+     * - fExpirationDate: string
+     * - expired: bool
+     * - img: string, uri to a card icon
+     * - label: string, enhanced version of the card type
+     *
+     *
+     */
+    private function creditCardItem()
+    {
+        return [];
+    }
+
+
+    /**
      * shippingContextModel
      * =====================
      *

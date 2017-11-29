@@ -31,7 +31,7 @@ use QuickPdo\QuickPdo;
  * @link https://github.com/KamilleModules/Ekom/tree/master/doc/checkout/checkout-placeorder-and-currentcheckoutdata.md
  *
  */
-class CheckoutLayer
+class CheckoutLayerOld2
 {
 
 
@@ -639,8 +639,8 @@ class CheckoutLayer
                  */
                 $userAddressLayer = EkomApi::inst()->userAddressLayer();
                 $userId = E::getUserId();
-                $billingAddress = UserAddressLayer::getPreferredBillingAddress($userId);
-                $shippingAddress = UserAddressLayer::getPreferredShippingAddress($userId);
+                $billingAddress = $userAddressLayer->getDefaultBillingAddress($userId);
+                $shippingAddress = $userAddressLayer->getDefaultShippingAddress($userId);
 
 
                 $shippingAddressId = null;

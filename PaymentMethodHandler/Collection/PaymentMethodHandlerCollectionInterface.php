@@ -14,6 +14,7 @@ interface PaymentMethodHandlerCollectionInterface
      */
     public function all();
 
+    public function setPaymentMethodHandler($name, PaymentMethodHandlerInterface $handler);
 
     /**
      * @param $name
