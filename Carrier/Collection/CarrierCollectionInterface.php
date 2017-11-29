@@ -15,6 +15,8 @@ interface CarrierCollectionInterface
      */
     public function getCarrier($name);
 
+    public function addCarrier($name, CarrierInterface $carrier);
+
     /**
      * @return CarrierInterface[], array of carrier names => carrier instance
      */

@@ -206,6 +206,63 @@ class EkomModels
 
 
     /**
+     * orderModel
+     * ====================
+     *
+     *
+     * - user_id: int
+     * - reference: string
+     * - date: datetime
+     * - pay_identifier: string
+     * - tracking_number: string
+     * - user_info:
+     * ----- groups: comma separated group names
+     * ----- id
+     * ----- shop_id
+     * ----- email
+     * ----- pass
+     * ----- pseudo
+     * ----- first_name
+     * ----- last_name
+     * ----- date_creation
+     * ----- mobile
+     * ----- phone
+     * ----- phone_prefix
+     * ----- newsletter
+     * ----- gender
+     * ----- birthday
+     * ----- active
+     *
+     * - shop_info:
+     * ----- id:
+     * ----- label:
+     * ----- host:
+     * ----- lang_id:
+     * ----- currency_id:
+     * ----- currency_iso_code:
+     * ----- currency_exchange_rate:
+     * ----- timezone_id:
+     * ----- timezone:
+     * ----- address: <shop>PhysicalAddress> -- @see EkomModels::shopPhysicalAddress
+     *
+     * - shipping_address: <addressModel> | false (false if shipping address doesn't apply) -- @see EkomModels::addressModel()
+     * - billing_address: <addressModel> -- @see EkomModels::addressModel()
+     *
+     *
+     * - order_details:
+     * ----- cartModel without itemsGroupedBySeller -- @see EkomModels::cartModel()
+     * ----- payment_method_id: the payment method id
+     * ----- payment_method_details: array
+     * ----- ?carrier_id:
+     * ----- ?carrier_details: array
+     */
+    private function orderModel()
+    {
+        return [];
+    }
+
+
+    /**
      * shippingContextModel
      * =====================
      *

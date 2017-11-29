@@ -11,4 +11,11 @@ abstract class BasePaymentMethodHandler implements PaymentMethodHandlerInterface
     {
         return new static();
     }
+
+    public function placeOrder(array &$orderModel, array $cartModel, array $orderData)
+    {
+
+    }
+
+
 }

@@ -10,6 +10,23 @@ use QuickPdo\QuickPdo;
 class UserGroupLayer
 {
 
+
+    /**
+     * @param $userId
+     * @return array of groupId => groupName
+     */
+    public static function getUserGroups($userId)
+    {
+        $userId = (int)$userId;
+        return QuickPdo::fetchAll("
+select g.id, g.name 
+from ek_user_group g 
+inner join ek_user_has_user_group h on h.user_group_id=g.id 
+where h.user_id=$userId        
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
     /**
      * Create a group if necessary and return it's id.
      *

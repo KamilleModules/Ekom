@@ -6,6 +6,7 @@ namespace Module\Ekom\Utils\CheckoutProcess\Step\Soko;
 
 use Kamille\Utils\Claws\Error\ClawsWidgetError;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Exception\EkomUserMessageException;
@@ -119,6 +120,13 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                 }
 
 
+                //
+                $selectedShopAddressId = CurrentCheckoutData::getShopAddressId();
+                if (null === $selectedShopAddressId) {
+                    $selectedShopAddress = ShopLayer::getDefaultShopAddress($this->langId);
+                    $selectedShopAddressId = $selectedShopAddress['id'];
+                }
+
                 // which one is selected in the gui?
                 $selectedAddressId = CurrentCheckoutData::getShippingAddressId();
                 if (null === $selectedAddressId) {
@@ -162,6 +170,7 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                 $ret['shippingAddress'] = $shippingAddress;
                 $ret['billingAddress'] = $billingAddress;
                 $ret['carrierId'] = $selectedCarrierId;
+                $ret['shopAddressId'] = $selectedShopAddressId;
                 $ret['shippingComments'] = $shippingComments;
                 $ret['context'] = $this->context;
             } else {

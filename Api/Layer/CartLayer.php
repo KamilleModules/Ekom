@@ -385,7 +385,9 @@ class CartLayer
         if (true === SessionUser::isConnected()) {
             $shopId = E::getShopId();
             if (null !== ($userId = SessionUser::getValue('id'))) {
-                $this->getCartLocalStore()->saveUserCart($userId, $shopId, $_SESSION['ekom'][$this->sessionName][$shopId]);
+                if (array_key_exists($shopId, $_SESSION['ekom'][$this->sessionName])) {
+                    $this->getCartLocalStore()->saveUserCart($userId, $shopId, $_SESSION['ekom'][$this->sessionName][$shopId]);
+                }
             } else {
                 XLog::error("[$this->moduleName] - $this->className: in shop#$shopId, this user doesn't have an id: " . ArrayToStringTool::toPhpArray($_SESSION));
             }
@@ -784,7 +786,6 @@ class CartLayer
         $carrierId = CarrierLayer::getShopDefaultCarrierId($shopId);
         return CarrierLayer::getCarrierInstanceById($carrierId, $shopId);
     }
-
 
 
 }

@@ -13,6 +13,7 @@ use Kamille\Services\XLog;
 use ListParams\ListParamsInterface;
 use ListParams\Model\QueryDecorator;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\ReferenceProvider;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
@@ -20,6 +21,47 @@ use QuickPdo\QuickPdo;
 
 class OrderLayer
 {
+
+
+    public static function addOrderStatusByCode($orderId, $code, $shopId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        $code2Ids = self::getCode2Ids($shopId);
+        if (array_key_exists($code, $code2Ids)) {
+            $orderStatusId = $code2Ids[$code];
+            return EkomApi::inst()->orderHasOrderStatus()->create([
+                "order_id" => $orderId,
+                "order_status_id" => $orderStatusId,
+                "date" => date("Y-m-d H:i:s"),
+            ]);
+        }
+        throw new EkomException("Unknown code: $code");
+    }
+
+    public static function getCode2Ids($shopId)
+    {
+        return A::cache()->get("Ekom.OrderLayer.$shopId", function () use ($shopId) {
+            return EkomApi::inst()->orderStatus()->readKeyValues("code", "id", [
+                "where" => [
+                    ["shop_id", "=", $shopId],
+                ],
+            ]);
+        });
+    }
+
+    public static function countOrders()
+    {
+        return QuickPdo::fetch("select count(*) as count from ek_order", [], \PDO::FETCH_COLUMN);
+    }
+
+    public static function countUserOrders($userId)
+    {
+        $userId = (int)$userId;
+        return QuickPdo::fetch("
+select count(*) as count from ek_order 
+where user_id=$userId        
+        ", [], \PDO::FETCH_COLUMN);
+    }
 
 
     /**
@@ -109,28 +151,6 @@ order by `date` desc
         "))) {
             $this->unserializeRow($row);
             return $row;
-        }
-        return false;
-    }
-
-    public function addOrderStatusByEkomAction($orderId, $ekomAction)
-    {
-
-        if (false !== ($code = X::get("Ekom_StatusProvider")->getCode($ekomAction))) {
-
-
-            EkomApi::inst()->initWebContext();
-            $shopId = ApplicationRegistry::get("ekom.shop_id");
-            $code2Ids = $this->getCode2Ids($shopId);
-            if (array_key_exists($code, $code2Ids)) {
-                $orderStatusId = $code2Ids[$code];
-                return EkomApi::inst()->orderHasOrderStatus()->create([
-                    "order_id" => $orderId,
-                    "order_status_id" => $orderStatusId,
-                    "date" => date("Y-m-d H:i:s"),
-                ]);
-            }
-            XLog::error("[Ekom module] - OrderLayer: code not found ($code) for shop $shopId");
         }
         return false;
     }
@@ -336,40 +356,11 @@ from ek_order o where o.user_id=$userId";
     }
 
 
-    public function countUserOrders($userId)
-    {
-        $ret = 0;
-        $userId = (int)$userId;
-        if (false !== ($row = QuickPdo::fetch("
-select count(*) as count from ek_order 
-where user_id=$userId        
-        "))
-        ) {
-            $ret = (int)$row['count'];
-        }
-        return $ret;
-    }
+
 
     //--------------------------------------------
     //
     //--------------------------------------------
-
-    public function getCode2Ids($shopId)
-    {
-        return A::cache()->get("Ekom.OrderLayer.$shopId", function () use ($shopId) {
-            return EkomApi::inst()->orderStatus()->readKeyValues("code", "id", [
-                "where" => [
-                    ["shop_id", "=", $shopId],
-                ],
-            ]);
-        }, [
-            "ek_order_status.create",
-            "ek_order_status.delete.$shopId",
-            "ek_order_status.update.$shopId",
-        ]);
-    }
-
-
     private function unserializeRow(array &$row)
     {
         $row['user_info'] = unserialize($row['user_info']);

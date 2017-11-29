@@ -13,16 +13,6 @@ namespace Module\Ekom\Utils\CheckoutProcess;
 interface CheckoutProcessInterface
 {
 
-
-    public function setShippingAddressId($id);
-
-    public function setBillingAddressId($id);
-
-    public function setPaymentMethodId($id);
-
-    public function setCarrierId($id);
-
-
     public function set($key, $value);
 
     public function get($key, $default = null, $throwEx = false);

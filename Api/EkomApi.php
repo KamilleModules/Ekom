@@ -26,6 +26,7 @@ use Module\Ekom\Api\Layer\ConditionLayer;
 use Module\Ekom\Api\Layer\ConnexionLayer;
 use Module\Ekom\Api\Layer\CountryLayer;
 use Module\Ekom\Api\Layer\CouponLayer;
+use Module\Ekom\Api\Layer\CurrencyLayer;
 use Module\Ekom\Api\Layer\DiscountLayer;
 use Module\Ekom\Api\Layer\FeatureLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
@@ -440,6 +441,15 @@ and h.lang_id=$langId
     public function countryLayer()
     {
         return $this->getLayer('countryLayer');
+    }
+
+
+    /**
+     * @return CurrencyLayer
+     */
+    public function currencyLayer()
+    {
+        return $this->getLayer('currencyLayer');
     }
 
     /**

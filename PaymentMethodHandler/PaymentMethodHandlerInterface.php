@@ -15,13 +15,30 @@ interface PaymentMethodHandlerInterface
      */
     public function getModel();
 
+
     /**
-     * This method is called during a call to the ekom.placeOrder method: after it starts and before it ends.
-     * You should use this step to make the payment transaction (if any) with external apis.
+     * If the handler needs to communicate with external apis to get some kind of "financial transaction identifier",
+     * this is where it happens.
+     *
+     * The transaction identifier is then appended to the orderModel, using the key:
+     * - pay_identifier
+     *
+     * Also, we can pass an array of parameters using the key:
+     *
+     * - payment_method_details
      *
      *
+     *
+     * @param array $orderModel
+     * @see EkomModels::orderModel()
+     * @param array $cartModel
+     * @see EkomModels::cartModel()
+     * @param array $orderData , the data collected during the checkout process
+     * @see CheckoutOrderUtil::placeOrder()
+     *
+     * @return void
      */
-//    public function placeOrder(array $orderModel);
+    public function placeOrder(array &$orderModel, array $cartModel, array $orderData);
 
 
 

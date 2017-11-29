@@ -4,7 +4,10 @@
 namespace Module\Ekom\Status\Action;
 
 
-class EkomStatusAction
+/**
+ * @deprecated use EkomOrderStatus instead
+ */
+class EkomStatusActionOld
 {
 
     /**

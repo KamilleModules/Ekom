@@ -48,13 +48,18 @@ use QuickPdo\QuickPdoExceptionTool;
 class UserLayer
 {
 
+    public static function getUserInfoById($userId)
+    {
+        $userId = (int)$userId;
+        return QuickPdo::fetch("select * from ek_user where id=$userId");
+    }
+
     public static function getUserInfoByEmail($email)
     {
         return QuickPdo::fetch("select * from ek_user where email=:email", [
             'email' => $email,
         ]);
     }
-
 
 
     /**

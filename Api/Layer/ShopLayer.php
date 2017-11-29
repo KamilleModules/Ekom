@@ -29,6 +29,24 @@ class ShopLayer
 {
 
 
+    /**
+     * @param null $shopId
+     * @param null $langId
+     * @return array:shopPhysicalAddress
+     * @see EkomModels::shopPhysicalAddress()
+     * @throws EkomException
+     */
+    public static function getDefaultShopAddress($shopId = null, $langId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        $addresses = self::getPhysicalAddresses(null, $shopId, $langId);
+        if ($addresses) {
+            $row = array_shift($addresses);
+            return $row;
+        }
+        throw new EkomException("This shop has no default address: $shopId");
+    }
+
     public static function getShopItemById($shopId)
     {
         $shopId = (int)$shopId;
@@ -46,8 +64,8 @@ select * from ek_shop where id=$shopId
 
             return QuickPdo::fetch("
 select s.*,
-c.iso_code,
-h.exchange_rate,
+c.iso_code as currency_iso_code,
+h.exchange_rate as currency_exchange_rate,
 t.name as timezone
 
 from ek_shop s
@@ -58,14 +76,7 @@ inner join ek_timezone t on t.id=s.timezone_id
 where s.id=$shopId
 ");
 
-        }, [
-            "ek_shop.create",
-            "ek_shop.delete.$shopId",
-            "ek_shop.update.$shopId",
-            "ek_shop_has_currency.create",
-            "ek_shop_has_currency.delete.$shopId",
-            "ek_shop_has_currency.update.$shopId",
-        ]);
+        });
     }
 
 
@@ -75,8 +86,6 @@ where s.id=$shopId
 select * from ek_shop order by id asc        
         ");
     }
-
-
 
 
     /**

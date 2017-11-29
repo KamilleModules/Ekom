@@ -24,6 +24,7 @@ use Module\Ekom\PaymentMethodHandler\Collection\PaymentMethodHandlerCollectionIn
 use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Status\Action\EkomStatusAction;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
+use Module\Ekom\Utils\CheckoutOrder\CheckoutOrderUtil;
 use Module\Ekom\Utils\E;
 use Module\ThisApp\Ekom\Utils\CheckoutPage\CheckoutPageUtil;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
@@ -67,46 +68,18 @@ class CheckoutLayer
      * - billing_address_id
      * - payment_method_id
      *
-     * @todo-ling: ensure that shop_address_id is sent
      *
      * @param array $cartModel
      * @see EkomModels::cartModel()
+     * @return int, the newly created order id
      *
      * @throws EkomUserMessageException
      */
     public static function placeOrder(array $data, array $cartModel)
     {
-        /**
-         * 1. check (and hooks)
-         * 2. collect (&) (and hooks)
-         * 3. db insert
-         */
-        //--------------------------------------------
-        // CHECKING DATA
-        //--------------------------------------------
-        $importantKeys = [
-            'user_id',
-            'shop_id',
-            'lang_id',
-            'currency_id',
-            'billing_address_id',
-            'payment_method_id',
-        ];
-        if (true === CartUtil::hasAtLeastOneShippableItem($cartModel)) {
-            $importantKeys = array_merge($importantKeys, [
-                'carrier_id',
-                'shipping_address_id',
-                'shop_address_id',
-            ]);
-        }
-        $missing = ArrayTool::getMissingKeys($data, $importantKeys);
-        if(0===count($missing)){
-
-        }
-        else{
-
-        }
-
+        return CheckoutOrderUtil::create()
+            ->setTestMode(true)
+            ->placeOrder($data, $cartModel);
     }
 
 
@@ -453,7 +426,7 @@ class CheckoutLayer
      * @param bool $cleanOnSuccess
      * @return bool
      */
-    public function placeOrder($reference = null, array $additionalOrderDetails = [], $cleanOnSuccess = true)
+    public function placeOrderDeprecated($reference = null, array $additionalOrderDetails = [], $cleanOnSuccess = true)
     {
         try {
 

@@ -29,6 +29,25 @@ use QuickPdo\QuickPdo;
 class PaymentLayer
 {
 
+    /**
+     * @param $paymentMethodId
+     * @return PaymentMethodHandlerInterface
+     * @throws EkomException
+     */
+    public static function getPaymentMethodHandlerById($paymentMethodId)
+    {
+        /**
+         * @var $collection PaymentMethodHandlerCollectionInterface
+         */
+        $collection = X::get("Ekom_getPaymentMethodHandlerCollection");
+        $paymentMethodId = (int)$paymentMethodId;
+        $paymentMethodName = QuickPdo::fetch("select name from ek_payment_method where id=$paymentMethodId", [], \PDO::FETCH_COLUMN);
+        if (false === $paymentMethodName) {
+            throw new EkomException("PaymentMethodHandler not found with id $paymentMethodId");
+        }
+        return $collection->get($paymentMethodName);
+    }
+
 
     /**
      * @return array of id => item, each of which:
@@ -38,7 +57,7 @@ class PaymentLayer
      *      - config: array (from the database ek_shop_has_payment_method.configuration )
      *      - selected: bool, whether this payment method item has focus
      */
-    public static function getPaymentMethodHandlersItems($shopId = null)
+    public static function getPaymentMethodHandlersItems($shopId = null, $currentPaymentMethodId = null)
     {
         $methods = self::getShopPaymentMethods($shopId);
         $ret = [];
@@ -46,12 +65,6 @@ class PaymentLayer
          * @var $collection PaymentMethodHandlerCollectionInterface
          */
         $collection = X::get("Ekom_getPaymentMethodHandlerCollection");
-
-        $paymentMethodId = CurrentCheckoutData::getPaymentMethodId();
-        if (null === $paymentMethodId) {
-            $paymentMethodId = self::getPreferredPaymentMethodId($shopId);
-        }
-
 
         foreach ($methods as $method) {
             $id = $method['id'];
@@ -66,10 +79,26 @@ class PaymentLayer
                 "name" => $name,
                 "model" => $model,
                 "config" => $conf,
-                "selected" => (int)$id === (int)$paymentMethodId,
+                "selected" => (int)$id === (int)$currentPaymentMethodId,
             ];
         }
         return $ret;
+    }
+
+
+    /**
+     * @param null $shopId
+     * @return int
+     * @throws EkomException
+     */
+    public static function getPreferredPaymentMethodId($shopId = null)
+    {
+        $allMethods = self::getShopPaymentMethods($shopId);
+        if (count($allMethods) > 0) {
+            $row = array_shift($allMethods);
+            return (int)$row['id'];
+        }
+        throw new EkomException("This shop must have at least one payment method assigned to it before you can continue");
     }
 
 
@@ -114,22 +143,6 @@ order by h.`order` asc
 
         });
     }
-
-    /**
-     * @param null $shopId
-     * @return int
-     * @throws EkomException
-     */
-    private static function getPreferredPaymentMethodId($shopId = null)
-    {
-        $allMethods = self::getShopPaymentMethods($shopId);
-        if (count($allMethods) > 0) {
-            $row = array_shift($allMethods);
-            return (int)$row['id'];
-        }
-        throw new EkomException("This shop must have at least one payment method assigned to it before you can continue");
-    }
-
 
 
     //--------------------------------------------

@@ -59,31 +59,16 @@ class CheckoutProcess implements CheckoutProcessInterface
         return self::$inst;
     }
 
+    public static function getCheckoutData(){
+        $ret = CurrentCheckoutData::all();
+        unset($ret['CheckoutProcess']);
+        return $ret;
+    }
 
 
     //--------------------------------------------
     //
     //--------------------------------------------
-
-    public function setShippingAddressId($id)
-    {
-        // TODO: Implement setShippingAddressId() method.
-    }
-
-    public function setBillingAddressId($id)
-    {
-        // TODO: Implement setBillingAddressId() method.
-    }
-
-    public function setPaymentMethodId($id)
-    {
-        // TODO: Implement setPaymentMethodId() method.
-    }
-
-    public function setCarrierId($id)
-    {
-        // TODO: Implement setCarrierId() method.
-    }
 
 
     public function reset()

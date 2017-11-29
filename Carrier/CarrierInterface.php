@@ -4,6 +4,9 @@
 namespace Module\Ekom\Carrier;
 
 
+use Module\Ekom\Models\EkomModels;
+use Module\Ekom\Utils\CheckoutOrder\CheckoutOrderUtil;
+
 interface CarrierInterface
 {
 
@@ -34,6 +37,29 @@ interface CarrierInterface
      *
      */
     public function getShippingInfo(array $context);
+
+    /**
+     * If the carrier needs to communicate with external apis to get a tracking number,
+     * this is where it happens.
+     * The tracking number needs then to be appended to the orderModel, using the key:
+     * - tracking_number
+     *
+     * Also, we can pass an array of parameters using the key:
+     *
+     * - carrier_details
+     *
+     *
+     *
+     * @param array $orderModel
+     * @see EkomModels::orderModel()
+     * @param array $cartModel
+     * @see EkomModels::cartModel()
+     * @param array $orderData , the data collected during the checkout process
+     * @see CheckoutOrderUtil::placeOrder()
+     *
+     * @return mixed
+     */
+    public function placeOrder(array &$orderModel, array $cartModel, array $orderData);
 
 
     public function getLabel();
