@@ -38,6 +38,7 @@ class CheckoutProcess implements CheckoutProcessInterface
 
     private static $inst = null;
 
+    private $presteps;
     /**
      * @var CheckoutProcessStepInterface[]
      * array of name => CheckoutProcessStepInterface
@@ -47,6 +48,7 @@ class CheckoutProcess implements CheckoutProcessInterface
 
     private function __construct()
     {
+        $this->presteps = [];
         $this->steps = [];
         $this->init();
     }
@@ -59,7 +61,8 @@ class CheckoutProcess implements CheckoutProcessInterface
         return self::$inst;
     }
 
-    public static function getCheckoutData(){
+    public static function getCheckoutData()
+    {
         $ret = CurrentCheckoutData::all();
         unset($ret['CheckoutProcess']);
         return $ret;
@@ -107,6 +110,8 @@ class CheckoutProcess implements CheckoutProcessInterface
      */
     public function execute(callable $onStepsComplete = null, array $context = null)
     {
+
+        $this->initSteps(); // put steps in the order defined by position
 
         $shopId = E::getShopId($this->shopId);
         $langId = E::getLangId($this->langId);
@@ -232,12 +237,12 @@ class CheckoutProcess implements CheckoutProcessInterface
         throw new EkomException("Please set at least one step to get started");
     }
 
-    public function addStep(CheckoutProcessStepInterface $step, $name = null)
+    public function addStep(CheckoutProcessStepInterface $step, $name = null, $position = 0)
     {
         if (null === $name) {
             $name = get_class($step);
         }
-        $this->steps[$name] = $step;
+        $this->presteps[$position][] = [$name, $step];
         return $this;
     }
 
@@ -398,4 +403,16 @@ class CheckoutProcess implements CheckoutProcessInterface
         }
     }
 
+    private function initSteps()
+    {
+        ksort($this->presteps);
+
+
+        foreach ($this->presteps as $position => $allSteps) {
+            foreach ($allSteps as $stepInfo) {
+                list($name, $step) = $stepInfo;
+                $this->steps[$name] = $step;
+            }
+        }
+    }
 }

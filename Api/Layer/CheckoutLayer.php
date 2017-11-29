@@ -78,7 +78,7 @@ class CheckoutLayer
     public static function placeOrder(array $data, array $cartModel)
     {
         return CheckoutOrderUtil::create()
-            ->setTestMode(true)
+            ->setTestMode(false)
             ->placeOrder($data, $cartModel);
     }
 

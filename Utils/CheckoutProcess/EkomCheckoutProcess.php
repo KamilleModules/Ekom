@@ -4,8 +4,8 @@
 namespace Module\Ekom\Utils\CheckoutProcess;
 
 
+use Core\Services\Hooks;
 use Module\Ekom\Api\Layer\CartLayer;
-use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoFirstShippingAddressCheckoutProcessStep;
 use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoLoginCheckoutProcessStep;
 use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoPaymentCheckoutProcessStep;
 use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoShippingCheckoutProcessStep;
@@ -26,10 +26,16 @@ class EkomCheckoutProcess extends CheckoutProcess
 
     protected function init()
     {
-        $this->addStep(SokoLoginCheckoutProcessStep::create(), "login");
-//        $this->addStep(SokoFirstShippingAddressCheckoutProcessStep::create(), "firstShippingAddress");
-        $this->addStep(SokoShippingCheckoutProcessStep::create(), "shipping");
-        $this->addStep(SokoPaymentCheckoutProcessStep::create(), "payment");
+        $cartModel = CartLayer::create()->getCartModel();
+
+
+        $this->addStep(SokoLoginCheckoutProcessStep::create(), "login", 100);
+        $this->addStep(SokoShippingCheckoutProcessStep::create(), "shipping", 200);
+        $this->addStep(SokoPaymentCheckoutProcessStep::create(), "payment", 300);
+
+
+        Hooks::call("Ekom_CheckoutProcess_decorateCheckoutProcess", $this, $cartModel);
+
     }
 
     protected function decorateModel(array &$model)

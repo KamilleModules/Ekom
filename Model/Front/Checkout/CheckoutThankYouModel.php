@@ -4,20 +4,28 @@
 namespace Module\Ekom\Model\Front\Checkout;
 
 
-use Kamille\Services\XLog;
+use Kamille\Architecture\Response\Web\HttpResponseInterface;
+use Kamille\Architecture\Response\Web\RedirectResponse;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Layer\ProductBoxLayer;
-use Module\Ekom\Utils\CheckoutProcess\EkomCheckoutProcess;
 use Module\Ekom\Utils\E;
 
 class CheckoutThankYouModel
 {
+
+    /**
+     * @param null $orderId
+     * @return array|HttpResponseInterface
+     */
     public static function getModel($orderId = null)
     {
         $model = [];
 
         if (null !== $orderId) {
 
+            /**
+             * @todo-ling: ensure that only the last order is browsable
+             */
             $info = EkomApi::inst()->orderLayer()->getOrderInfo($orderId);
             $items = $info['order_details']['cartModel']['items'];
             $estimatedDeliveryDate = null;
@@ -58,8 +66,7 @@ class CheckoutThankYouModel
 
 
         } else {
-            $model['error'] = "A problem occurred";
-            XLog::error("[Ekom module] - CheckoutOnePageThankYouController: key ekom.order.last not found in session");
+            return RedirectResponse::create(E::link("Ekom_home", [], true));
         }
 
 

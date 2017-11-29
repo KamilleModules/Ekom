@@ -3,6 +3,8 @@
 
 namespace Module\Ekom\Utils\CheckoutProcess;
 
+use Module\Ekom\Utils\CheckoutProcess\Step\CheckoutProcessStepInterface;
+
 
 /**
  *
@@ -12,6 +14,8 @@ namespace Module\Ekom\Utils\CheckoutProcess;
  */
 interface CheckoutProcessInterface
 {
+
+    public function addStep(CheckoutProcessStepInterface $step, $name = null, $position = 0);
 
     public function set($key, $value);
 

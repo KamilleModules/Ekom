@@ -390,7 +390,7 @@ class CheckoutOrderUtil
                 CurrentCheckoutData::clean();
             }
             else{
-                az("test mode");
+                az("test mode", $orderModel);
             }
 
 
