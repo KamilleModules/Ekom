@@ -268,7 +268,7 @@ class CheckoutProcess implements CheckoutProcessInterface
 
     protected function debug($msg)
     {
-//        XLog::log($msg, "debug.log");
+//        E::dlog($msg);
     }
 
     //--------------------------------------------
@@ -341,7 +341,6 @@ class CheckoutProcess implements CheckoutProcessInterface
          * Next, we will define those properties, but only for the relevant step.
          */
         foreach ($this->steps as $name => $step) {
-            $this->debug("Call $name.isValid");
             $ret[$name] = [
                 "name" => $name,
 //                "isActive" => $step->isActive(),
