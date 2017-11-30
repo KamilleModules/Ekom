@@ -12,6 +12,7 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
+use Module\Ekom\Api\Object\User;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Utils\Checkout\CheckoutPageUtil;
@@ -47,6 +48,18 @@ use QuickPdo\QuickPdoExceptionTool;
  */
 class UserLayer
 {
+
+
+    public static function updateData($userId, array $data)
+    {
+        unset($data['id']);
+        unset($data['shop_id']);
+        unset($data['email']);
+        unset($data['pass']);
+        unset($data['date_creation']);
+        unset($data['active']);
+        EkomApi::inst()->user()->update($data, ['id' => (int)$userId]);
+    }
 
     public static function getUserInfoById($userId)
     {
@@ -284,6 +297,9 @@ class UserLayer
      */
     public function getUserGroupNames($userId)
     {
+        /**
+         * @todo-ling: remove forceGenerate cache
+         */
         return A::cache()->get("Ekom.UserLayer.getUserGroupNames.$userId", function () use ($userId) {
 
             $userId = (int)$userId;
@@ -293,16 +309,14 @@ from ek_user_group g
 inner join ek_user_has_user_group h on h.user_group_id=g.id
 where h.user_id=$userId             
             ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
-        }, [
-            "ek_user_has_user_group.create",
-            "ek_user_has_user_group.delete.$userId",
-            "ek_user_has_user_group.update.$userId",
-            "ek_user_group.update.$userId",
-        ]);
+        }, true);
     }
 
     public function getUserInfo($userId)
     {
+        /**
+         * @todo-ling: remove forceGenerate cache
+         */
         return A::cache()->get("Ekom.UserLayer.getUserInfo.$userId", function () use ($userId) {
 
             $userId = (int)$userId;
@@ -311,10 +325,7 @@ select *
 from ek_user
 where id=$userId             
             ");
-        }, [
-            "ek_user.update.$userId",
-            "ek_user.delete.$userId",
-        ]);
+        }, true);
     }
 
 

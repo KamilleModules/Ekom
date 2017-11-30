@@ -6,6 +6,7 @@ namespace Module\Ekom\SokoForm\UserAddress;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Layer\CountryLayer;
+use Module\Ekom\SokoForm\EkomSokoForm;
 use Module\Ekom\Utils\E;
 use SokoForm\Control\SokoChoiceControl;
 use SokoForm\Control\SokoInputControl;
@@ -41,9 +42,8 @@ class UserAddressSokoForm
             "1" => "En faire mon adresse de facturation par défaut",
         ];
 
-        $form = SokoForm::create()
+        $form = EkomSokoForm::create()
             ->setName($name)
-            ->setValidationRulesLang(ApplicationRegistry::get("ekom.lang_iso"))
             ->addControl(SokoInputControl::create()
                 ->setName("first_name")
                 ->setLabel('Prénom')

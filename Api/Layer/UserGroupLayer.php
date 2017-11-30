@@ -5,11 +5,24 @@ namespace Module\Ekom\Api\Layer;
 
 
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 class UserGroupLayer
 {
 
+
+    public static function userHasGroup($groupName, $userId = null)
+    {
+        $userId = E::getUserId($userId);
+        $groupNames = self::getUserGroups($userId);
+        foreach ($groupNames as $name) {
+            if ($name === $groupName) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * @param $userId

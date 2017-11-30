@@ -13,6 +13,7 @@ class EkomCheckoutProcessModel
     public static function getModel()
     {
         return EkomCheckoutProcess::inst()
+
             ->setShopId(E::getShopId())
             ->setLangId(E::getLangId())
             ->setCurrencyId(E::getCurrencyId())

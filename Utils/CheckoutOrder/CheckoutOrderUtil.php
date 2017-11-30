@@ -191,8 +191,6 @@ class CheckoutOrderUtil
             $paymentHandler->placeOrder($orderModel, $cartModel, $data);
 
 
-            // the module phase here... (don't need it yet, but it's the place where the code would go....)
-
 
             // now ekom logic
             $payIdentifier = (array_key_exists("pay_identifier", $orderModel)) ? $orderModel['pay_identifier'] : "";
@@ -244,6 +242,16 @@ class CheckoutOrderUtil
                     "carrier_details" => $carrierDetails,
                 ]);
             }
+
+
+
+            //--------------------------------------------
+            // LAST OPPORTUNITY FOR MODULES TO DECORATE ORDER DETAILS
+            //--------------------------------------------
+            Hooks::call("Ekom_CheckoutOrderUtil_decorateOrderDetails", $orderDetails, $data);
+
+
+
 
 
             // I let this model in non serialized form for debugging

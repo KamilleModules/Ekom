@@ -32,7 +32,6 @@ class E
 
     private static $conf = null;
 
-
     public static function cacheMark($msg)
     {
         XLog::log($msg, "cache.log");
@@ -54,6 +53,8 @@ class E
         $dispatcher = X::get('Ekom_DataChangeDispatcher');
         $dispatcher->trigger("dataChange", $dataIdentifier);
     }
+
+
 
     /**
      * Return the userId, or a default value, or throws an exception.
