@@ -1,10 +1,43 @@
-Data Change 
+Ekom Dispatcher 
 ======================
-2017-11-25
+2017-11-25 --> 2017-11-30
 
 
 
 
+
+Ekom Dispatcher dispatches the events of the ekom application.
+
+
+The primary goal of this dispatcher is to refresh the appropriate application cache.
+
+
+The following events are dispatched (replace variables with their values):
+
+
+- newOrder-$userId: a new order was placed by $userId
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DEPRECATED
+=============
 DataChange is a dispatcher that we (ekom devs) should call when the data in the database is updated.
 
 

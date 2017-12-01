@@ -9,6 +9,7 @@ use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoLoginCheckoutProcessStep;
 use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoPaymentCheckoutProcessStep;
 use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoShippingCheckoutProcessStep;
+use Module\Ekom\Utils\E;
 
 
 /**
@@ -29,7 +30,9 @@ class EkomCheckoutProcess extends CheckoutProcess
         $cartModel = CartLayer::create()->getCartModel();
 
 
-        $this->addStep(SokoLoginCheckoutProcessStep::create(), "login", 100);
+        if (false === E::userIsConnected()) {
+            $this->addStep(SokoLoginCheckoutProcessStep::create(), "login", 100);
+        }
         $this->addStep(SokoShippingCheckoutProcessStep::create(), "shipping", 200);
         $this->addStep(SokoPaymentCheckoutProcessStep::create(), "payment", 300);
 

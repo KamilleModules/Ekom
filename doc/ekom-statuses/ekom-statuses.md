@@ -1,6 +1,6 @@
 Ekom statuses
 =================
-2017-09-27
+2017-09-27 --> 2017-12-01
 
 
 
@@ -9,6 +9,7 @@ Ekom statuses
 
 
 The statuses are the following:
+
 
 - phases (from yellow to blue)
     - payment_sent: FFFF00

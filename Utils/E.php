@@ -45,7 +45,7 @@ class E
     /**
      * @link https://github.com/KamilleModules/Ekom/tree/master/doc/cache/data-change-and-derby-cache.md
      */
-    public static function dataChange($dataIdentifier)
+    public static function dispatch($dataIdentifier)
     {
         /**
          * @var $dispatcher EkomDataChangeDispatcher
@@ -54,6 +54,10 @@ class E
         $dispatcher->trigger("dataChange", $dataIdentifier);
     }
 
+    public static function dataChange($dataIdentifier)
+    {
+        throw new \Exception("Use E::dispatch instead");
+    }
 
 
     /**
@@ -138,6 +142,12 @@ class E
         }
         EkomApi::inst()->initWebContext();
         return (int)ApplicationRegistry::get("ekom.currency_id");
+    }
+
+    public static function getCurrencyIso()
+    {
+        EkomApi::inst()->initWebContext();
+        return ApplicationRegistry::get("ekom.currency_iso");
     }
 
     public static function getLangIso()

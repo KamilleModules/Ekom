@@ -33,6 +33,8 @@ class GeneratedOrder extends TableCrudObject
 			'user_id' => 0,
 			'reference' => '',
 			'date' => '',
+			'amount' => '',
+			'currency' => '',
 			'pay_identifier' => '',
 			'tracking_number' => '',
 			'user_info' => '',

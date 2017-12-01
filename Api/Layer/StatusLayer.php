@@ -4,6 +4,7 @@
 namespace Module\Ekom\Api\Layer;
 
 
+use Module\Ekom\Status\EkomOrderStatus;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 use SaveOrmObject\Object\Ek\OrderStatusLangObject;
@@ -77,9 +78,9 @@ order by h.date desc
     public static function getPendingForbidden($wrapWithQuotes = null)
     {
         $statuses = [
-            'order_delivered',
-            'canceled',
-            'reimbursed',
+            EkomOrderStatus::STATUS_ORDER_DELIVERED,
+            EkomOrderStatus::STATUS_CANCELED,
+            EkomOrderStatus::STATUS_REIMBURSED,
         ];
         if (null === $wrapWithQuotes) {
             return $statuses;

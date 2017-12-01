@@ -4,6 +4,8 @@
 namespace Module\Ekom\HybridList;
 
 use Core\Services\Hooks;
+use HybridList\HybridList;
+use HybridList\HybridListControl\Slice\SqlPaginatorHybridListControl;
 use HybridList\HybridListInterface;
 use HybridList\RequestGenerator\SqlRequestGenerator;
 use HybridList\SqlRequest\SqlRequest;
@@ -16,6 +18,7 @@ use Module\Ekom\HybridList\HybridListControl\Filter\DiscountFilterHybridListCont
 use Module\Ekom\HybridList\HybridListControl\Filter\PriceFilterHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Filter\SummaryFilterHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Slice\PaginateSliceHybridListControl;
+use Module\Ekom\HybridList\HybridListControl\Sort\OrderSortHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Sort\ProductSortHybridListControl;
 use Module\Ekom\Utils\E;
 
@@ -41,10 +44,44 @@ use Module\Ekom\Utils\E;
 class HybridListFactory
 {
 
-
     /**
      * @return HybridListInterface
      *
+     */
+    public static function getOrderHybridList(array $pool, $userId)
+    {
+        $userId = (int)$userId;
+        $sqlRequest = SqlRequest::create();
+        $hybridList = HybridList::create()
+            ->setListParameters($pool)
+            ->setRequestGenerator(SqlRequestGenerator::create()
+                ->setSqlRequest($sqlRequest
+                    ->addField("
+o.*, (
+select s.code from ek_order_status s 
+inner join ek_order_has_order_status h on h.order_status_id=s.id 
+inner join ek_order zo on zo.id=h.order_id
+where zo.id=o.id
+and zo.user_id=$userId
+order by h.date desc
+limit 1
+            ) as last_status_code                    
+                    ")
+                    ->setTable("ek_order o")
+                    ->addWhere("and o.user_id=" . $userId)
+                )
+            );
+
+
+        $hybridList->addControl("sort", OrderSortHybridListControl::create());
+        $hybridList->addControl("slice", SqlPaginatorHybridListControl::create()->setNumberOfItemsPerPage(10));
+        return $hybridList;
+    }
+
+
+    /**
+     * @return HybridListInterface
+     * @throws \Exception
      */
     public static function getCategoryHybridList($categoryId, array $pool, array &$return = null, $shopId = null)
     {
@@ -99,8 +136,7 @@ and shp.active=1
         $summaryFilterControl = SummaryFilterHybridListControl::create()
             ->addSummaryFilterAwareItem($attributesFilterControl)
             ->addSummaryFilterAwareItem($priceFilterControl)
-            ->addSummaryFilterAwareItem($discountsFilterControl)
-        ;
+            ->addSummaryFilterAwareItem($discountsFilterControl);
 
 
         $hybridList->addControl("attributes", $attributesFilterControl);

@@ -4,26 +4,24 @@
 namespace Module\Ekom\Status;
 
 
+/**
+ * @link https://github.com/KamilleModules/Ekom/tree/master/doc/ekom-statuses/ekom-statuses.md
+ */
 class EkomOrderStatus
 {
 
-    /**
-     * This is the first step in the action chain.
-     * An order entry has just been created in the database.
-     */
-    const ACTION_ORDER_PLACED = 'orderPlaced';
+    const STATUS_PAYMENT_SENT = 'payment_sent';
+    const STATUS_PAYMENT_ACCEPTED = 'payment_accepted';
+    const STATUS_PAYMENT_VERIFIED = 'payment_verified';
+    const STATUS_PREPARING_ORDER = 'preparing_order';
+    const STATUS_ORDER_SHIPPED = 'order_shipped';
+    const STATUS_ORDER_DELIVERED = 'order_delivered';
 
-    /**
-     * This action is invoked when the payment has been confirmed (i.e. the money is on your bank account)
-     */
-    const ACTION_PAYMENT_ACCEPTED = 'paymentAccepted';
+    const STATUS_PAYMENT_ERROR = 'payment_error';
+    const STATUS_PREPARING_ORDER_ERROR = 'preparing_order_error';
+    const STATUS_SHIPPING_ERROR = 'shipping_error';
+    const STATUS_ORDER_DELIVERED_ERROR = 'order_delivered_error';
 
-    /**
-     * This action should be invoked when the shop owner has sent the products.
-     * There might be tracking number available for the user, depending on the chosen carrier.
-     *
-     */
-    const ACTION_SHIPPED = 'shipped';
-
-
+    const STATUS_CANCELED = 'canceled';
+    const STATUS_REIMBURSED = 'reimbursed';
 }

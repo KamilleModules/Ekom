@@ -23,6 +23,7 @@ use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Status\EkomOrderStatus;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
+use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\OrderReferenceProvider\OrderReferenceProviderInterface;
 use QuickPdo\QuickPdo;
 
@@ -75,6 +76,7 @@ class CheckoutOrderUtil
      * @return int, the id of the order
      *
      * @throws EkomUserMessageException
+     * @throws \Exception
      */
     public function placeOrder(array $data, array $cartModel)
     {
@@ -258,6 +260,8 @@ class CheckoutOrderUtil
             $orderModel = array_replace($orderModel, [
                 "user_id" => $userId,
                 "date" => date('Y-m-d H:i:s'),
+                "amount" =>  $cartModel['priceOrderGrandTotalRaw'],
+                "currency" => E::getCurrencyIso(),
                 "pay_identifier" => $payIdentifier,
                 "tracking_number" => $trackingNumber,
                 "user_info" => $userInfo,
@@ -374,6 +378,8 @@ class CheckoutOrderUtil
                 'user_id' => $orderModel['user_id'],
                 'reference' => $orderModel['reference'],
                 'date' => $orderModel['date'],
+                'amount' => $orderModel['amount'],
+                'currency' => $orderModel['currency'],
                 'pay_identifier' => (string)$orderModel['pay_identifier'],
                 'tracking_number' => $orderModel['tracking_number'],
                 'user_info' => serialize($orderModel['user_info']),
@@ -389,7 +395,7 @@ class CheckoutOrderUtil
 
 
             $orderId = $_orderId;
-            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::ACTION_ORDER_PLACED, $shopId);
+            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT, $shopId);
             Hooks::call("Ekom_onPlaceOrderSuccessAfter", $orderId, $orderModel);
 
 

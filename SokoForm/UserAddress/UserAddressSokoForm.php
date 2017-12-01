@@ -99,10 +99,7 @@ class UserAddressSokoForm
             ->addValidationRule("address", SokoNotEmptyValidationRule::create())
             ->addValidationRule("city", SokoNotEmptyValidationRule::create())
             ->addValidationRule("postcode", SokoNotEmptyValidationRule::create())
-            /**
-             * @todo-ling: allow modules to decide their phone prefixes and country (rush now)
-             */
-            ->addValidationRule("phone_prefix", SokoInArrayValidationRule::create()->setArray(["33", "32"]))
+            ->addValidationRule("phone_prefix", SokoNotEmptyValidationRule::create())
             ->addValidationRule("phone", SokoNotEmptyValidationRule::create())
             ->addValidationRule("country", SokoInArrayValidationRule::create()
                 ->setErrorMessage("Veuillez choisir un pays")

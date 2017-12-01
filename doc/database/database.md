@@ -1193,6 +1193,8 @@ Proof that has some juridic value (in case something goes wrong).
 - user_id: fk
 - reference: 
 - date:
+- amount: the raw amount in the currency used for the purchase 
+- currency: the iso code (same as currency table) of the currency used for the purchase
 - tracking_number:
 - user_info: a serialized array containing the following info:
     - id (just in case), email, mobile, phone, pro (a plugin needs to put this field here), group label.

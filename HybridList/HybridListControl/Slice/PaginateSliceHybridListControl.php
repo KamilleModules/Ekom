@@ -27,6 +27,7 @@ class PaginateSliceHybridListControl extends HybridListControl
 
     public function __construct()
     {
+        parent::__construct();
         $this->userPage = 1;
         $this->nipp = 20;
         $this->pageName = "page";
