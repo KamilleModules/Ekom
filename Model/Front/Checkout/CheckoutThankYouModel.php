@@ -7,6 +7,7 @@ namespace Module\Ekom\Model\Front\Checkout;
 use Kamille\Architecture\Response\Web\HttpResponseInterface;
 use Kamille\Architecture\Response\Web\RedirectResponse;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\ProductBoxLayer;
 use Module\Ekom\Utils\E;
 
@@ -26,7 +27,7 @@ class CheckoutThankYouModel
             /**
              * @todo-ling: ensure that only the last order is browsable
              */
-            $info = EkomApi::inst()->orderLayer()->getOrderInfo($orderId);
+            $info = OrderLayer::getOrderInfo($orderId);
             $items = $info['order_details']['cartModel']['items'];
             $estimatedDeliveryDate = null;
             $shippingDetails = $info['order_details']['cartModel']['shippingDetails'];

@@ -4,6 +4,7 @@
 namespace Module\Ekom\Model\Front\Customer;
 
 
+use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\HybridList\HybridListFactory;
 
 
@@ -28,8 +29,17 @@ class CustomerOrderModel
     {
 
 
+        if(false===array_key_exists("sort", $pool)){
+            $pool['sort'] = "date_desc";
+        }
         $hybridList = HybridListFactory::getOrderHybridList($pool, $userId);
         $info = $hybridList->execute();
+
+
+        $items = $info['items'];
+        OrderLayer::unserializeRows($items);
+        $info['items'] = $items;
+
 
         $model['bundle'] = [
             'general' => $info,

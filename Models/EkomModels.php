@@ -252,7 +252,7 @@ class EkomModels
      * - order_details:
      * ----- cartModel without itemsGroupedBySeller -- @see EkomModels::cartModel()
      * ----- payment_method_id: the payment method id
-     * ----- payment_method_details: array
+     * ----- payment_method_details: array, depends on the chosen payment method handler
      * ----- ?carrier_id:
      * ----- ?carrier_details: array
      */

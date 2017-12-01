@@ -62,10 +62,10 @@ class OrderSortHybridListControl extends HybridListControl
                             $r->addOrderBy("date", "desc");
                             break;
                         case "ref_asc":
-                            $r->addOrderBy("ref", "asc");
+                            $r->addOrderBy("reference", "asc");
                             break;
                         case "ref_desc":
-                            $r->addOrderBy("ref", "desc");
+                            $r->addOrderBy("reference", "desc");
                             break;
                         default:
                             break;

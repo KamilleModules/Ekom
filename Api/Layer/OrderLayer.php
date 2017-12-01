@@ -14,6 +14,20 @@ class OrderLayer
 {
 
 
+    public static function getOrderInfo($id)
+    {
+        $id = (int)$id;
+        return A::cache()->get("Ekom.OrderLayer.getOrderInfo.$id.", function () use ($id) {
+
+            $row = QuickPdo::fetch("
+select * from ek_order where id=$id 
+        ");
+            self::unserializeRow($row);
+            return $row;
+        });
+    }
+
+
     public static function addOrderStatusByCode($orderId, $code, $shopId = null)
     {
         $shopId = E::getShopId($shopId);
@@ -99,10 +113,15 @@ and
 
     }
 
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    private static function unserializeRow(array &$row)
+    public static function unserializeRows(array &$rows)
+    {
+        foreach ($rows as $k => $row) {
+            self::unserializeRow($row);
+            $rows[$k] = $row;
+        }
+    }
+
+    public static function unserializeRow(array &$row)
     {
         $row['user_info'] = unserialize($row['user_info']);
         $row['shop_info'] = unserialize($row['shop_info']);
