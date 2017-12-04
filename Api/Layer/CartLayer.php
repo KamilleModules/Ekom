@@ -587,7 +587,7 @@ class CartLayer
             $model["shippingTaxRatio"] = $taxInfo['taxRatio'];
             $model["shippingTaxGroupName"] = $taxInfo['taxGroupName'];
             $model["shippingTaxGroupLabel"] = $taxInfo['taxGroupLabel'];
-            $model["shippingTaxAmountUnit"] = $taxInfo['taxAmountUnit'];
+            $model["shippingTaxAmountRaw"] = $taxInfo['taxAmountUnit'];
             $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
             $model["shippingDetails"] = [
                 "estimated_delivery_text" => $shippingInfo["estimated_delivery_text"],
@@ -597,6 +597,7 @@ class CartLayer
                 "carrier_id" => $carrier->getId(),
             ];
             $model["shippingShippingCostRaw"] = $shippingCostWithTax;
+            $model["shippingShippingCostWithoutTaxRaw"] = $shippingCost;
             $model["shippingIsApplied"] = true;
             $model['shippingErrorCode'] = null;
         } else {
@@ -605,10 +606,11 @@ class CartLayer
             $model["shippingTaxRatio"] = 1;
             $model["shippingTaxGroupName"] = "";
             $model["shippingTaxGroupLabel"] = "";
-            $model["shippingTaxAmountUnit"] = 0;
+            $model["shippingTaxAmountRaw"] = 0;
             $model["shippingTaxHasTax"] = false;
             $model["shippingDetails"] = [];
             $model["shippingShippingCostRaw"] = $shippingCostWithTax;
+            $model["shippingShippingCostWithoutTaxRaw"] = $shippingCostWithTax;
             $model["shippingIsApplied"] = false;
 
             if (is_array($shippingInfo) && array_key_exists("errorCode", $shippingInfo)) {
@@ -670,18 +672,12 @@ class CartLayer
 
         // order
         $model["shippingShippingCost"] = E::price($model["shippingShippingCostRaw"]);
+        $model["shippingTaxAmount"] = E::price($model["shippingTaxAmountRaw"]);
+        $model["shippingShippingCostWithoutTax"] = E::price($model["shippingShippingCostWithoutTaxRaw"]);
         $model["priceOrderTotal"] = E::price($model["priceOrderTotalRaw"]);
         $model["priceOrderGrandTotal"] = E::price($model["priceOrderGrandTotalRaw"]);
 
 
-        // older
-//        $model['totalTaxItemsAmount'] = E::price($model['totalTaxItemsAmountRaw']);
-//        $model['totalTaxCartAmount'] = E::price($model['totalTaxCartAmountRaw']);
-//        $model['priceLinesTotal'] = E::price($model['priceLinesTotalRaw']);
-//        $model['priceLinesTotalWithoutTax'] = E::price($model['priceLinesTotalWithoutTaxRaw']);
-//        $model['priceCartTotal'] = E::price($model['priceCartTotalRaw']);
-//        $model['priceCartTotalWithShipping'] = E::price($model['priceCartTotalWithShippingRaw']);
-//        $model['priceGrandTotal'] = E::price($model['priceGrandTotalRaw']);
 
         ksort($model);
         return $model;

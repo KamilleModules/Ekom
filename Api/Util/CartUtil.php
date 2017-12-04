@@ -77,7 +77,7 @@ class CartUtil
      * @param null $langId
      * @return array of <carrierOfferModel>
      * @see EkomModels::carrierOfferModel()
-     * @throws HooksException
+     * @throws \Exception
      *
      */
     public static function getCarrierOffers($shopId = null, $langId = null)

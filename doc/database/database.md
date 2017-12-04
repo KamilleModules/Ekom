@@ -1260,6 +1260,23 @@ An invoice belongs to an order.
 
 
 
+ek_payment
+================
+
+A payment belongs to an invoice.
+The relationship between order, payment and invoice is defined in the order-invoices-payments.md document.
+
+- id: pk
+- invoice_id: fk
+- date: datetime, the time when the payment should be captured
+- paid: 0|1, whether or not the capture was successful
+- feedback_details: text, the financial transaction feedback (like a debug log for the dev) 
+- amount: the amount of money (in the currency given by the parent invoice) to capture 
+
+
+
+
+
 
 ek_order_status
 ================
@@ -1352,7 +1369,7 @@ See below for more details.
                             - ...
 - procedure_operand: string, a number for the procedure type to work with (like an argument of a function).
                         It usually indicates the amount of discount to apply.  
-- target: string, another string for your heuristics (like operand).
+- target: string, another string of 256 chars for your heuristics (like operand).
                     Originally, it had another use, but now it's just there in case you need it.
                     You could for instance pass the name of a class.                            
                                                 

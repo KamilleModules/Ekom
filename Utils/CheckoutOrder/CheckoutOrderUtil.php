@@ -13,6 +13,7 @@ use Module\Ekom\Api\Entity\CartModelEntity;
 use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\CurrencyLayer;
+use Module\Ekom\Api\Layer\InvoiceLayer;
 use Module\Ekom\Api\Layer\LangLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
@@ -60,7 +61,7 @@ class CheckoutOrderUtil
      * This method places an order and the attached invoices in the database and returns the id of the order.
      *
      * Pre-requisites:
-     * https://github.com/KamilleModules/Ekom/tree/master/doc/checkout/order-and-invoices.md
+     * https://github.com/KamilleModules/Ekom/tree/master/doc/checkout/order-invoices-payments.md
      * https://github.com/KamilleModules/Ekom/tree/master/doc/checkout/carrier-and-sellers.md
      *
      *
@@ -331,7 +332,10 @@ class CheckoutOrderUtil
      */
     protected function createInvoices($orderId, array $orderModel)
     {
+        $orderDetails = $orderModel['order_details'];
         $orderCartModel = $orderModel['order_details']['cartModel'];
+
+
         $itemsBySeller = $orderCartModel['itemsGroupedBySeller'];
 
         // by default, we create one invoice per seller
@@ -389,22 +393,57 @@ class CheckoutOrderUtil
          *
          *
          *
+         * ### Coupon
+         *
+         * We appy a similar mechanism for coupons.
+         * We leverage the target of the <couponDetailsItem> -- @see EkomModels::couponDetailsItem()
+         * to implement our heuristics.
+         *
+         *
+         *
          */
         $sellerInfo = [];
 
         $totalWeight = $orderCartModel['cartTotalWeight'];
-        a($totalWeight);
+        $nbShippingParticipants = 0;
+        $couponAmount = $orderCartModel['couponSavingRaw'];
+        $couponDetails = $orderCartModel['couponDetails'];
+        $nbSellers = count($itemsBySeller);
+        $sellerCouponRatio = 1 / $nbSellers;
+
+
         foreach ($itemsBySeller as $seller => $item) {
 
             $participateToShipping = $item['cartWeight'] > 0;
 
-            a($item['cartWeight']);
             if (true === $participateToShipping) {
                 $shippingRatio = $item['cartWeight'] / $totalWeight;
-            }
-            else{
+                $nbShippingParticipants++;
+            } else {
                 $shippingRatio = 0;
             }
+
+
+            $sellerCouponDetails = [];
+            foreach ($couponDetails as $couponDetailsItem) {
+                $target = $couponDetailsItem['target'];
+                if ('' === trim($target)) {
+                    $savingRaw = $couponDetailsItem['savingRaw'];
+                    $couponDetailsItem['savingRaw'] = $savingRaw * $sellerCouponRatio;
+                    $couponDetailsItem['saving'] = E::price($couponDetailsItem['savingRaw']);
+                    $couponDetailsItem['details']['sellerDetails'] = "saving x sellerRatio = $savingRaw x $sellerCouponRatio";
+                    $sellerCouponDetails[] = $couponDetailsItem;
+                } elseif (0 === strpos($target, "seller:")) {
+                    $p = explode(":", $target, 2);
+                    $sellName = trim($p[1]);
+                    if ($seller === $sellName) {
+                        $savingRaw = $couponDetailsItem['savingRaw'];
+                        $couponDetailsItem['details']['sellerDetails'] = "100% of $savingRaw = $savingRaw";
+                        $sellerCouponDetails[] = $couponDetailsItem;
+                    }
+                }
+            }
+
 
             $sellerInfo[$seller] = [
                 'shippingRatio' => $shippingRatio,
@@ -412,11 +451,11 @@ class CheckoutOrderUtil
                  * participate to the shipping costs?
                  */
                 'useShipping' => $item['cartWeight'] > 0,
+                'couponDetails' => $sellerCouponDetails,
             ];
 
         }
 
-        az($sellerInfo);
 
         /**
          * Process loop
@@ -424,8 +463,12 @@ class CheckoutOrderUtil
          * Effectively creating the invoices
          */
         $invoices = [];
-        foreach ($itemsBySeller as $seller => $item) {
+        $taxGroupName = $orderCartModel['shippingTaxGroupName'];
+        $shippingDetails = $orderCartModel['shippingDetails'];
+        $currentShippingCostPaid = 0;
 
+        foreach ($itemsBySeller as $seller => $item) {
+            $nbShippingParticipants--;
             $sellerDirectives = $sellerInfo[$seller];
 
 
@@ -456,61 +499,96 @@ class CheckoutOrderUtil
             $invoice['billing_address'] = $billingAddress;
 
 
-            az($item);
             // cart related
             /**
              * we recreate a cartModel in noGroups form.
              * @see EkomModels::cartModel()
              */
-            $cartModel = [];
             $entity = CartModelEntity::create();
             foreach ($item['items'] as $boxModel) {
                 $entity->addProduct($boxModel);
             }
 
+            //--------------------------------------------
+            // SHIPPING
+            //--------------------------------------------
             /**
              * Does the shipping cost apply?
              * How?
              * ---------
              */
-            if(true===$sellerDirectives['useShipping']){
+            if (true === $sellerDirectives['useShipping']) {
                 $percent = $sellerDirectives['shippingRatio'];
-               $entity->addShippingItem($shippingInfo, $taxGroupName, $carrierId, $carrierLabel);
+
+
+                $shippingCostTotal = $orderCartModel['shippingShippingCostWithoutTaxRaw'];
+                $sellerShippingCost = $shippingCostTotal * $percent;
+                $currentShippingCostPaid += $sellerShippingCost;
+
+                /**
+                 * For the last participant (to shipping cost),
+                 * we need to round up the price, so that the sum of
+                 * participants contribution matches EXACTLY the total shipping cost
+                 *
+                 */
+                if (0 === $nbShippingParticipants) {
+                    $sellerShippingCost += ($shippingCostTotal - $currentShippingCostPaid);
+                }
+
+                /**
+                 * @see EkomModels::shippingInfoModel()
+                 */
+                $shippingInfo = [
+                    "estimated_delivery_date" => $shippingDetails['estimated_delivery_date'],
+                    "shipping_cost" => $sellerShippingCost,
+                ];
+
+
+                $entity->addShippingItem($shippingInfo,
+                    $taxGroupName,
+                    $shippingDetails['carrier_id'],
+                    $shippingDetails['label']
+                );
             }
 
 
-            az($item);
+            //--------------------------------------------
+            // COUPONS
+            //--------------------------------------------
+            if ($sellerDirectives['couponDetails']) {
+                $sellerCouponDetails = $sellerDirectives['couponDetails'];
+                $entity->addCouponDetails($sellerCouponDetails);
+            }
 
 
-            $invoice['invoice_details'] = 0;
-            $invoice['amount'] = 0;
+            $cartModel = $entity->getModel();
+
+
+            $invoiceDetails = $orderDetails;
+            $invoiceDetails['cartModel'] = $cartModel;
+            $invoice['invoice_details'] = $invoiceDetails;
+            $invoice['amount'] = $cartModel['priceOrderGrandTotalRaw'];
 
 
             $invoices[$seller] = $invoice;
         }
 
-        az("creating invoices", $invoices, $orderModel);
         return $invoices;
     }
 
     protected function processInvoice(array $invoice, array $orderModel)
     {
-        az(__FILE__, "processing invoice", $invoice);
-
-
-        $seller = $invoice['seller'];
-        SellerLayer::getDefaultSellerAddressByName($seller, $langId);
-
 
         if (null === $invoice['capture_date']) { // the invoice should be captured now
 
+            $invoiceId = InvoiceLayer::insert($invoice);
+            if (false === $invoiceId) {
+                $this->devError("Invoice couldn't be inserted: data= " . ArrayToStringTool::toPhpArray($invoice));
+            }
 
         } else {// the invoice should be captured in the future
 
         }
-
-
-        az("rhaaa");
     }
 
     //--------------------------------------------
@@ -638,26 +716,26 @@ class CheckoutOrderUtil
             //--------------------------------------------
             // NOW INVOICES...
             //--------------------------------------------
-//            $invoices = $this->createInvoices($orderId, $orderModel);
-//            foreach ($invoices as $invoice) {
-//                $this->processInvoice($invoice, $orderModel);
-//            }
-//            az(__FILE__, 'invoices', $invoices);
+            $invoices = $this->createInvoices($orderId, $orderModel);
+            foreach ($invoices as $invoice) {
+                $this->processInvoice($invoice, $orderModel);
+            }
 
 
+            az("oo");
             //--------------------------------------------
             // FINALIZING THE ORDER PROCESS
             //--------------------------------------------
-            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT, $shopId);
-            Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
-
-
-            if (false === $this->testMode) {
-                CartLayer::create()->clean();
-                CurrentCheckoutData::clean();
-            } else {
-                az("test mode", $orderModel);
-            }
+//            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT, $shopId);
+//            Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
+//
+//
+//            if (false === $this->testMode) {
+//                CartLayer::create()->clean();
+//                CurrentCheckoutData::clean();
+//            } else {
+//                az("test mode", $orderModel);
+//            }
 
 
         }, function (\Exception $e) {

@@ -86,9 +86,15 @@ class DiscountLayer
             case 'fixed':
             case 'amount':
                 $price -= $operand;
+                if ($price < 0) {
+                    $price = 0;
+                }
                 break;
             case 'percent':
                 $price -= ($operand * $price) / 100;
+                if ($price < 0) {
+                    $price = 0;
+                }
                 $price = E::trimPrice($price);
                 break;
             default:

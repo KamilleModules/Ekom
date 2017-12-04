@@ -145,6 +145,8 @@ class CartModelEntity
 
         // order
         $model["shippingShippingCost"] = E::price($model["shippingShippingCostRaw"]);
+        $model["shippingTaxAmount"] = E::price($model["shippingTaxAmountRaw"]);
+        $model["shippingShippingCostWithoutTax"] = E::price($model["shippingShippingCostWithoutTaxRaw"]);
         $model["priceOrderTotal"] = E::price($model["priceOrderTotalRaw"]);
         $model["priceOrderGrandTotal"] = E::price($model["priceOrderGrandTotalRaw"]);
 
@@ -231,7 +233,8 @@ class CartModelEntity
             // applying shipping taxes
             //--------------------------------------------
             $shippingCost = $shippingInfo['shipping_cost'];
-            $taxInfo = TaxLayer::applyTaxGroup($this->taxGroupName, $shippingCost);
+            $shippingTaxGroup = TaxLayer::getTaxGroupInfoByName($this->taxGroupName);
+            $taxInfo = TaxLayer::applyTaxGroup($shippingTaxGroup, $shippingCost);
 
 
             $shippingCostWithTax = E::trimPrice($taxInfo['priceWithTax']);
@@ -241,16 +244,17 @@ class CartModelEntity
             $model["shippingTaxRatio"] = $taxInfo['taxRatio'];
             $model["shippingTaxGroupName"] = $taxInfo['taxGroupName'];
             $model["shippingTaxGroupLabel"] = $taxInfo['taxGroupLabel'];
-            $model["shippingTaxAmountUnit"] = $taxInfo['taxAmountUnit'];
+            $model["shippingTaxAmountRaw"] = $taxInfo['taxAmountUnit'];
             $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
             $model["shippingDetails"] = [
-                "estimated_delivery_text" => $shippingInfo["estimated_delivery_text"],
+                "estimated_delivery_text" => (array_key_exists("estimated_delivery_text", $shippingInfo)) ? $shippingInfo["estimated_delivery_text"] : "",
                 "estimated_delivery_date" => $shippingInfo["estimated_delivery_date"],
                 "label" => $this->carrierLabel,
 //                "shop_address" => $shopAddress, // not sure?
                 "carrier_id" => $this->carrierId,
             ];
             $model["shippingShippingCostRaw"] = $shippingCostWithTax;
+            $model["shippingShippingCostWithoutTaxRaw"] = $shippingCost;
             $model["shippingIsApplied"] = true;
             $model['shippingErrorCode'] = null;
         } else {
@@ -259,10 +263,11 @@ class CartModelEntity
             $model["shippingTaxRatio"] = 1;
             $model["shippingTaxGroupName"] = "";
             $model["shippingTaxGroupLabel"] = "";
-            $model["shippingTaxAmountUnit"] = 0;
+            $model["shippingTaxAmountRaw"] = 0;
             $model["shippingTaxHasTax"] = false;
             $model["shippingDetails"] = [];
             $model["shippingShippingCostRaw"] = $shippingCostWithTax;
+            $model["shippingShippingCostWithoutTaxRaw"] = $shippingCostWithTax;
             $model["shippingIsApplied"] = false;
 
             if (is_array($shippingInfo) && array_key_exists("errorCode", $shippingInfo)) {
@@ -288,6 +293,9 @@ class CartModelEntity
             foreach ($this->couponsDetails as $couponsDetail) {
                 $orderGrandTotal -= $couponsDetail['savingRaw'];
             }
+        }
+        if ($orderGrandTotal < 0) {
+            $orderGrandTotal = 0;
         }
         $model['priceOrderGrandTotalRaw'] = $orderGrandTotal;
 

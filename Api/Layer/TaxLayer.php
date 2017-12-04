@@ -31,18 +31,6 @@ use QuickPdo\QuickPdo;
  *
  *
  * ------------------------------
- * taxGroup:
- * - name
- * - label
- * - id
- * - taxes:
- *      - 0:
- *          - id
- *          - label
- *          - amount
- *          - order
- *          - mode
- *      - ...
  */
 class TaxLayer
 {
@@ -132,6 +120,7 @@ order by h.order asc
 
     /**
      * @param array|false $taxGroup
+     * @see EkomModels::taxGroup()
      * @param $price , float, the price to apply the taxGroup to
      *
      * @return array

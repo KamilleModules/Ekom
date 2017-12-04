@@ -89,6 +89,11 @@ class EkomModels
      *
      * The noGroups form doesn't contain the itemsGroupedBySeller key.
      *
+     * Currently in Ekom, the following objects are using the cartModel:
+     * - CartLayer: uses the regular form
+     * - CartModelEntity: uses the noGroups form
+     *
+     *
      *
      *
      *
@@ -213,7 +218,10 @@ class EkomModels
      * - shippingIsApplied: bool, whether the shipping cost currently applies to the cart amount
      * - shippingShippingCost
      * - shippingShippingCostRaw
-     * - shippingTaxAmountUnit
+     * - shippingShippingCostWithoutTax
+     * - shippingShippingCostWithoutTaxRaw
+     * - shippingTaxAmount
+     * - shippingTaxAmountRaw
      * - shippingTaxDetails
      * - shippingTaxGroupLabel
      * - shippingTaxGroupName
@@ -238,18 +246,21 @@ class EkomModels
      * - label: coupon label
      * - savingRaw: the unformatted amount of saving for the ensemble of the discounts for this coupon
      * - saving: the formatted version of savingRaw
-     * - seller_target: string,
-     *              - *: means applies to all sellers
-     *              - seller:$sellerName: means applies only to $sellerName
+     * - target: string, 256 chars.
+     *              Can be used in any way you want.
+     *              However, ekom by default uses the following heuristics:
      *
-     * - @depr details: array, free form. Example:
-     *          - sellerDetails:
-     *                  - seller1:
-     *                      - amount: 2.51
-     *                      - label: 25.15 % de 1336
-     *                  - seller2:
-     *                      - amount: 7.49
-     *                      - label: 74.85 % de 1336
+     *              - <emptyString>
+     *                      distribute the coupon amount equally amongst all sellers.
+     *                      Note: we could also use a ratio proportional to the
+     *                      amount of the order handled by a seller,
+     *                      but as for now, this technique is not implemented.
+     *
+     *              - seller:$sellerName
+     *                      apply the coupon amount only to the $sellerName seller
+     *
+     *
+     * - details: array, free form
      */
     private function couponDetailsItem()
     {
@@ -616,6 +627,27 @@ class EkomModels
      *
      */
     private function shopPhysicalAddress()
+    {
+
+    }
+
+
+    /**
+     * taxGroup
+     * --------------
+     * - name
+     * - label
+     * - id
+     * - taxes:
+     *      - 0:
+     *          - id
+     *          - label
+     *          - amount
+     *          - order
+     *          - mode
+     *      - ...
+     */
+    private function taxGroup()
     {
 
     }
