@@ -5,7 +5,7 @@ namespace Module\Ekom\Api\Layer;
 
 
 
-class InvoicesLayer
+class InvoiceLayer
 {
 
     public function getUserInvoiceShortItems($userId){

@@ -28,9 +28,10 @@ class CheckoutThankYouModel
              * @todo-ling: ensure that only the last order is browsable
              */
             $info = OrderLayer::getOrderInfo($orderId);
-            $items = $info['order_details']['cartModel']['items'];
+            $orderDetails = $info['order_details'];
+            $items = $orderDetails['cartModel']['items'];
             $estimatedDeliveryDate = null;
-            $shippingDetails = $info['order_details']['cartModel']['shippingDetails'];
+            $shippingDetails = $orderDetails['cartModel']['shippingDetails'];
             if (array_key_exists("estimated_delivery_date", $shippingDetails)) {
                 $estimatedDeliveryDate = $shippingDetails['estimated_delivery_date'];
             }
@@ -46,6 +47,12 @@ class CheckoutThankYouModel
                 ];
             }
 
+            $lfPoints = 0;
+            if (array_key_exists("lfPoints", $orderDetails)) {
+                $lfPoints = array_sum($orderDetails["lfPoints"]);
+            }
+
+
 
             $model['reference'] = $info['reference'];
             $model['trackingNumber'] = $info['tracking_number'];
@@ -54,6 +61,8 @@ class CheckoutThankYouModel
             $model['products'] = $products;
             $model['uriCustomerOrders'] = E::link("Ekom_customerOrders");
             $model['uriMyAccount'] = E::link("Ekom_customerDashboard");
+            $model['paymentMethod'] = $info['order_details']['payment_method_name'];
+            $model['lfPoints'] = $lfPoints;
 
 
             /**

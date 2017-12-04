@@ -46,7 +46,7 @@ use QuickPdo\QuickPdo;
  *
  *
  */
-class CartLayer
+class CartLayerOld3
 {
 
 
@@ -617,6 +617,9 @@ class CartLayer
                 $model['shippingErrorCode'] = null;
             }
         }
+
+
+
 
         // order total
         $orderTotal = $cartTotal + $shippingCostWithTax;

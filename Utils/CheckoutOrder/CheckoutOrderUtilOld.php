@@ -9,14 +9,10 @@ use Bat\ArrayTool;
 use Core\Services\Hooks;
 use Core\Services\X;
 use Module\Ekom\Api\EkomApi;
-use Module\Ekom\Api\Entity\CartModelEntity;
 use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
-use Module\Ekom\Api\Layer\CurrencyLayer;
-use Module\Ekom\Api\Layer\LangLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
-use Module\Ekom\Api\Layer\SellerLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Api\Layer\UserGroupLayer;
@@ -28,11 +24,10 @@ use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Status\EkomOrderStatus;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
-use Module\Ekom\Utils\InvoiceNumberProvider\InvoiceNumberProviderInterface;
 use Module\Ekom\Utils\OrderReferenceProvider\OrderReferenceProviderInterface;
 use QuickPdo\QuickPdo;
 
-class CheckoutOrderUtil
+class CheckoutOrderUtilOld
 {
 
     private $testMode;
@@ -57,16 +52,24 @@ class CheckoutOrderUtil
 
 
     /**
-     * This method places an order and the attached invoices in the database and returns the id of the order.
-     *
-     * Pre-requisites:
-     * https://github.com/KamilleModules/Ekom/tree/master/doc/checkout/order-and-invoices.md
-     * https://github.com/KamilleModules/Ekom/tree/master/doc/checkout/carrier-and-sellers.md
+     * This method places an order in the database and returns the id of the order.
+     * It
      *
      *
+     * orderData
+     * -------------
+     * @param array $data
+     * - user_id
+     * - shop_id
+     * - lang_id
+     * - currency_id
+     * - ?carrier_id              (only if at least an item needs to be shipped)
+     * - ?shipping_address_id     (only if at least an item needs to be shipped)
+     * - ?shop_address_id         (only if the shipping_address_id is defined)
+     * - billing_address_id
+     * - payment_method_id
+     * - ...your own
      *
-     * @param array $data : <orderDataModel>
-     * @see EkomModels::orderDataModel()
      *
      * @param array $cartModel
      * @see EkomModels::cartModel()
@@ -81,8 +84,6 @@ class CheckoutOrderUtil
          * 1. check (and hooks)
          * 2. collect (&) (and hooks)
          * 3. db insert
-         *      3a. create order
-         *      3b. create invoice(s)
          */
         //--------------------------------------------
         // CHECK
@@ -154,18 +155,32 @@ class CheckoutOrderUtil
             //--------------------------------------------
             /**
              * In this step, we collect the information to save in the database.
-             *
-             *
              * We want to recreate the orderModel -- @see EkomModels::orderModel()
              *
              * This involves two special actors:
              * - carriers                   (CarrierInterface)
              * - payment method handlers    (PaymentMethodHandlerInterface)
              *
-             *
-             * Those actors can potentially fetch data using external apis
+             * Those actors potentially will fetch data using external apis
              * (for instance, carrier can ask for a tracking number, and payment method handler
              * will execute a financial transaction with a bank...).
+             *
+             *
+             * This is a synchronous process anyway (i.e. all statements are executed in order),
+             * so, at the end of this step, we end up with the order model that we insert in database in next step.
+             *
+             * Modules are prompted to decorate this model with their own data.
+             * In particular, this process will listen to (and handle) the following entries:
+             *
+             * - pay_identifier: string, an identifier to track your financial transaction
+             * - tracking_number: string
+             * - payment_method_details: array (will be injected in orderModel.order_details.payment_method_details),
+             *                          contain info like does the user want to use a repayment schedule or not
+             *                          for instance
+             * - carrier_details: array (will be injected in orderModel.order_details.carrier_details)
+             *                          contain info like do we want to send the item as a gift for instance (i.e. the
+             *                          store needs to wrap the item) for instance
+             *
              *
              *
              */
@@ -191,10 +206,6 @@ class CheckoutOrderUtil
             $billingAddressId = $data['billing_address_id'];
 
             // carrier
-            /**
-             * The carrier is applied at the order level
-             * https://github.com/KamilleModules/Ekom/tree/master/doc/checkout/carrier-and-sellers.md
-             */
             $carrierId = null;
             if (array_key_exists("carrier_id", $data)) {
                 $carrierId = $data['carrier_id'];
@@ -204,17 +215,15 @@ class CheckoutOrderUtil
 
 
             // payment method handler
-            /**
-             * For payment method handlers, in this collect step, we only collect the user configuration
-             * (of the chosen payment method) when he clicked the "pay" button.
-             */
             $paymentMethodId = $data['payment_method_id'];
             $paymentHandler = PaymentLayer::getPaymentMethodHandlerById($paymentMethodId);
-            $paymentMethodDetails = $paymentHandler->getCommittedConfiguration($data, $cartModel);
+            $paymentHandler->placeOrder($orderModel, $cartModel, $data);
 
 
             // now ekom logic
+            $payIdentifier = (array_key_exists("pay_identifier", $orderModel)) ? $orderModel['pay_identifier'] : "";
             $trackingNumber = (array_key_exists("tracking_number", $orderModel)) ? $orderModel['tracking_number'] : "";
+            $paymentMethodDetails = (array_key_exists("payment_method_details", $orderModel)) ? $orderModel['payment_method_details'] : [];
             $carrierDetails = (array_key_exists("carrier_details", $orderModel)) ? $orderModel['carrier_details'] : [];
 
             $userId = (int)$data['user_id'];
@@ -249,8 +258,8 @@ class CheckoutOrderUtil
 
 
             $_cartModel = $cartModel;
-            $paymentMethodName = PaymentLayer::getPaymentMethodNameById($paymentMethodId);
-            if (false === $paymentMethodName) {
+            $paymentMethodName =PaymentLayer::getPaymentMethodNameById($paymentMethodId);
+            if(false === $paymentMethodName){
                 $this->devError("Inconsistent data: payment method name not found with id $paymentMethodId");
             }
             $orderDetails = [
@@ -275,29 +284,16 @@ class CheckoutOrderUtil
 
 
             // ?
-//            unset($orderDetails['cartModel']['itemsGroupedBySeller']);
-
-
-            $currencyIsoCode = CurrencyLayer::getIsoCodeById($data['currency_id']);
-            $langIsoCode = LangLayer::getIsoCodeById($data['lang_id']);
-
-            if (false === $currencyIsoCode) {
-                $this->devError("Inconsistent data: currency " . $data['currency_id'] . " was not found");
-            }
-
-            if (false === $langIsoCode) {
-                $this->devError("Inconsistent data: lang " . $data['lang_id'] . " was not found");
-            }
+            unset($orderDetails['cartModel']['itemsGroupedBySeller']);
 
 
             // I let this model in non serialized form for debugging
             $orderModel = array_replace($orderModel, [
-                "shop_id" => $shopId,
                 "user_id" => $userId,
                 "date" => date('Y-m-d H:i:s'),
                 "amount" => $cartModel['priceOrderGrandTotalRaw'],
-                "currency_iso_code" => $currencyIsoCode,
-                "lang_iso_code" => $langIsoCode,
+                "currency" => E::getCurrencyIso(),
+                "pay_identifier" => $payIdentifier,
                 "tracking_number" => $trackingNumber,
                 "user_info" => $userInfo,
                 "shop_info" => $shopInfo,
@@ -319,199 +315,6 @@ class CheckoutOrderUtil
 
     }
 
-
-    //--------------------------------------------
-    //
-    //--------------------------------------------
-    /**
-     * @param array $orderModel
-     * @return array: <invoiceModel:insert>
-     * @see EkomModels::invoiceModel()
-     * @throws \Exception
-     */
-    protected function createInvoices($orderId, array $orderModel)
-    {
-        $orderCartModel = $orderModel['order_details']['cartModel'];
-        $itemsBySeller = $orderCartModel['itemsGroupedBySeller'];
-
-        // by default, we create one invoice per seller
-        $userId = $orderModel['user_id'];
-        $shopId = $orderModel['shop_id'];
-        $type = "invoice";
-        $date = date("Y-m-d H:i:s");
-
-        /**
-         * @var $invoiceNumberProvider InvoiceNumberProviderInterface
-         */
-        $invoiceNumberProvider = X::get("Ekom_getInvoiceNumberProvider");
-        $currencyIsoCode = $orderModel['currency_iso_code'];
-        $langIsoCode = $orderModel['lang_iso_code'];
-        $langId = LangLayer::getLangIdByIso($langIsoCode);
-        $shopItem = ShopLayer::getShopItemById($orderModel['shop_id']);
-        $shopHost = $shopItem['host'];
-        $userInfo = $orderModel['user_info'];
-        $shippingAddress = $orderModel['shipping_address'];
-        $billingAddress = $orderModel['billing_address'];
-
-
-        /**
-         * Pre-loop
-         * -------------
-         * Fetching important info for the process loop below.
-         * In other words, we collect directives in the first loop, and the second loop
-         * is dedicated to apply directives, effectively creating invoice(s).
-         * Note: some directives could create more than one invoice, or at least that's the idea.
-         *
-         *
-         * ### Carrier
-         * In current ekom, we agreed that there was only one carrier per order, and that the
-         * carrier was set at the order level.
-         * https://github.com/KamilleModules/Ekom/tree/master/doc/checkout/carrier-and-sellers.md
-         *
-         * So the only question left is: how much share of the total shipping cost each seller
-         * is going to pay.
-         *
-         * Here, we say that if the cart weight is more than 0, then the seller is willing to participate
-         * to the shipping costs, otherwise it is not.
-         *
-         * Now amongst the ones sharing the shipping cost, we use a proportional system where every seller
-         * is given a ratio (called seller_shipping_ratio), which represents the percentage of the weight
-         * handled by the seller compared to the total weight of the order.
-         *
-         * For instance, if we have the following:
-         *
-         * - seller A: 700 kg
-         * - seller B: 300 kg
-         * --------------------
-         * - Total: 1000kg
-         *
-         * Then the seller A ratio is 0.7 (70%), and the seller B ratio is 0.3 (30%).
-         *
-         *
-         *
-         */
-        $sellerInfo = [];
-
-        $totalWeight = $orderCartModel['cartTotalWeight'];
-        a($totalWeight);
-        foreach ($itemsBySeller as $seller => $item) {
-
-            $participateToShipping = $item['cartWeight'] > 0;
-
-            a($item['cartWeight']);
-            if (true === $participateToShipping) {
-                $shippingRatio = $item['cartWeight'] / $totalWeight;
-            }
-            else{
-                $shippingRatio = 0;
-            }
-
-            $sellerInfo[$seller] = [
-                'shippingRatio' => $shippingRatio,
-                /**
-                 * participate to the shipping costs?
-                 */
-                'useShipping' => $item['cartWeight'] > 0,
-            ];
-
-        }
-
-        az($sellerInfo);
-
-        /**
-         * Process loop
-         * --------------
-         * Effectively creating the invoices
-         */
-        $invoices = [];
-        foreach ($itemsBySeller as $seller => $item) {
-
-            $sellerDirectives = $sellerInfo[$seller];
-
-
-            $sellerAddress = SellerLayer::getDefaultSellerAddressByName($seller, $shopId, $langId);
-            $sellerId = SellerLayer::getIdByName($seller, $shopId);
-
-            // base properties
-            $invoice = [];
-            $invoice['capture_date'] = null; // null: the invoice should be captured now
-            $invoice['shop_id'] = $shopId;
-            $invoice['user_id'] = $userId;
-            $invoice['order_id'] = $orderId;
-            $invoice['seller_id'] = $sellerId;
-            $invoice['label'] = "";
-            $invoice['invoice_number'] = $invoiceNumberProvider->getNumber($type);
-            $invoice['invoice_number_alt'] = "";
-            $invoice['invoice_date'] = $date;
-            $invoice['pay_identifier'] = ""; //  will be set later
-            $invoice['currency_iso_code'] = $currencyIsoCode;
-            $invoice['lang_iso_code'] = $langIsoCode;
-            $invoice['shop_host'] = $shopHost;
-
-
-            $invoice['seller'] = $seller;
-            $invoice['user_info'] = $userInfo;
-            $invoice['seller_address'] = $sellerAddress;
-            $invoice['shipping_address'] = $shippingAddress;
-            $invoice['billing_address'] = $billingAddress;
-
-
-            az($item);
-            // cart related
-            /**
-             * we recreate a cartModel in noGroups form.
-             * @see EkomModels::cartModel()
-             */
-            $cartModel = [];
-            $entity = CartModelEntity::create();
-            foreach ($item['items'] as $boxModel) {
-                $entity->addProduct($boxModel);
-            }
-
-            /**
-             * Does the shipping cost apply?
-             * How?
-             * ---------
-             */
-            if(true===$sellerDirectives['useShipping']){
-                $percent = $sellerDirectives['shippingRatio'];
-               $entity->addShippingItem($shippingInfo, $taxGroupName, $carrierId, $carrierLabel);
-            }
-
-
-            az($item);
-
-
-            $invoice['invoice_details'] = 0;
-            $invoice['amount'] = 0;
-
-
-            $invoices[$seller] = $invoice;
-        }
-
-        az("creating invoices", $invoices, $orderModel);
-        return $invoices;
-    }
-
-    protected function processInvoice(array $invoice, array $orderModel)
-    {
-        az(__FILE__, "processing invoice", $invoice);
-
-
-        $seller = $invoice['seller'];
-        SellerLayer::getDefaultSellerAddressByName($seller, $langId);
-
-
-        if (null === $invoice['capture_date']) { // the invoice should be captured now
-
-
-        } else {// the invoice should be captured in the future
-
-        }
-
-
-        az("rhaaa");
-    }
 
     //--------------------------------------------
     //
@@ -612,13 +415,12 @@ class CheckoutOrderUtil
 
 
             $_orderId = EkomApi::inst()->order()->create([
-                'shop_id' => $orderModel['shop_id'],
                 'user_id' => $orderModel['user_id'],
                 'reference' => $orderModel['reference'],
                 'date' => $orderModel['date'],
                 'amount' => $orderModel['amount'],
-                'currency_iso_code' => $orderModel['currency_iso_code'],
-                'lang_iso_code' => $orderModel['lang_iso_code'],
+                'currency' => $orderModel['currency'],
+                'pay_identifier' => (string)$orderModel['pay_identifier'],
                 'tracking_number' => $orderModel['tracking_number'],
                 'user_info' => serialize($orderModel['user_info']),
                 'shop_info' => serialize($orderModel['shop_info']),
@@ -633,21 +435,6 @@ class CheckoutOrderUtil
 
 
             $orderId = $_orderId;
-
-
-            //--------------------------------------------
-            // NOW INVOICES...
-            //--------------------------------------------
-//            $invoices = $this->createInvoices($orderId, $orderModel);
-//            foreach ($invoices as $invoice) {
-//                $this->processInvoice($invoice, $orderModel);
-//            }
-//            az(__FILE__, 'invoices', $invoices);
-
-
-            //--------------------------------------------
-            // FINALIZING THE ORDER PROCESS
-            //--------------------------------------------
             OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT, $shopId);
             Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
 

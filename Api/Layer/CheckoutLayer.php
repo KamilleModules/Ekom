@@ -8,6 +8,7 @@ use Bat\ArrayTool;
 use Bat\SessionTool;
 use Core\Services\Hooks;
 use Core\Services\X;
+use Ecp\Exception\EcpUserMessageException;
 use Ingenico\Handler\IngenicoHandler;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
@@ -73,7 +74,7 @@ class CheckoutLayer
      * @see EkomModels::cartModel()
      * @return int, the newly created order id
      *
-     * @throws EkomUserMessageException
+     * @throws \Exception
      */
     public static function placeOrder(array $data, array $cartModel)
     {

@@ -33,6 +33,7 @@ class CarrierLayer
     /**
      * @param $shopId
      * @return CarrierInterface[] (id => instance)
+     * @throws \Exception
      */
     public static function getCarrierInstancesByShop($shopId)
     {
@@ -45,6 +46,7 @@ class CarrierLayer
         foreach ($rows as $id => $name) {
             if (false !== ($instance = $coll->getCarrier($name))) {
                 $instance->setId($id);
+                $instance->setName($name);
                 $ret[$id] = $instance;
             } else {
                 XLog::error("[Ekom module] - CarrierLayer: carrier $name found in database, but not as a class in the fileSystem");
@@ -69,6 +71,7 @@ class CarrierLayer
             $carrierName = $rows[$carrierId];
             $ret= self::getCarrierInstanceByName($carrierName);
             $ret->setId($carrierId);
+            $ret->setName($carrierName);
             return $ret;
         }
         throw new EkomException("[Ekom module] - CarrierLayer.getCarrierInstanceById: the carrier with 

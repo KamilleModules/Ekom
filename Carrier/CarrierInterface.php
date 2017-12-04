@@ -14,17 +14,18 @@ interface CarrierInterface
     /**
      *
      * Return the shippingInfoModel array corresponding to the given context,
-     * or false if the carrier is unable to compute this array correctly (probably because some
-     * info are missing in the context)
+     * or false if the carrier is unable to compute this array correctly at the moment
+     * (probably because some info are missing in the context)
      *
      * @see EkomModels::shippingInfoModel().
      *
      *
      * @param array :shippingContextModel $context
-     * @see EkomModels::shippingContextModel().
-     *
-     *
      * @return false|array:shippingInfoModel
+     *
+     *
+     *
+     * @see EkomModels::shippingContextModel().
      * @see EkomModels::shippingInfoModel().
      *
      *

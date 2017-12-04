@@ -41,15 +41,63 @@ class EkomModels
 
 
     /**
-     * cartModel (work in progress)
+     * carrierOfferModel
+     * ==================
+     * 2 forms:
+     *
+     * form1 (regular)
+     * ----------------
+     * - name: string, the name of the carrier
+     * - label: string, the label of the carrier
+     * - selected: bool: whether this carrierOffer should be pre-selected (assuming the carrier offers are displayed
+     *          on a page)
+     *
+     * - estimated_delivery_text: null|string
+     * - estimated_delivery_date: null|datetime|[datetimeStart, datetimeEnd]
+     * - shipping_cost: string, the formatted shipping cost without tax
+     * - shipping_cost_raw: number, the unformatted shipping cost without tax
+     * - shipping_cost_tax_applied: string, the formatted shipping cost with applicable tax(es) applied
+     * - shipping_cost_tax_applied_raw: number, the unformatted shipping cost with applicable tax(es) applied
+     *
+     * Note: assuming both estimated delivery date and delivery text are provided, the template will decide which
+     * one to display.
+     *
+     *
+     * form2 (erroneous)
+     * ----------------
+     * - name: string, the name of the carrier
+     * - label: string, the label of the carrier
+     * - selected: bool: whether this carrierOffer should be pre-selected (assuming the carrier offers are displayed
+     *          on a page)
+     * - errorCode: string, an error code that prevents the checkout process to complete. It's application specific.
+     *
+     *
+     */
+    private function carrierOfferModel()
+    {
+        return [];
+    }
+
+
+    /**
+     * cartModel
      * =================
+     *
+     * The cart model comes in two forms:
+     * - regular (by default)
+     * - noGroups
+     *
+     * The noGroups form doesn't contain the itemsGroupedBySeller key.
+     *
+     *
+     *
      *
      * - cartTotalQuantity
      * - cartTotalWeight
      * - cartTaxAmount
      * - cartTaxAmountRaw
      *
-     * - couponDetails, array of couponDetailsItem (defined in CouponLayer)
+     * - couponDetails, array of <couponDetailsItem> -- @see EkomModels::couponDetailsItem()
      * - couponHasCoupons
      * - couponSavingRaw
      * - couponSaving
@@ -125,7 +173,7 @@ class EkomModels
      *      - weight
      *
      *
-     * - itemsGroupedBySeller  (see CartUtil), array of seller => item, each item:
+     * - itemsGroupedBySeller  (only regular form)(see CartUtil), array of seller => item, each item:
      *      - taxHint: int, a number indicating
      *                       the type of visual hint to display next to the price totals for every seller.
      *                       Whether or not the tax was globally applied.
@@ -156,10 +204,12 @@ class EkomModels
      *
      *
      * - shippingDetails: empty array, or:
-     *      - ?estimated_delivery_date
+     *      - estimated_delivery_text: null|string
+     *      - estimated_delivery_date: null|datetime|[datetimeStart, datetimeEnd]
      *      - label: label of the carrier
      *      - carrier_id: id of the carrier used
      *
+     * - shippingErrorCode: string|null, an error code that prevents the checkout process to complete. It's application specific.
      * - shippingIsApplied: bool, whether the shipping cost currently applies to the cart amount
      * - shippingShippingCost
      * - shippingShippingCostRaw
@@ -171,7 +221,8 @@ class EkomModels
      * - shippingTaxRatio
      *
      *
-     *
+     * Note: assuming both estimated delivery date and delivery text are provided, the template will decide which
+     * one to display.
      *
      */
     private function cartModel()
@@ -179,6 +230,31 @@ class EkomModels
         return [];
     }
 
+
+    /**
+     * couponDetailsItem
+     * ===============
+     * - code: coupon code
+     * - label: coupon label
+     * - savingRaw: the unformatted amount of saving for the ensemble of the discounts for this coupon
+     * - saving: the formatted version of savingRaw
+     * - seller_target: string,
+     *              - *: means applies to all sellers
+     *              - seller:$sellerName: means applies only to $sellerName
+     *
+     * - @depr details: array, free form. Example:
+     *          - sellerDetails:
+     *                  - seller1:
+     *                      - amount: 2.51
+     *                      - label: 25.15 % de 1336
+     *                  - seller2:
+     *                      - amount: 7.49
+     *                      - label: 74.85 % de 1336
+     */
+    private function couponDetailsItem()
+    {
+
+    }
 
     /**
      * creditCartItem
@@ -206,14 +282,113 @@ class EkomModels
 
 
     /**
+     * invoiceModel
+     * ====================
+     *
+     * There are two forms of invoice model:
+     * - insert
+     * - retrieve
+     *
+     * The only difference between both modes is that the insert mode has
+     * the additional capture_date field, while the retrieve mode doesn't.
+     *
+     *
+     *
+     *
+     * - capture_date: null|string, (only in insert form) the time when the invoice should be captured.
+     *                      - null: means now
+     *                      - string: datetime, means the invoice should be captured in
+     *                                  a time in the future.
+     *
+     * - shop_id: int
+     * - user_id: int
+     * - order_id: int
+     * - seller_id: int
+     * - label: string
+     * - invoice_number: string
+     * - invoice_number_alt: null|string
+     * - invoice_date: datetime
+     * - pay_identifier: string
+     * - currency_iso_code:
+     * - lang_iso_code:
+     * - shop_host:
+     * - amount:
+     * - seller:
+     *
+     * - user_info:
+     * ----- groups: comma separated group names
+     * ----- id
+     * ----- shop_id
+     * ----- email
+     * ----- pass
+     * ----- pseudo
+     * ----- first_name
+     * ----- last_name
+     * ----- date_creation
+     * ----- mobile
+     * ----- phone
+     * ----- phone_prefix
+     * ----- newsletter
+     * ----- gender
+     * ----- birthday
+     * ----- active
+     *
+     * - seller_address: <shopPhysicalAddress> -- @see EkomModels::shopPhysicalAddress
+     * - shipping_address: same as <orderModel.shipping_address> -- @see EkomModels::orderModel()
+     * - billing_address: same as <orderModel.billing_address> -- @see EkomModels::orderModel()
+     *
+     * - invoice_details:
+     * ----- cartModel scoped by seller -- @see EkomModels::cartModel()
+     * ----- payment_method_id: the payment method id
+     * ----- payment_method_name: the payment method name
+     * ----- payment_method_: the payment method name
+     * ----- payment_method_details: array, depends on the chosen payment method handler
+     * (only if carrier was involved)
+     * ----- ?carrier_id:
+     * ----- ?carrier_name:
+     * ----- ?carrier_details: array
+     *
+     *
+     */
+    private function invoiceModel()
+    {
+        return [];
+    }
+
+
+    /**
+     * orderDataModel
+     * -------------
+     * - user_id
+     * - shop_id
+     * - lang_id
+     * - currency_id
+     * - ?carrier_id              (only if at least an item needs to be shipped)
+     * - ?shipping_address_id     (only if at least an item needs to be shipped)
+     * - ?shop_address_id         (only if the shipping_address_id is defined)
+     * - billing_address_id
+     * - payment_method_id
+     * - ...your own
+     *
+     */
+    private function orderDataModel()
+    {
+
+    }
+
+
+    /**
      * orderModel
      * ====================
      *
      *
+     * - shop_id: int
      * - user_id: int
      * - reference: string
      * - date: datetime
-     * - pay_identifier: string
+     * - amount: number, total amount of the order
+     * - currency_iso_code:
+     * - lang_iso_code:
      * - tracking_number: string
      * - user_info:
      * ----- groups: comma separated group names
@@ -243,7 +418,7 @@ class EkomModels
      * ----- currency_exchange_rate:
      * ----- timezone_id:
      * ----- timezone:
-     * ----- address: <shop>PhysicalAddress> -- @see EkomModels::shopPhysicalAddress
+     * ----- address: <shopPhysicalAddress> -- @see EkomModels::shopPhysicalAddress
      *
      * - shipping_address: <addressModel> | false (false if shipping address doesn't apply) -- @see EkomModels::addressModel()
      * - billing_address: <addressModel> -- @see EkomModels::addressModel()
@@ -252,8 +427,10 @@ class EkomModels
      * - order_details:
      * ----- cartModel without itemsGroupedBySeller -- @see EkomModels::cartModel()
      * ----- payment_method_id: the payment method id
+     * ----- payment_method_name: the payment method name
      * ----- payment_method_details: array, depends on the chosen payment method handler
-     * ----- ?carrier_id:
+     * ----- ?carrier_id: (only if a carrier was used)
+     * ----- ?carrier_name:
      * ----- ?carrier_details: array
      */
     private function orderModel()
@@ -263,20 +440,116 @@ class EkomModels
 
 
     /**
+     *
+     * productBoxModel (work in progress)
+     * ====================
+     *
+     * - attributes: array of attrName => attrItem:
+     * ----- attrName:
+     * --------- label: string, the attribute label
+     * --------- values: array of attributeValueItem:
+     * ------------- 0:
+     * ----------------- value: string, the attribute value
+     * ----------------- value_label: string, the attribute value label
+     * ----------------- value_id: string, the attribute value id
+     * ----------------- selected: string (0|1)
+     * ----------------- productUri: string, the product uri
+     * ----------------- getProductInfoAjaxUri: string, the uri used to refresh the product via ajax
+     * ----------------- product_id: int
+     *
+     * - attributesSelection: array of selected attribute item:
+     * ----- 0:
+     * --------- attribute_id: string
+     * --------- name_label: string
+     * --------- name: string
+     * --------- value: string
+     * --------- value_id: string
+     * --------- value_label: string
+     *
+     * - attributesString
+     * - card_id
+     * - card_slug
+     * - codes
+     * - defaultImage
+     * - description
+     *
+     * - discount
+     * - discountBadge  (pc20)
+     * - discountLabel
+     * - discountHasDiscount
+     * - discountPrice
+     * - discountRawPrice
+     * - discountRawSavingFixed
+     * - discountSavingFixed
+     * - discountSavingPercent
+     * - discountType
+     *
+     * - hasNovelty
+     * - imageLarge
+     * - imageMedium
+     * - imageSmall
+     * - imageThumb
+     * - images
+     * - label
+     * - label_flat
+     * - metaDescription
+     * - metaKeywords
+     * - metaTitle
+     * - outOfStockText
+     * - popularity
+     * - priceBase
+     * - priceBaseRaw
+     * - priceOriginal
+     * - priceOriginalRaw
+     * - priceSale
+     * - priceSaleRaw
+     *
+     * - productBoxContext      // array for dev
+     *
+     * - productDetails
+     * - productDetailsArgs
+     * - productDetailsMap
+     * - product_id
+     * - product_reference
+     * - product_type
+     * - quantityInStock
+     * - quantityStock
+     * - rating_amount
+     * - rating_nbVotes
+     * - ref
+     * - seller
+     *
+     * - taxAmount
+     * - taxGroupLabel
+     * - taxGroupName
+     * - taxHasTax
+     * - taxRatio
+     *
+     * - uriCard
+     * - uriCardAjax
+     * - uriLogin
+     * - uriProductInstance
+     * - video_info
+     * - weight
+     */
+    private function productBoxModel()
+    {
+
+    }
+
+    /**
      * shippingContextModel
      * =====================
      *
      * - cartItems: the cart items (cartModel.items)
+     * - cartWeight: number
+     * - shopAddress: null|array:shopPhysicalAddress
+     * - shippingAddress: null|array:addressModel representing the user shipping address
+     *
+     *
      * @see EkomModels::cartModel()
      * @see CartLayer
-     *
-     * - cartWeight: number
-     *
-     * - shopAddress: null|array:shopPhysicalAddress
      * @see EkomModels::shopPhysicalAddress()
-     *
-     *
-     * - shippingAddress: null|array:addressModel representing the user shipping address
      * @see EkomModels::addressModel()
      *
      *
@@ -294,11 +567,29 @@ class EkomModels
      * @see CarrierInterface
      *
      *
-     * - name: string, the name of the carrier
-     * - label: string, the label of the carrier
-     * - estimated_delivery_date: datetime|null, the estimated delivery datetime or null if it cannot be estimated
-     * - shipping_cost: number, the cost of the shipping of the accepted products
-     * - ?tracking_number: string
+     *
+     * It has two forms:
+     *
+     * form1 (typical case)
+     * ---------
+     * - @depr estimated_delivery_text: null|string
+     * - estimated_delivery_date: null|datetime|[datetimeStart, datetimeEnd]
+     * - shipping_cost: number, the cost of the shipping of the accepted products (without tax applied)
+     * - @depr ?tracking_number: string
+     *
+     *
+     * Note: assuming both estimated delivery date and delivery text are provided, the template will decide which
+     * one to display.
+     *
+     *
+     * form2 (erroneous)
+     * -----------
+     * The carrier, for some reasons, will not handle the order.
+     *
+     * - errorCode: string, an error code that prevents the checkout process to complete. It's application specific.
+     *
+     *
+     *
      */
     private function shippingInfoModel()
     {

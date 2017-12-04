@@ -20,80 +20,8 @@ use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Utils\AttributeSelectorHelper;
 use Module\Ekom\Utils\E;
 
-
 /**
- *
- *
- * productBoxModel (work in progress)
- * ====================
- * - attributes
- * - attributesSelection
- * - attributesString
- * - card_id
- * - card_slug
- * - codes
- * - defaultImage
- * - description
- *
- * - discount
- * - discountBadge  (pc20)
- * - discountLabel
- * - discountHasDiscount
- * - discountPrice
- * - discountRawPrice
- * - discountRawSavingFixed
- * - discountSavingFixed
- * - discountSavingPercent
- * - discountType
- *
- * - hasNovelty
- * - imageLarge
- * - imageMedium
- * - imageSmall
- * - imageThumb
- * - images
- * - label
- * - label_flat
- * - metaDescription
- * - metaKeywords
- * - metaTitle
- * - outOfStockText
- * - popularity
- * - priceBase
- * - priceBaseRaw
- * - priceOriginal
- * - priceOriginalRaw
- * - priceSale
- * - priceSaleRaw
- *
- * - productBoxContext      // array for dev
- *
- * - productDetails
- * - productDetailsArgs
- * - productDetailsMap
- * - product_id
- * - product_reference
- * - product_type
- * - quantityInStock
- * - quantityStock
- * - rating_amount
- * - rating_nbVotes
- * - ref
- * - seller
- *
- * - taxAmount
- * - taxGroupLabel
- * - taxGroupName
- * - taxHasTax
- * - taxRatio
- *
- * - uriCard
- * - uriCardAjax
- * - uriLogin
- * - uriProductInstance
- * - video_info
- * - weight
- *
+ * @see EkomModels::productBoxModel()
  *
  */
 class ProductBoxEntity
@@ -184,6 +112,7 @@ class ProductBoxEntity
      *          - errorCode
      *          - errorTitle
      *          - errorMessage
+     * @see EkomModels::productBoxModel()
      *
      * @throws EkomException
      */

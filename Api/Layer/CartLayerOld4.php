@@ -46,7 +46,7 @@ use QuickPdo\QuickPdo;
  *
  *
  */
-class CartLayer
+class CartLayerOld4
 {
 
 
@@ -578,7 +578,20 @@ class CartLayer
 
             // applying shipping taxes
             //--------------------------------------------
-            $taxInfo = CartUtil::getTaxInfoByValidShippingInfo($shippingInfo, $model);
+//            $taxInfo = CartUtil::getTaxInfoByValidShippingInfo($shippingInfo, $model);
+
+            $shippingTaxGroup = null;
+            Hooks::call("Ekom_Cart_defineShippingTaxGroup", $shippingTaxGroup, $model);
+            if (is_string($shippingTaxGroup)) {
+                $shippingTaxGroup = TaxLayer::getTaxGroupInfoByName($shippingTaxGroup);
+            }
+            $shippingCost = $shippingInfo['shipping_cost'];
+            $taxInfo = TaxLayer::applyTaxGroup($shippingTaxGroup, $shippingCost);
+
+
+
+
+
 
             $shippingCostWithTax = E::trimPrice($taxInfo['priceWithTax']);
             $shippingCost = $taxInfo['priceWithoutTax'];
@@ -618,6 +631,9 @@ class CartLayer
             }
         }
 
+
+
+
         // order total
         $orderTotal = $cartTotal + $shippingCostWithTax;
         $model["priceOrderTotalRaw"] = $orderTotal;
@@ -640,6 +656,9 @@ class CartLayer
          * method for that).
          *
          */
+
+
+
         $orderGrandTotal = CouponLayer::applyCoupons($couponInfoItems, $orderTotal, $model, $couponsDetails);
         $model['priceOrderGrandTotalRaw'] = $orderGrandTotal;
 

@@ -17,8 +17,13 @@ select id, iso_code from ek_lang order by id asc
         ");
     }
 
+    public static function getIsoCodeById($langId)
+    {
+        $langId = (int)$langId;
+        return QuickPdo::fetch("select iso_code from ek_lang where id=" . $langId, [], \PDO::FETCH_COLUMN);
+    }
 
-    public function getLangIdByIso($iso3Letters)
+    public static function getLangIdByIso($iso3Letters)
     {
         return QuickPdo::fetch("select id from ek_lang where iso_code=:iso", [
             'iso' => $iso3Letters,

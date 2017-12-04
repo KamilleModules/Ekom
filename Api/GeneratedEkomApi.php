@@ -24,6 +24,7 @@ use Module\Ekom\Api\Object\Feature;
 use Module\Ekom\Api\Object\FeatureLang;
 use Module\Ekom\Api\Object\FeatureValue;
 use Module\Ekom\Api\Object\FeatureValueLang;
+use Module\Ekom\Api\Object\Invoice;
 use Module\Ekom\Api\Object\Lang;
 use Module\Ekom\Api\Object\Order;
 use Module\Ekom\Api\Object\OrderHasOrderStatus;
@@ -51,6 +52,7 @@ use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductLang;
 use Module\Ekom\Api\Object\ProductType;
 use Module\Ekom\Api\Object\Seller;
+use Module\Ekom\Api\Object\SellerHasAddress;
 use Module\Ekom\Api\Object\Shop;
 use Module\Ekom\Api\Object\ShopConfiguration;
 use Module\Ekom\Api\Object\ShopHasAddress;
@@ -248,6 +250,13 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('featureValueLang');
     }
     /**
+     * @return Invoice
+     */
+    public function invoice()
+    {
+        return $this->getObject('invoice');
+    }
+    /**
      * @return Lang
      */
     public function lang()
@@ -435,6 +444,13 @@ class GeneratedEkomApi extends XiaoApi
     public function seller()
     {
         return $this->getObject('seller');
+    }
+    /**
+     * @return SellerHasAddress
+     */
+    public function sellerHasAddress()
+    {
+        return $this->getObject('sellerHasAddress');
     }
     /**
      * @return Shop

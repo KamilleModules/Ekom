@@ -138,7 +138,6 @@ order by h.order asc
      */
     public static function applyTaxGroup($taxGroup, $price)
     {
-
         if (is_array($taxGroup) && count($taxGroup['taxes']) > 0) {
             $groupName = $taxGroup['name'];
             $groupLabel = $taxGroup['label'];

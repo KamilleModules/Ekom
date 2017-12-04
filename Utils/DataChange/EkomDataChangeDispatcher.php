@@ -16,7 +16,7 @@ class EkomDataChangeDispatcher extends BasicDispatcher
             $p = explode('-', $identifier);
             $firstPart = array_shift($p);
             switch ($firstPart) {
-                case "userAddress":
+                case "user.address":
 
                     // Ekom.UserAddressLayer.getUserAddresses.$userId.
 

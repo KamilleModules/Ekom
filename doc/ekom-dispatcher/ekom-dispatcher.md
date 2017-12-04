@@ -16,12 +16,32 @@ The following events are dispatched (replace variables with their values):
 
 
 - newOrder-$userId: a new order was placed by $userId
+- user.address-$userId: a new address has been created/updated/deleted
 
 
 
 
 
+EventNaming convention
+==========================
+I try to implement a method name convention:
 
+
+- eventName: <firstPart> (<-> <secondPart>)?
+- firstPart: <recommendedForm> | <anyForm>
+- recommendedForm: <tableUpdateForm>  
+- tableUpdateForm: <namespace> <.> <table>    
+- namespace: string, a namespace. Possible namespaces are (work in progress):
+                - user (something that belongs to an user)
+- table: string, an abstract identifier representing the table.
+            In ekom, usually removes the ek_ prefix to get the table.
+- anyForm: string
+- secondPart: string, the variable part of the event name.
+                    Ideally, dot separated variables in a predefined order, 
+                    such as the first component is the most important (encapsulates
+                    the others).            
+            
+                        
 
 
 

@@ -6,13 +6,16 @@ namespace Module\Ekom\Api\Util;
 
 use Core\Services\Hooks;
 use Core\Services\X;
+use Kamille\Services\Exception\HooksException;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
+use Module\Ekom\Api\Layer\TaxLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
+use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\DistanceEstimator\DistanceEstimatorInterface;
@@ -22,6 +25,34 @@ use Module\ThisApp\ThisAppConfig;
 class CartUtil
 {
 
+
+    /**
+     * @param array $shippingInfo
+     * @return bool, whether or not the given shipping info is valid (contains no special error (form2))
+     * @see EkomModels::shippingInfoModel()
+     */
+    public static function isValidShippingInfo($shippingInfo)
+    {
+        return (is_array($shippingInfo) && false === array_key_exists("errorCode", $shippingInfo));
+    }
+
+
+    /**
+     * @param array $shippingInfo (form1)
+     * @param array $cartModel
+     * @return array
+     * @throws \Exception
+     */
+    public static function getTaxInfoByValidShippingInfo(array $shippingInfo, array $cartModel)
+    {
+        $shippingTaxGroup = null;
+        Hooks::call("Ekom_Cart_defineShippingTaxGroup", $shippingTaxGroup, $cartModel);
+        if (is_string($shippingTaxGroup)) {
+            $shippingTaxGroup = TaxLayer::getTaxGroupInfoByName($shippingTaxGroup);
+        }
+        $shippingCost = $shippingInfo['shipping_cost'];
+        return TaxLayer::applyTaxGroup($shippingTaxGroup, $shippingCost);
+    }
 
     /**
      *
@@ -44,15 +75,9 @@ class CartUtil
     /**
      * @param null $shopId
      * @param null $langId
-     * @return array of carrierOffer, each of which:
-     *
-     * - estimated_delivery_date: null|sqlDatetime
-     * - label: string, the label of the carrier
-     * - name: string, the name of the carrier
-     * - selected: bool: whether this carrierOffer should be pre-selected (assuming the carrier offers are displayed
-     *          on a page)
-     * - shipping_cost: string, the formatted shipping cost
-     * - shipping_cost_raw: number, the unformatted shipping cost
+     * @return array of <carrierOfferModel>
+     * @see EkomModels::carrierOfferModel()
+     * @throws HooksException
      *
      */
     public static function getCarrierOffers($shopId = null, $langId = null)
@@ -62,10 +87,10 @@ class CartUtil
         $langId = E::getLangId($langId);
 
         $context = CartUtil::getCarrierShippingInfoContext(CartLayer::create()->getCartModel(), $shopId, $langId);
+        $cart = CartLayer::create()->getCartModel();
 
         $carrierId = CurrentCheckoutData::getCarrierId();
         if (null === $carrierId) {
-            $cart = CartLayer::create()->getCartModel();
             $shippingDetails = $cart['shippingDetails'];
             if (array_key_exists("carrier_id", $shippingDetails)) {
                 $carrierId = $shippingDetails['carrier_id'];
@@ -76,16 +101,34 @@ class CartUtil
 
         $carriers = CarrierLayer::getCarrierInstancesByShop($shopId);
         foreach ($carriers as $id => $carrier) {
-            $arr = $carrier->getShippingInfo($context);
-            $arr['selected'] = (int)$id === $carrierId;
-            $arr['shipping_cost_raw'] = $arr['shipping_cost'];
-            $arr['shipping_cost'] = E::price($arr['shipping_cost']);
-            ksort($arr);
-            $carrierOffers[$id] = $arr;
+            $shippingInfo = $carrier->getShippingInfo($context);
+            if (false !== $shippingInfo) {
+
+                $arr = $shippingInfo;
+
+                $arr['name'] = $carrier->getName();
+                $arr['label'] = $carrier->getLabel();
+                $arr['selected'] = (int)$id === $carrierId;
+                if (true === CartUtil::isValidShippingInfo($shippingInfo)) {
+                    $arr['shipping_cost_raw'] = $shippingInfo['shipping_cost'];
+                    $arr['shipping_cost'] = E::price($shippingInfo['shipping_cost']);
+                    $taxInfo = CartUtil::getTaxInfoByValidShippingInfo($shippingInfo, $cart);
+                    $arr['shipping_cost_tax_applied_raw'] = $taxInfo['priceWithTax'];
+                    $arr['shipping_cost_tax_applied'] = E::price($taxInfo['priceWithTax']);
+                }
+                ksort($arr);
+                $carrierOffers[$id] = $arr;
+            } else {
+                XLog::error("[Ekom module] - CartUtil.getCarrierOffers: why does this shippingInfo call fail? carrierId: $id, shopId: $shopId, langId: $langId");
+            }
         }
         return $carrierOffers;
     }
 
+
+    /**
+     * @see EkomModels::shippingContextModel()
+     */
     public static function getCarrierShippingInfoContext(array $primitiveCartModel, $shopId = null, $langId = null)
     {
 
@@ -173,6 +216,8 @@ class CartUtil
      *
      * - items: the items for the current seller
      *
+     * @throws \Exception
+     *
      */
     public static function orderItemsBySeller(array $items)
     {
@@ -198,6 +243,7 @@ class CartUtil
                      */
                     'taxHint' => 0,
                     'total' => 0,
+                    'cartWeight' => 0,
                     'taxAmountTotalRaw' => 0,
                     'taxAmountTotal' => 0,
                     'totalRaw' => 0,
@@ -218,6 +264,7 @@ class CartUtil
             $ret[$seller]['taxDetails'][$item['taxGroupName']]['taxAmountTotalRaw'] += $item['taxAmount'];
             $ret[$seller]['taxAmountTotalRaw'] += $item['taxAmount'];
             $ret[$seller]['totalRaw'] += $item['priceLineRaw'];
+            $ret[$seller]['cartWeight'] += $item['weight'] * $item['quantityCart'];
             $ret[$seller]['items'][] = $item;
         }
 
@@ -251,6 +298,7 @@ class CartUtil
      *
      * @return null|array:addressModel
      * @see EkomModels::addressModel()
+     * @throws EkomException
      */
     private static function getCurrentShippingAddress($langId = null)
     {
@@ -285,6 +333,7 @@ class CartUtil
      *
      * @return null|array:shopPhysicalAddress
      * @see EkomModels::shopPhysicalAddress()
+     * @throws EkomException
      */
     private static function getCurrentShopAddress($shopId, $langId, array $shippingAddress = null)
     {

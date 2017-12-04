@@ -4,6 +4,8 @@
 namespace Module\Ekom\PaymentMethodHandler;
 
 
+use Module\Ekom\Exception\EkomException;
+
 abstract class BasePaymentMethodHandler implements PaymentMethodHandlerInterface
 {
 
@@ -18,4 +20,17 @@ abstract class BasePaymentMethodHandler implements PaymentMethodHandlerInterface
     }
 
 
+    public function getCommittedConfiguration(array $orderData, array $cartModel)
+    {
+        return [];
+    }
+
+    /**
+     * @param $msg
+     * @throws EkomException
+     */
+    protected function error($msg)
+    {
+        throw new EkomException($msg);
+    }
 }

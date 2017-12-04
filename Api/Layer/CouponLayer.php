@@ -13,6 +13,7 @@ use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
@@ -29,20 +30,6 @@ use QuickPdo\QuickPdo;
  *
  *
  *
- * couponDetailsItem
- * ===============
- * - code: coupon code
- * - label: coupon label
- * - savingRaw: the unformatted amount of saving for the ensemble of the discounts for this coupon
- * - saving: the formatted version of savingRaw
- * - details: array, free form. Example:
- *          - sellerDetails:
- *                  - seller1:
- *                      - amount: 2.51
- *                      - label: 25.15 % de 1336
- *                  - seller2:
- *                      - amount: 7.49
- *                      - label: 74.85 % de 1336
  *
  *
  */
@@ -101,7 +88,7 @@ and cl.lang_id=$langId
      *                  on the target (i.e. if target=cartTotalWithShipping, the model will contain a few more
      *                  properties than if target=linesTotal).
      * @param array $couponsDetails , for each coupon applied,
-     *                              a couponDetailsItem array (defined at the top of the CouponLayer class)
+     *                              a couponDetailsItem array -- @see EkomModels::couponDetailsItem()
      *                              is attached to $couponsDetails
      * @return number, the discount price
      */
@@ -126,6 +113,7 @@ and cl.lang_id=$langId
      * @param array $currentCartModel
      * @param array $couponsDetails
      * @return float
+     * @throws \Exception
      */
     public static function applyCoupon(array $couponInfoItem, $price, array $currentCartModel, array &$couponsDetails)
     {

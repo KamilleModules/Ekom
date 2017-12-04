@@ -1189,37 +1189,74 @@ Related notes in cart-checkout-and-order.md.
 The order table records the proof of users' intent to pay the shop owner.
 Proof that has some juridic value (in case something goes wrong).
 
+@see EkomModels::orderModel for more details on structure.
 
-- user_id: fk
+
+- shop_id: fk|null: onDelete(setNull)
+- user_id: fk|null: onDelete(setNull)
 - reference: 
 - date:
 - amount: the raw amount in the currency used for the purchase 
-- currency: the iso code (same as currency table) of the currency used for the purchase
+- currency_iso_code: the iso code (same as ek_currency table) of the currency used for the purchase
+- lang_iso_code: the iso code (same as ek_lang table) of the lang used for the purchase
 - tracking_number:
-- user_info: a serialized array containing the following info:
-    - id (just in case), email, mobile, phone, pro (a plugin needs to put this field here), group label.
-            
-- shop_info: a serialized array containing the following:
-    - id, label, currency_symbol, currency_code
+- user_info:
+- shop_info: 
+- shipping_address: 
+- billing_address: 
+- order_details: 
 
 
-- shipping_address_info: serialized array with the following:
-    - invoice_country
-    - invoice_state: 
-    - invoice_city
-    - invoice_postcode: varchar  (some postcodes contain letters)
-    - shipping_address 
 
+ek_invoice
+==============
 
-- billing_address_info: serialized array with the following:
-    - billing_country
-    - billing_state
-    - billing_city
-    - billing_postcode: varchar  (some postcodes contain letters)
-    - billing_address 
+An invoice belongs to an order.
 
-- order_details: a serialized version of the ekom order model, as defined in the appendixes of this document
-            Plus, it should contain the user coupons information (the coupons used by a user for this order).
+@see EkomModels::invoiceModel for more details on structure.
+
+- id: pk
+- shop_id: fk|null onDelete: setNULL (to avoid accidental removal of the invoice when the shop is deleted) 
+- user_id: fk|null onDelete: setNULL  
+- order_id: fk|null (onDelete: setNULL)
+- seller_id: fk|null (onDelete: setNULL)
+- label: the label of the invoice if any.
+                Example: 
+                    - First payment (out of 3)
+                    - 30% deposit invoice
+                    - Invoice of 2017 July the 1st 
+- invoice_number: uk, a unique number representing the invoice
+- invoice_number_alt: uk2, a unique number representing the invoice, or null if not used.
+                        Generally, you will not use this field, unless your application works along with other softwares
+                        which have their own naming conventions.
+                        In that case, this field allows you to bind your application invoice number with theirs.
+- invoice_date: datetime, the date time of the invoice
+- pay_identifier: the financial transaction identifier.
+                    This is useful if you delegate the handling of the payment to a third party tool.
+                    The pay identifier is the name we give to the identifier they (generally) provide. 
+                    This allows us to track a payment transaction for each invoice.                     
+
+- currency_iso_code: same as ek_currency.iso_code: 
+- lang_iso_code: same as ek_lang.iso_code
+- shop_host: same as ek_shop.host
+
+- amount: decimal, a quick access to the total amount of the invoice (handy for sorting/do stats on this table)
+- seller: string, the seller name 
+
+- user_info: same as ek_order.user_info
+- seller_address: serialized version of the seller address -- <shopPhysicalAddress> (see EkomModels)
+- shipping_address: same as ek_order.shipping_address
+- billing_address: same as ek_order.billing_address
+- invoice_details: a serialized version of the array:
+    - cartModel: the seller scoped cart model for the current invoice
+    - payment_method_id: the payment method id
+    - payment_method_name: the payment method name
+    - payment_method_: the payment method name
+    - payment_method_details: array, depends on the chosen payment method handler
+    (only if carrier was involved)
+    - ?carrier_id:
+    - ?carrier_name:
+    - ?carrier_details: array
 
 
 
@@ -1340,6 +1377,12 @@ ek_country_lang
 
 ek_address
 ============
+
+Can be used for users, or sellers, or even shops.
+For sellers, the last_name should be used as company_name (and the first_name is not used
+for the moment).
+
+
 
 - first_name: string
 - last_name: string
@@ -1577,6 +1620,18 @@ The seller information can be displayed on the front: "sold by MyCompany".
 - id: pk
 - name: uk, the seller (symbolic) name
 - shop_id: uk,fk
+
+
+
+ek_seller_has_address
+==================
+
+- seller_id: pk
+- address_id: pk
+- order: int
+
+We should have only one address per seller.
+If you have multiple addresses per seller, the one with the lowest order number is the default.
 
 
 

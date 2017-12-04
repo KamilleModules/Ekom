@@ -13,13 +13,13 @@ use XiaoApi\Object\TableCrudObject;
  *
  * You are supposed to extend this object.
  */
-class GeneratedOrder extends TableCrudObject
+class GeneratedInvoice extends TableCrudObject
 {
 
     public function __construct()
     {
         parent::__construct();
-        $this->table = "ek_order";
+        $this->table = "ek_invoice";
         $this->primaryKey = ['id'];
     }
 
@@ -32,17 +32,23 @@ class GeneratedOrder extends TableCrudObject
         $base = [
 			'shop_id' => null,
 			'user_id' => null,
-			'reference' => '',
-			'date' => '',
-			'amount' => '',
+			'order_id' => null,
+			'seller_id' => null,
+			'label' => '',
+			'invoice_number' => '',
+			'invoice_number_alt' => null,
+			'invoice_date' => '',
+			'pay_identifier' => '',
 			'currency_iso_code' => '',
 			'lang_iso_code' => '',
-			'tracking_number' => '',
+			'shop_host' => '',
+			'amount' => '',
+			'seller' => '',
 			'user_info' => '',
-			'shop_info' => '',
+			'seller_address' => '',
 			'shipping_address' => '',
 			'billing_address' => '',
-			'order_details' => '',
+			'invoice_details' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
@@ -51,6 +57,15 @@ class GeneratedOrder extends TableCrudObject
         }
         if (0 === (int)$ret["user_id"]) {
             $ret["user_id"] = null;
+        }
+        if (0 === (int)$ret["order_id"]) {
+            $ret["order_id"] = null;
+        }
+        if (0 === (int)$ret["seller_id"]) {
+            $ret["seller_id"] = null;
+        }
+        if (0 === (int)$ret["invoice_number_alt"]) {
+            $ret["invoice_number_alt"] = null;
         }
 
 

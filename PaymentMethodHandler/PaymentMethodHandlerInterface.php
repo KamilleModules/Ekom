@@ -41,6 +41,24 @@ interface PaymentMethodHandlerInterface
     public function placeOrder(array &$orderModel, array $cartModel, array $orderData);
 
 
+    /**
+     * @param $orderData : array:<orderDataModel>
+     * @see EkomModels::orderDataModel()
+     * @param $cartModel : array:<cartModel>
+     * @see EkomModels::cartModel()
+     *
+     * @return array, the payment configuration details when the user clicked the "pay" button.
+     * Those details appear on the invoice and/or at the order level.
+     * Ex:
+     *      payment method: credit card
+     *      payment mode: 3x sans frais
+     *      payment schedule:
+     *          - [ 2017-12-03, "1er versement", 100, "100€" ]
+     *          - [ 2018-01-03, "2ème versement", 100, "100€" ]
+     *          - [ 2018-02-03, "3ème versement", 100, "100€" ]
+     *
+     */
+    public function getCommittedConfiguration(array $orderData, array $cartModel);
 
 
 }

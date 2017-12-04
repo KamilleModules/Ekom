@@ -281,7 +281,7 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
                 $ret = $this->updateAddress($userId, $addressId, $data);
             }
             if (true === $ret) {
-                E::dataChange("userAddress-$userId");
+                E::dispatch("user.address-$userId");
             }
             return $ret;
         }
@@ -343,7 +343,6 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
             $data['active'] = 1;
 
             $addressId = EkomApi::inst()->address()->create($data);
-
 
             $userHasAddressData = $data;
             $userHasAddressData["user_id"] = $userId;

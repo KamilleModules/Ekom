@@ -32,7 +32,7 @@ class PaymentLayer
     /**
      * @param $paymentMethodId
      * @return PaymentMethodHandlerInterface
-     * @throws EkomException
+     * @throws \Exception
      */
     public static function getPaymentMethodHandlerById($paymentMethodId)
     {
@@ -48,6 +48,11 @@ class PaymentLayer
         return $collection->get($paymentMethodName);
     }
 
+    public static function getPaymentMethodNameById($id)
+    {
+        $id = (int)$id;
+        return QuickPdo::fetch("select name from ek_payment_method where id=$id", [], \PDO::FETCH_COLUMN);
+    }
 
     /**
      * @return array of id => item, each of which:
@@ -56,6 +61,7 @@ class PaymentLayer
      *      - model: array ( the model returned by the PaymentMethodHandlerInterface.getModel method )
      *      - config: array (from the database ek_shop_has_payment_method.configuration )
      *      - selected: bool, whether this payment method item has focus
+     * @throws \Exception
      */
     public static function getPaymentMethodHandlersItems($shopId = null, $currentPaymentMethodId = null)
     {
@@ -204,17 +210,6 @@ where shop_id=$shopId and payment_method_id=$id
         return self::getShopPaymentMethods($shopId);
     }
 
-
-    public function getPaymentMethodNameById($id, $shopId = null)
-    {
-        $methods = self::getShopPaymentMethods($shopId);
-        foreach ($methods as $method) {
-            if ((int)$method['id'] === (int)$id) {
-                return $method['name'];
-            }
-        }
-        return false;
-    }
 
     private static function getPaymentMethodName2Ids($shopId = null)
     {

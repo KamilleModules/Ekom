@@ -43,7 +43,7 @@ class E
     }
 
     /**
-     * @link https://github.com/KamilleModules/Ekom/tree/master/doc/cache/data-change-and-derby-cache.md
+     * https://github.com/KamilleModules/Ekom/tree/master/doc/ekom-dispatcher/ekom-dispatcher.md
      */
     public static function dispatch($dataIdentifier)
     {
