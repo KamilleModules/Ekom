@@ -96,6 +96,8 @@ class BalancedSchedule
             $failingBalances = [];
             $nonFailingParticipants = [];
             $bucketSchedules = [];
+            $seller2Payments = [];
+            $realPaymentTotal = 0;
             foreach ($IDEAL_AMOUNTS as $name => $amountToCapture) {
                 $bucketSchedule = [];
 
@@ -116,6 +118,8 @@ class BalancedSchedule
 
 
                 $realAmountCaptured = $bucket->capture($expected, $id, $date);
+                $realPaymentTotal += $realAmountCaptured;
+                $seller2Payments[$name] = $realAmountCaptured;
                 $bucketSchedule['real'] = $realAmountCaptured;
 
 
@@ -154,6 +158,8 @@ class BalancedSchedule
                         $BUCKET_BALANCES[$_name] = $newBalance;
                         if ($realAmount > 0) {
                             $equilibriumDetails[$_name]['providers'][$name] = $realAmount;
+                            $seller2Payments[$name] += $realAmount;
+                            $realPaymentTotal += $realAmount;
                         }
                     }
                 }
@@ -165,8 +171,14 @@ class BalancedSchedule
                 }
 
             }
+
+            $paymentDetails = [
+                "paymentAmount" => $realPaymentTotal,
+                "distribution" => $seller2Payments,
+            ];
             $bucketSchedules['equilibriumDetails'] = $equilibriumDetails;
             $bucketSchedules['hasEquilibrium'] = $hasBalanceProblem;
+            $bucketSchedules['paymentDetails'] = $paymentDetails;
 
 
             $schedule[$date] = $bucketSchedules;

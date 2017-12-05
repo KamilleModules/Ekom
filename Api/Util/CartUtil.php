@@ -9,9 +9,11 @@ use Core\Services\X;
 use Kamille\Services\Exception\HooksException;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Entity\CartModelEntity;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
+use Module\Ekom\Api\Layer\SellerLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
@@ -227,6 +229,7 @@ class CartUtil
 
             $seller = $item['seller'];
 
+
             if (false === array_key_exists($seller, $ret)) {
 
 
@@ -289,6 +292,205 @@ class CartUtil
         return $ret;
     }
 
+
+    /**
+     * This method returns one cart per seller.
+     *
+     * This is used in some paymentMethodHandlers, which need to have a hand on the repayment schedules
+     * for every seller!
+     *
+     */
+    public static function getSellerCarts(array $cartModel)
+    {
+        $itemsBySeller = $cartModel['itemsGroupedBySeller'];
+        /**
+         * Pre-loop
+         * -------------
+         * Fetching important info for the process loop below.
+         * In other words, we collect directives in the first loop, and the second loop
+         * is dedicated to apply directives, effectively creating the cart(s).
+         *
+         *
+         * ### Carrier
+         * In current ekom, we agreed that there was only one carrier per order, and that the
+         * carrier was set at the order level.
+         * https://github.com/KamilleModules/Ekom/tree/master/doc/checkout/carrier-and-sellers.md
+         *
+         * So the only question left is: how much share of the total shipping cost each seller
+         * is going to pay.
+         *
+         * Here, we say that if the cart weight is more than 0, then the seller is willing to participate
+         * to the shipping costs, otherwise it is not.
+         *
+         * Now amongst the ones sharing the shipping cost, we use a proportional system where every seller
+         * is given a ratio (called seller_shipping_ratio), which represents the percentage of the weight
+         * handled by the seller compared to the total weight of the order.
+         *
+         * For instance, if we have the following:
+         *
+         * - seller A: 700 kg
+         * - seller B: 300 kg
+         * --------------------
+         * - Total: 1000kg
+         *
+         * Then the seller A ratio is 0.7 (70%), and the seller B ratio is 0.3 (30%).
+         *
+         *
+         *
+         * ### Coupon
+         *
+         * We appy a similar mechanism for coupons.
+         * We leverage the target of the <couponDetailsItem> -- @see EkomModels::couponDetailsItem()
+         * to implement our heuristics.
+         *
+         *
+         *
+         */
+        $sellerInfo = [];
+
+        $totalWeight = $cartModel['cartTotalWeight'];
+        $nbShippingParticipants = 0;
+        $couponDetails = $cartModel['couponDetails'];
+        $nbSellers = count($itemsBySeller);
+        $sellerCouponRatio = 1 / $nbSellers;
+
+
+        foreach ($itemsBySeller as $seller => $item) {
+
+            $participateToShipping = $item['cartWeight'] > 0;
+
+            if (true === $participateToShipping) {
+                $shippingRatio = $item['cartWeight'] / $totalWeight;
+                $nbShippingParticipants++;
+            } else {
+                $shippingRatio = 0;
+            }
+
+
+            $sellerCouponDetails = [];
+            foreach ($couponDetails as $couponDetailsItem) {
+                $target = $couponDetailsItem['target'];
+                if ('' === trim($target)) {
+                    $savingRaw = $couponDetailsItem['savingRaw'];
+                    $couponDetailsItem['savingRaw'] = $savingRaw * $sellerCouponRatio;
+                    $couponDetailsItem['saving'] = E::price($couponDetailsItem['savingRaw']);
+                    $couponDetailsItem['details']['sellerDetails'] = "saving x sellerRatio = $savingRaw x $sellerCouponRatio";
+                    $sellerCouponDetails[] = $couponDetailsItem;
+                } elseif (0 === strpos($target, "seller:")) {
+                    $p = explode(":", $target, 2);
+                    $sellName = trim($p[1]);
+                    if ($seller === $sellName) {
+                        $savingRaw = $couponDetailsItem['savingRaw'];
+                        $couponDetailsItem['details']['sellerDetails'] = "100% of $savingRaw = $savingRaw";
+                        $sellerCouponDetails[] = $couponDetailsItem;
+                    }
+                }
+            }
+
+
+            $sellerInfo[$seller] = [
+                'shippingRatio' => $shippingRatio,
+                /**
+                 * participate to the shipping costs?
+                 */
+                'useShipping' => $item['cartWeight'] > 0,
+                'couponDetails' => $sellerCouponDetails,
+            ];
+
+        }
+
+
+        /**
+         * Process loop
+         * --------------
+         * Effectively creating the carts
+         */
+        $allCarts = [];
+        $taxGroupName = $cartModel['shippingTaxGroupName'];
+        $shippingDetails = $cartModel['shippingDetails'];
+        $currentShippingCostPaid = 0;
+
+        foreach ($itemsBySeller as $seller => $item) {
+            $nbShippingParticipants--;
+            $sellerDirectives = $sellerInfo[$seller];
+
+
+            // cart related
+            /**
+             * we recreate a cartModel in noGroups form.
+             * @see EkomModels::cartModel()
+             */
+            $entity = CartModelEntity::create();
+            foreach ($item['items'] as $boxModel) {
+                $entity->addProduct($boxModel);
+            }
+
+            //--------------------------------------------
+            // SHIPPING
+            //--------------------------------------------
+            /**
+             * Does the shipping cost apply?
+             * How?
+             * ---------
+             */
+            if (true === $sellerDirectives['useShipping']) {
+                $percent = $sellerDirectives['shippingRatio'];
+
+
+                $shippingCostTotal = $cartModel['shippingShippingCostWithoutTaxRaw'];
+                $sellerShippingCost = $shippingCostTotal * $percent;
+                $currentShippingCostPaid += $sellerShippingCost;
+
+                /**
+                 * For the last participant (to shipping cost),
+                 * we need to round up the price, so that the sum of
+                 * participants contribution matches EXACTLY the total shipping cost
+                 *
+                 */
+                if (0 === $nbShippingParticipants) {
+                    $sellerShippingCost += ($shippingCostTotal - $currentShippingCostPaid);
+                }
+
+                /**
+                 * @see EkomModels::shippingInfoModel()
+                 * The shipping info might not be available (if the user is not connected for instance)
+                 */
+                if ($shippingDetails) {
+                    $shippingInfo = [
+                        "estimated_delivery_date" => $shippingDetails['estimated_delivery_date'],
+                        "shipping_cost" => $sellerShippingCost,
+                    ];
+                } else {
+                    $shippingInfo = [
+                        "estimated_delivery_date" => null,
+                        "shipping_cost" => 0,
+                    ];
+                    $shippingDetails["carrier_id"] = null;
+                    $shippingDetails["label"] = null;
+                }
+                $entity->addShippingItem($shippingInfo,
+                    $taxGroupName,
+                    $shippingDetails['carrier_id'],
+                    $shippingDetails['label']
+                );
+            }
+
+
+            //--------------------------------------------
+            // COUPONS
+            //--------------------------------------------
+            if ($sellerDirectives['couponDetails']) {
+                $sellerCouponDetails = $sellerDirectives['couponDetails'];
+                $entity->addCouponDetails($sellerCouponDetails);
+            }
+
+
+            $sellerCartModel = $entity->getModel();
+            $allCarts[$seller] = $sellerCartModel;
+        }
+
+        return $allCarts;
+    }
     //--------------------------------------------
     //
     //--------------------------------------------

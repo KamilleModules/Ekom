@@ -90,6 +90,30 @@ class BalancedScheduleRenderer
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
+                <?php
+                $paymentDetails = $item['paymentDetails'];
+                $distribution = $item['paymentDetails']['distribution'];
+                ?>
+                <tr>
+                    <th>Prélèvement</th>
+                    <th>Montant</th>
+                    <th>Détails</th>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><?php echo $paymentDetails['paymentAmount']; ?></td>
+                    <td>
+                        <table>
+                            <?php foreach ($distribution as $seller => $sellerAmount): ?>
+                                <tr>
+                                    <td>
+                                        <?php echo $seller; ?>: <?php echo $sellerAmount; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </table>
+                    </td>
+                </tr>
             <?php endforeach; ?>
         </table>
         <?php
