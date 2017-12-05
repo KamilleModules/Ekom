@@ -477,7 +477,6 @@ class CheckoutOrderUtil
 
             // base properties
             $invoice = [];
-            $invoice['capture_date'] = null; // null: the invoice should be captured now
             $invoice['shop_id'] = $shopId;
             $invoice['user_id'] = $userId;
             $invoice['order_id'] = $orderId;
@@ -578,22 +577,80 @@ class CheckoutOrderUtil
 
     protected function processInvoice(array $invoice, array $orderModel)
     {
-
-        if (null === $invoice['capture_date']) { // the invoice should be captured now
-
             $invoiceId = InvoiceLayer::insert($invoice);
+
             if (false === $invoiceId) {
                 $this->devError("Invoice couldn't be inserted: data= " . ArrayToStringTool::toPhpArray($invoice));
             }
 
-        } else {// the invoice should be captured in the future
-
-        }
     }
 
     //--------------------------------------------
     //
     //--------------------------------------------
+
+    private function placeOrderModel(array $orderModel, $shopId)
+    {
+        $orderId = null;
+        $exception = null;
+        QuickPdo::transaction(function () use ($orderModel, $shopId, &$orderId) {
+
+
+            $_orderId = EkomApi::inst()->order()->create([
+                'shop_id' => $orderModel['shop_id'],
+                'user_id' => $orderModel['user_id'],
+                'reference' => $orderModel['reference'],
+                'date' => $orderModel['date'],
+                'amount' => $orderModel['amount'],
+                'currency_iso_code' => $orderModel['currency_iso_code'],
+                'lang_iso_code' => $orderModel['lang_iso_code'],
+                'tracking_number' => $orderModel['tracking_number'],
+                'user_info' => serialize($orderModel['user_info']),
+                'shop_info' => serialize($orderModel['shop_info']),
+                'shipping_address' => serialize($orderModel['shipping_address']),
+                'billing_address' => serialize($orderModel['billing_address']),
+                'order_details' => serialize($orderModel['order_details']),
+            ]);
+
+            if (false === $_orderId) {
+                $this->devError("Could not insert the order model: " . ArrayToStringTool::toPhpArray($orderModel));
+            }
+
+
+            $orderId = $_orderId;
+
+
+            //--------------------------------------------
+            // NOW INVOICES...
+            //--------------------------------------------
+            $invoices = $this->createInvoices($orderId, $orderModel);
+            foreach ($invoices as $invoice) {
+                $this->processInvoice($invoice, $orderModel);
+            }
+
+
+            az("oo");
+            //--------------------------------------------
+            // FINALIZING THE ORDER PROCESS
+            //--------------------------------------------
+//            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT, $shopId);
+//            Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
+//
+//
+//            if (false === $this->testMode) {
+//                CartLayer::create()->clean();
+//                CurrentCheckoutData::clean();
+//            } else {
+//                az("test mode", $orderModel);
+//            }
+
+
+        }, function (\Exception $e) {
+            $this->devError("$e");
+        });
+        return $orderId;
+    }
+
     private function userError($msg)
     {
         throw new EkomException($msg);
@@ -681,68 +738,6 @@ class CheckoutOrderUtil
 
     }
 
-
-    private function placeOrderModel(array $orderModel, $shopId)
-    {
-        $orderId = null;
-        $exception = null;
-        QuickPdo::transaction(function () use ($orderModel, $shopId, &$orderId) {
-
-
-            $_orderId = EkomApi::inst()->order()->create([
-                'shop_id' => $orderModel['shop_id'],
-                'user_id' => $orderModel['user_id'],
-                'reference' => $orderModel['reference'],
-                'date' => $orderModel['date'],
-                'amount' => $orderModel['amount'],
-                'currency_iso_code' => $orderModel['currency_iso_code'],
-                'lang_iso_code' => $orderModel['lang_iso_code'],
-                'tracking_number' => $orderModel['tracking_number'],
-                'user_info' => serialize($orderModel['user_info']),
-                'shop_info' => serialize($orderModel['shop_info']),
-                'shipping_address' => serialize($orderModel['shipping_address']),
-                'billing_address' => serialize($orderModel['billing_address']),
-                'order_details' => serialize($orderModel['order_details']),
-            ]);
-
-            if (false === $_orderId) {
-                $this->devError("Could not insert the order model: " . ArrayToStringTool::toPhpArray($orderModel));
-            }
-
-
-            $orderId = $_orderId;
-
-
-            //--------------------------------------------
-            // NOW INVOICES...
-            //--------------------------------------------
-            $invoices = $this->createInvoices($orderId, $orderModel);
-            foreach ($invoices as $invoice) {
-                $this->processInvoice($invoice, $orderModel);
-            }
-
-
-            az("oo");
-            //--------------------------------------------
-            // FINALIZING THE ORDER PROCESS
-            //--------------------------------------------
-//            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT, $shopId);
-//            Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
-//
-//
-//            if (false === $this->testMode) {
-//                CartLayer::create()->clean();
-//                CurrentCheckoutData::clean();
-//            } else {
-//                az("test mode", $orderModel);
-//            }
-
-
-        }, function (\Exception $e) {
-            $this->devError("$e");
-        });
-        return $orderId;
-    }
 
 
     private static function handleShippingErrorCode($errorCode)

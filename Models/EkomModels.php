@@ -296,20 +296,6 @@ class EkomModels
      * invoiceModel
      * ====================
      *
-     * There are two forms of invoice model:
-     * - insert
-     * - retrieve
-     *
-     * The only difference between both modes is that the insert mode has
-     * the additional capture_date field, while the retrieve mode doesn't.
-     *
-     *
-     *
-     *
-     * - capture_date: null|string, (only in insert form) the time when the invoice should be captured.
-     *                      - null: means now
-     *                      - string: datetime, means the invoice should be captured in
-     *                                  a time in the future.
      *
      * - shop_id: int
      * - user_id: int
