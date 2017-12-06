@@ -176,7 +176,6 @@ class ProductBoxEntity
                      * ---------------
                      * !!! THEY MUST BE CONSISTENT WITH THE GIVEN PRODUCT BOX CONTEXT (SHOP ID, LANG ID, ...)
                      * (otherwise, consistency is broken)
-                     * Also, you should not cache below this, because the data below might depend on the user.
                      * ---------------
                      *
                      *
