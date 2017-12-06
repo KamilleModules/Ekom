@@ -49,6 +49,7 @@ class BalancedSchedule
      *
      * Self Balanced Algorithm:
      * -------------------------------
+     * http://leaderbox/resources/pierre/schemas/balanced-schedule-algorithm.pdf
      *
      * We first compute the ideal amount per lap/date per participant.
      *
@@ -68,6 +69,31 @@ class BalancedSchedule
      *      For instance, if at the end of the lap, the failing participant has a negative balance (btw, the balance
      *      can only be 0 or negative, never positive) of -50, then on the next lap, we will ask this participant
      *      its ideal amount +50.
+     *
+     *
+     * @return array balancedSchedule
+     * - participants: array of participant names
+     * - schedule: array date (sqlDate) to balanceItem, each of which:
+     *      - equilibriumDetails: an array of participant name to item, each of which:
+     *              - startBalance: number, the balance state when before the equilibrium phase was started
+     *              - providers: array of (non failing) participants to the amount that
+     *                      they effectively sent to compensate the balance deficit.
+     *              - endBalance: number, the new balance state after the equilibrium phase ended
+     *      - hasEquilibrium: bool, whether the equilibrium phase was triggered for this date
+     *                  (meaning at least one balance was negative)
+     *      - paymentDetails:
+     *          - paymentAmount: number, the amount of money effectively paid for this date
+     *          - distribution: array of participant to number, the number being the
+     *                          amount effectively paid by participant for this date
+     *      - ...plus one entry per participant, each of which:
+     *          - start_balance: number, the number which the participant started with
+     *          - expected: number, the ideal number asked by the schedule to the bucket
+     *          - expected_details: a debug string explaining the inner details of expected
+     *          - real: number, the real amount returned by the bucket (aka participant)
+     *          - balance: number, the current balance for the participant
+     *
+     *
+     *
      *
      */
     public function getPaymentSchedule()

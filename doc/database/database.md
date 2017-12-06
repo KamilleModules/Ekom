@@ -885,10 +885,9 @@ otherwise, can you imagine a product without breadcrumbs?
 
 - id: pk 
 - name: uq, the functional/canonical name of the category, could be used by developers  
+- category_id: fk 
 - shop_id: fk 
-- order: int, a number that the shop can use to order its categories. 
-- lft: int, left boundary (nested model) 
-- rgt: int, right boundary (nested model) 
+- order: int, a number that the shop can use to order its categories.
 
 
 

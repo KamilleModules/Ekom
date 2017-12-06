@@ -26,6 +26,35 @@ class CategoryLayer
 {
 
 
+    public static function getCategoryGridItemByNames(array $names)
+    {
+        if ($names) {
+            $ret = QuickPdo::fetchAll("
+select        
+l.category_id,
+l.label,
+l.slug,
+l.description,
+c.name,
+c.id
+
+from ek_category c 
+inner join ek_category_lang l on l.category_id=c.id
+where c.name in ('" . implode("','", $names) . "')
+
+        ");
+            foreach($ret as $k => $info){
+                $nbCats = count(CategoryCoreLayer::create()->getSelfAndChildren($info['name']));
+                $info['nbCats'] = $nbCats;
+                $ret[$k]=$info;
+            }
+            return $ret;
+        } else {
+            return [];
+        }
+    }
+
+
     public static function getCardIdsByCategoryName($categoryName, $shopId = null, $recursive = true)
     {
         $categoryId = self::getCategoryIdByName($categoryName, $shopId);

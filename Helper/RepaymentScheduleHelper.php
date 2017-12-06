@@ -4,6 +4,7 @@
 namespace Module\Ekom\Helper;
 
 
+use Bat\DateTool;
 use Module\Ekom\Utils\E;
 
 class RepaymentScheduleHelper
@@ -44,46 +45,27 @@ class RepaymentScheduleHelper
     public static function getMensualRepaymentSchedule(array $payments, $startDate = null)
     {
 
-        // todo...
-        $time = $startTime;
-        if (null === $time) {
-            $time = time();
+        $nbPayments = count($payments);
+        if (null === $startDate) {
+            $startDate = date('Y-m-d');
         }
 
+        $time = strtotime($startDate);
 
-        $p = E::trimPrice($total / $nbRepayments);
-        $p2 = $total - ($nbRepayments - 1) * $p;
         $items = [];
-        for ($i = 0; $i < $nbRepayments - 1; $i++) {
-            $label = "";
-            if (0 === $i) {
-                $label = "1er versement";
-            } elseif (1 === $i) {
-                $label = "2ème versement";
-            } elseif (2 === $i) {
-                $label = "3ème versement";
-            }
-
+        $i = 1;
+        $total = 0;
+        foreach ($payments as $payment) {
+            $label = "Versement $i/$nbPayments";
             $items[] = [
-                "time" => DateTool::getSameDayNextMonth($time, $i),
+                "time" => DateTool::getSameDayNextMonth($time, $i - 1),
                 "label" => $label,
-                "priceRaw" => $p,
-                "price" => E::price($p),
+                "priceRaw" => $payment,
+                "price" => E::price($payment),
             ];
+            $i++;
+            $total += $payment;
         }
-
-        if (2 === $i) {
-            $label = "3ème et dernier versement";
-        } elseif (3 === $i) {
-            $label = "4ème et dernier versement";
-        }
-
-        $items[] = [
-            "time" => DateTool::getSameDayNextMonth($time, $i),
-            "label" => $label,
-            "priceRaw" => $p2,
-            "price" => E::price($p2),
-        ];
 
         return [
             'totalRaw' => $total,
