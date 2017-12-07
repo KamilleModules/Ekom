@@ -6,6 +6,7 @@ namespace Module\Ekom\Utils\CheckoutProcess;
 
 use Core\Services\Hooks;
 use Module\Ekom\Api\Layer\CartLayer;
+use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoBillingCheckoutProcessStep;
 use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoLoginCheckoutProcessStep;
 use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoPaymentCheckoutProcessStep;
 use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoShippingCheckoutProcessStep;
@@ -33,7 +34,11 @@ class EkomCheckoutProcess extends CheckoutProcess
         if (false === E::userIsConnected()) {
             $this->addStep(SokoLoginCheckoutProcessStep::create(), "login", 100);
         }
-        $this->addStep(SokoShippingCheckoutProcessStep::create(), "shipping", 200);
+        if ($cartModel['cartTotalWeight'] > 0) {
+            $this->addStep(SokoShippingCheckoutProcessStep::create(), "shipping", 200);
+        } else {
+            $this->addStep(SokoBillingCheckoutProcessStep::create(), "billing", 200);
+        }
         $this->addStep(SokoPaymentCheckoutProcessStep::create(), "payment", 300);
 
 

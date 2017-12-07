@@ -10,6 +10,46 @@ use Module\Ekom\Utils\E;
 class RepaymentScheduleHelper
 {
 
+    public static function balancedScheduleToRepaymentSchedule(array $balancedSchedule)
+    {
+        $items = [];
+        $schedule = $balancedSchedule['schedule'];
+        $nbItems = count($schedule);
+        $rest = $balancedSchedule['rest'];
+        $i = 1;
+        $total = 0;
+        foreach ($schedule as $date => $info) {
+
+            $paymentDetails = $info['paymentDetails'];
+            $price = $paymentDetails['paymentAmount'];
+            $total += $price;
+            $details = $paymentDetails['distribution'];
+
+
+            if ($nbItems === $i) { // compensate with rest
+                if (!empty($rest)) {
+                    $price += $rest;
+                    $details["_rest"] = $rest;
+                    $total += $rest;
+                }
+            }
+
+            $items[] = [
+                "time" => strtotime($date),
+                "priceRaw" => $price,
+                "price" => E::price($price),
+                "details" => $details,
+                "label" => "Versement $i/$nbItems",
+            ];
+            $i++;
+        }
+        return [
+            'totalRaw' => $total,
+            'total' => E::price($total),
+            'items' => $items,
+        ];
+    }
+
 
     /**
      * @param array $items , each of which having the following structure:

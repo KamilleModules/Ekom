@@ -91,6 +91,8 @@ class BalancedSchedule
      *          - expected_details: a debug string explaining the inner details of expected
      *          - real: number, the real amount returned by the bucket (aka participant)
      *          - balance: number, the current balance for the participant
+     * - rest: the pennies potentially left in some division(s).
+     *              You generally want to re-inject it with your last payment.
      *
      *
      *
@@ -102,18 +104,20 @@ class BalancedSchedule
         $BUCKET_BALANCES = [];
         $BUCKETS = [];
         $IDEAL_AMOUNTS = []; // per bucket
+        $BUCKET_TOTAL = 0;
 
 
         //--------------------------------------------
         // PREPARE IDEAL NUMBERS
         //--------------------------------------------
-        $this->boot($BUCKET_BALANCES, $IDEAL_AMOUNTS, $BUCKETS);
+        $this->boot($BUCKET_BALANCES, $IDEAL_AMOUNTS, $BUCKETS, $BUCKET_TOTAL);
 
 
         //--------------------------------------------
         // START SCHEDULE
         //--------------------------------------------
         $schedule = [];
+        $realAmountTotal = 0;
         foreach ($this->dates as $id => $date) {
 
 
@@ -202,6 +206,7 @@ class BalancedSchedule
                 "paymentAmount" => $realPaymentTotal,
                 "distribution" => $seller2Payments,
             ];
+            $realAmountTotal += $realPaymentTotal;
             $bucketSchedules['equilibriumDetails'] = $equilibriumDetails;
             $bucketSchedules['hasEquilibrium'] = $hasBalanceProblem;
             $bucketSchedules['paymentDetails'] = $paymentDetails;
@@ -211,10 +216,16 @@ class BalancedSchedule
 
         }
 
+
+        // get the pennies that we might have lost in some divisions
+        $offset = E::trimPrice($BUCKET_TOTAL - $realAmountTotal);
+
+
         $participants = array_keys($BUCKET_BALANCES);
         return [
             'participants' => $participants,
             'schedule' => $schedule,
+            'rest' => $offset,
         ];
     }
 
@@ -224,7 +235,7 @@ class BalancedSchedule
     //--------------------------------------------
     //
     //--------------------------------------------
-    private function boot(array &$BUCKET_BALANCES, array &$IDEAL_AMOUNTS, array &$BUCKETS)
+    private function boot(array &$BUCKET_BALANCES, array &$IDEAL_AMOUNTS, array &$BUCKETS, &$BUCKET_TOTAL)
     {
         $bucket2Amount = [];
         foreach ($this->buckets as $bucket) {
@@ -237,9 +248,10 @@ class BalancedSchedule
 
         $nbPayments = count($this->dates);
         foreach ($bucket2Amount as $name => $bucketTotal) {
-            $ideal = $bucketTotal / $nbPayments;
+            $ideal = E::trimPrice($bucketTotal / $nbPayments);
             $IDEAL_AMOUNTS[$name] = $ideal;
             $BUCKET_BALANCES[$name] = 0;
+            $BUCKET_TOTAL += $bucketTotal;
         }
 
     }

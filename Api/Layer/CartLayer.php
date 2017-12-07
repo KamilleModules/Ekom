@@ -257,18 +257,12 @@ class CartLayer
     }
 
 
-    public function addCoupon($code)
+    public function addCoupon($couponId)
     {
         $this->initSessionCart();
         $shopId = ApplicationRegistry::get("ekom.shop_id");
-
-        $couponInfo = CouponLayer::getCouponInfoByCode($code);
-        if (false !== $couponInfo) {
-            $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'] = [$couponInfo['id']];
-            $this->writeToLocalStore();
-            return true;
-        }
-        return false;
+        $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'] = [$couponId];
+        $this->writeToLocalStore();
     }
 
     public function removeCoupon($code)
@@ -676,7 +670,6 @@ class CartLayer
         $model["shippingShippingCostWithoutTax"] = E::price($model["shippingShippingCostWithoutTaxRaw"]);
         $model["priceOrderTotal"] = E::price($model["priceOrderTotalRaw"]);
         $model["priceOrderGrandTotal"] = E::price($model["priceOrderGrandTotalRaw"]);
-
 
 
         ksort($model);

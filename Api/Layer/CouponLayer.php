@@ -13,22 +13,14 @@ use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Model\EkomModel;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\E;
+use Module\ThisApp\Ekom\Helper\CartHelper;
 use QuickPdo\QuickPdo;
 
 
 /**
- * couponInfo
- * ================
- * - code: string, the code of the coupon
- * - active: 1|0, whether or not the coupon code is considered active when added to the coupon bag
- * - procedure_type: string (see discountItem at the top of DiscountLayer class)
- * - procedure_operand: string (see discountItem at the top of DiscountLayer class)
- * - target: string, the target of the coupon (see database.md for more info)
- * - label: string, the coupon label
- *
- *
  *
  *
  *
@@ -78,10 +70,21 @@ and cl.lang_id=$langId
 
     /**
      *
-     * Apply coupon(s) to the given cartModel (as defined at the top of the CartLayer class).
+     * Apply coupon(s) (or not) to the given cartModel (as defined at the top of the CartLayer class).
+     * The coupon only applies if there is a viable target in the cart.
+     *
+     * We use the target property of the couponInfoItem to decide whether or not the target can be found in
+     * the cart.
+     * @see EkomModels::couponDetailsItem()
+     *
+     * If target is empty
      *
      *
-     * @param array $couponInfoItems , array of couponInfo (defined at the top of the CouponLayer class)
+     *
+     *
+     *
+     * @param array $couponInfoItems , array of couponInfo
+     * @see EkomModels::couponInfo()
      * @param $price
      * @param array $cartModel (in case the coupon needs to execute some heuristics)
      *                  the cartModel being built, which structure might be slightly different depending
@@ -91,16 +94,87 @@ and cl.lang_id=$langId
      *                              a couponDetailsItem array -- @see EkomModels::couponDetailsItem()
      *                              is attached to $couponsDetails
      * @return number, the discount price
+     * @throws \Exception
      */
     public static function applyCoupons(array $couponInfoItems, $price, array &$cartModel, array &$couponsDetails)
     {
         $discountPrice = $price;
         foreach ($couponInfoItems as $couponInfoItem) {
-            $discountPrice = self::applyCoupon($couponInfoItem, $discountPrice, $cartModel, $couponsDetails);
+            $error = null;
+            if (true === self::couponIsValid($couponInfoItem, $cartModel, $error)) {
+                $discountPrice = self::applyCoupon($couponInfoItem, $discountPrice, $cartModel, $couponsDetails);
+            }
         }
         return $discountPrice;
     }
 
+
+    /**
+     *
+     * Check whether or not a coupon is valid.
+     * This is meant to be a low level tool.
+     *
+     * @param array $couponInfo , the <couponInfo>
+     * @see EkomModels::couponInfo()
+     * @param array $cartModel
+     * @param null|string $error , an error code indicating what type of failure occurred (in case the coupon couldn't
+     *              be added). Possible error codes are:
+     *              - inactive: the coupon is inactive
+     *              - mismatch: the coupon cannot apply to the current cart
+     *                          (for instance because you don't have certain products in your cart)
+     * @return bool: whether or not the coupon is valid
+     *
+     */
+    public static function couponIsValid(array $couponInfo, array $cartModel, &$error = null)
+    {
+        if ('1' === $couponInfo['active']) {
+            //--------------------------------------------
+            // CHECKING SELLER TARGET
+            //--------------------------------------------
+            $seller = self::getSellerByTarget($couponInfo['target']);
+            /**
+             * If a seller is designated as a coupon target, the coupon applies only if there is at least one item
+             * from that seller in the cart.
+             */
+            if (null !== $seller) {
+                if (false === CartHelper::cartContainsFromSeller($cartModel, $seller)) {
+                    $error = 'mismatch';
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            $error = 'inactive';
+            return false;
+        }
+    }
+
+    /**
+     * Check whether or not a coupon is valid.
+     * This is meant to be a method for a web interface.
+     *
+     * @param string $code , the coupon code
+     * @param array $cartModel
+     * @param null|string $error , an error code indicating what type of failure occurred (in case the coupon couldn't
+     *              be added). Possible error codes are:
+     *              - notFound: the coupon does not exist in the database
+     *              - ...plus, all codes returned by couponIsValid method
+     *
+     * @param array|null $couponInfo , the couponInfo is filled if the coupon is found
+     * @see EkomModels::couponInfo()
+     * @return bool: whether or not the coupon is valid
+     */
+    public static function couponIsValidByCode($code, array $cartModel, &$error = null, array &$couponInfo = null)
+    {
+        $_couponInfo = CouponLayer::getCouponInfoByCode($code);
+        if (false !== $_couponInfo) {
+            $couponInfo = $_couponInfo;
+            return self::couponIsValid($_couponInfo, $cartModel, $error);
+        } else {
+            $error = "notFound";
+        }
+        return false;
+    }
 
     /**
      * Apply the given coupon to the given basePrice,
@@ -145,5 +219,28 @@ and cl.lang_id=$langId
         return $discountPrice;
     }
 
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    /**
+     *
+     * Read the target string -- from @see EkomModels::couponDetailsItem()
+     * and returns the target seller name, or null if no seller was designed as a target.
+     *
+     *
+     *
+     *
+     * @param $target
+     * @return null|string
+     */
+    private static function getSellerByTarget($target)
+    {
+        if (0 === strpos($target, "seller:")) {
+            $p = explode(':', $target, 2);
+            return trim($p[1]);
+        }
+        return null;
+    }
 }
 

@@ -104,7 +104,6 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                     throw new EkomUserMessageException("No carrier offer for this app, with shopId=" . $this->shopId . " and langId=" . $this->langId);
                 }
                 $ret['carrierOffers'] = $carrierOffers;
-
                 /**
                  * Note: it's important for me to be sure selectedCarrierId is defined.
                  * That's because if we click the next step button without having

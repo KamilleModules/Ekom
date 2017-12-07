@@ -267,6 +267,24 @@ class EkomModels
 
     }
 
+
+    /**
+     * couponInfo
+     * ================
+     * - code: string, the code of the coupon
+     * - active: 1|0, whether or not the coupon code is considered active when added to the coupon bag
+     * - procedure_type: string (see discountItem at the top of DiscountLayer class)
+     * - procedure_operand: string (see discountItem at the top of DiscountLayer class)
+     * - target: string, the target of the coupon (see database.md for more info)
+     * - label: string, the coupon label
+     *
+     *
+     */
+    private function couponInfo()
+    {
+
+    }
+
     /**
      * creditCartItem
      * ====================
