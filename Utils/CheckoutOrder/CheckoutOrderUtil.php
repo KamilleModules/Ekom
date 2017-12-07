@@ -8,6 +8,7 @@ use ArrayToString\ArrayToStringTool;
 use Bat\ArrayTool;
 use Core\Services\Hooks;
 use Core\Services\X;
+use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Entity\CartModelEntity;
 use Module\Ekom\Api\Layer\CarrierLayer;
@@ -26,13 +27,14 @@ use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Models\EkomModels;
+use Module\Ekom\PaymentMethodHandler\PaymentMethodHandlerInterface;
 use Module\Ekom\Status\EkomOrderStatus;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\InvoiceNumberProvider\InvoiceNumberProviderInterface;
 use Module\Ekom\Utils\OrderReferenceProvider\OrderReferenceProviderInterface;
+use Module\ThisApp\Ekom\PaymentMethodHandler\CreditCardWalletPaymentMethodHandler;
 use QuickPdo\QuickPdo;
-
 
 
 class CheckoutOrderUtil
@@ -80,6 +82,7 @@ class CheckoutOrderUtil
      */
     public function placeOrder(array $data, array $cartModel)
     {
+
         /**
          * 1. check (and hooks)
          * 2. collect (&) (and hooks)
@@ -216,6 +219,9 @@ class CheckoutOrderUtil
             $paymentMethodDetails = $paymentHandler->getCommittedConfiguration($data, $cartModel);
 
 
+            $this->checkPaymentErrors($data, $cartModel, $paymentMethodDetails, $paymentHandler);
+
+
             // now ekom logic
             $trackingNumber = (array_key_exists("tracking_number", $orderModel)) ? $orderModel['tracking_number'] : "";
             $carrierDetails = (array_key_exists("carrier_details", $orderModel)) ? $orderModel['carrier_details'] : [];
@@ -326,6 +332,31 @@ class CheckoutOrderUtil
     //--------------------------------------------
     //
     //--------------------------------------------
+    protected function checkPaymentErrors(array $orderData, array $cartModel, array $paymentMethodDetails, PaymentMethodHandlerInterface $paymentHandler)
+    {
+        if (array_key_exists("credit_card_id", $paymentMethodDetails)) {
+            $userId = $orderData['user_id'];
+            $cardId = $paymentMethodDetails['credit_card_id'];
+            $repaymentSchedule = $paymentMethodDetails['repayment_schedule'];
+            $userMessageCodes = CreditCardWalletPaymentMethodHandler::getUserErrorMessageCodes($cartModel, $repaymentSchedule, $userId, $cardId);
+
+            if (in_array("cardExpired", $userMessageCodes, true)) {
+                throw new EkomUserMessageException("
+                <b class='error-title'>Opération interdite!</b>
+                Votre carte de crédit expire avant la dernière date de l'échéancier des prélèvements.
+                ");
+            } elseif (in_array("forbidden-training", $userMessageCodes, true)) {
+                throw new EkomUserMessageException("Nous ne pouvons pas accepter votre commande car au moins l'une
+                des formations contenues dans votre panier commence avant 14 jours (délai de rétractation imposé pour les formations).
+                Veuillez nous contacter par téléphone pour commander cette formation: 02 47 52 66 01 
+                ");
+            }
+
+        }
+
+    }
+
+
     /**
      * @param array $orderModel
      * @return array: <invoiceModel:insert>
@@ -579,11 +610,18 @@ class CheckoutOrderUtil
 
     protected function processInvoice(array $invoice, array $orderModel)
     {
-            $invoiceId = InvoiceLayer::insert($invoice);
+        $invoiceId = InvoiceLayer::insert($invoice);
 
-            if (false === $invoiceId) {
-                $this->devError("Invoice couldn't be inserted: data= " . ArrayToStringTool::toPhpArray($invoice));
-            }
+        if (false === $invoiceId) {
+            $this->devLog("Invoice couldn't be inserted: data= " . ArrayToStringTool::toPhpArray($invoice));
+            $this->userError("Un problème est survenu, le paiement n'a pas pu être effectué");
+        }
+
+        /**
+         * Now insert payments
+         */
+        a("---------------");
+        a($invoice);
 
     }
 
@@ -621,11 +659,14 @@ class CheckoutOrderUtil
 
             $orderId = $_orderId;
 
+            a(__FILE__);
 
             //--------------------------------------------
             // NOW INVOICES...
             //--------------------------------------------
             $invoices = $this->createInvoices($orderId, $orderModel);
+
+            a(count($invoices));
             foreach ($invoices as $invoice) {
                 $this->processInvoice($invoice, $orderModel);
             }
@@ -661,6 +702,12 @@ class CheckoutOrderUtil
     private function devError($msg)
     {
         throw new EkomUserMessageException($msg);
+    }
+
+    private function devLog($msg)
+    {
+        XLog::error($msg);
+
     }
 
     /**
@@ -739,7 +786,6 @@ class CheckoutOrderUtil
         }
 
     }
-
 
 
     private static function handleShippingErrorCode($errorCode)

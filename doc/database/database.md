@@ -1270,7 +1270,13 @@ The relationship between order, payment and invoice is defined in the order-invo
 - date: datetime, the time when the payment should be captured
 - paid: 0|1, whether or not the capture was successful
 - feedback_details: text, the financial transaction feedback (like a debug log for the dev) 
-- amount: the amount of money (in the currency given by the parent invoice) to capture 
+- amount: the amount of money (in the currency given by the parent invoice) to capture
+
+
+Todo: add
+invoice.payment_method
+(then ek_payment --> direct_debit) 
+  
 
 
 
