@@ -31,6 +31,23 @@ class SellerLayer
         $shopId = E::getShopId($shopId);
         $langId = E::getLangId($langId);
 
+
+        /**
+         * Some sellers are just virtual and dynamically created.
+         * This was the case for our company:
+         * "formation-belgique" is a seller created from the seller "formation", only if the client's origin country
+         * is Belgium (meaning the same product can be sold by two different sellers depending on the user's
+         * origin country).
+         *
+         * If that's the case, as far as the seller address is concerned, virtual/dynamic sellers might want to
+         * use their own heuristics here.
+         * A tip is to insert the virtual seller name in the ek_seller table, but affecting no products to it.
+         *
+         */
+
+
+
+
         $sellerAddress = A::cache()->get("Ekom.SellerLayer.getDefaultSellerAddress.$seller.$shopId.$langId", function () use ($seller, $langId, $shopId) {
 
             $q = "

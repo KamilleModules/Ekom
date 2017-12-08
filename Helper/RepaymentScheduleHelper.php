@@ -82,7 +82,7 @@ class RepaymentScheduleHelper
         ];
     }
 
-    public static function getMensualRepaymentSchedule(array $payments, $startDate = null)
+    public static function getMensualRepaymentSchedule(array $payments, $startDate = null, array $itemMerge = [])
     {
 
         $nbPayments = count($payments);
@@ -97,12 +97,12 @@ class RepaymentScheduleHelper
         $total = 0;
         foreach ($payments as $payment) {
             $label = "Versement $i/$nbPayments";
-            $items[] = [
+            $items[] = array_replace($itemMerge, [
                 "time" => DateTool::getSameDayNextMonth($time, $i - 1),
                 "label" => $label,
                 "priceRaw" => $payment,
                 "price" => E::price($payment),
-            ];
+            ]);
             $i++;
             $total += $payment;
         }

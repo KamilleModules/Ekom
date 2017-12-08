@@ -55,7 +55,7 @@ class CheckoutThankYouModel
 
 
             $model['reference'] = $info['reference'];
-            $model['trackingNumber'] = $info['tracking_number'];
+//            $model['trackingNumber'] = $info['tracking_number'];
             $model['estimatedDeliveryDate'] = $estimatedDeliveryDate;
             $model['shippingUserName'] = $info['shipping_address']['fName'];
             $model['products'] = $products;

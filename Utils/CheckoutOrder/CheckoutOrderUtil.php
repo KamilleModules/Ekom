@@ -367,6 +367,7 @@ class CheckoutOrderUtil
     {
         $orderDetails = $orderModel['order_details'];
         $orderCartModel = $orderModel['order_details']['cartModel'];
+        $paymentMethod = $orderModel['order_details']["payment_method_name"];
 
 
         $itemsBySeller = $orderCartModel['itemsGroupedBySeller'];
@@ -518,10 +519,11 @@ class CheckoutOrderUtil
             $invoice['invoice_number'] = $invoiceNumberProvider->getNumber($type);
             $invoice['invoice_number_alt'] = "";
             $invoice['invoice_date'] = $date;
-            $invoice['pay_identifier'] = ""; //  will be set later
+            $invoice['payment_method'] = $paymentMethod;
             $invoice['currency_iso_code'] = $currencyIsoCode;
             $invoice['lang_iso_code'] = $langIsoCode;
             $invoice['shop_host'] = $shopHost;
+            $invoice['track_identifier'] = ""; // shall be set later?
 
 
             $invoice['seller'] = $seller;
@@ -616,13 +618,10 @@ class CheckoutOrderUtil
             $this->devLog("Invoice couldn't be inserted: data= " . ArrayToStringTool::toPhpArray($invoice));
             $this->userError("Un problème est survenu, le paiement n'a pas pu être effectué");
         }
-
         /**
-         * Now insert payments
+         * Hooks might want to add other info (like pei_direct_debit, ...)
          */
-        a("---------------");
-        a($invoice);
-
+//        Hooks::call("Ekom_CheckoutOrderUtil_processInvoiceAfter", $invoiceId, $invoice);
     }
 
     //--------------------------------------------
@@ -635,7 +634,7 @@ class CheckoutOrderUtil
         $exception = null;
         QuickPdo::transaction(function () use ($orderModel, $shopId, &$orderId) {
 
-
+            $paymentMethod = $orderModel['order_details']["payment_method_name"];
             $_orderId = EkomApi::inst()->order()->create([
                 'shop_id' => $orderModel['shop_id'],
                 'user_id' => $orderModel['user_id'],
@@ -644,7 +643,7 @@ class CheckoutOrderUtil
                 'amount' => $orderModel['amount'],
                 'currency_iso_code' => $orderModel['currency_iso_code'],
                 'lang_iso_code' => $orderModel['lang_iso_code'],
-                'tracking_number' => $orderModel['tracking_number'],
+                'payment_method' => $paymentMethod,
                 'user_info' => serialize($orderModel['user_info']),
                 'shop_info' => serialize($orderModel['shop_info']),
                 'shipping_address' => serialize($orderModel['shipping_address']),
@@ -659,25 +658,24 @@ class CheckoutOrderUtil
 
             $orderId = $_orderId;
 
-            a(__FILE__);
 
             //--------------------------------------------
             // NOW INVOICES...
+            /**
+             * @todo-ling: are you sure?
+             */
             //--------------------------------------------
             $invoices = $this->createInvoices($orderId, $orderModel);
-
-            a(count($invoices));
             foreach ($invoices as $invoice) {
                 $this->processInvoice($invoice, $orderModel);
             }
 
 
-            az("oo");
             //--------------------------------------------
             // FINALIZING THE ORDER PROCESS
             //--------------------------------------------
-//            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT, $shopId);
-//            Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
+            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT, $shopId);
+            Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
 //
 //
 //            if (false === $this->testMode) {
@@ -689,7 +687,8 @@ class CheckoutOrderUtil
 
 
         }, function (\Exception $e) {
-            $this->devError("$e");
+            $this->devLog("$e");
+            throw new EkomUserMessageException("Un problème est survenu lors de la transaction. Veuillez contacter le service commercial.");
         });
         return $orderId;
     }

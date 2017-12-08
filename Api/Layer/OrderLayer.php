@@ -13,6 +13,13 @@ use QuickPdo\QuickPdo;
 class OrderLayer
 {
 
+    public static function getRefById($id)
+    {
+        $id = (int)$id;
+        return QuickPdo::fetch("
+select reference from ek_order where id=$id        
+        ", [], \PDO::FETCH_COLUMN);
+    }
 
     public static function getOrderInfo($id)
     {

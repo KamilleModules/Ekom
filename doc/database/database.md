@@ -1198,7 +1198,9 @@ Proof that has some juridic value (in case something goes wrong).
 - amount: the raw amount in the currency used for the purchase 
 - currency_iso_code: the iso code (same as ek_currency table) of the currency used for the purchase
 - lang_iso_code: the iso code (same as ek_lang table) of the lang used for the purchase
-- tracking_number:
+- payment_method: a payment method identifier.
+                    Note that this payment method should already be defined in the order_details, 
+                    but we put it here for our convenience (stats, ...).
 - user_info:
 - shop_info: 
 - shipping_address: 
@@ -1217,7 +1219,7 @@ An invoice belongs to an order.
 - id: pk
 - shop_id: fk|null onDelete: setNULL (to avoid accidental removal of the invoice when the shop is deleted) 
 - user_id: fk|null onDelete: setNULL  
-- order_id: fk|null (onDelete: setNULL)
+- order_id: fk
 - seller_id: fk|null (onDelete: setNULL)
 - label: the label of the invoice if any.
                 Example: 
@@ -1230,15 +1232,13 @@ An invoice belongs to an order.
                         which have their own naming conventions.
                         In that case, this field allows you to bind your application invoice number with theirs.
 - invoice_date: datetime, the date time of the invoice
-- pay_identifier: the financial transaction identifier.
-                    This is useful if you delegate the handling of the payment to a third party tool.
-                    The pay identifier is the name we give to the identifier they (generally) provide. 
-                    This allows us to track a payment transaction for each invoice.                     
-
+- payment_method: a payment method identifier.
+                    Note that this payment method should already be defined in the order_details, 
+                    but we put it here for our convenience (stats, ...).
 - currency_iso_code: same as ek_currency.iso_code: 
 - lang_iso_code: same as ek_lang.iso_code
 - shop_host: same as ek_shop.host
-
+- track_identifier: a tracking identifier or link for the user to track the delivery process 
 - amount: decimal, a quick access to the total amount of the invoice (handy for sorting/do stats on this table)
 - seller: string, the seller name 
 
@@ -1258,25 +1258,6 @@ An invoice belongs to an order.
     - ?carrier_details: array
 
 
-
-ek_payment
-================
-
-A payment belongs to an invoice.
-The relationship between order, payment and invoice is defined in the order-invoices-payments.md document.
-
-- id: pk
-- invoice_id: fk
-- date: datetime, the time when the payment should be captured
-- paid: 0|1, whether or not the capture was successful
-- feedback_details: text, the financial transaction feedback (like a debug log for the dev) 
-- amount: the amount of money (in the currency given by the parent invoice) to capture
-
-
-Todo: add
-invoice.payment_method
-(then ek_payment --> direct_debit) 
-  
 
 
 

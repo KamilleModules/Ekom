@@ -38,7 +38,7 @@ interface PaymentMethodHandlerInterface
      *
      * @return void
      */
-    public function placeOrder(array &$orderModel, array $cartModel, array $orderData);
+//    public function placeOrder(array &$orderModel, array $cartModel, array $orderData);
 
 
     /**

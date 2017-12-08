@@ -356,7 +356,6 @@ class EkomModels
      * ----- cartModel scoped by seller -- @see EkomModels::cartModel()
      * ----- payment_method_id: the payment method id
      * ----- payment_method_name: the payment method name
-     * ----- payment_method_: the payment method name
      * ----- payment_method_details: array, depends on the chosen payment method handler
      * (only if carrier was involved)
      * ----- ?carrier_id:
