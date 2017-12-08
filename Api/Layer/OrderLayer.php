@@ -34,6 +34,27 @@ select * from ek_order where id=$id
         });
     }
 
+    public static function getOrderHistoryById($orderId, $langId = null)
+    {
+        $langId = E::getLangId($langId);
+        $orderId = (int)$orderId;
+        return QuickPdo::fetchAll("
+select 
+s.code,
+s.color,
+l.label
+
+from ek_order_status s 
+inner join ek_order_has_order_status h on h.order_status_id=s.id
+inner join ek_order_status_lang l on l.order_status_id=s.id
+ 
+
+where h.order_id=$orderId
+and l.lang_id=$langId
+order by date asc         
+        ");
+    }
+
 
     public static function addOrderStatusByCode($orderId, $code, $shopId = null)
     {

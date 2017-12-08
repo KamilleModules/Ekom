@@ -29,7 +29,7 @@ class CustomerOrderModel
     {
 
 
-        if(false===array_key_exists("sort", $pool)){
+        if (false === array_key_exists("sort", $pool)) {
             $pool['sort'] = "date_desc";
         }
         $hybridList = HybridListFactory::getOrderHybridList($pool, $userId);
@@ -37,7 +37,13 @@ class CustomerOrderModel
 
 
         $items = $info['items'];
+
+
         OrderLayer::unserializeRows($items);
+        foreach ($items as $k => $item) {
+            $item['status_history'] = OrderLayer::getOrderHistoryById($item['id']);
+            $items[$k] = $item;
+        }
         $info['items'] = $items;
 
 

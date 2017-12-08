@@ -41,7 +41,7 @@ use Module\Ekom\Utils\E;
  *
  *
  */
-class HybridListFactory
+class HybridListFactoryOld
 {
 
     /**
@@ -56,7 +56,17 @@ class HybridListFactory
             ->setListParameters($pool)
             ->setRequestGenerator(SqlRequestGenerator::create()
                 ->setSqlRequest($sqlRequest
-                    ->addField("o.*")
+                    ->addField("
+o.*, (
+select s.code from ek_order_status s 
+inner join ek_order_has_order_status h on h.order_status_id=s.id 
+inner join ek_order zo on zo.id=h.order_id
+where zo.id=o.id
+and zo.user_id=$userId
+order by h.date desc
+limit 1
+            ) as last_status_code                    
+                    ")
                     ->setTable("ek_order o")
                     ->addWhere("and o.user_id=" . $userId)
                 )

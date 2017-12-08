@@ -676,14 +676,14 @@ class CheckoutOrderUtil
             //--------------------------------------------
             OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT, $shopId);
             Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
-//
-//
-//            if (false === $this->testMode) {
-//                CartLayer::create()->clean();
-//                CurrentCheckoutData::clean();
-//            } else {
-//                az("test mode", $orderModel);
-//            }
+
+
+            if (false === $this->testMode) {
+                CartLayer::create()->clean();
+                CurrentCheckoutData::clean();
+            } else {
+                az("test mode", $orderModel);
+            }
 
 
         }, function (\Exception $e) {
