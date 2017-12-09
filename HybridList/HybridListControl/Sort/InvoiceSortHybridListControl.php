@@ -17,13 +17,11 @@ use HybridList\SqlRequest\SqlRequestInterface;
  * https://github.com/lingtalfi/Models/tree/master/ListBundle
  *
  */
-class OrderSortHybridListControl extends BaseSqlSortHybridListControl
+class InvoiceSortHybridListControl extends BaseSqlSortHybridListControl
 {
-
-
     protected function getDefaultSort()
     {
-        return 'label_asc'; // default sort
+        return "amount_asc";
     }
 
 
@@ -37,16 +35,16 @@ class OrderSortHybridListControl extends BaseSqlSortHybridListControl
                 $r->addOrderBy("amount", "desc");
                 break;
             case "date_asc":
-                $r->addOrderBy("date", "asc");
+                $r->addOrderBy("invoice_date", "asc");
                 break;
             case "date_desc":
-                $r->addOrderBy("date", "desc");
+                $r->addOrderBy("invoice_date", "desc");
                 break;
-            case "ref_asc":
-                $r->addOrderBy("reference", "asc");
+            case "number_asc":
+                $r->addOrderBy("invoice_number", "asc");
                 break;
-            case "ref_desc":
-                $r->addOrderBy("reference", "desc");
+            case "number_desc":
+                $r->addOrderBy("invoice_number", "desc");
                 break;
             default:
                 break;
@@ -61,8 +59,8 @@ class OrderSortHybridListControl extends BaseSqlSortHybridListControl
             'amount_desc' => 'Par montant décroissant',
             'date_asc' => 'Par date croissante',
             'date_desc' => 'Par date décroissante',
-            'ref_asc' => 'Par référence croissante',
-            'ref_desc' => 'Par référence décroissante',
+            'number_asc' => 'Par numéro de facture croissant',
+            'number_desc' => 'Par numéro de facture décroissant',
         ];
     }
 }

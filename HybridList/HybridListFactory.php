@@ -18,6 +18,7 @@ use Module\Ekom\HybridList\HybridListControl\Filter\DiscountFilterHybridListCont
 use Module\Ekom\HybridList\HybridListControl\Filter\PriceFilterHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Filter\SummaryFilterHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Slice\PaginateSliceHybridListControl;
+use Module\Ekom\HybridList\HybridListControl\Sort\InvoiceSortHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Sort\OrderSortHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Sort\ProductSortHybridListControl;
 use Module\Ekom\Utils\E;
@@ -43,6 +44,30 @@ use Module\Ekom\Utils\E;
  */
 class HybridListFactory
 {
+
+    /**
+     * @return HybridListInterface
+     *
+     */
+    public static function getUserInvoicesHybridList(array $pool, $userId)
+    {
+        $userId = (int)$userId;
+        $sqlRequest = SqlRequest::create();
+        $hybridList = HybridList::create()
+            ->setListParameters($pool)
+            ->setRequestGenerator(SqlRequestGenerator::create()
+                ->setSqlRequest($sqlRequest
+                    ->addField("i.*")
+                    ->setTable("ek_invoice i")
+                    ->addWhere("and i.user_id=" . $userId)
+                )
+            );
+
+
+        $hybridList->addControl("sort", InvoiceSortHybridListControl::create());
+        $hybridList->addControl("slice", SqlPaginatorHybridListControl::create()->setNumberOfItemsPerPage(10));
+        return $hybridList;
+    }
 
     /**
      * @return HybridListInterface

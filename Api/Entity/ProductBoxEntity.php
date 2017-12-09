@@ -599,6 +599,15 @@ class ProductBoxEntity
                          */
                         "productDetailsMap" => [],
                         "productDetailsArgs" => $productDetails,  // the product details from the uri if any
+                        /**
+                         * The product details representing the current state of the box.
+                         * This must be fed by modules, each item contains the following:
+                         * - name
+                         * - name_label
+                         * - value
+                         * - value_label
+                         */
+                        "productDetailsSelection" => [],
 
                         // for dev/debug
                         "productBoxContext" => $productBoxContext,

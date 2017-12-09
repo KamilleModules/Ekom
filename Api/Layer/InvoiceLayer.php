@@ -6,6 +6,8 @@ namespace Module\Ekom\Api\Layer;
 
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Object\Invoice;
+use Module\Ekom\Utils\E;
+use QuickPdo\QuickPdo;
 
 class InvoiceLayer
 {
@@ -27,5 +29,22 @@ class InvoiceLayer
 
         $id = EkomApi::inst()->invoice()->create($invoice);
         return $id;
+    }
+
+    public static function getLastUserInvoice($userId = null, $unserialize = true)
+    {
+        $userId = E::getUserId($userId);
+        $row = QuickPdo::fetch("
+select * from ek_invoice where user_id=$userId
+order by invoice_date desc         
+        ");
+        if (false !== $row && true === $unserialize) {
+            $row['user_info'] = unserialize($row['user_info']);
+            $row['seller_address'] = unserialize($row['seller_address']);
+            $row['shipping_address'] = unserialize($row['shipping_address']);
+            $row['billing_address'] = unserialize($row['billing_address']);
+            $row['invoice_details'] = unserialize($row['invoice_details']);
+        }
+        return $row;
     }
 }

@@ -8,8 +8,7 @@ use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\HybridList\HybridListFactory;
 
 
-
-class CustomerOrderModel
+class CustomerInvoicesModel
 {
 
     public static function getModel(array $pool, $userId)
@@ -19,19 +18,19 @@ class CustomerOrderModel
         if (false === array_key_exists("sort", $pool)) {
             $pool['sort'] = "date_desc";
         }
-        $hybridList = HybridListFactory::getOrderHybridList($pool, $userId);
+        $hybridList = HybridListFactory::getUserInvoicesHybridList($pool, $userId);
         $info = $hybridList->execute();
 
 
-        $items = $info['items'];
+//        $items = $info['items'];
 
 
-        OrderLayer::unserializeRows($items);
-        foreach ($items as $k => $item) {
-            $item['status_history'] = OrderLayer::getOrderHistoryById($item['id']);
-            $items[$k] = $item;
-        }
-        $info['items'] = $items;
+//        OrderLayer::unserializeRows($items);
+//        foreach ($items as $k => $item) {
+//            $item['status_history'] = OrderLayer::getOrderHistoryById($item['id']);
+//            $items[$k] = $item;
+//        }
+//        $info['items'] = $items;
 
 
         $model['bundle'] = [

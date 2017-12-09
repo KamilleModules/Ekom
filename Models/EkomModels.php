@@ -110,7 +110,13 @@ class EkomModels
      *
      * - items
      *      - attributes
-     *      - attributesSelection
+     *      - attributesSelection, array of selected attribute items, each of which:
+     *          - attribute_id
+     *          - name_label
+     *          - name
+     *          - value
+     *          - value_id
+     *          - value_label
      *      - attributesString
      *      - card_id
      *      - card_slug
@@ -118,8 +124,17 @@ class EkomModels
      *      - codes
      *      - defaultImage
      *      - description
-     *      - discount
+     *      - discount:
+     *          - discount_id
+     *          - type
+     *          - operand
+     *          - target
+     *          - label
+     *          - conditions
+     *          - level
+     *      - ?discountBadge: only if discount is not empty
      *      - discountHasDiscount
+     *      - discountLabel
      *      - discountPrice
      *      - discountRawPrice
      *      - discountRawSavingFixed
@@ -150,6 +165,12 @@ class EkomModels
      *      - priceSaleRaw
      *      - productDetails
      *      - productDetailsArgs
+     *      - productDetailsMap
+     *      - productDetailsSelection
+     *          - name
+     *          - name_label
+     *          - value
+     *          - value_label
      *      - product_id
      *      - product_reference
      *      - product_type
@@ -161,8 +182,7 @@ class EkomModels
      *      - ref
      *      - seller
      *      - taxAmount
-     *      - taxAmountUnit
-     *      - taxDetails
+     *      - @depr taxDetails
      *      - taxGroup
      *      - taxGroupLabel
      *      - taxGroupName
@@ -523,6 +543,11 @@ class EkomModels
      * - productDetails
      * - productDetailsArgs
      * - productDetailsMap
+     * - productDetailsSelection, array of item:
+     *      - name
+     *      - name_label
+     *      - value
+     *      - value_label
      * - product_id
      * - product_reference
      * - product_type
@@ -615,8 +640,8 @@ class EkomModels
      * =====================
      *
      * - id
-     * - first_name
-     * - last_name
+     * - first_name: not used for a company
+     * - last_name: use this field to put the company name
      * - phone
      * - address
      * - city
