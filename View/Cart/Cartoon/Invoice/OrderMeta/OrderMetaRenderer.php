@@ -47,7 +47,8 @@ class OrderMetaRenderer extends BaseRenderer
                     </tr>
                     <tr class="notopborder">
                         <td class="indent-1"></td>
-                        <td>Le code apparaîtra ici lorsque nous l'aurons récupéré</td>
+<!--                        <td>Le code apparaîtra ici lorsque nous l'aurons récupéré</td>-->
+                        <td>Le code apparaîtra ici</td>
                     </tr>
                 <?php if(false): ?>
                     <tr class="notopborder">
