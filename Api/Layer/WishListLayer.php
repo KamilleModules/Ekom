@@ -14,6 +14,14 @@ class WishListLayer
 {
 
 
+    public static function removeUserWishlist($userId)
+    {
+        QuickPdo::delete("ek_user_has_product", [
+            ["user_id", "=", $userId],
+        ]);
+    }
+
+
     /**
      * Add a product to the user's wishlist,
      * and by default returns the number of wishlist items owned by the user.
@@ -108,7 +116,6 @@ class WishListLayer
         ]);
 
 
-
         //--------------------------------------------
         // APPLYING PARAMS
         //--------------------------------------------
@@ -117,7 +124,7 @@ class WishListLayer
     }
 
 
-    public function getNbUserWishItems($userId = null)
+    public static function getNbUserWishItems($userId = null)
     {
         if (null === $userId) {
             EkomApi::inst()->initWebContext();
@@ -126,7 +133,6 @@ class WishListLayer
                 return 0;
             }
         }
-
         return QuickPdo::fetch("select count(*) as count from ek_user_has_product where user_id=$userId", [], \PDO::FETCH_COLUMN);
     }
 }

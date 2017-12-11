@@ -29,7 +29,9 @@ select reference from ek_order where id=$id
             $row = QuickPdo::fetch("
 select * from ek_order where id=$id 
         ");
-            self::unserializeRow($row);
+            if (false !== $row) {
+                self::unserializeRow($row);
+            }
             return $row;
         });
     }

@@ -177,45 +177,45 @@ class ProductBoxLayer
     }
 
 
-    public static function getLastVisitedProductBoxList($userId, array $gpc = null)
-    {
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
-        $shopId = $gpc['shop_id'];
-        $langId = $gpc['lang_id'];
-        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getLastVisitedProductBoxListByCardId.$shopId.$langId.$userId");
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext();
-        return A::cache()->get($hashString, function () use ($userId, $shopId, $gpc) {
-            /**
-             * @var $history UserProductHistoryInterface
-             */
-            $boxes = [];
-            $history = X::get("EkomUserProductHistory_UserProductHistory");
-            $productsInfo = $history->getLastVisitedProducts($userId, 7);
-            $id2Details = [];
-            foreach ($productsInfo as $info) {
-                list($productId, $productDetails) = $info;
-
-                if ($productDetails) {
-                    $details = array_merge($productDetails['major'], $productDetails['minor']);
-                } else {
-                    $details = [];
-                }
-
-                $id2Details[$productId] = $details;
-            }
-            $id2cardIds = ProductCardLayer::getProductId2CardIdByProductIds(array_keys($id2Details));
-            foreach ($id2cardIds as $productId => $cardId) {
-                $details = $id2Details[$productId];
-                $boxes[] = ProductBoxEntity::create()
-                    ->setProductCardId($cardId)
-                    ->setProductId($productId)
-                    ->setProductDetails($details)
-                    ->setGeneralContext($gpc)
-                    ->getModel();
-            }
-            return $boxes;
-        });
-    }
+//    public static function getLastVisitedProductBoxList($userId, array $gpc = null)
+//    {
+//        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
+//        $shopId = $gpc['shop_id'];
+//        $langId = $gpc['lang_id'];
+//        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getLastVisitedProductBoxListByCardId.$shopId.$langId.$userId");
+//        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext();
+//        return A::cache()->get($hashString, function () use ($userId, $shopId, $gpc) {
+//            /**
+//             * @var $history UserProductHistoryInterface
+//             */
+//            $boxes = [];
+//            $history = X::get("EkomUserProductHistory_UserProductHistory");
+//            $productsInfo = $history->getLastVisitedProducts($userId, 7);
+//            $id2Details = [];
+//            foreach ($productsInfo as $info) {
+//                list($productId, $productDetails) = $info;
+//
+//                if ($productDetails) {
+//                    $details = array_merge($productDetails['major'], $productDetails['minor']);
+//                } else {
+//                    $details = [];
+//                }
+//
+//                $id2Details[$productId] = $details;
+//            }
+//            $id2cardIds = ProductCardLayer::getProductId2CardIdByProductIds(array_keys($id2Details));
+//            foreach ($id2cardIds as $productId => $cardId) {
+//                $details = $id2Details[$productId];
+//                $boxes[] = ProductBoxEntity::create()
+//                    ->setProductCardId($cardId)
+//                    ->setProductId($productId)
+//                    ->setProductDetails($details)
+//                    ->setGeneralContext($gpc)
+//                    ->getModel();
+//            }
+//            return $boxes;
+//        });
+//    }
 
 
 }

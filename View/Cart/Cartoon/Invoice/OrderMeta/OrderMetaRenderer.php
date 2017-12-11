@@ -33,10 +33,7 @@ class OrderMetaRenderer extends BaseRenderer
 
     public function render()
     {
-        $invoiceDetails = $this->invoice['invoice_details'];
-        $trackIdentifier = $this->invoice['track_identifier']; // but we need more than just the identifier
-        $carrierDetails = $invoiceDetails['carrier_details'];
-        $loyaltyPoints = $invoiceDetails['lfPoints'];
+
         ?>
         <div class="order-meta">
             <table class="cartoon-rows">
@@ -49,12 +46,12 @@ class OrderMetaRenderer extends BaseRenderer
                         <td class="indent-1"></td>
                         <td>Le code apparaîtra ici lorsque nous l'aurons récupéré</td>
                     </tr>
-                <?php if(false): ?>
-                    <tr class="notopborder">
-                        <td class="indent-1">Schenker</td>
-                        <td><a href="#">demo_code_fzfe045grKE88(todo)</a></td>
-                    </tr>
-                <?php endif; ?>
+                    <?php if (false): ?>
+                        <tr class="notopborder">
+                            <td class="indent-1">Schenker</td>
+                            <td><a href="#">demo_code_fzfe045grKE88(todo)</a></td>
+                        </tr>
+                    <?php endif; ?>
                 <?php endif; ?>
                 <?php
                 // this is specific to my company, you should probably remove it
@@ -64,6 +61,9 @@ class OrderMetaRenderer extends BaseRenderer
                         <td></td>
                     </tr>
                     <?php
+
+                    $loyaltyPoints = $this->getLoyaltyPoints();
+
                     $nb = count($loyaltyPoints);
                     $i = 1;
                     foreach ($loyaltyPoints as $name => $points):
@@ -101,6 +101,14 @@ class OrderMetaRenderer extends BaseRenderer
                 break;
         }
         return $name;
+    }
+
+
+    protected function getLoyaltyPoints()
+    {
+        $invoiceDetails = $this->invoice['invoice_details'];
+        $loyaltyPoints = $invoiceDetails['lfPoints'];
+        return $loyaltyPoints;
     }
 
 }

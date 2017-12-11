@@ -18,6 +18,13 @@ use RowsGenerator\ArrayRowsGenerator;
 class ProductCardLayer
 {
 
+
+    public static function getProductCardIdByRef($ref){
+        return QuickPdo::fetch("select product_card_id from ek_product where reference=:ref", [
+            'ref' => $ref,
+        ], \PDO::FETCH_COLUMN);
+    }
+
     public static function getProductIds($cardId)
     {
         $cardId = (int)$cardId;

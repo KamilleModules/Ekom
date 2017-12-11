@@ -540,9 +540,14 @@ class EkomModels
      *
      * - productBoxContext      // array for dev
      *
-     * - productDetails
+     * - @depr productDetails
+     *          The product details array (major/minor), created by modules
      * - productDetailsArgs
-     * - productDetailsMap
+     *              product details passed via the uri
+     * - productDetailsMap,
+     *              all product details identifying the product,
+     *              this is the recommended form (of product details) to
+     *              use to identify a product
      * - productDetailsSelection, array of item:
      *      - name
      *      - name_label

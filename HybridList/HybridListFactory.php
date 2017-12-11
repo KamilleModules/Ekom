@@ -21,6 +21,7 @@ use Module\Ekom\HybridList\HybridListControl\Slice\PaginateSliceHybridListContro
 use Module\Ekom\HybridList\HybridListControl\Sort\InvoiceSortHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Sort\OrderSortHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Sort\ProductSortHybridListControl;
+use Module\Ekom\HybridList\HybridListControl\Sort\WishListSortHybridListControl;
 use Module\Ekom\Utils\E;
 
 
@@ -44,6 +45,31 @@ use Module\Ekom\Utils\E;
  */
 class HybridListFactory
 {
+
+    /**
+     * @return HybridListInterface
+     *
+     */
+    public static function getUserWishListHybridList(array $pool, $userId)
+    {
+        $userId = (int)$userId;
+        $sqlRequest = SqlRequest::create();
+        $hybridList = WishListHybridList::create()
+            ->setListParameters($pool)
+            ->setRequestGenerator(SqlRequestGenerator::create()
+                ->setSqlRequest($sqlRequest
+                    ->addField("*")
+                    ->setTable("ek_user_has_product")
+                    ->addWhere("and user_id=" . $userId)
+                )
+            );
+
+
+        $hybridList->addControl("sort", WishListSortHybridListControl::create());
+        $hybridList->addControl("slice", SqlPaginatorHybridListControl::create()->setNumberOfItemsPerPage(12));
+        return $hybridList;
+    }
+
 
     /**
      * @return HybridListInterface
