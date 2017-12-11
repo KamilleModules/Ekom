@@ -4,8 +4,8 @@
 namespace Module\Ekom\Model\Front\Customer;
 
 
-use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\HybridList\HybridListFactory;
+use Module\Ekom\Utils\E;
 
 
 class CustomerInvoicesModel
@@ -22,15 +22,14 @@ class CustomerInvoicesModel
         $info = $hybridList->execute();
 
 
-//        $items = $info['items'];
+        $items = $info['items'];
 
 
-//        OrderLayer::unserializeRows($items);
-//        foreach ($items as $k => $item) {
-//            $item['status_history'] = OrderLayer::getOrderHistoryById($item['id']);
-//            $items[$k] = $item;
-//        }
-//        $info['items'] = $items;
+        foreach ($items as $k => $item) {
+            $item['uriDownloadPdf'] = E::link("Ekom_pdf_download", ['pdfId' => "invoice"]) . "?invoice_id=" . $item['id'];
+            $items[$k] = $item;
+        }
+        $info['items'] = $items;
 
 
         $model['bundle'] = [

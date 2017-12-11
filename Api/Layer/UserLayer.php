@@ -63,8 +63,16 @@ class UserLayer
 
     public static function getUserInfoById($userId)
     {
+        /**
+         * @todo-ling: caching?
+         */
         $userId = (int)$userId;
-        return QuickPdo::fetch("select * from ek_user where id=$userId");
+        $row = QuickPdo::fetch("select * from ek_user where id=$userId");
+        if (false !== $row) {
+            $userGroups = UserGroupLayer::getUserGroups($userId);
+            $row['groups'] = implode(",", $userGroups);
+        }
+        return $row;
     }
 
     public static function getUserInfoByEmail($email)

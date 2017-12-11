@@ -19,6 +19,7 @@ use Module\Ekom\Api\Layer\TaxLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Models\EkomModels;
+use Module\Ekom\Utils\Checkout\CheckoutUtil;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\DistanceEstimator\DistanceEstimatorInterface;
 use Module\Ekom\Utils\E;
@@ -88,8 +89,10 @@ class CartUtil
         $shopId = E::getShopId($shopId);
         $langId = E::getLangId($langId);
 
-        $context = CartUtil::getCarrierShippingInfoContext(CartLayer::create()->getCartModel(), $shopId, $langId);
-        $cart = CartLayer::create()->getCartModel();
+        $cartModel = CheckoutUtil::getCurrentCartLayer()->getCartModel();
+
+        $context = CartUtil::getCarrierShippingInfoContext($cartModel, $shopId, $langId);
+        $cart = $cartModel;
 
         $carrierId = CurrentCheckoutData::getCarrierId();
         if (null === $carrierId) {
@@ -352,7 +355,11 @@ class CartUtil
         $nbShippingParticipants = 0;
         $couponDetails = $cartModel['couponDetails'];
         $nbSellers = count($itemsBySeller);
-        $sellerCouponRatio = 1 / $nbSellers;
+        if ($nbSellers) {
+            $sellerCouponRatio = 1 / $nbSellers;
+        } else {
+            $sellerCouponRatio = 1;
+        }
 
 
         foreach ($itemsBySeller as $seller => $item) {
@@ -520,7 +527,17 @@ class CartUtil
         $userId = E::getUserId();
         $addressId = CurrentCheckoutData::getShippingAddressId();
         if (null !== $addressId) {
-            return UserAddressLayer::getAddressById($userId, $addressId, $langId);
+            /**
+             * Might be the case that the user was on the checkout page and
+             * just deleted the current address.
+             * In this case, we need to resort to another address
+             */
+            try {
+
+                return UserAddressLayer::getAddressById($userId, $addressId, $langId);
+            } catch (\Exception $e) {
+                // well, the last statement at the bottom of this method seems to do the trick
+            }
         }
 
         /**

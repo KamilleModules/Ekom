@@ -54,6 +54,7 @@ class CheckoutLayer
     }
 
     /**
+     *
      * This method places an order in the database and returns the id of the order.
      * It
      *
@@ -76,7 +77,7 @@ class CheckoutLayer
      *
      * @throws \Exception
      */
-    public static function placeOrder(array $data, array $cartModel)
+    public function placeOrder(array $data, array $cartModel)
     {
         return CheckoutOrderUtil::create()
             ->setTestMode(false)

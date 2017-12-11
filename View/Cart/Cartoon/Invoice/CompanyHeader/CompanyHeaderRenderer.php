@@ -12,9 +12,9 @@ class CompanyHeaderRenderer extends BaseRenderer
     /**
      * @see EkomModels::shopPhysicalAddress()
      */
-    private $sellerAddress;
-    private $logoUri;
-    private $logoAlt;
+    protected $sellerAddress;
+    protected $logoUri;
+    protected $logoAlt;
 
     public function __construct()
     {

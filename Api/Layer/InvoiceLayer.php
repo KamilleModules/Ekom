@@ -39,12 +39,32 @@ select * from ek_invoice where user_id=$userId
 order by invoice_date desc         
         ");
         if (false !== $row && true === $unserialize) {
-            $row['user_info'] = unserialize($row['user_info']);
-            $row['seller_address'] = unserialize($row['seller_address']);
-            $row['shipping_address'] = unserialize($row['shipping_address']);
-            $row['billing_address'] = unserialize($row['billing_address']);
-            $row['invoice_details'] = unserialize($row['invoice_details']);
+            self::doUnserialize($row);
         }
         return $row;
+    }
+
+
+    public static function getInvoiceById($id, $unserialize = true)
+    {
+        $id = (int)$id;
+        $row = QuickPdo::fetch("select * from ek_invoice where id=$id");
+        if (false !== $row && true === $unserialize) {
+            self::doUnserialize($row);
+        }
+        return $row;
+    }
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    private static function doUnserialize(array &$row)
+    {
+        $row['user_info'] = unserialize($row['user_info']);
+        $row['seller_address'] = unserialize($row['seller_address']);
+        $row['shipping_address'] = unserialize($row['shipping_address']);
+        $row['billing_address'] = unserialize($row['billing_address']);
+        $row['invoice_details'] = unserialize($row['invoice_details']);
     }
 }

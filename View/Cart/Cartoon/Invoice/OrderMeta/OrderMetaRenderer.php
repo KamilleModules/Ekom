@@ -39,7 +39,7 @@ class OrderMetaRenderer extends BaseRenderer
         $loyaltyPoints = $invoiceDetails['lfPoints'];
         ?>
         <div class="order-meta">
-            <table>
+            <table class="cartoon-rows">
                 <?php if ($this->has("shipping_tracking")): ?>
                     <tr class="nobottomborder">
                         <td class="underline">Suivi des colis</td>
@@ -47,8 +47,7 @@ class OrderMetaRenderer extends BaseRenderer
                     </tr>
                     <tr class="notopborder">
                         <td class="indent-1"></td>
-<!--                        <td>Le code apparaîtra ici lorsque nous l'aurons récupéré</td>-->
-                        <td>Le code apparaîtra ici</td>
+                        <td>Le code apparaîtra ici lorsque nous l'aurons récupéré</td>
                     </tr>
                 <?php if(false): ?>
                     <tr class="notopborder">

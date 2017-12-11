@@ -357,6 +357,38 @@ class E
     }
 
 
+    /**
+     * Don't confound lazyConfig and conf methods.
+     *
+     * - lazyConfig ask for modules to get the value corresponding to a given key via a hook
+     * - conf looks in the static modules configuration to see if there is the value corresponding to the given key
+     *
+     * The main reason why lazyConfig exist is that I didn't want to put all my conf in static files,
+     * because with the numbers of modules growing, the "service container" would be loaded with all
+     * those config values upfront, and I thought it was unnecessary.
+     *
+     * Actually, the lazy config system is how I wanted the system to be in the first place,
+     * but I just miss the implementation back then.
+     * @todo-ling: lazyConfig should be the only config accessing system, remove E::conf
+     *
+     * Unless you need to access early config values (before the app is really booted, but the number of config
+     * values will be reduced by a lot anyway, so do it)
+     * Actually, I'm not even sure if modules are consulted before the app is booted...
+     *
+     *
+     *
+     */
+    public static function lazyConfig($key, $default = null)
+    {
+        $defaultValue = 690879; // improbable default value
+        $value = $defaultValue;
+        Hooks::call("Ekom_lazyConfig_getValue", $value, $key);
+        if ($defaultValue === $value) {
+            $value = $default;
+        }
+        return $value;
+    }
+
     public static function conf($key, $default = null)
     {
 

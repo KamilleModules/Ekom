@@ -10,3 +10,7 @@ When a widget has an error, its model has the following structure:
 - errorTitle: string, the title for the error 
 - errorMessage: string, the error message 
 - ...your own 
+
+
+
+We can use ClawsWidgetError object to help us implementing such a system.

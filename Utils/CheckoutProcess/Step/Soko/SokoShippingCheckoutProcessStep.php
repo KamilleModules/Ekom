@@ -163,6 +163,11 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                     $billingAddress = $shippingAddress;
                 }
 
+                CurrentCheckoutData::set("billing_address_id", $selectedBillingAddressId);
+                CurrentCheckoutData::set("shipping_address_id", $selectedAddressId);
+
+
+
                 $ret['userAddresses'] = $userAddresses;
                 $ret['billingSyncedWithShippingValue'] = (int)!$billing_synced_with_shipping;
                 $ret['billingSyncedWithShippingSelected'] = $billing_synced_with_shipping;

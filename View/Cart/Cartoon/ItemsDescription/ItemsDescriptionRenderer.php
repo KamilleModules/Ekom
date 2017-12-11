@@ -93,7 +93,7 @@ class ItemsDescriptionRenderer extends BaseRenderer
     public function render()
     {
         ?>
-        <table class="cartoon-items-description">
+        <table class="cartoon-items-description cartoon-columns">
             <tr>
                 <?php foreach ($this->columns as $column): ?>
                     <td><?php echo $this->columnLabels[$column]; ?></td>

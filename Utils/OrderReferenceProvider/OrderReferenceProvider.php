@@ -16,7 +16,7 @@ class OrderReferenceProvider implements OrderReferenceProviderInterface
 
     public function getReference($type = null)
     {
-        return date('Ymd-His') . '-' . sprintf('%04s', (OrderLayer::countOrders() + 1));
+        return $type . date('Ymd-His') . '-' . sprintf('%04s', (OrderLayer::countOrders() + 1));
     }
 
 

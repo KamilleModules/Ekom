@@ -65,7 +65,7 @@ class TotalRecapRenderer extends BaseRenderer
     public function render()
     {
         ?>
-        <table>
+        <table class="cartoon-rows total-recap">
             <?php foreach ($this->rows as $name): ?>
                 <tr>
                     <td><?php echo $this->rowsLabels[$name]; ?></td>

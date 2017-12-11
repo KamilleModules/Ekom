@@ -44,7 +44,7 @@ class InvoiceInfoRenderer extends BaseRenderer
         $paymentDetails = $invoiceDetails['payment_method_details'];
         ?>
         <div class="invoice-info">
-            <table>
+            <table class="cartoon-rows">
                 <?php if ($this->has('invoice_info_date')): ?>
                     <tr>
                         <td>Date</td>

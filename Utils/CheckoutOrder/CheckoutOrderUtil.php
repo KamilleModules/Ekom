@@ -40,7 +40,7 @@ use QuickPdo\QuickPdo;
 class CheckoutOrderUtil
 {
 
-    private $testMode;
+    protected $testMode;
 
 
     public function __construct()
@@ -231,8 +231,7 @@ class CheckoutOrderUtil
             if (false === $userInfo) { // I'm a little paranoid here, since this has been already checked, but it shouldn't hurt
                 $this->devError("See, I was not too paranoid: user not found: $userId");
             }
-            $userGroups = UserGroupLayer::getUserGroups($userId);
-            $userInfo['groups'] = implode(",", $userGroups);
+
 
 
             $shopInfo = ShopLayer::getShopInfoById($shopId);
@@ -693,17 +692,17 @@ class CheckoutOrderUtil
         return $orderId;
     }
 
-    private function userError($msg)
+    protected function userError($msg)
     {
         throw new EkomException($msg);
     }
 
-    private function devError($msg)
+    protected function devError($msg)
     {
         throw new EkomUserMessageException($msg);
     }
 
-    private function devLog($msg)
+    protected function devLog($msg)
     {
         XLog::error($msg);
 
