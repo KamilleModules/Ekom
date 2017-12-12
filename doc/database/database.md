@@ -1669,8 +1669,17 @@ ek_product_group_has_product
 
 
 
-
-
+ek_newsletter
+==================
+- id: pk
+- email: uk
+- subscribe_date: datetime, the date when the user subscribed
+- unsubscribe_date: null||datetime, null means that the user is still subscribed.
+                    Not null means that the user explicitly unsubscribed to this newsletter
+                    and therefore should not receive any more mails from this feed.
+- active: 0|1
+            Human overriding privileges.
+            An entry with active=0 should never receive an email.
 
 
 

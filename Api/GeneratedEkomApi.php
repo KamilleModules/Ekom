@@ -26,11 +26,13 @@ use Module\Ekom\Api\Object\FeatureValue;
 use Module\Ekom\Api\Object\FeatureValueLang;
 use Module\Ekom\Api\Object\Invoice;
 use Module\Ekom\Api\Object\Lang;
+use Module\Ekom\Api\Object\Newsletter;
 use Module\Ekom\Api\Object\Order;
 use Module\Ekom\Api\Object\OrderHasOrderStatus;
 use Module\Ekom\Api\Object\OrderStatus;
 use Module\Ekom\Api\Object\OrderStatusLang;
 use Module\Ekom\Api\Object\PasswordRecoveryRequest;
+use Module\Ekom\Api\Object\Payment;
 use Module\Ekom\Api\Object\PaymentMethod;
 use Module\Ekom\Api\Object\Product;
 use Module\Ekom\Api\Object\ProductAttribute;
@@ -264,6 +266,13 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('lang');
     }
     /**
+     * @return Newsletter
+     */
+    public function newsletter()
+    {
+        return $this->getObject('newsletter');
+    }
+    /**
      * @return Order
      */
     public function order()
@@ -297,6 +306,13 @@ class GeneratedEkomApi extends XiaoApi
     public function passwordRecoveryRequest()
     {
         return $this->getObject('passwordRecoveryRequest');
+    }
+    /**
+     * @return Payment
+     */
+    public function payment()
+    {
+        return $this->getObject('payment');
     }
     /**
      * @return PaymentMethod

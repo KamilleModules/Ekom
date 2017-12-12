@@ -5,11 +5,20 @@ Ekom Dispatcher
 
 
 
+mail 
+
+- customer.new
+- order.new
+- orderEstimate.new   (ekomEstimate)
+
+
+
 
 Ekom Dispatcher dispatches the events of the ekom application.
 
 
-The primary goal of this dispatcher is to refresh the appropriate application cache.
+The primary goal of this dispatcher was to refresh the appropriate application cache.
+
 
 
 The following events are dispatched (replace variables with their values):

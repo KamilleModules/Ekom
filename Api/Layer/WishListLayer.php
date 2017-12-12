@@ -14,6 +14,14 @@ class WishListLayer
 {
 
 
+    public static function removeUserWishlistItem($userId, $productId)
+    {
+        QuickPdo::delete("ek_user_has_product", [
+            ["user_id", "=", $userId],
+            ["product_id", "=", $productId],
+        ]);
+    }
+
     public static function removeUserWishlist($userId)
     {
         QuickPdo::delete("ek_user_has_product", [
