@@ -24,20 +24,14 @@ use Module\Ekom\JsApiLoader\EkomJsApiLoader;
 use Module\Ekom\Notifier\EkomNotifier;
 use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Utils\DataChange\EkomDataChangeDispatcher;
-use Module\FishMailer\Util\FishMailerService\FishMailerService;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
 use Umail\UmailInterface;
 
-class E
+class EOld
 {
 
     private static $conf = null;
 
-
-
-    public static function uriSite(){
-        return E::link("Ekom_home", [], true);
-    }
 
     public static function cheaterConfig($type)
     {
@@ -296,9 +290,75 @@ class E
     /**
      * Send a front office mail
      */
-    public static function sendMail($mailType, $recipient, array $variables = [])
+    public static function sendMail($type, array $params)
     {
-        return FishMailerService::create()->sendMail($mailType, $recipient, $variables);
+        if (array_key_exists('subject', $params)) {
+            $subject = $params['subject'];
+        } else {
+
+            $subject = null;
+            switch ($type) {
+                case 'accountCreated':
+                    $subject = "{siteName}: Your account has been created";
+                    break;
+                default:
+                    XLog::error("[Ekom module] - E::sendMail: Unknown mail type: $type");
+                    return false;
+                    break;
+            }
+        }
+
+
+        if (array_key_exists('commonVars', $params)) {
+            $commonVars = $params['commonVars'];
+        } else {
+            $commonVars = [];
+        }
+
+
+        /**
+         * @var $mail UmailInterface
+         */
+        $mail = X::get("Core_umail");
+        $tplName = "Ekom/front/$type";
+
+        $params = array_replace([
+            "to" => null,
+            "subject" => $subject,
+            "vars" => function ($email) {
+                return [];
+            },
+            "commonVars" => $commonVars,
+        ], $params);
+
+
+        // providing siteName var for free
+        $siteName = XConfig::get("Application.site.name");
+        if (false === array_key_exists("siteName", $params['commonVars'])) {
+            $params['commonVars']['siteName'] = $siteName;
+        }
+
+//        $logoFile = __DIR__ . "/myshop-logo.jpg";
+//        $commonVars = [
+//            'shop_name' => 'my shop',
+//            'shop_url' => 'http://my_shop.com',
+//            'shop_logo' => $mail->embedFile($logoFile),
+//        ];
+
+
+        $expected = 1;
+        if (is_array($params['to'])) {
+            $expected = count($params['to']);
+        }
+
+        $res = $mail->to($params['to'])
+            ->from(XConfig::get("Application.email.from"))
+            ->subject($subject)
+            ->setVars($params['commonVars'], $params['vars'])
+            ->setTemplate($tplName)
+            ->send();
+
+        return ($res === $expected);
     }
 
     /**

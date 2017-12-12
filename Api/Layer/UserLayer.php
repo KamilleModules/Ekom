@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 
 use Authenticate\SessionUser\SessionUser;
 use Bat\ArrayTool;
+use Bat\HashTool;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Kamille\Architecture\Registry\ApplicationRegistry;
@@ -17,6 +18,7 @@ use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Utils\Checkout\CheckoutPageUtil;
 use Module\Ekom\Utils\E;
+use Module\ThisApp\ThisAppConfig;
 use QuickPdo\QuickPdo;
 use QuickPdo\QuickPdoExceptionTool;
 
@@ -49,6 +51,39 @@ use QuickPdo\QuickPdoExceptionTool;
 class UserLayer
 {
 
+
+    /**
+     * @param $hash
+     * @return bool,
+     *          true if the user becomes active at the end of the dat
+     *          false otherwise
+     */
+    public static function activateByHash($hash)
+    {
+        $info = QuickPdo::fetch("select * from ek_user where active_hash=:hash", ["hash" => $hash]);
+        if (false !== $info) {
+            if (0 === (int)$info['active']) {
+
+                QuickPdo::update("ek_user", ['active' => 1], [
+                    ['id', "=", $info['id']],
+                ]);
+
+
+
+                $email = $info['email'];
+                $name = $info['first_name'] . " " . $info['last_name'];
+                $res = E::sendMail("customer.new", $email, [
+                    "site_name" => ucfirst(ThisAppConfig::SITE_NAME),
+                    "uri_site" => E::uriSite(),
+                    "email" => $email,
+                    "name" => $name,
+                ]);
+
+            }
+            return true;
+        }
+        return false;
+    }
 
     public static function updateData($userId, array $data)
     {
@@ -196,6 +231,9 @@ class UserLayer
 
 
             $shopId = E::getShopId();
+            if (!array_key_exists("active_hash", $data['ek_user'])) {
+                $data['ek_user']['active_hash'] = HashTool::getRandomHash64();
+            }
             $userId = EkomApi::inst()->user()->create($data['ek_user']);
 
 

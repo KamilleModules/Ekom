@@ -43,6 +43,7 @@ class GeneratedUser extends TableCrudObject
 			'newsletter' => 0,
 			'gender' => 0,
 			'birthday' => null,
+			'active_hash' => '',
 			'active' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
