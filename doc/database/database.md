@@ -1114,12 +1114,22 @@ ek_user_has_product
 =====================
 
 Represents the user's wishlist.
+You should not delete from it, just make inactive.
+The idea behind is that a product that was once an user favorite 
+but which wasn't purchased is an idea that we can suggest to the user
+someday.
+
+
 
 - id: pk
 - user_id: fk
 - product_id: fk
 - product_details: text, serialized version of the product details if any
 - date: datetime, date at which the product was added
+- deleted_date: datetime|null: null means the item is currently in 
+                            the user's wishlist, any other value
+                            means the user has deleted this item at
+                            the given datetime.
 
 
 

@@ -466,6 +466,7 @@ class EkomModels
      * ----- ?carrier_id: (only if a carrier was used)
      * ----- ?carrier_name:
      * ----- ?carrier_details: array
+     * ----- ?shipping_comment: string
      */
     private function orderModel()
     {

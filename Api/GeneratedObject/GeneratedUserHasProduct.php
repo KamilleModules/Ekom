@@ -20,7 +20,7 @@ class GeneratedUserHasProduct extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_user_has_product";
-        $this->primaryKey = [];
+        $this->primaryKey = ['id'];
     }
 
 
@@ -34,9 +34,13 @@ class GeneratedUserHasProduct extends TableCrudObject
 			'product_id' => 0,
 			'product_details' => '',
 			'date' => '',
+			'deleted_date' => null,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
+        if (0 === (int)$ret["deleted_date"]) {
+            $ret["deleted_date"] = null;
+        }
 
 
         return $ret;

@@ -60,7 +60,7 @@ class HybridListFactory
                 ->setSqlRequest($sqlRequest
                     ->addField("*")
                     ->setTable("ek_user_has_product")
-                    ->addWhere("and user_id=" . $userId)
+                    ->addWhere("and user_id=" . $userId . " and deleted_date is null")
                 )
             );
 

@@ -83,6 +83,7 @@ class CheckoutOrderUtil
     public function placeOrder(array $data, array $cartModel)
     {
 
+
         /**
          * 1. check (and hooks)
          * 2. collect (&) (and hooks)
@@ -233,7 +234,6 @@ class CheckoutOrderUtil
             }
 
 
-
             $shopInfo = ShopLayer::getShopInfoById($shopId);
             if (false === $shopInfo) {
                 $this->devError("Yikes: shop info not found: $shopId");
@@ -273,6 +273,15 @@ class CheckoutOrderUtil
                     "carrier_name" => $carrier->getName(),
                     "carrier_details" => $carrierDetails,
                 ]);
+            }
+
+            //--------------------------------------------
+            // miscellaneous
+            //--------------------------------------------
+            if (array_key_exists("shipping_comments", $data)) {
+                $orderDetails['shipping_comment'] = $data["shipping_comments"];
+            } else {
+                $orderDetails['shipping_comment'] = "";
             }
 
 
@@ -634,6 +643,8 @@ class CheckoutOrderUtil
         QuickPdo::transaction(function () use ($orderModel, $shopId, &$orderId) {
 
             $paymentMethod = $orderModel['order_details']["payment_method_name"];
+            $orderModel['payment_method'] = $paymentMethod;
+
             $_orderId = EkomApi::inst()->order()->create([
                 'shop_id' => $orderModel['shop_id'],
                 'user_id' => $orderModel['user_id'],
@@ -668,6 +679,19 @@ class CheckoutOrderUtil
             foreach ($invoices as $invoice) {
                 $this->processInvoice($invoice, $orderModel);
             }
+
+
+            //--------------------------------------------
+            // SEND EMAIL TO THE USER
+            //--------------------------------------------
+            $mailType = "order.new";
+            $recipient = $orderModel['user_info']['email'];
+            $variables = [
+                "order" => $orderModel,
+            ];
+            E::sendMail($mailType, $recipient, $variables);
+
+
 
 
             //--------------------------------------------

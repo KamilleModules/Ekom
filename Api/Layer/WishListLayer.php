@@ -16,16 +16,22 @@ class WishListLayer
 
     public static function removeUserWishlistItem($userId, $productId)
     {
-        QuickPdo::delete("ek_user_has_product", [
+        QuickPdo::update("ek_user_has_product", [
+            "deleted_date" => date("Y-m-d H:i:s"),
+        ],[
             ["user_id", "=", $userId],
             ["product_id", "=", $productId],
+            " and deleted_date is null",
         ]);
     }
 
     public static function removeUserWishlist($userId)
     {
-        QuickPdo::delete("ek_user_has_product", [
+        QuickPdo::update("ek_user_has_product", [
+            "deleted_date" => date("Y-m-d H:i:s"),
+        ], [
             ["user_id", "=", $userId],
+            " and deleted_date is null",
         ]);
     }
 
@@ -67,12 +73,14 @@ class WishListLayer
          user_id=$userId 
          and product_id=$pId
          and product_details='$sProductDetails'
+         and deleted_date is null
 "))) {
             EkomApi::inst()->userHasProduct()->create([
                 'user_id' => $userId,
                 'product_id' => $pId,
                 'product_details' => $sProductDetails,
                 'date' => date("Y-m-d H:i:s"),
+                'deleted_date' => null,
             ]);
 
             if (0 === $n) {
@@ -101,7 +109,7 @@ class WishListLayer
         //--------------------------------------------
         $player = EkomApi::inst()->productLayer();
         $userId = (int)$userId;
-        $rows = QuickPdo::fetchAll("select product_id, product_details from ek_user_has_product where user_id=$userId");
+        $rows = QuickPdo::fetchAll("select product_id, product_details from ek_user_has_product where user_id=$userId and deleted_date is null");
         $pRows = [];
         foreach ($rows as $row) {
             $productDetails = $row['product_details'];
@@ -141,6 +149,9 @@ class WishListLayer
                 return 0;
             }
         }
-        return QuickPdo::fetch("select count(*) as count from ek_user_has_product where user_id=$userId", [], \PDO::FETCH_COLUMN);
+        return QuickPdo::fetch("select count(*) as count from ek_user_has_product 
+where user_id=$userId
+and deleted_date is null
+", [], \PDO::FETCH_COLUMN);
     }
 }

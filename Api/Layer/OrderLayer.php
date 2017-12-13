@@ -23,6 +23,9 @@ select reference from ek_order where id=$id
 
     public static function getOrderInfo($id)
     {
+        /**
+         * @todo-ling, remove force generate
+         */
         $id = (int)$id;
         return A::cache()->get("Ekom.OrderLayer.getOrderInfo.$id.", function () use ($id) {
 
@@ -33,7 +36,7 @@ select * from ek_order where id=$id
                 self::unserializeRow($row);
             }
             return $row;
-        });
+        }, true);
     }
 
     public static function getOrderHistoryById($orderId, $langId = null)
