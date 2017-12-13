@@ -17,6 +17,44 @@ use RowsGenerator\QuickPdoRowsGenerator;
 class ProductCommentLayer
 {
 
+    public static function getCommentsByUserId($userId, $fetchProduct = false)
+    {
+        $userId = (int)$userId;
+        $rows = QuickPdo::fetchAll("
+select  
+
+shop_id,
+product_id,
+`date`,
+rating,
+useful_counter,
+title,
+comment,
+active
+
+from ek_product_comment where user_id=$userId
+
+        
+        ");
+
+
+        if (true === $fetchProduct) {
+            foreach ($rows as $k => $row) {
+                $box = ProductBoxLayer::getProductBoxByProductId($row['product_id']);
+                $box['comment_date'] = $row['date'];
+                $box['comment_rating'] = $row['rating'];
+                $box['comment_useful_counter'] = $row['useful_counter'];
+                $box['comment_title'] = $row['title'];
+                $box['comment_comment'] = $row['comment'];
+                $box['comment_active'] = $row['active'];
+                $rows[$k] = $box;
+            }
+        }
+
+        return $rows;
+    }
+
+
     /**
      * Use this method when the user tries to insert a comment for a product on the website.
      */

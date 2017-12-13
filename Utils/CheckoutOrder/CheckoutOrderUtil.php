@@ -18,6 +18,7 @@ use Module\Ekom\Api\Layer\InvoiceLayer;
 use Module\Ekom\Api\Layer\LangLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
+use Module\Ekom\Api\Layer\ProductPurchaseStatLayer;
 use Module\Ekom\Api\Layer\SellerLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
@@ -691,6 +692,17 @@ class CheckoutOrderUtil
             ];
             E::sendMail($mailType, $recipient, $variables);
 
+
+            //--------------------------------------------
+            // PRODUCT STATS
+            //--------------------------------------------
+            $currencyId = CurrencyLayer::getIdByIsoCode($orderModel['currency_iso_code']);
+            ProductPurchaseStatLayer::insertStatsByCart(
+                $orderModel['order_details']['cartModel'],
+                $orderModel['shop_id'],
+                $orderModel['user_id'],
+                $currencyId
+            );
 
 
 

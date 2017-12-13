@@ -1693,6 +1693,36 @@ ek_newsletter
 
 
 
+ek_product_purchase_stat
+==================
+
+If we don't have this table, the only way to answer questions such as:
+- how many times this product was selled this month
+
+is to parse the orders, unserialize them, maybe recreate a temporary table, and collect the stats.
+This is time consuming. What if we want the info NOW?
+To avoid this unserializing/cumbersome process, we put the info we want in this purchase table.
+
+In other words, this is a table for quick access to product stats.
+Like in many stats tables, we don't use foreign keys, as we need to have "stable" archives.
+
+
+- id: pk
+- purchase_date: datetime
+- shop_id: int
+- user_id: int
+- currency_id: int
+- product_id: int
+- product_ref: string
+- product_label: string
+- quantity: the quantity purchased in the cart
+- price: price of the product unit at the time it was purchased (priceSale)
+- total: total paid by the user for this item (priceLine) 
+- attribute_selection: blob, memory of the product identity 1/2
+- product_details_selection: blob, memory of the product identity 2/2
+
+
+
 
 Ekom condition syntax
 =======================

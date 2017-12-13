@@ -52,6 +52,7 @@ use Module\Ekom\Api\Object\ProductHasDiscount;
 use Module\Ekom\Api\Object\ProductHasFeature;
 use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductLang;
+use Module\Ekom\Api\Object\ProductPurchaseStat;
 use Module\Ekom\Api\Object\ProductType;
 use Module\Ekom\Api\Object\Seller;
 use Module\Ekom\Api\Object\SellerHasAddress;
@@ -446,6 +447,13 @@ class GeneratedEkomApi extends XiaoApi
     public function productLang()
     {
         return $this->getObject('productLang');
+    }
+    /**
+     * @return ProductPurchaseStat
+     */
+    public function productPurchaseStat()
+    {
+        return $this->getObject('productPurchaseStat');
     }
     /**
      * @return ProductType

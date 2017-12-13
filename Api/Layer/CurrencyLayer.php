@@ -22,4 +22,16 @@ from ek_currency
 where id=$id
 ", [], \PDO::FETCH_COLUMN);
     }
+
+
+    public static function getIdByIsoCode($isoCode)
+    {
+        return QuickPdo::fetch("
+select id 
+from ek_currency
+where iso_code=:iso
+", [
+            "iso" => $isoCode,
+        ], \PDO::FETCH_COLUMN);
+    }
 }

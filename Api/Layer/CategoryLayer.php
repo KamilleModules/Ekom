@@ -127,7 +127,13 @@ and `name`=:name
         $langId = E::getLangId($langId);
 
         return QuickPdo::fetch("
-select c.id, c.name, c.shop_id from ek_category c 
+select
+c.id, 
+c.name, 
+cl.label, 
+c.shop_id
+ 
+from ek_category c 
 inner join ek_category_lang cl on cl.category_id=c.id 
 where cl.slug=:slug 
 and cl.lang_id=$langId 
@@ -136,6 +142,8 @@ and c.shop_id=$shopId
             'slug' => $slug,
         ]);
     }
+
+
 
     public function getUpCategoryInfosById($categoryId, $topToBottom = true, $shopId = null, $langId = null)
     {
