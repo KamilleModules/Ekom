@@ -421,9 +421,12 @@ class EkomModels
      * - reference: string
      * - date: datetime
      * - amount: number, total amount of the order
+     * - coupon_saving: number, total amount of coupon for this order
+     * - cart_quantity:
      * - currency_iso_code:
      * - lang_iso_code:
-     * - tracking_number: string
+     * - payment_method: string
+     * - payment_method_extra: string
      * - user_info:
      * ----- groups: comma separated group names
      * ----- id

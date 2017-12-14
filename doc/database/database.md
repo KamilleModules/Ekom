@@ -1206,16 +1206,23 @@ Proof that has some juridic value (in case something goes wrong).
 - reference: 
 - date:
 - amount: the raw amount in the currency used for the purchase 
+- coupon_saving: the raw amount of the coupon saving (also found in order_details, but
+        put at this level for stats convenience) 
+- cart_quantity: same principle as coupon_saving (used for stats)
 - currency_iso_code: the iso code (same as ek_currency table) of the currency used for the purchase
 - lang_iso_code: the iso code (same as ek_lang table) of the lang used for the purchase
 - payment_method: a payment method identifier.
                     Note that this payment method should already be defined in the order_details, 
                     but we put it here for our convenience (stats, ...).
+- payment_method_extra: same principle as coupon_saving (used for stats)
 - user_info:
 - shop_info: 
 - shipping_address: 
 - billing_address: 
 - order_details: 
+
+
+
 
 
 

@@ -299,8 +299,11 @@ class E
      */
     public static function sendMail($mailType, $recipient, array $variables = [])
     {
-        Hooks::call("Ekom_Mailer_decorateVariables", $variables, $mailType, $recipient);
-        return FishMailerService::create()->sendMail($mailType, $recipient, $variables);
+        if (true === XConfig::get("Ekom.mailEnable")) {
+            Hooks::call("Ekom_Mailer_decorateVariables", $variables, $mailType, $recipient);
+            return FishMailerService::create()->sendMail($mailType, $recipient, $variables);
+        }
+        return true;
     }
 
 
@@ -309,21 +312,25 @@ class E
      */
     public static function sendTeamMail($mailType, array $variables = [])
     {
-        $recipient = "anonymous";
-        Hooks::call("Ekom_Mailer_decorateVariables", $variables, $mailType, $recipient);
+        if (true === XConfig::get("Ekom.mailEnable")) {
 
-        $nbMailSent = 0;
-        $contactList = TeamLayer::getContactItemsByMailType($mailType);
-        foreach ($contactList as $info) {
-            $recipient = $info['email'];
-            $name = $info['name'];
-            $variables['teammate_name'] = $name;
-            $res = FishMailerService::create()->sendMail($mailType, $recipient, $variables);
-            if (true === (bool)$res) {
-                $nbMailSent++;
+            $recipient = "anonymous";
+            Hooks::call("Ekom_Mailer_decorateVariables", $variables, $mailType, $recipient);
+
+            $nbMailSent = 0;
+            $contactList = TeamLayer::getContactItemsByMailType($mailType);
+            foreach ($contactList as $info) {
+                $recipient = $info['email'];
+                $name = $info['name'];
+                $variables['teammate_name'] = $name;
+                $res = FishMailerService::create()->sendMail($mailType, $recipient, $variables);
+                if (true === (bool)$res) {
+                    $nbMailSent++;
+                }
             }
+            return $nbMailSent;
         }
-        return $nbMailSent;
+        return 1;
     }
 
     /**

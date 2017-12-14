@@ -7,11 +7,77 @@ namespace Module\Ekom\Api\Layer;
 use Core\Services\A;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Status\EkomOrderStatus;
 use Module\Ekom\Utils\E;
+use Module\ThisApp\ThisAppConfig;
 use QuickPdo\QuickPdo;
 
 class OrderLayer
 {
+
+
+    public static function countFailingOrderByUserId($userId)
+    {
+
+        $userId = (int)$userId;
+        $errorCodes = [
+            EkomOrderStatus::STATUS_ORDER_DELIVERED_ERROR,
+            EkomOrderStatus::STATUS_SHIPPING_ERROR,
+            EkomOrderStatus::STATUS_PREPARING_ORDER_ERROR,
+            EkomOrderStatus::STATUS_PAYMENT_ERROR,
+//            EkomOrderStatus::STATUS_REIMBURSED,
+//            EkomOrderStatus::STATUS_CANCELED,
+        ];
+
+        return QuickPdo::fetch("
+select count(distinct(h.order_id)) as count 
+from ek_order_has_order_status h 
+inner join ek_order o on o.id=h.order_id
+inner join ek_order_status s on s.id=h.order_status_id
+where
+o.user_id=$userId
+and s.code in ('" . implode("', '", $errorCodes) . "')
+", [], \PDO::FETCH_COLUMN);
+
+    }
+
+    public static function getBasicStatsByUser($userId, $table="ek_order")
+    {
+
+        $userId = (int)$userId;
+        return QuickPdo::fetch("
+select 
+count(id) as nb_total_order,
+min(date) as min_date,
+max(date) as max_date,
+min(amount) as min_amount,
+max(amount) as max_amount,
+min(cart_quantity) as quantity_min,
+max(cart_quantity) as quantity_max,
+avg(cart_quantity) as quantity_avg,
+round(avg(amount),2) as avg_amount,
+(select count(*) as count from $table where coupon_saving = 0 and user_id=$userId) as nb_order_without_coupon
+
+from $table
+where user_id=$userId
+
+        ");
+    }
+
+    public static function getPaymentMethodStats($userId)
+    {
+
+        $userId = (int)$userId;
+        return QuickPdo::fetchAll("
+select 
+concat(payment_method, payment_method_extra) as payment,
+count(*) as count
+from ek_order
+where user_id=$userId
+group by payment_method, payment_method_extra
+
+        ", [], \PDO::FETCH_COLUMN|\PDO::FETCH_UNIQUE);
+    }
 
     public static function getRefById($id)
     {

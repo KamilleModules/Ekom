@@ -163,8 +163,8 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                     $billingAddress = $shippingAddress;
                 }
 
-                CurrentCheckoutData::set("billing_address_id", $selectedBillingAddressId);
-                CurrentCheckoutData::set("shipping_address_id", $selectedAddressId);
+                CurrentCheckoutData::setBillingAddressId($selectedBillingAddressId);
+                CurrentCheckoutData::setShippingAddressId($selectedAddressId);
 
 
 

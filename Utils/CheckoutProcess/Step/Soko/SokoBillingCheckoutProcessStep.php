@@ -70,8 +70,8 @@ class SokoBillingCheckoutProcessStep extends BaseCheckoutProcessStep
             if ($hasAddress) {
 
 
-                // which billing address?
                 $selectedBillingAddressId = CurrentCheckoutData::getBillingAddressId();
+                // which billing address?
                 if (null === $selectedBillingAddressId) {
                     $selectedBillingAddress = UserAddressLayer::getPreferredBillingAddress($userId, $this->langId);
                     $selectedBillingAddressId = $selectedBillingAddress['address_id'];
@@ -93,10 +93,12 @@ class SokoBillingCheckoutProcessStep extends BaseCheckoutProcessStep
                 $ret['userAddresses'] = $userAddresses;
                 $ret['billingAddress'] = $billingAddress;
                 $ret['context'] = $this->context;
+                CurrentCheckoutData::setBillingAddressId($selectedBillingAddressId);
             } else {
                 $firstAddressForm = $this->getFirstAddressForm();
                 $ret['form'] = $firstAddressForm->getModel();
             }
+
 
             return $ret;
         } else {

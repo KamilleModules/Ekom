@@ -8,6 +8,7 @@ use ArrayToString\ArrayToStringTool;
 use Bat\ArrayTool;
 use Core\Services\Hooks;
 use Core\Services\X;
+use Kamille\Services\XConfig;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Entity\CartModelEntity;
@@ -314,6 +315,8 @@ class CheckoutOrderUtil
                 "user_id" => $userId,
                 "date" => date('Y-m-d H:i:s'),
                 "amount" => $cartModel['priceOrderGrandTotalRaw'],
+                "coupon_saving" => $cartModel['couponSavingRaw'],
+                "cart_quantity" => $cartModel['cartTotalQuantity'],
                 "currency_iso_code" => $currencyIsoCode,
                 "lang_iso_code" => $langIsoCode,
                 "tracking_number" => $trackingNumber,
@@ -644,7 +647,13 @@ class CheckoutOrderUtil
         QuickPdo::transaction(function () use ($orderModel, $shopId, &$orderId) {
 
             $paymentMethod = $orderModel['order_details']["payment_method_name"];
+            $paymentMethodDetails = $orderModel['order_details']["payment_method_details"];
             $orderModel['payment_method'] = $paymentMethod;
+
+            $paymentMethodExtra = "";
+            if ('credit_card_wallet' === $paymentMethod) {
+                $paymentMethodExtra = $paymentMethodDetails['credit_card_payment_mode'];
+            }
 
             $_orderId = EkomApi::inst()->order()->create([
                 'shop_id' => $orderModel['shop_id'],
@@ -652,9 +661,12 @@ class CheckoutOrderUtil
                 'reference' => $orderModel['reference'],
                 'date' => $orderModel['date'],
                 'amount' => $orderModel['amount'],
+                'coupon_saving' => $orderModel['coupon_saving'],
+                'cart_quantity' => $orderModel['cart_quantity'],
                 'currency_iso_code' => $orderModel['currency_iso_code'],
                 'lang_iso_code' => $orderModel['lang_iso_code'],
                 'payment_method' => $paymentMethod,
+                'payment_method_extra' => $paymentMethodExtra,
                 'user_info' => serialize($orderModel['user_info']),
                 'shop_info' => serialize($orderModel['shop_info']),
                 'shipping_address' => serialize($orderModel['shipping_address']),
@@ -703,7 +715,6 @@ class CheckoutOrderUtil
                 $orderModel['user_id'],
                 $currencyId
             );
-
 
 
             //--------------------------------------------
