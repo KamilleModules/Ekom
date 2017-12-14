@@ -12,6 +12,14 @@ use QuickPdo\QuickPdo;
 class InvoiceLayer
 {
 
+
+    public static function getNbInvoicesByUserId($userId)
+    {
+        $userId = (int)$userId;
+        return QuickPdo::fetch("select count(*) as count from ek_invoice where user_id=$userId", [], \PDO::FETCH_COLUMN);
+    }
+
+
     /**
      * @param array <invoiceModel>
      * @see EkomModels::invoiceModel()

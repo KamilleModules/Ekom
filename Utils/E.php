@@ -24,6 +24,7 @@ use Module\Ekom\JsApiLoader\EkomJsApiLoader;
 use Module\Ekom\Notifier\EkomNotifier;
 use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Utils\DataChange\EkomDataChangeDispatcher;
+use Module\Ekom\Utils\EkomRootUser\EkomRootUser;
 use Module\FishMailer\Util\FishMailerService\FishMailerService;
 use Module\TeamMail\Api\Layer\TeamLayer;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
@@ -92,6 +93,9 @@ class E
      */
     public static function getUserId($default = false)
     {
+        if (null !== ($userId = EkomRootUser::getCurrentUserId())) {
+            return $userId;
+        }
         return EkomApi::inst()->connexionLayer()->getUserId($default);
     }
 
@@ -185,6 +189,9 @@ class E
      */
     public static function userIsConnected()
     {
+        if (null !== ($userId = EkomRootUser::getCurrentUserId())) {
+            return true;
+        }
         return EkomApi::inst()->connexionLayer()->isConnected();
     }
 
