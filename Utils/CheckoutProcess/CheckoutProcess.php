@@ -65,6 +65,18 @@ class CheckoutProcess implements CheckoutProcessInterface
     {
         $ret = CurrentCheckoutData::all();
         unset($ret['CheckoutProcess']);
+
+        if (array_key_exists("billing_synced_with_shipping", $ret)) {
+            if (1 === (int)$ret['billing_synced_with_shipping']) {
+                if (
+                    array_key_exists("shipping_address_id", $ret) &&
+                    array_key_exists("billing_address_id", $ret)
+                ) {
+                    $ret['billing_address_id'] = $ret['shipping_address_id'];
+                }
+            }
+        }
+
         return $ret;
     }
 
@@ -328,6 +340,7 @@ class CheckoutProcess implements CheckoutProcessInterface
         if (array_key_exists($stepName, $this->steps)) {
             return $this->steps[$stepName];
         }
+        $this->reset();
         throw new EkomException("This step doesn't exist: $stepName");
     }
 
