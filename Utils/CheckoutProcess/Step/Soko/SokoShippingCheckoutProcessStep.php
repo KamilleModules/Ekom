@@ -43,6 +43,7 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
         $this->shopId = $context['shop_id'];
         $this->langId = $context['lang_id'];
 
+
         /**
          * If the firstAddress form is posted, we treat it.
          * Note however that it doesn't influence whether or not the shippingStep isPostedSuccessfully
@@ -51,6 +52,12 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
             $this->getFirstAddressForm()->process(function (array $filteredContext, SokoFormInterface $form) {
                 try {
                     $userId = E::getUserId();
+                    if (array_key_exists("is_default_billing_address", $filteredContext)) {
+                        $filteredContext['is_default_billing_address'] = (int)$filteredContext['is_default_billing_address'];
+                    }
+                    if (array_key_exists("is_default_shipping_address", $filteredContext)) {
+                        $filteredContext['is_default_shipping_address'] = (int)$filteredContext['is_default_shipping_address'];
+                    }
                     EkomApi::inst()->userAddressLayer()->createAddress($userId, $filteredContext);
                 } catch (EkomUserMessageException $e) {
                     $form->addNotification($e->getMessage(), "error");
@@ -59,7 +66,15 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
         }
 
         if (array_key_exists("complete_shipping_step", $context)) {
+            $billingAddressId = (int)CurrentCheckoutData::get("billing_address_id");
+            if (0 === $billingAddressId) {
+                throw new EkomUserMessageException("Veuillez choisir une adresse de facturation");
+            }
 
+            $shippingAddressId = (int)CurrentCheckoutData::get("shipping_address_id");
+            if (0 === $shippingAddressId) {
+                throw new EkomUserMessageException("Veuillez choisir une adresse de livraison");
+            }
             return (
                 null !== CurrentCheckoutData::get("carrier_id") &&
                 null !== CurrentCheckoutData::get("shipping_address_id") &&
@@ -74,8 +89,8 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
     {
         return (
             null !== CurrentCheckoutData::get("carrier_id") &&
-            null !== CurrentCheckoutData::get("shipping_address_id") &&
-            null !== CurrentCheckoutData::get("billing_address_id") &&
+            0 !== (int)CurrentCheckoutData::get("shipping_address_id") &&
+            0 !== (int)CurrentCheckoutData::get("billing_address_id") &&
             null !== CurrentCheckoutData::get("shipping_comments")
         );
     }
@@ -165,7 +180,6 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
 
                 CurrentCheckoutData::setBillingAddressId($selectedBillingAddressId);
                 CurrentCheckoutData::setShippingAddressId($selectedAddressId);
-
 
 
                 $ret['userAddresses'] = $userAddresses;

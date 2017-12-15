@@ -42,15 +42,42 @@ class SokoBillingCheckoutProcessStep extends BaseCheckoutProcessStep
         $this->shopId = $context['shop_id'];
         $this->langId = $context['lang_id'];
 
+        /**
+         * If the firstAddress form is posted, we treat it.
+         * Note however that it doesn't influence whether or not the billingStep isPostedSuccessfully
+         */
+        if (true === E::userIsConnected()) {
+            $this->getFirstAddressForm()->process(function (array $filteredContext, SokoFormInterface $form) {
+                try {
+                    $userId = E::getUserId();
+                    if (array_key_exists("is_default_billing_address", $filteredContext)) {
+                        $filteredContext['is_default_billing_address'] = (int)$filteredContext['is_default_billing_address'];
+                    }
+                    if (array_key_exists("is_default_shipping_address", $filteredContext)) {
+                        $filteredContext['is_default_shipping_address'] = (int)$filteredContext['is_default_shipping_address'];
+                    }
+
+                    EkomApi::inst()->userAddressLayer()->createAddress($userId, $filteredContext);
+                } catch (EkomUserMessageException $e) {
+                    $form->addNotification($e->getMessage(), "error");
+                }
+            });
+        }
+
+
         if (array_key_exists("complete_billing_step", $context)) {
-            return (null !== CurrentCheckoutData::get("billing_address_id"));
+            $billingAddressId = (int)CurrentCheckoutData::get("billing_address_id");
+            if (0 === $billingAddressId) {
+                throw new EkomUserMessageException("Veuillez choisir une adresse de facturation");
+            }
+            return (0 !== $billingAddressId);
         }
         return false;
     }
 
     public function isValid()
     {
-        return (null !== CurrentCheckoutData::get("billing_address_id"));
+        return (0 !== (int)CurrentCheckoutData::get("billing_address_id"));
     }
 
     public function getModel()
