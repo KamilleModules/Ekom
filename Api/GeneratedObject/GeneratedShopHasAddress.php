@@ -30,6 +30,7 @@ class GeneratedShopHasAddress extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'shop_id' => 0,
 			'address_id' => 0,
 			'type' => '',

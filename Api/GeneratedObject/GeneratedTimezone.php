@@ -30,6 +30,7 @@ class GeneratedTimezone extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'name' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));

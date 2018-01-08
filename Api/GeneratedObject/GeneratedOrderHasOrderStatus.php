@@ -30,6 +30,7 @@ class GeneratedOrderHasOrderStatus extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'order_id' => 0,
 			'order_status_id' => 0,
 			'date' => '',

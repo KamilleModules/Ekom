@@ -30,6 +30,7 @@ class GeneratedCartDiscount extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'target' => '',
 			'procedure_type' => '',
 			'procedure_operand' => '',

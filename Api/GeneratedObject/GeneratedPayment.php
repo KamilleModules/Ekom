@@ -30,6 +30,7 @@ class GeneratedPayment extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'invoice_id' => 0,
 			'date' => '',
 			'paid' => 0,

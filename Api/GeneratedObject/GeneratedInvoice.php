@@ -30,6 +30,7 @@ class GeneratedInvoice extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'shop_id' => null,
 			'user_id' => null,
 			'order_id' => null,

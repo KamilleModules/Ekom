@@ -30,6 +30,7 @@ class GeneratedCategory extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'name' => '',
 			'category_id' => null,
 			'shop_id' => 0,

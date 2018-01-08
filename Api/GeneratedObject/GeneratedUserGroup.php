@@ -30,6 +30,7 @@ class GeneratedUserGroup extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'name' => '',
 			'shop_id' => 0,
 		];

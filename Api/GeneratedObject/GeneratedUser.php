@@ -30,6 +30,7 @@ class GeneratedUser extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'shop_id' => 0,
 			'email' => '',
 			'pass' => '',

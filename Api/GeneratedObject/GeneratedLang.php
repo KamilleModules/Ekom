@@ -30,6 +30,7 @@ class GeneratedLang extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'label' => '',
 			'iso_code' => '',
 		];

@@ -30,6 +30,7 @@ class GeneratedTaxGroup extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'name' => '',
 			'label' => '',
 			'shop_id' => 0,

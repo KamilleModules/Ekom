@@ -30,6 +30,7 @@ class GeneratedAddress extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'first_name' => '',
 			'last_name' => '',
 			'phone' => '',

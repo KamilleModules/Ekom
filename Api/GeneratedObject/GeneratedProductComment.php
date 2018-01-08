@@ -30,6 +30,7 @@ class GeneratedProductComment extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'shop_id' => 0,
 			'product_id' => 0,
 			'user_id' => 0,

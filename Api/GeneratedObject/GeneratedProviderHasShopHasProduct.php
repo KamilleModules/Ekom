@@ -13,14 +13,14 @@ use XiaoApi\Object\TableCrudObject;
  *
  * You are supposed to extend this object.
  */
-class GeneratedShop extends TableCrudObject
+class GeneratedProviderHasShopHasProduct extends TableCrudObject
 {
 
     public function __construct()
     {
         parent::__construct();
-        $this->table = "ek_shop";
-        $this->primaryKey = ['id'];
+        $this->table = "ek_provider_has_shop_has_product";
+        $this->primaryKey = ['provider_id', 'shop_has_product_shop_id', 'shop_has_product_product_id'];
     }
 
 
@@ -30,18 +30,12 @@ class GeneratedShop extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
-			'id' => null,
-			'label' => '',
-			'host' => '',
-			'lang_id' => null,
-			'currency_id' => 0,
-			'timezone_id' => 0,
+			'provider_id' => 0,
+			'shop_has_product_shop_id' => 0,
+			'shop_has_product_product_id' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
-        if (0 === (int)$ret["lang_id"]) {
-            $ret["lang_id"] = null;
-        }
 
 
         return $ret;

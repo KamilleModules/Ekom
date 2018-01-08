@@ -30,6 +30,7 @@ class GeneratedBackofficeUser extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'email' => '',
 			'pass' => '',
 			'lang_iso' => '',

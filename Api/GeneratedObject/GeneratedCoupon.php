@@ -30,6 +30,7 @@ class GeneratedCoupon extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'code' => '',
 			'active' => 0,
 			'procedure_type' => '',

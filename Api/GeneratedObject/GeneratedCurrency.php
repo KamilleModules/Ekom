@@ -30,6 +30,7 @@ class GeneratedCurrency extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'iso_code' => '',
 			'symbol' => '',
 		];

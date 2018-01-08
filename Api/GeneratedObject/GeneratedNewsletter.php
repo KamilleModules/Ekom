@@ -30,6 +30,7 @@ class GeneratedNewsletter extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'email' => '',
 			'subscribe_date' => '',
 			'unsubscribe_date' => null,

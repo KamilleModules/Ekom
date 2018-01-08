@@ -30,13 +30,26 @@ class GeneratedProduct extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'reference' => '',
 			'weight' => '',
 			'price' => '',
 			'product_card_id' => 0,
+			'width' => null,
+			'height' => null,
+			'depth' => null,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
+        if (0 === (int)$ret["width"]) {
+            $ret["width"] = null;
+        }
+        if (0 === (int)$ret["height"]) {
+            $ret["height"] = null;
+        }
+        if (0 === (int)$ret["depth"]) {
+            $ret["depth"] = null;
+        }
 
 
         return $ret;

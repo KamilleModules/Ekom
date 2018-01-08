@@ -93,6 +93,13 @@ class PrestashopImporter
     private $dbTarget;
     private $imgDirSrc;
     private $imgDirTarget;
+    private $mapTaxRulesGroups;
+
+
+    public function __construct()
+    {
+        $this->mapTaxRulesGroups = [];
+    }
 
 
     public static function create()
@@ -111,6 +118,189 @@ class PrestashopImporter
     {
         $this->imgDirSrc = $imgDirSrc;
         $this->imgDirTarget = $imgDirTarget;
+        return $this;
+    }
+
+
+    /**
+     * Dans prestashop:
+     *
+     * - ps_supplier
+     *      - id_supplier
+     *      - name
+     *      - date_add
+     *      - date_upd
+     *      - active
+     * - ps_supplier_lang
+     *      - id_supplier
+     *      - id_lang
+     *      - description
+     *      - meta_title
+     *      - meta_keywords
+     *      - meta_description
+     * - ps_supplier_shop
+     *      - id_supplier
+     *      - id_shop
+     *
+     * Dans ekom:
+     * - ek_provider
+     *      - id
+     *      - shop_id
+     *      - name
+     *
+     *
+     */
+    public function importSuppliers()
+    {
+
+        $db = $this->dbSrc;
+        $shopId = 1;
+
+
+        $rows = QuickPdo::fetchAll("
+select 
+s.id_supplier,
+s.name
+from $db.ps_supplier s    
+        ");
+
+
+        $provider = EkomApi::inst()->provider();
+        foreach ($rows as $row) {
+            $provider->push([
+                "id" => $row['id_supplier'],
+            ], [
+                "shop_id" => $shopId,
+                "name" => $row['name'],
+                "id" => $row['id_supplier'],
+            ]);
+        }
+    }
+
+
+    /**
+     * Dans prestashop:
+     *
+     * - ps_manufacturer
+     *      - id_manufacturer
+     *      - name
+     *      - date_add
+     *      - date_upd
+     *      - active
+     * - ps_manufacturer_lang
+     *      - id_manufacturer
+     *      - id_lang
+     *      - description
+     *      - short_description
+     *      - meta_title
+     *      - meta_keywords
+     *      - meta_description
+     * - ps_manufacturer_shop
+     *      - id_manufacturer
+     *      - id_shop
+     *
+     * Dans ekom:
+     * - ek_provider
+     *      - id
+     *      - shop_id
+     *      - name
+     *
+     *
+     */
+    public function importManufacturers()
+    {
+
+        $db = $this->dbSrc;
+        $shopId = 1;
+
+
+        $rows = QuickPdo::fetchAll("
+select 
+m.id_manufacturer,
+m.name
+from $db.ps_manufacturer m    
+        ");
+
+
+        $manufacturer = EkomApi::inst()->manufacturer();
+        foreach ($rows as $row) {
+            $manufacturer->push([
+                "id" => $row['id_manufacturer'],
+                "shop_id" => $shopId,
+            ], [
+                "shop_id" => $shopId,
+                "name" => $row['name'],
+                "id" => $row['id_manufacturer'],
+            ]);
+        }
+    }
+
+
+    /**
+     * Dans prestashop:
+     *
+     * ps_tag
+     *      - id_tag
+     *      - id_lang
+     *      - name
+     *
+     * ek_tag
+     *
+     *
+     *
+     */
+    public function importTags()
+    {
+        $db = $this->dbSrc;
+        $shopId = 1;
+
+
+        $rows = QuickPdo::fetchAll("
+select *
+from $db.ps_tag    
+        ");
+
+
+        $tag = EkomApi::inst()->tag();
+        foreach ($rows as $row) {
+            $tag->push([
+                "id" => $row['id_tag'],
+                "lang_id" => $row['id_lang'],
+            ], [
+                "id" => $row['id_tag'],
+                "name" => $row['name'],
+                "lang_id" => $row['id_lang'],
+            ]);
+        }
+    }
+
+
+    /**
+     * Dans prestashop:
+     *
+     * ps_tax_rules_group
+     *      - id_tax_rules_group
+     *      - name
+     *      - active
+     *      - deleted
+     *      - date_add
+     *      - date_upd
+     *
+     * Dans ekom:
+     *
+     * ek_tax_group
+     *
+     *
+     *
+     *
+     *
+     * @param $map , array of ps_tax_rules_group.id_tax_rules_group => ek_tax_group.id
+     * @return $this
+     *
+     */
+    public function setTaxRulesGroupMap(array $map)
+    {
+        $this->mapTaxRulesGroups = $map;
         return $this;
     }
 
@@ -322,6 +512,17 @@ select id from $db2.ek_product where reference=:ref
 
     /**
      *
+     * Nomenclature
+     * Dans prestashop:
+     *
+     * - ps_product_attribute représente une déclinaison de produit
+     * - ps_attribute représente un attribut (0.5kg, 1kg, 1.5kg, ...)
+     * - ps_attribute_group représente un groupe d'attribut (diamètre, pointure, taille, couleur, ...)
+     *
+     *
+     *
+     *
+     * -----------
      * Take the attribute groups and attributes from prestashop
      * and import them into product attributes and product attribute values in ekom.
      *
@@ -336,8 +537,100 @@ select id from $db2.ek_product where reference=:ref
      * @param callable|null
      *          bool  $filterByGroupName ( groupName )
      *          if return false, the entry will be ignored.
+     * @return void
+     * @throws \Exception
      */
-    public function importAttributes(callable $filterByGroupName = null, $langId = null, $memoryFile = null)
+    public function importAttributes()
+    {
+        $this->check();
+        $attr = EkomApi::inst()->productAttribute();
+        $attrLang = EkomApi::inst()->productAttributeLang();
+        $attrValue = EkomApi::inst()->productAttributeValue();
+        $attrValueLang = EkomApi::inst()->productAttributeValueLang();
+
+        $langId = 1;
+
+
+        $attr->deleteAll();
+        $attrValue->deleteAll();
+
+
+        $db = $this->dbSrc;
+        $rows = QuickPdo::fetchAll("
+select id_attribute_group, name
+from $db.ps_attribute_group_lang
+        ");
+
+
+        foreach ($rows as $row) {
+            $groupId = $row['id_attribute_group'];
+            $groupName = $row['name'];
+
+
+            $attr->push([
+                "id" => $groupId,
+            ], [
+                "id" => $groupId,
+                "name" => $groupName,
+            ]);
+
+
+            $attrLang->push([
+                "product_attribute_id" => $groupId,
+                "lang_id" => $langId,
+            ], [
+                "product_attribute_id" => $groupId,
+                "lang_id" => $langId,
+                "name" => $groupName,
+            ]);
+
+
+            $rowsAttr = QuickPdo::fetchAll("
+select al.id_attribute, al.name
+from $db.ps_attribute a
+inner join $db.ps_attribute_lang al on al.id_attribute=a.id_attribute
+
+where a.id_attribute_group=$groupId
+            ");
+
+
+            foreach ($rowsAttr as $rowAttr) {
+                $attrName = $rowAttr['name'];
+                $attrId = $rowAttr['id_attribute'];
+
+
+                try {
+
+                    $attrValue->push([
+                        "id" => $attrId,
+                    ], [
+                        "id" => $attrId,
+                        "value" => $attrName,
+                    ]);
+
+                    $attrValueLang->push([
+                        "product_attribute_value_id" => $attrId,
+                        "lang_id" => $langId,
+                    ], [
+                        "product_attribute_value_id" => $attrId,
+                        "lang_id" => $langId,
+                        "value" => $attrName,
+                    ]);
+                } catch (\Exception $e) {
+                    a("insert failed for ");
+                    a($rowAttr);
+                }
+
+            }
+
+
+        }
+
+
+    }
+
+
+    public function importAttributesOld(callable $filterByGroupName = null, $langId = null, $memoryFile = null)
     {
 
         $this->check();
@@ -460,6 +753,383 @@ where a.id_attribute_group=$groupId
 
 
     /**
+     *
+     * You should call importAttributes prior to call this method.
+     * Otherwise the results are unpredictable.
+     *
+     *
+     *
+     * Dans prestashop:
+     *
+     * ps_product
+     * - id_product
+     * - id_supplier
+     * - id_manufacturer
+     * - id_category_default
+     * - id_shop_default
+     * - id_tax_rules_group
+     * - on_sale
+     * - online_only
+     * - ean13
+     * - upc
+     * - ecotax
+     * - quantity
+     * - minimal_quantity
+     * - price
+     * - wholesale_price
+     * - unity
+     * - unity_price_ratio
+     * - additional_shipping_cost
+     * - reference
+     * - supplier_reference
+     * - location
+     * - width
+     * - height
+     * - depth
+     * - weight
+     * - out_of_stock
+     * - quantity_discount
+     * - customizable
+     * - uploadable_files
+     * - text_fields
+     * - active
+     * - redirect_type
+     * - id_product_redirected
+     * - available_for_order
+     * - available_date
+     * - condition
+     * - show_price
+     * - indexed
+     * - visibility
+     * - cache_is_pack
+     * - cache_has_attachments
+     * - is_virtual
+     * - cache_default_attribute
+     * - date_add
+     * - date_upd
+     * - advanced_stock_management
+     * - pack_stock_type
+     *
+     *
+     * ps_product_lang
+     * - id_product
+     * - id_shop
+     * - id_lang
+     * - description
+     * - description_short
+     * - link_rewrite
+     * - meta_description
+     * - meta_keywords
+     * - meta_title
+     * - name
+     * - available_now
+     * - available_later
+     *
+     *
+     * ps_product_tag
+     * - id_product
+     * - id_tag
+     * - id_lang
+     *
+     *
+     *
+     *
+     *
+     */
+    public function importProducts()
+    {
+        $db = $this->dbSrc;
+        $db2 = $this->dbTarget;
+        $rows = QuickPdo::fetchAll("
+select 
+p.id_product, 
+p.id_supplier, 
+p.id_manufacturer, 
+p.id_tax_rules_group, 
+p.ean13, 
+p.quantity, 
+p.price, 
+p.wholesale_price, 
+p.reference,        
+p.width,        
+p.height,        
+p.depth,        
+p.weight,        
+l.description_short as description,        
+l.link_rewrite as slug,        
+l.meta_title,        
+l.meta_description,        
+l.meta_keywords,        
+l.name as label
+      
+from $db.ps_product p 
+inner join $db.ps_product_lang l on l.id_product=p.id_product
+order by p.id_product asc      
+      
+        
+        ");
+
+
+        /**
+         * 1. Faire les produits sans déclinaisons
+         * 2. Faire les produits avec déclinaisons
+         */
+
+
+        $productApi = EkomApi::inst()->product();
+        $productLangApi = EkomApi::inst()->productLang();
+        $shopHasProductApi = EkomApi::inst()->shopHasProduct();
+        $shopHasProductLangApi = EkomApi::inst()->shopHasProductLang();
+        $productHasAttributeApi = EkomApi::inst()->productHasProductAttribute();
+
+        $cardApi = EkomApi::inst()->productCard();
+        $cardLangApi = EkomApi::inst()->productCardLang();
+        $shopHasCardApi = EkomApi::inst()->shopHasProductCard();
+        $shopHasCardLangApi = EkomApi::inst()->shopHasProductCardLang();
+
+
+        $imageTypes = [
+            '-cart_default2x.jpg' => "thumb",
+            '-home_default2x.jpg' => "medium",
+            '-large_default2x.jpg' => "large",
+            '-medium_default2x.jpg' => "small",
+        ];
+
+
+        foreach ($rows as $row) {
+
+
+            $id_product = $row['id_product'];
+
+//            a($row['id_product']);
+
+
+            $attrRows = QuickPdo::fetchAll("
+select
+pa.reference as reference,
+pa.ean13,
+pa.price as price_variation,
+pa.quantity,
+pa.weight as weight_variation,
+a.id_attribute_group,
+a.id_attribute
+
+from $db.ps_product_attribute pa
+inner join $db.ps_product_attribute_combination c on c.id_product_attribute=pa.id_product_attribute
+inner join $db.ps_attribute a on a.id_attribute=c.id_attribute
+
+where pa.id_product=$id_product
+
+
+            ");
+
+
+//            a($attrRows);
+//            a($row);
+            // insert product card and products in ekom
+            $cardId = $cardApi->create([]);
+
+            $slug = $row['slug'];
+
+            if (false !== ($r = $cardLangApi->readColumn("product_card_id", [
+                    ["slug", "=", $row['slug']],
+                ]))
+            ) {
+                $slug .= "_" . rand(1, 1000000);
+            }
+
+
+            $cardLangApi->create([
+                "product_card_id" => $cardId,
+                "lang_id" => $langId,
+                "label" => $row['label'],
+                "description" => $row['description'],
+                "slug" => $slug,
+                "meta_title" => $row['meta_title'],
+                "meta_description" => $row['meta_description'],
+                /**
+                 * all my keywords in presta were empty so I didn't bother,
+                 * but if you have keywords to translate, be aware that ekom uses
+                 * a serialized array containing keywords.
+                 */
+                "meta_keywords" => $row['meta_keywords'],
+            ]);
+
+
+            $originalWeight = $row['weight'];
+            $originalPrice = $row['price'];
+
+
+            $productId = null;
+            if (count($attrRows) > 0) {
+
+
+                foreach ($attrRows as $attrRow) {
+
+                    /**
+                     * Remember, we assume that we have only ONE argument,
+                     * so the logic is very specific and work only in that case.
+                     */
+                    $weight = $originalWeight + $attrRow['weight_variation'];
+                    $price = $originalPrice + $attrRow['price_variation'];
+
+                    $reference = $attrRow['reference'];
+
+                    if (false !== $productApi->readColumn("reference", [
+                            ['reference', '=', $reference],
+                        ])
+                    ) {
+                        $reference .= rand(1, 1000000);
+                    }
+
+
+                    $productId = $productApi->create([
+                        "reference" => $reference,
+                        "weight" => $weight,
+                        "price" => $price,
+                        "product_card_id" => $cardId,
+                    ]);
+
+                    $productLangApi->create([
+                        "product_id" => $productId,
+                        "lang_id" => $langId,
+                        "label" => $row['label'],
+                        "description" => $row['description'],
+                        "meta_title" => $row['meta_title'],
+                        "meta_description" => $row['meta_description'],
+                        "meta_keywords" => $row['meta_keywords'],
+                    ]);
+
+
+                    $productAttrId = $this->getAttrDataFromMemo($attrRow['id_attribute_group'], $memoAttributes, "attr");
+                    $productValueId = $this->getAttrDataFromMemo($attrRow['id_attribute'], $memoValues, "value");
+
+                    if (
+                        false !== $productAttrId &&
+                        false !== $productValueId
+                    ) {
+                        $productHasAttributeApi->create([
+                            "product_id" => $productId,
+                            "product_attribute_id" => $productAttrId,
+                            "product_attribute_value_id" => $productValueId,
+                        ]);
+                    }
+
+
+                    $shopHasProductApi->create([
+                        "shop_id" => $shopId,
+                        "product_id" => $productId,
+                        "price" => null,
+                        "wholesale_price" => $row["wholesale_price"],
+                        "quantity" => rand(10, 300), // oops
+                        "active" => "1",
+                    ]);
+
+
+                    $shopHasProductLangApi->create([
+                        "shop_id" => $shopId,
+                        "product_id" => $productId,
+                        "lang_id" => $langId,
+                        "label" => "",
+                        "description" => "",
+                        "slug" => "",
+                        "out_of_stock_text" => "",
+                        "meta_title" => "",
+                        "meta_description" => "",
+                        "meta_keywords" => "",
+                    ]);
+                }
+            }
+            //
+            /**
+             * If for some reasons, the presta shop product has no attribute,
+             * in ekom every card must have at least one corresponding product
+             */
+            else {
+                $productId = $productApi->create([
+                    "reference" => $row['reference'] . '-card-' . rand(1, 1000000),
+                    "weight" => $row['weight'],
+                    "price" => $row['price'],
+                    "product_card_id" => $cardId,
+                ]);
+                $productLangApi->create([
+                    "product_id" => $productId,
+                    "lang_id" => $langId,
+                    "label" => $row['label'],
+                    "description" => $row['description'],
+                    "meta_title" => $row['meta_title'],
+                    "meta_description" => $row['meta_description'],
+                    "meta_keywords" => $row['meta_keywords'],
+                ]);
+
+
+                $shopHasProductApi->create([
+                    "shop_id" => $shopId,
+                    "product_id" => $productId,
+                    "price" => null,
+                    "wholesale_price" => $row["wholesale_price"],
+                    "quantity" => rand(10, 300), // oops
+                    "active" => "1",
+                ]);
+
+
+                $shopHasProductLangApi->create([
+                    "shop_id" => $shopId,
+                    "product_id" => $productId,
+                    "lang_id" => $langId,
+                    "label" => "",
+                    "description" => "",
+                    "slug" => "",
+                    "out_of_stock_text" => "",
+                    "meta_title" => "",
+                    "meta_description" => "",
+                    "meta_keywords" => "",
+                ]);
+
+            }
+
+
+            $shopHasCardApi->create([
+                "shop_id" => $shopId,
+                "product_card_id" => $cardId,
+                "product_id" => $productId,
+                "active" => "1",
+            ]);
+            $shopHasCardLangApi->create([
+                "shop_id" => $shopId,
+                "product_card_id" => $cardId,
+                "lang_id" => $langId,
+                "label" => "",
+                "description" => "",
+                "slug" => "",
+                "meta_title" => "",
+                "meta_description" => "",
+                "meta_keywords" => "",
+            ]);
+
+
+            //--------------------------------------------
+            // IMAGES
+            //--------------------------------------------
+            $label = $this->toSnake($row['label']);
+            $imageIds = QuickPdo::fetchAll("
+select id_image from $db.ps_image where id_product=$id_product         
+            ", [], \PDO::FETCH_COLUMN);
+
+            foreach ($imageIds as $imageId) {
+                foreach ($imageTypes as $suffix => $ekomType) {
+                    $imgSrc = $this->imgDirSrc . "/" . $this->hash($imageId) . '/' . $imageId . $suffix;
+                    if (true === file_exists($imgSrc)) {
+                        $imgTarget = $this->imgDirTarget . "/" . $this->hash($cardId) . "/$ekomType/" . $label . '-' . $imageId . '.jpg';
+                        FileSystemTool::copyFile($imgSrc, $imgTarget);
+                    }
+                }
+            }
+        }
+    }
+
+
+    /**
      * Translate prestashop product to ekom product cards,
      * and prestashop product_attributes to ekom products.
      *
@@ -476,7 +1146,7 @@ where a.id_attribute_group=$groupId
      *
      *
      */
-    public function importProducts($memoryFile, $shopId = null, $langId = null)
+    public function importProductsOld($memoryFile, $shopId = null, $langId = null)
     {
         $this->check();
 

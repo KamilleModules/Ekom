@@ -30,6 +30,7 @@ class GeneratedUserHasProduct extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'user_id' => 0,
 			'product_id' => 0,
 			'product_details' => '',

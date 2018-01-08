@@ -30,6 +30,7 @@ class GeneratedTax extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'amount' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));

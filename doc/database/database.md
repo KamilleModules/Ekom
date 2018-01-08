@@ -535,7 +535,9 @@ The product might have no attributes at all.
                     The canonical version is easier to manipulate in various cases (that's why we need it).
 
                         
-                        
+- width: number|null                       
+- height: number|null                        
+- depth: number|null                    
 
 
 
@@ -596,6 +598,24 @@ ek_product_lang
 - meta_keywords: array(serialized), the base/default meta keywords for the product, if empty, ekom uses its own heuristics
 - product_id: fk
 - lang_id: fk
+
+
+
+ek_tag
+=========
+
+Some tags to enhance product search.
+
+- id: pk
+- name: string
+- lang_id: fk
+
+
+ek_shop_has_product_has_tag
+=========
+- shop_has_product_shop_id: pk
+- shop_has_product_product_id: pk
+- tag_id: pk
 
 
 
@@ -666,7 +686,7 @@ The products are available to a shop.
                 In the app I'm building, my company uses a code for tagging a product as a novelty.
                 
                 Technically, the codes is the string containing comma separated codes.
-                  
+- provider_id: fk|null                  
                 
                                                 
                         
@@ -1652,6 +1672,42 @@ ek_seller_has_address
 
 We should have only one address per seller.
 If you have multiple addresses per seller, the one with the lowest order number is the default.
+
+
+ek_provider
+==================
+
+The provider provides the product to the shop owner.
+He is the supplier of the shop owner (considered as the retailer in this case).
+
+
+- id: pk
+- shop_id: uq1
+- name: uq1
+
+
+ek_provider_has_shop_has_product
+==================
+
+A provider can provide multiple products.
+The same product can be provided by different providers.
+
+
+- provider_id: pk
+- shop_has_product_shop_id: pk
+- shop_has_product_product_id: pk
+
+
+ek_manufacturer
+==================
+
+The manufacturer is the one who writes his logo on the product.
+
+- id: pk
+- shop_id: uq1
+- name: uq1
+
+
 
 
 

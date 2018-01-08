@@ -26,6 +26,7 @@ use Module\Ekom\Api\Object\FeatureValue;
 use Module\Ekom\Api\Object\FeatureValueLang;
 use Module\Ekom\Api\Object\Invoice;
 use Module\Ekom\Api\Object\Lang;
+use Module\Ekom\Api\Object\Manufacturer;
 use Module\Ekom\Api\Object\Newsletter;
 use Module\Ekom\Api\Object\Order;
 use Module\Ekom\Api\Object\OrderHasOrderStatus;
@@ -54,6 +55,8 @@ use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductLang;
 use Module\Ekom\Api\Object\ProductPurchaseStat;
 use Module\Ekom\Api\Object\ProductType;
+use Module\Ekom\Api\Object\Provider;
+use Module\Ekom\Api\Object\ProviderHasShopHasProduct;
 use Module\Ekom\Api\Object\Seller;
 use Module\Ekom\Api\Object\SellerHasAddress;
 use Module\Ekom\Api\Object\Shop;
@@ -66,7 +69,9 @@ use Module\Ekom\Api\Object\ShopHasPaymentMethod;
 use Module\Ekom\Api\Object\ShopHasProduct;
 use Module\Ekom\Api\Object\ShopHasProductCard;
 use Module\Ekom\Api\Object\ShopHasProductCardLang;
+use Module\Ekom\Api\Object\ShopHasProductHasTag;
 use Module\Ekom\Api\Object\ShopHasProductLang;
+use Module\Ekom\Api\Object\Tag;
 use Module\Ekom\Api\Object\Tax;
 use Module\Ekom\Api\Object\TaxGroup;
 use Module\Ekom\Api\Object\TaxGroupHasTax;
@@ -267,6 +272,13 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('lang');
     }
     /**
+     * @return Manufacturer
+     */
+    public function manufacturer()
+    {
+        return $this->getObject('manufacturer');
+    }
+    /**
      * @return Newsletter
      */
     public function newsletter()
@@ -463,6 +475,20 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('productType');
     }
     /**
+     * @return Provider
+     */
+    public function provider()
+    {
+        return $this->getObject('provider');
+    }
+    /**
+     * @return ProviderHasShopHasProduct
+     */
+    public function providerHasShopHasProduct()
+    {
+        return $this->getObject('providerHasShopHasProduct');
+    }
+    /**
      * @return Seller
      */
     public function seller()
@@ -547,11 +573,25 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('shopHasProductCardLang');
     }
     /**
+     * @return ShopHasProductHasTag
+     */
+    public function shopHasProductHasTag()
+    {
+        return $this->getObject('shopHasProductHasTag');
+    }
+    /**
      * @return ShopHasProductLang
      */
     public function shopHasProductLang()
     {
         return $this->getObject('shopHasProductLang');
+    }
+    /**
+     * @return Tag
+     */
+    public function tag()
+    {
+        return $this->getObject('tag');
     }
     /**
      * @return Tax

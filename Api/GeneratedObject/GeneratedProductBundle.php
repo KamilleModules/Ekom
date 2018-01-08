@@ -30,6 +30,7 @@ class GeneratedProductBundle extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'active' => 0,
 			'shop_id' => 0,
 		];

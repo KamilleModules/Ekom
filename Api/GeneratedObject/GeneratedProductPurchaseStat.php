@@ -30,6 +30,7 @@ class GeneratedProductPurchaseStat extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'purchase_date' => '',
 			'shop_id' => 0,
 			'user_id' => 0,
