@@ -20,11 +20,15 @@ History log is now at the end of this document.
 Product vs product card
 --------------------------
 
+In ekom, we only sell products.
+However, most of the time, we present products as product cards on the website.
 
-We sell products, however, we present them as product cards on the website.
+A product card is a general/abstract presentation of products with related attributes.
+
 
 That is, you first "seduce" the customer with a product card,
 but then, when it's time to pay, only the products are considered.
+
 
 - a product is unique, and must belong to a product_card, which is a container to hold/present products.
 - the product must belong to one and only one product card     
@@ -33,6 +37,11 @@ but then, when it's time to pay, only the products are considered.
 - all the products in a product card have the same attributes, and differ only by a variation of attribute values
 - it's the product that holds the price, not the product card 
 
+
+Another way of thinking of the product is: the product is the entity in ekom that holds the ean code.
+So, for instance if you want to sell 3 products as a pack and make that a new product, then you need
+to create a new product in ekom, with its own ean, and somehow bind the 3 products to this pack product (note:
+at the time of writing, this system with packed products is not implemented, but this is how it's supposed to work).
 
 
 
@@ -577,6 +586,7 @@ By giving the "type" field to the module, the module can recognize its own "trai
 and do special things, using the regular ekom hooks.
 
 
+
 - id: pk    
 - name: uq    
 - shop_id: uq    
@@ -686,6 +696,14 @@ The products are available to a shop.
                 In the app I'm building, my company uses a code for tagging a product as a novelty.
                 
                 Technically, the codes is the string containing comma separated codes.
+                
+                The codes I personnally used so far are:
+                
+                - n: means the product is a novelty
+                
+                
+                
+                
 - provider_id: fk|null                  
                 
                                                 
@@ -957,7 +975,12 @@ Now, if an entry exists but the active column is zero, a message like:
             Ekom ensures that there is always at least one product in a card.
 - tax_group_id: fk|null, the tax group assigned to the product card.
                 Note: being assigned doesn't necessarily mean that it will apply.
-                Particular cases are handled at the ekom code level.            
+                Particular cases are handled at the ekom code level.  
+                
+                Also, if you don't want to use this system (for instance if you believe that the tax
+                group should be assigned at the product level rather than at the card level), 
+                then you can set the tax_group_id to null which means: no tax.
+                          
 - active: 1|0, the product card should not be displayed if this is set to 0
             
 

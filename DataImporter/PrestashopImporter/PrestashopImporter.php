@@ -17,6 +17,22 @@ use QuickPdo\QuickPdoExceptionTool;
  * Importer for data from prestashop 1.6
  *
  *
+ *
+ *
+ * ----------------
+ * BEWARE:
+ * THIS DOES NOT IMPORT MULTIPLE SHOPS AND OR LANGS.
+ * ----------------
+ * Note: it assumes that you have only one shop in prestashop
+ * and only one shop (with id=1) and one lang (with id=1) in ekom.
+ * ----------------
+ *
+ *
+ *
+ *
+ *
+ *
+ *
  * Synopsis:
  *
  * - importAttributes
@@ -832,6 +848,15 @@ where a.id_attribute_group=$groupId
      * - id_lang
      *
      *
+     * ps_stock_available (contient les quantités)
+     * - id_stock_available
+     * - id_product
+     * - id_product_attribute
+     * - id_shop
+     * - id_shop_group
+     * - quantity
+     * - depends_on_stock
+     * - out_of_stock
      *
      *
      *
@@ -840,6 +865,11 @@ where a.id_attribute_group=$groupId
     {
         $db = $this->dbSrc;
         $db2 = $this->dbTarget;
+        $langId = 1;
+        $shopId = 1;
+        $sellerId = 1;
+        $productTypeId = 1;
+
         $rows = QuickPdo::fetchAll("
 select 
 p.id_product, 
@@ -855,6 +885,7 @@ p.width,
 p.height,        
 p.depth,        
 p.weight,        
+date(p.date_add) as date_add_date,        
 l.description_short as description,        
 l.link_rewrite as slug,        
 l.meta_title,        
@@ -868,12 +899,6 @@ order by p.id_product asc
       
         
         ");
-
-
-        /**
-         * 1. Faire les produits sans déclinaisons
-         * 2. Faire les produits avec déclinaisons
-         */
 
 
         $productApi = EkomApi::inst()->product();
@@ -897,48 +922,80 @@ order by p.id_product asc
 
 
         foreach ($rows as $row) {
-
+            /**
+             * 2 types de produits dans prestashop:
+             * - déclinaison
+             * - produit sans déclinaison
+             *
+             */
 
             $id_product = $row['id_product'];
 
 //            a($row['id_product']);
 
 
+            /**
+             * déclinaisons
+             */
             $attrRows = QuickPdo::fetchAll("
 select
+pa.id_product_attribute,
 pa.reference as reference,
 pa.ean13,
 pa.price as price_variation,
 pa.quantity,
-pa.weight as weight_variation,
-a.id_attribute_group,
-a.id_attribute
+pa.weight as weight_variation
 
 from $db.ps_product_attribute pa
-inner join $db.ps_product_attribute_combination c on c.id_product_attribute=pa.id_product_attribute
-inner join $db.ps_attribute a on a.id_attribute=c.id_attribute
-
 where pa.id_product=$id_product
 
 
             ");
 
 
-//            a($attrRows);
-//            a($row);
-            // insert product card and products in ekom
+            /**
+             * Insertion d'un produit dans ekom.
+             * Tables impactées:
+             *
+             * - ek_product_card
+             * - ek_product_card_lang
+             * - ek_shop_has_product_card
+             * - ek_shop_has_product_card_lang
+             *
+             * - ek_product
+             * - ek_product_lang
+             * - ek_shop_has_product
+             * - ek_shop_has_product_lang
+             *
+             *
+             * Features
+             * - ek_product_has_feature
+             *
+             * Tags
+             * - ek_shop_has_product_has_tag
+             *
+             *
+             *
+             *
+             */
+
+
+            //--------------------------------------------
+            // INSERT PRODUCT_CARD AND PRODUCT_CARD_LANG
+            //--------------------------------------------
             $cardId = $cardApi->create([]);
 
-            $slug = $row['slug'];
 
+            /**
+             * This slug will be used to access the product card
+             */
+            $slug = $row['slug'];
             if (false !== ($r = $cardLangApi->readColumn("product_card_id", [
                     ["slug", "=", $row['slug']],
                 ]))
             ) {
                 $slug .= "_" . rand(1, 1000000);
             }
-
-
             $cardLangApi->create([
                 "product_card_id" => $cardId,
                 "lang_id" => $langId,
@@ -956,31 +1013,43 @@ where pa.id_product=$id_product
             ]);
 
 
+            //--------------------------------------------
+            // NOW INSERT PRODUCT(S) AND PRODUCT_LANG
+            //--------------------------------------------
             $originalWeight = $row['weight'];
             $originalPrice = $row['price'];
+            $isNovelty = (date("Y-m-d", time() - 30 * 86400) < $row['date_add_date']);
+            $codes = [];
+            if (true === $isNovelty) {
+                $codes[] = "n";
+            }
+            $sCodes = implode(",", $codes);
 
 
             $productId = null;
             if (count($attrRows) > 0) {
+                /**
+                 * Si le produit contient des déclinaisons,
+                 * chaque déclinaison devient un produit dans ekom,
+                 * et toutes les déclinaisons sont associées à la même card.
+                 */
 
 
                 foreach ($attrRows as $attrRow) {
 
-                    /**
-                     * Remember, we assume that we have only ONE argument,
-                     * so the logic is very specific and work only in that case.
-                     */
+
+
+                    $idProductAttribute = $attrRow['id_product_attribute'];
                     $weight = $originalWeight + $attrRow['weight_variation'];
                     $price = $originalPrice + $attrRow['price_variation'];
-
                     $reference = $attrRow['reference'];
-
-                    if (false !== $productApi->readColumn("reference", [
-                            ['reference', '=', $reference],
-                        ])
-                    ) {
-                        $reference .= rand(1, 1000000);
-                    }
+                    $quantity = (int)QuickPdo::fetch("
+select
+quantity
+from $db.ps_stock_available 
+where id_product=$id_product
+and id_product_attribute=$idProductAttribute
+            ", [], \PDO::FETCH_COLUMN);
 
 
                     $productId = $productApi->create([
@@ -988,8 +1057,10 @@ where pa.id_product=$id_product
                         "weight" => $weight,
                         "price" => $price,
                         "product_card_id" => $cardId,
+                        "width" => $row['width'],
+                        "height" => $row['height'],
+                        "depth" => $row['depth'],
                     ]);
-
                     $productLangApi->create([
                         "product_id" => $productId,
                         "lang_id" => $langId,
@@ -1001,28 +1072,21 @@ where pa.id_product=$id_product
                     ]);
 
 
-                    $productAttrId = $this->getAttrDataFromMemo($attrRow['id_attribute_group'], $memoAttributes, "attr");
-                    $productValueId = $this->getAttrDataFromMemo($attrRow['id_attribute'], $memoValues, "value");
-
-                    if (
-                        false !== $productAttrId &&
-                        false !== $productValueId
-                    ) {
-                        $productHasAttributeApi->create([
-                            "product_id" => $productId,
-                            "product_attribute_id" => $productAttrId,
-                            "product_attribute_value_id" => $productValueId,
-                        ]);
-                    }
-
-
                     $shopHasProductApi->create([
                         "shop_id" => $shopId,
                         "product_id" => $productId,
                         "price" => null,
                         "wholesale_price" => $row["wholesale_price"],
-                        "quantity" => rand(10, 300), // oops
+                        "quantity" => $quantity,
                         "active" => "1",
+                        "_discount_badge" => "",
+                        "seller_id" => $sellerId,
+                        "product_type_id" => $productTypeId,
+                        "reference" => $reference,
+                        "_popularity" => 0,
+                        "codes" => $sCodes,
+                        "manufacturer_id" => $row["id_manufacturer"],
+                        "ean" => $attrRow["ean13"],
                     ]);
 
 
@@ -1038,19 +1102,82 @@ where pa.id_product=$id_product
                         "meta_description" => "",
                         "meta_keywords" => "",
                     ]);
+
+
+                    /**
+                     * Chaque combinaison a une combinaison unique d'attributs dans prestashop.
+                     * Pour rappel, voici la logique de prestashop:
+                     *
+                     * - id_product_attribute représente une déclinaison de produit.
+                     *
+                     * La table id_product_attribute indique les déclinaisons pour un produit donné.
+                     * Chaque déclinaison de produit peut être liée à un ou plusieurs attributs
+                     * (dans la compagnie dans laquelle je travaille, aucun produit n'utilise plus d'un attribut).
+                     *
+                     * La table ps_product_attribute_combination lie une déclinaison à l'ensemble des attributs
+                     * que celle-ci utilise (id_product_attribute <--> id_attribute).
+                     *
+                     * Chaque attribut appartient à un groupe ps_attribute_group.
+                     *
+                     *
+                     * Ci-dessous, nous transférons les attributs de prestashop vers ekom.
+                     *
+                     */
+
+
+
+
+                    $rowsAttributes = QuickPdo::fetchAll("
+select 
+a.id_attribute,
+a.id_attribute_group
+from ps_product_attribute_combination c
+inner join ps_attribute a on a.id_attribute=c.id_attribute
+where c.id_product_attribute=$idProductAttribute 
+                    ");
+
+                    if($rowsAttributes){
+                        foreach($rowsAttributes as $rowAttribute){
+                            $attributeId = $rowAttribute['id_attribute'];
+                            $attributeGroupId = $rowAttribute['id_attribute_group'];
+
+
+                            $productHasAttributeApi->create([
+                                "product_id" => $productId,
+                                "product_attribute_id" => $attributeGroupId,
+                                "product_attribute_value_id" => $attributeId,
+                                "order" => 0,
+                            ]);
+
+
+                        }
+                    }
                 }
             }
-            //
-            /**
-             * If for some reasons, the presta shop product has no attribute,
-             * in ekom every card must have at least one corresponding product
-             */
             else {
+
+                /**
+                 * C'est le cas où le produit ne contient pas de déclinaisons,
+                 * on insère le produit et la carte (container) qui le contient.
+                 */
+
+
+                $quantity = (int)QuickPdo::fetch("
+select
+quantity
+from $db.ps_stock_available 
+where id_product=$id_product
+            ", [], \PDO::FETCH_COLUMN);
+
+
                 $productId = $productApi->create([
-                    "reference" => $row['reference'] . '-card-' . rand(1, 1000000),
+                    "reference" => $row['reference'],
                     "weight" => $row['weight'],
                     "price" => $row['price'],
                     "product_card_id" => $cardId,
+                    "width" => $row['width'],
+                    "height" => $row['height'],
+                    "depth" => $row['depth'],
                 ]);
                 $productLangApi->create([
                     "product_id" => $productId,
@@ -1068,8 +1195,16 @@ where pa.id_product=$id_product
                     "product_id" => $productId,
                     "price" => null,
                     "wholesale_price" => $row["wholesale_price"],
-                    "quantity" => rand(10, 300), // oops
+                    "quantity" => $quantity,
                     "active" => "1",
+                    "_discount_badge" => "",
+                    "seller_id" => $sellerId,
+                    "product_type_id" => $productTypeId,
+                    "reference" => $row['reference'],
+                    "_popularity" => 0,
+                    "codes" => $sCodes,
+                    "manufacturer_id" => $row["id_manufacturer"],
+                    "ean" => $row["ean13"],
                 ]);
 
 
@@ -1089,10 +1224,14 @@ where pa.id_product=$id_product
             }
 
 
+
+
+            $taxGroupId = $this->getTaxGroupIdByTaxRulesGroupId($row['id_tax_rules_group']);
             $shopHasCardApi->create([
                 "shop_id" => $shopId,
                 "product_card_id" => $cardId,
                 "product_id" => $productId,
+                "tax_group_id" => $taxGroupId,
                 "active" => "1",
             ]);
             $shopHasCardLangApi->create([
@@ -1126,6 +1265,8 @@ select id_image from $db.ps_image where id_product=$id_product
                 }
             }
         }
+
+
     }
 
 
@@ -1589,5 +1730,13 @@ select id_image from $db.ps_image where id_product=$id_product
         $str = str_replace([',', '.'], ' ', $str);
         $ret = CaseTool::toSnake($str);
         return $ret;
+    }
+
+    private function getTaxGroupIdByTaxRulesGroupId($id)
+    {
+        if (array_key_exists($id, $this->mapTaxRulesGroups)) {
+            return $this->mapTaxRulesGroups[$id];
+        }
+        return null;
     }
 }
