@@ -43,6 +43,7 @@ class GeneratedShopHasProduct extends TableCrudObject
 			'_popularity' => '',
 			'codes' => '',
 			'manufacturer_id' => null,
+			'ean' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

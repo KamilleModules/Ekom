@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Module\Ekom\Helper;
+namespace Module\Ekom\Back\Helper;
 
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
@@ -15,6 +15,7 @@ use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\Pdf\PdfHtmlInfoInterface;
 use Module\NullosAdmin\Utils\N;
+use QuickPdo\QuickPdo;
 
 class BackHooksHelper
 {
@@ -37,7 +38,21 @@ class BackHooksHelper
                     ->setName("tags")
                     ->setLabel("Tags")
                     ->setIcon("fa fa-tags")
-                    ->setLink(N::link("NullosAdmin_Ekom_Catalog_Tags_List"))
+                    ->setLink(N::link("NullosAdmin_Ekom_Tags_List"))
+                )
+            )
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("localization")
+                ->setLabel("Localization")
+                ->setIcon("fa fa-globe")
+                ->setLink("#jo")
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("currencies")
+                    ->setLabel("Currencies")
+                    ->setIcon("fa fa-money")
+                    ->setLink(N::link("NullosAdmin_Ekom_Currency_List"))
                 )
             )
         );
@@ -47,5 +62,31 @@ class BackHooksHelper
     {
         // for now, everybody can do anything
         $hasRight = true;
+    }
+
+    public static function NullosAdmin_User_populateConnectedUser(array &$user)
+    {
+
+
+        $row = QuickPdo::fetch("
+select * from ek_backoffice_user
+where email=:email
+",
+            ['email' => $user['email']]
+        );
+        $shopId = 0;
+        $langId = 0;
+        $currencyId = 0;
+        if (false !== $row) {
+            $shopId = (int)$row['shop_id'];
+            $langId = (int)$row['lang_id'];
+            $currencyId = (int)$row['currency_id'];
+        }
+
+        $user['ekom'] = [
+            'shop_id' => $shopId,
+            'lang_id' => $langId,
+            'currency_id' => $currencyId,
+        ];
     }
 }

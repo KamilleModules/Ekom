@@ -1,12 +1,15 @@
 Ekom developer faq
 ======================
-2017-11-08
+2017-11-08 --> 2018-01-12
 
 
 
-In this faq, try to guess which object your question is related to,
-and find the object's corresponding faq.
 
+What's the current route?
+---------------------------
 
+```php
+$routeId = A::route();
+```
 
 

@@ -32,8 +32,9 @@ class GeneratedBackofficeUser extends TableCrudObject
         $base = [
 			'id' => null,
 			'email' => '',
-			'pass' => '',
-			'lang_iso' => '',
+			'shop_id' => 0,
+			'lang_id' => 0,
+			'currency_id' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
