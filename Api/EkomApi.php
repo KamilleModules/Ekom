@@ -281,8 +281,8 @@ and h.lang_id=$langId
                 ]);
 
 
-                if (is_array($tripletRow)) {
 
+                if (is_array($tripletRow)) {
                     date_default_timezone_set($timezone);
                     ApplicationRegistry::set("ekom.host", $host);
                     ApplicationRegistry::set("ekom.shop_id", (int)$shopId);

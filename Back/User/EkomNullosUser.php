@@ -15,7 +15,7 @@ class EkomNullosUser extends NullosUser
      * Use this method to retrieve the context values in ekom back.
      *
      * More info in:
-     * class-modules/Ekom/doc/backoffice/brainstorm.md
+     * class-modules/Ekom/doc/backoffice/backoffice-brainstorm.md
      *
      *
      * @param $key

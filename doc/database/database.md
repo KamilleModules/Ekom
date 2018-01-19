@@ -417,12 +417,17 @@ rather it uses the application's native translation system.
 ek_backoffice_user
 ================
 
+The context vars used to shape/control the backoffice.
+
 - email: we might need to alert that user, hence the email instead of a simple login
-- pass
-- lang_iso: the preferred language for this user (using iso 639-3)
-            
-            
-            
+- shop_id: int, the shop_id to use.
+                If 0, the user should set it before doing anything else.                
+- lang_id: int, the lang_id to use.
+                If 0, the user should set it before doing anything else.                
+- currency_id: int, the default currency of the backoffice.
+                    If 0, then the base_currency should be used.
+
+
 
 
 
@@ -445,7 +450,8 @@ ek_timezone
 ek_shop
 =========
 
-This represents a virtual store.
+This represents the front virtual store.
+Note: for the back configuration, see the ek_backoffice_user table.
 
 It holds the configuration of your e-commerce.
 
@@ -459,26 +465,22 @@ is a per-shop operation).
  
 - label: a label to identify the store in the backoffice (not displayed in front)
 - host: null|string, the host used to identify the front office shop (if null, other heuristics are used to select the front office shop).
-- lang_id: fk|null, the default lang used for this shop in the frontoffice (the backoffice lang being set in the backoffice_user table).
+- lang_id: fk|null, the default lang used for the front.
+                It must be one attached to the shop, or null.
                 If null, use the heuristic you want, like using the user's browser's lang for instance.
-                
-                
-- currency_id: fk, the base currency.
-                    The base currency is used in the backoffice to determin prices.
-                    So when you create a product, it's price is given in this currency.
-                    It is used as the reference for exchange rates.
+- currency_id: fk|null, the default currency for the front.  
+                It must be one attached to the shop (meaning it exists in the ek_shop_has_currency table).
+                It's null, it means the shop is not properly configured.                  
+- timezone_id: fk, as for now, it sets the timezone for both the front and the back.
+- base_currency_id: fk|null
+                    This should not be null when the user is using the backoffice.
+                    If null, then the user should set this value before doing anything else.
                     
-                    The base currency is also the default (the user can change it) currency used for the front office.
+                    The base currency is the currency used when creating a product.
+                    It's also the base for exchange rates calculus.
+                    So that if you change the base_currency_id, you need to update every exchange rate in your shop.
                     
-                    This currency must be set in the shop_has_currency table, and with the column active set to 1.
-                    
-                    
-                    
-- timezone_id: fk, the time zone used by this shop on both the front office and backoffice.
-                    It cannot be changed by the user, it's the owner decision.
-
-
-
+                    The base currency must belong to the shop (meaning it exists in the ek_shop_has_currency table)
 
 
 ek_shop_configuration

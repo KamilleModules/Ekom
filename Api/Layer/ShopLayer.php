@@ -55,6 +55,12 @@ select * from ek_shop where id=$shopId
         ");
     }
 
+    public static function getHostById($shopId)
+    {
+        $shopId = (int)$shopId;
+        return QuickPdo::fetch("select host from ek_shop where id=$shopId", [], \PDO::FETCH_COLUMN);
+    }
+
     public static function getShopInfoById($shopId)
     {
         $shopId = (int)$shopId;

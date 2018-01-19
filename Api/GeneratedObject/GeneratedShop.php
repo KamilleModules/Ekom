@@ -34,13 +34,20 @@ class GeneratedShop extends TableCrudObject
 			'label' => '',
 			'host' => '',
 			'lang_id' => null,
-			'currency_id' => 0,
+			'currency_id' => null,
+			'base_currency_id' => null,
 			'timezone_id' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
         if (0 === (int)$ret["lang_id"]) {
             $ret["lang_id"] = null;
+        }
+        if (0 === (int)$ret["currency_id"]) {
+            $ret["currency_id"] = null;
+        }
+        if (0 === (int)$ret["base_currency_id"]) {
+            $ret["base_currency_id"] = null;
         }
 
 
