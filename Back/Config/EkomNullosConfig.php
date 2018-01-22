@@ -25,6 +25,18 @@ class EkomNullosConfig
                     "route" => "NullosAdmin_Ekom_Currency_List",
                 ];
                 break;
+            case "lang":
+                $item = [
+                    "label" => "Lang",
+                    "route" => "NullosAdmin_Ekom_Lang_List",
+                ];
+                break;
+            case "shopmix":
+                $item = [
+                    "label" => "Shop Mix",
+                    "route" => "NullosAdmin_Ekom_ShopMix",
+                ];
+                break;
             default:
                 break;
         }

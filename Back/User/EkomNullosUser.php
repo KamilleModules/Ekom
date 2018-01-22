@@ -1,7 +1,6 @@
 <?php
 
 
-
 namespace Module\Ekom\Back\User;
 
 
@@ -29,5 +28,33 @@ class EkomNullosUser extends NullosUser
             return $ekom[$key];
         }
         return $default;
+    }
+
+
+    public static function setShopInfo(array $shopInfo)
+    {
+        $ekom = self::get('ekom', []);
+        foreach ($shopInfo as $k => $v) {
+            $ekom[$k] = $v;
+        }
+        self::set("ekom", $ekom);
+    }
+
+    public static function setCurrencyInfo(array $info)
+    {
+        $ekom = self::get('ekom', []);
+        foreach ($info as $k => $v) {
+            $ekom[$k] = $v;
+        }
+        self::set("ekom", $ekom);
+    }
+
+    public static function setLangInfo(array $info)
+    {
+        $ekom = self::get('ekom', []);
+        foreach ($info as $k => $v) {
+            $ekom[$k] = $v;
+        }
+        self::set("ekom", $ekom);
     }
 }

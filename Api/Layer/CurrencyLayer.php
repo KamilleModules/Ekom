@@ -34,4 +34,13 @@ where iso_code=:iso
             "iso" => $isoCode,
         ], \PDO::FETCH_COLUMN);
     }
+
+    public static function getCurrencyEntries()
+    {
+        return QuickPdo::fetchAll("
+select *
+from ek_currency
+");
+
+    }
 }

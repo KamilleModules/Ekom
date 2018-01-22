@@ -4,6 +4,8 @@
 namespace Module\Ekom\Back\WidgetModel\ContextBar;
 
 
+use Module\Ekom\Api\Layer\CurrencyLayer;
+use Module\Ekom\Api\Layer\LangLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Back\Util\QuickStartWizard\QuickStartWizard;
@@ -21,6 +23,8 @@ class ContextBarWidgetModel
             'shopIsSet' => QuickStartWizard::isShopSet(),
             'langIsSet' => QuickStartWizard::isLangSet(),
             'shops' => ShopLayer::getShopEntries(),
+            'currencies' => CurrencyLayer::getCurrencyEntries(),
+            'languages' => LangLayer::getLangEntries(),
         ];
     }
 }

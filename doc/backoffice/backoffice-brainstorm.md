@@ -9,6 +9,15 @@ user
 ========
 We use NullosUser from NullosAdmin module.
 
+In the php session, NullosUser resides here:
+
+- $_SESSION
+----- nullos
+--------- user: 
+------------- ekom: (here is the ekom's nullos user data: an array of key/values) 
+
+
+
 
 
 context vars
@@ -70,7 +79,7 @@ fix those potentially blocking problems.
 
                 
 - then check the $_SESSION.nullos.user.ekom data:
-    - if shop_id is 0, then the shop_id selector becomes red (to intice the user to select one)
+    - if shop_id is 0, then the shop_id selector becomes red (to entice the user to select one)
     - same for currency_id 
     - same for lang_id
  
