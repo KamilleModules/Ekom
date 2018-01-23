@@ -37,6 +37,12 @@ class EkomNullosConfig
                     "route" => "NullosAdmin_Ekom_ShopMix",
                 ];
                 break;
+            case "shopmix_currency":
+                $item = [
+                    "label" => "Shop Mix Currency Form",
+                    "route" => "NullosAdmin_Ekom_ShopMix_CurrencyForm",
+                ];
+                break;
             default:
                 break;
         }
