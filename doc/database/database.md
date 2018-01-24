@@ -477,7 +477,7 @@ is a per-shop operation).
                     If null, then the user should set this value before doing anything else.
                     
                     The base currency is the currency used when creating a product.
-                    It's also the base for exchange rates calculus.
+                    It's also the base for exchange rates calculus (it's exchange rate is 1).
                     So that if you change the base_currency_id, you need to update every exchange rate in your shop.
                     
                     The base currency must belong to the shop (meaning it exists in the ek_shop_has_currency table)

@@ -29,6 +29,16 @@ class ShopLayer
 {
 
 
+    public static function getLangIsoCodes($shopId)
+    {
+        return QuickPdo::fetchAll("
+select l.id, l.iso_code  
+from ek_lang l 
+inner join ek_shop_has_lang h on h.lang_id=l.id
+where h.shop_id=$shopId         
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
     /**
      * @param null $shopId
      * @param null $langId
