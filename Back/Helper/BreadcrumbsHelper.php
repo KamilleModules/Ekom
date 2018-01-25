@@ -13,7 +13,12 @@ class BreadcrumbsHelper
         $ret = [];
         foreach ($pages as $page) {
             $item = EkomNullosConfig::getBreadcrumbItem($page);
-            $item['link'] = N::link($item['route']);
+            if ($item['route']) {
+                $item['link'] = N::link($item['route']);
+            }
+            else{
+                $item['link'] = null;
+            }
             $ret[$page] = $item;
         }
         return $ret;

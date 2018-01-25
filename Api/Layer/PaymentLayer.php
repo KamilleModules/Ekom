@@ -29,6 +29,12 @@ use QuickPdo\QuickPdo;
 class PaymentLayer
 {
 
+
+    public static function getPaymentMethodItems()
+    {
+        return QuickPdo::fetchAll("select id, name from ek_payment_method", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
     /**
      * @param $paymentMethodId
      * @return PaymentMethodHandlerInterface

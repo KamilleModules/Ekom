@@ -17,6 +17,14 @@ select id, iso_code from ek_lang order by id asc
         ");
     }
 
+    public static function getLangItems()
+    {
+        return QuickPdo::fetchAll("
+select id, iso_code from ek_lang order by iso_code asc        
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
     public static function getIsoCodeById($langId)
     {
         $langId = (int)$langId;

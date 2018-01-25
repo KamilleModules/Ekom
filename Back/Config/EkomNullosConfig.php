@@ -13,10 +13,10 @@ class EkomNullosConfig
             "route" => "NullosAdmin_home",
         ];
         switch ($pageName) {
-            case "localization":
+            case "admin":
                 $item = [
-                    "label" => "Localization",
-                    "route" => "NullosAdmin_Ekom_Currency_List",
+                    "label" => "Admin",
+                    "route" => null,
                 ];
                 break;
             case "currency":
@@ -29,6 +29,18 @@ class EkomNullosConfig
                 $item = [
                     "label" => "Lang",
                     "route" => "NullosAdmin_Ekom_Lang_List",
+                ];
+                break;
+            case "localization":
+                $item = [
+                    "label" => "Localization",
+                    "route" => "NullosAdmin_Ekom_Currency_List",
+                ];
+                break;
+            case "payment_method":
+                $item = [
+                    "label" => "Payment method",
+                    "route" => "NullosAdmin_Ekom_PaymentMethod_List",
                 ];
                 break;
             case "shopmix":

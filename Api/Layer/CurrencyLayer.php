@@ -43,4 +43,13 @@ from ek_currency
 ");
 
     }
+
+    public static function getCurrencyItems()
+    {
+        return QuickPdo::fetchAll("
+select id, iso_code
+from ek_currency
+", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+
+    }
 }

@@ -28,6 +28,48 @@ use QuickPdo\QuickPdo;
 class ShopLayer
 {
 
+    public static function setBaseCurrency($shopId, $currencyId)
+    {
+        // get the current base currency.
+        $shopId = (int)$shopId;
+        $currencyId = (int)$currencyId;
+
+
+        QuickPdo::transaction(function () use($shopId, $currencyId){
+
+
+            $newExchangeRate = QuickPdo::fetch("select exchange_rate from ek_shop_has_currency 
+where shop_id=$shopId and currency_id=$currencyId", [], \PDO::FETCH_COLUMN);
+            if (false === $newExchangeRate) {
+                throw new EkomException("Case not handled yet, maybe for a quick fix try to set the shop.base_currency_id manually.");
+            }
+
+            // update all exchange_rate
+            QuickPdo::freeExec("
+update ek_shop_has_currency set exchange_rate = exchange_rate / $newExchangeRate 
+where shop_id=$shopId       
+        ");
+
+            QuickPdo::update("ek_shop", [
+                "base_currency_id" => $currencyId,
+            ], [
+                ["id", "=", $shopId],
+            ]);
+        });
+
+
+    }
+
+    public static function getCurrencyIsoCodes($shopId)
+    {
+        return QuickPdo::fetchAll("
+select c.id, c.iso_code  
+from ek_currency c 
+inner join ek_shop_has_currency h on h.currency_id=c.id
+where h.shop_id=$shopId         
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
 
     public static function getLangIsoCodes($shopId)
     {
