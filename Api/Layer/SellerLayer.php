@@ -26,6 +26,14 @@ class SellerLayer
         return $id;
     }
 
+    public static function getNameById($sellerId)
+    {
+        $sellerId = (int)$sellerId;
+        return A::cache()->get("Ekom.SellerLayer.getNameById.$sellerId", function () use ($sellerId) {
+            return QuickPdo::fetch("select name from ek_seller where id=$sellerId", [], \PDO::FETCH_COLUMN);
+        });
+    }
+
     public static function getDefaultSellerAddressByName($seller, $shopId = null, $langId = null)
     {
         $shopId = E::getShopId($shopId);
@@ -44,8 +52,6 @@ class SellerLayer
          * A tip is to insert the virtual seller name in the ek_seller table, but affecting no products to it.
          *
          */
-
-
 
 
         $sellerAddress = A::cache()->get("Ekom.SellerLayer.getDefaultSellerAddress.$seller.$shopId.$langId", function () use ($seller, $langId, $shopId) {

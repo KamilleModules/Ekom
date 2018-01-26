@@ -69,7 +69,7 @@ class CarrierLayer
          */
         if (array_key_exists($carrierId, $rows)) {
             $carrierName = $rows[$carrierId];
-            $ret= self::getCarrierInstanceByName($carrierName);
+            $ret = self::getCarrierInstanceByName($carrierName);
             $ret->setId($carrierId);
             $ret->setName($carrierName);
             return $ret;
@@ -100,6 +100,18 @@ order by h.priority asc
         ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
 
         });
+    }
+
+
+    public static function getAllCarriers()
+    {
+
+        return QuickPdo::fetchAll("
+select id, `name` 
+from ek_carrier 
+order by `name` asc        
+        
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
 
 

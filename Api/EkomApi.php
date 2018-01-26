@@ -10,6 +10,7 @@ use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
 use Kamille\Services\XLog;
+use Module\Ekom\Api\Layer\AddressLayer;
 use Module\Ekom\Api\Layer\AjaxHandlerLayer;
 use Module\Ekom\Api\Layer\AttributeLayer;
 use Module\Ekom\Api\Layer\BreadcrumbsLayer;
@@ -281,7 +282,6 @@ and h.lang_id=$langId
                 ]);
 
 
-
                 if (is_array($tripletRow)) {
                     date_default_timezone_set($timezone);
                     ApplicationRegistry::set("ekom.host", $host);
@@ -319,6 +319,14 @@ and h.lang_id=$langId
     //--------------------------------------------
     //
     //--------------------------------------------
+    /**
+     * @return AddressLayer
+     */
+    public function addressLayer()
+    {
+        return $this->getLayer('addressLayer');
+    }
+
     /**
      * @return AjaxHandlerLayer
      */
