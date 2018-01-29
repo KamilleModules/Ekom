@@ -19,10 +19,22 @@ class EkomNullosConfig
                     "route" => null,
                 ];
                 break;
+            case "app_sanitycheck":
+                $item = [
+                    "label" => "App sanity check",
+                    "route" => null,
+                ];
+                break;
             case "currency":
                 $item = [
                     "label" => "Currency",
                     "route" => "NullosAdmin_Ekom_Currency_List",
+                ];
+                break;
+            case "country_code":
+                $item = [
+                    "label" => "Country code",
+                    "route" => "NullosAdmin_Ekom_CountryCode_List",
                 ];
                 break;
             case "lang":

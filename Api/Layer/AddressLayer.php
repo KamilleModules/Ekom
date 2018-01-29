@@ -35,4 +35,9 @@ inner join ek_country_lang l on l.country_id=c.id
 ', [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
 
+    public static function countEntries()
+    {
+        return QuickPdo::count('ek_address');
+    }
+
 }
