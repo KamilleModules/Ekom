@@ -31,10 +31,16 @@ class EkomNullosConfig
                     "route" => "NullosAdmin_Ekom_Currency_List",
                 ];
                 break;
-            case "country_code":
+            case "country":
                 $item = [
-                    "label" => "Country code",
-                    "route" => "NullosAdmin_Ekom_CountryCode_List",
+                    "label" => "Country",
+                    "route" => "NullosAdmin_Ekom_Country_List",
+                ];
+                break;
+            case "country_translation":
+                $item = [
+                    "label" => "Country translation",
+                    "route" => "NullosAdmin_Ekom_CountryTranslation_List",
                 ];
                 break;
             case "lang":

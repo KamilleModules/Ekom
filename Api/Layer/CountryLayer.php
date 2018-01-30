@@ -13,6 +13,16 @@ use QuickPdo\QuickPdo;
 class CountryLayer
 {
 
+
+    public static function getCountryItems()
+    {
+        return QuickPdo::fetchAll("
+select id, iso_code from ek_country order by iso_code asc        
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
+
     /**
      * return useful list for feeding html select tags
      */
