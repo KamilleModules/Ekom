@@ -25,6 +25,148 @@ use QuickPdo\QuickPdo;
 class CategoryLayer
 {
 
+    public static function getLastChildrenInfo($categoryId)
+    {
+        $categoryId = (int)$categoryId;
+        return QuickPdo::fetch("
+select * from ek_category 
+where category_id=$categoryId
+order by `order` desc         
+        ");
+    }
+
+    /**
+     * This method is used along with a gui tool.
+     * It should be used at the end of a drag'n'drop.
+     *
+     */
+    public static function moveCategory($sourceId, $targetId, $mode, $shopId, $langId, &$error = null)
+    {
+        switch ($mode) {
+            case "before":
+            case "after":
+                $parentId = CategoryLayer::getParentCategoryIdById($targetId);
+                $childrenIds = CategoryLayer::getChildrenIds($parentId, $shopId, $langId, true);
+
+                $newChildrenIds = $childrenIds;
+                $index = array_search($targetId, $newChildrenIds);
+
+                if ('before' === $mode) {
+                    array_splice($newChildrenIds, $index, 0, $sourceId);
+                } elseif ('after' === $mode) {
+                    array_splice($newChildrenIds, $index + 1, 0, $sourceId);
+                }
+
+
+                QuickPdo::update("ek_category", [], []);
+
+
+                return true;
+                break;
+            case "over":
+                $lastChildren = CategoryLayer::getLastChildrenInfo($targetId);
+                if (false === $lastChildren) { // this node doesn't have a children yet
+                    $newOrder = 0;
+                } else {
+                    $newOrder = $lastChildren['order'] + 1;
+                }
+
+                QuickPdo::update("ek_category", [
+                    "order" => $newOrder,
+                    "category_id" => $targetId,
+                ], [
+                    ["id", "=", $sourceId],
+                ]);
+                return true;
+                break;
+            default:
+                $error = "Unknown mode $mode";
+                return false;
+                break;
+        }
+        return false;
+    }
+
+//    public static function getChildrenIds($catId, $shopId, $langId, $forceGenerate = false)
+//    {
+//        $childrenItems = CategoryCoreLayer::create()->getSelfAndChildrenByCategoryId($catId, 1, $shopId, $langId, [
+//            'order' => ["order", "asc"],
+//        ], $forceGenerate);
+//        array_shift($childrenItems);
+//        $childrenIds = [];
+//        foreach ($childrenItems as $item) {
+//            $childrenIds[] = $item['id'];
+//        }
+//        return $childrenIds;
+//    }
+//
+//    public static function getChildrenInfo($catId, $shopId, $langId, $forceGenerate = false)
+//    {
+//        $childrenItems = CategoryCoreLayer::create()->getSelfAndChildrenByCategoryId($catId, 1, $shopId, $langId, [
+//            'order' => ["order", "asc"],
+//        ], $forceGenerate);
+//        array_shift($childrenItems);
+//        $childrenIds = [];
+//        foreach ($childrenItems as $item) {
+//            $childrenIds[] = $item['id'];
+//        }
+//        return $childrenIds;
+//    }
+
+
+    public static function getParentCategoryIdById($catId)
+    {
+        $catId = (int)$catId;
+        return QuickPdo::fetch("
+select category_id from ek_category where id=$catId        
+        ", [], \PDO::FETCH_COLUMN);
+    }
+
+
+    public static function checkSlugUnique($categoryId, $langId, $slug)
+    {
+        $categoryId = (int)$categoryId;
+        $langId = (int)$langId;
+        $row = QuickPdo::fetch("
+select category_id from ek_category_lang
+where category_id=$categoryId
+and lang_id=$langId
+and slug = :slug        
+        ", [
+            'slug' => $slug,
+        ]);
+        if (false === $row) {
+            return true;
+        }
+        return false;
+    }
+
+
+    public static function getCategoryItemsByShopId($shopId)
+    {
+        $shopId = (int)$shopId;
+        return QuickPdo::fetchAll("
+select id, name from ek_category where shop_id=$shopId        
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+    public static function countCategoriesByShopId($shopId)
+    {
+        $shopId = (int)$shopId;
+        return QuickPdo::fetch("
+select count(*) as count 
+from ek_category 
+where shop_id=$shopId        
+        ", [], \PDO::FETCH_COLUMN);
+    }
+
+    public static function getNameById($categoryId)
+    {
+        $categoryId = (int)$categoryId;
+        return QuickPdo::fetch("
+select `name` from ek_category where id=$categoryId        
+        ", [], \PDO::FETCH_COLUMN);
+    }
 
     public static function getCategoryGridItemByNames(array $names)
     {
@@ -43,10 +185,10 @@ inner join ek_category_lang l on l.category_id=c.id
 where c.name in ('" . implode("','", $names) . "')
 
         ");
-            foreach($ret as $k => $info){
+            foreach ($ret as $k => $info) {
                 $nbCats = count(CategoryCoreLayer::create()->getSelfAndChildren($info['name']));
                 $info['nbCats'] = $nbCats;
-                $ret[$k]=$info;
+                $ret[$k] = $info;
             }
             return $ret;
         } else {
@@ -142,7 +284,6 @@ and c.shop_id=$shopId
             'slug' => $slug,
         ]);
     }
-
 
 
     public function getUpCategoryInfosById($categoryId, $topToBottom = true, $shopId = null, $langId = null)
@@ -672,7 +813,7 @@ and l.slug=:slug
      *
      *
      */
-    public function getSubCategoriesByName($name, $maxDepth = -1, $wildCard = '', $shopId = null, $langId = null)
+    public function getSubCategoriesByName($name, $maxDepth = -1, $wildCard = '', $shopId = null, $langId = null, $forceGenerate = false)
     {
         EkomApi::inst()->initWebContext();
         $shopId = E::getShopId($shopId);
@@ -735,10 +876,7 @@ order by c.order asc
 
             return $ret;
 
-        }, [
-            "ek_category",
-            "ek_category_lang",
-        ]);
+        }, $forceGenerate);
     }
 
     public function getSubCategoriesBySlug($slug, $maxDepth = -1)

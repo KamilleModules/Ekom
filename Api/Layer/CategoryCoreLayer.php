@@ -121,7 +121,7 @@ class CategoryCoreLayer
      *          - order: [$field, asc|desc]
      * @return array
      */
-    public function getSelfAndChildrenByCategoryId($parentId, $maxLevel = -1, $shopId = null, $langId = null, array $options = [])
+    public function getSelfAndChildrenByCategoryId($parentId, $maxLevel = -1, $shopId = null, $langId = null, array $options = [], $forceGenerate = false)
     {
         $this->_extended = (array_key_exists('extended', $options)) ? (bool)$options['extended'] : false;
         $shopId = E::getShopId($shopId);
@@ -149,7 +149,7 @@ class CategoryCoreLayer
 
 
             return $ret;
-        });
+        }, $forceGenerate);
     }
 
 

@@ -41,6 +41,11 @@ class HooksHelper
                 case "n":
                     $msg = "You need to add at least one {word} ({table})";
                     break;
+                case "o":
+                    $msg = "The following categories require (at least one) translation: {codes}.<br>
+                Go to the \"Shop > Category\" page to fix this problem.
+                ";
+                    break;
                 default:
                     break;
             }

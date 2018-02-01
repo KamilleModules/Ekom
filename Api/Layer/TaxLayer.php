@@ -35,6 +35,32 @@ use QuickPdo\QuickPdo;
 class TaxLayer
 {
 
+
+    public static function getModeItems()
+    {
+        return [
+            "" => "(Default)",
+            "merge" => "Merge",
+            "chain" => "Chain",
+        ];
+    }
+
+    public static function getGroupLabelByGroupId($taxGroupId)
+    {
+        $taxGroupId = (int)$taxGroupId;
+        return QuickPdo::fetch("
+select label from ek_tax_group where id=$taxGroupId        
+        ", [], \PDO::FETCH_COLUMN);
+    }
+
+    public static function getTaxItems()
+    {
+        return QuickPdo::fetchAll("
+select id, amount from ek_tax order by id asc        
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
     public static function getTaxGroupInfoByName($name, $shopId = null, $langId = null)
     {
         $shopId = E::getShopId($shopId);

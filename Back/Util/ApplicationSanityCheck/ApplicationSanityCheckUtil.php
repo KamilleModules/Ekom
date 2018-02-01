@@ -53,14 +53,18 @@ use QuickPdo\QuickPdo;
  *          - table: the name of the table (for instance ek_currency)
  *
  *
- * - a:
+ *
+ * function missingTranslation ( $table, $translationTable, $tipColumn )
  *      - severity: critical
  *      - description:
- *              an entry has been created in the ek_country table, but there is no entry created in ek_country_lang yet.
- *              Fix: create the corresponding entry in ek_country_lang
- *      - tags: codes (comma separated list of iso_codes of missing countries)
+ *              an entry has been created in the $table table, but there is no entry created in $translationTable yet.
+ *              Fix: create the corresponding entry in $translationTable
+ *      - tags: codes (comma separated list of $tipColumn of missing countries)
  *
  *
+ *
+ *
+ * - a: missingTranslation( ek_country, ek_country_lang, iso_codes )
  * - b: missing( ek_country )
  * - c: missing( ek_tax )
  * - d: missing( ek_tax_group )
@@ -74,7 +78,7 @@ use QuickPdo\QuickPdo;
  * - l: missing( ek_product_type )
  * - m: missing( ek_product )
  * - n: missing( ek_product_card )
- *
+ * - o: missingTranslation( ek_category, ek_category_lang, name )
  *
  *
  *
@@ -111,6 +115,7 @@ class ApplicationSanityCheckUtil
         "l" => "ek_product_type",
         "m" => "ek_product",
         "n" => "ek_product_card",
+        "o" => "ek_category_lang",
     ];
 
 
@@ -148,8 +153,6 @@ class ApplicationSanityCheckUtil
     {
         $errors = self::getSessionErrors();
 
-        E::dlog("check");
-
         //--------------------------------------------
         // CRITICAL
         //--------------------------------------------
@@ -169,13 +172,13 @@ class ApplicationSanityCheckUtil
                 'l',
                 'm',
                 'n',
+                'o',
             ];
             foreach ($criticalTokens as $token) {
-                $params = [];
-                if (false === self::executeTest($token, $params)) {
-                    $errors[$token] = $params;
-                }
-                else{
+                $tags = [];
+                if (false === self::executeTest($token, $tags)) {
+                    $errors[$token] = $tags;
+                } else {
                     unset($errors[$token]);
                 }
             }
@@ -199,42 +202,30 @@ class ApplicationSanityCheckUtil
             0 === strpos($table, 'ek_')
         ) {
 
+
             $errors = self::getSessionErrors();
-            $nbFixed = 0;
-            $isInsert = ('insert' === $activeMethod);
+            $nbMatch = 0;
 
-
-            E::dlog("onQuickPdoDataAlterAfter: $activeMethod");
             foreach ($errors as $token => $params) {
-                $_table = self::getTableByToken($token);
-                if ($_table === $table) {
-                    if (in_array($token, self::$removeWithInsert, true) && $isInsert) {
-                        $nbFixed++;
-                        unset($errors[$token]);
+                $triggerTable = self::getTriggerTableByToken($token);
+                if ($triggerTable === $table) {
+                    $nbMatch++;
 
+
+                    $tags = [];
+                    if (false === self::executeTest($token, $tags)) {
+                        $errors[$token] = $tags;
                     } else {
-                        E::dlog("second area");
-                        /**
-                         * Self check is more precise than the commented code below,
-                         * which attempts to remove only the failing tests, but
-                         * turns out to be too imprecise (since the same problem with various inputs
-                         * lead to the same token, for instance with token a, if you have multiple
-                         * failing iso_codes, and the user fix ONE of them, you need self::check
-                         * to only remove the ONE fixed item (and not all items).
-                         */
-                        self::check();
-
-//                    $_params = [];
-//                    if (false === self::executeTest($token, $_params)) {
-//                        self::removeError($token);
-//                    }
+                        unset($errors[$token]);
                     }
                 }
             }
-            if ($nbFixed > 0) {
+
+            if ($nbMatch > 0) {
                 EkomSession::set("sanity_check", $errors);
             }
-            return $nbFixed;
+
+            return $nbMatch;
         }
 
     }
@@ -261,7 +252,7 @@ class ApplicationSanityCheckUtil
     }
 
 
-    private static function getTableByToken($token)
+    private static function getTriggerTableByToken($token)
     {
         return self::$token2table[$token];
     }
@@ -273,37 +264,12 @@ class ApplicationSanityCheckUtil
      * @return bool
      * @throws EkomException
      */
-    private static function executeTest($token, array &$params = [])
+    private static function executeTest($token, array &$tags = [])
     {
-        $table = self::getTableByToken($token);
+        $table = self::getTriggerTableByToken($token);
         switch ($token) {
             case "a":
-                /**
-                 * Check that all entries in ek_country have at least one lang bound to it (in ek_country_lang)
-                 */
-                $rows = QuickPdo::fetchAll("
-select 
-c.id, 
-c.iso_code,
-l.lang_id
-
-from ek_country c 
-left join ek_country_lang l on l.country_id=c.id 
-where l.lang_id is null
-
-        
-        ");
-                if (count($rows) > 0) {
-                    $codes = array_map(function ($v) {
-                        return $v['iso_code'];
-                    }, $rows);
-                    $sCodes = implode(', ', $codes);
-                    $params = [
-                        'codes' => $sCodes,
-                    ];
-                    return false;
-                }
-                return true;
+                return self::executeMissingTranslationTest("ek_country", "ek_country_lang", "iso_code", "country_id", $tags);
                 break;
             case "b":
             case "c":
@@ -322,9 +288,12 @@ where l.lang_id is null
                 if ($count > 0) {
                     return true;
                 }
-                $params["table"] = $table;
-                $params["word"] = self::getWordByTable($table);
+                $tags["table"] = $table;
+                $tags["word"] = self::getWordByTable($table);
                 return false;
+                break;
+            case "o":
+                return self::executeMissingTranslationTest("ek_category", "ek_category_lang", "name", "category_id", $tags);
                 break;
             default:
                 break;
@@ -338,5 +307,36 @@ where l.lang_id is null
         $p = explode("_", $table);
         array_shift($p);
         return implode(' ', $p);
+    }
+
+
+    private static function executeMissingTranslationTest($table, $translationTable, $column, $translationTableFk, array &$tags = [])
+    {
+        /**
+         * Check that all entries in ek_country have at least one lang bound to it (in ek_country_lang)
+         */
+        $rows = QuickPdo::fetchAll("
+select 
+c.id, 
+c.$column,
+l.lang_id
+
+from $table c 
+left join $translationTable l on l.$translationTableFk=c.id 
+where l.lang_id is null
+
+        
+        ");
+        if (count($rows) > 0) {
+            $codes = array_map(function ($v) use ($column) {
+                return $v[$column];
+            }, $rows);
+            $sCodes = implode(', ', $codes);
+            $tags = [
+                'codes' => $sCodes,
+            ];
+            return false;
+        }
+        return true;
     }
 }

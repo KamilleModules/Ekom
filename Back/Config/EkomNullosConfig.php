@@ -73,6 +73,18 @@ class EkomNullosConfig
                     "route" => "NullosAdmin_Ekom_ShopMix_CurrencyForm",
                 ];
                 break;
+            case "tax":
+                $item = [
+                    "label" => "Tax",
+                    "route" => "NullosAdmin_Ekom_Tax_Form",
+                ];
+                break;
+            case "tax_translation":
+                $item = [
+                    "label" => "Tax Translation",
+                    "route" => "NullosAdmin_Ekom_TaxTranslation_Form",
+                ];
+                break;
             default:
                 break;
         }
