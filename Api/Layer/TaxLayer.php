@@ -36,6 +36,12 @@ class TaxLayer
 {
 
 
+    public static function getTaxAmountById($taxId){
+        return QuickPdo::fetch("
+select amount from ek_tax where id=$taxId        
+        ", [], \PDO::FETCH_COLUMN);
+    }
+
     public static function getModeItems()
     {
         return [

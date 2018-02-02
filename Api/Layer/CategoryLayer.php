@@ -25,6 +25,18 @@ use QuickPdo\QuickPdo;
 class CategoryLayer
 {
 
+
+    public static function deleteCategory($categoryId, $shopId = null)
+    {
+        $whereConds = [
+            ["id", "=", $categoryId],
+        ];
+        if (null !== $shopId) {
+            $whereConds[] = ["shop_id", "=", $shopId];
+        }
+        QuickPdo::delete("ek_category", $whereConds);
+    }
+
     public static function getLastChildrenInfo($categoryId)
     {
         $categoryId = (int)$categoryId;
@@ -46,20 +58,44 @@ order by `order` desc
             case "before":
             case "after":
                 $parentId = CategoryLayer::getParentCategoryIdById($targetId);
-                $childrenIds = CategoryLayer::getChildrenIds($parentId, $shopId, $langId, true);
 
-                $newChildrenIds = $childrenIds;
-                $index = array_search($targetId, $newChildrenIds);
 
-                if ('before' === $mode) {
-                    array_splice($newChildrenIds, $index, 0, $sourceId);
-                } elseif ('after' === $mode) {
-                    array_splice($newChildrenIds, $index + 1, 0, $sourceId);
+                $childrenItems = CategoryCoreLayer::create()->getSelfAndChildrenByCategoryId($parentId, 1, $shopId, $langId, [
+                    'order' => ["order", "asc"],
+                ], true);
+                array_shift($childrenItems);
+                $childrenId2Order = [];
+                $targetOrder = 0;
+                foreach ($childrenItems as $item) {
+                    $childrenId2Order[$item['id']] = $item['order'];
+                    if ((int)$item['id'] === (int)$targetId) {
+                        $targetOrder = $item['order'];
+                    }
+                }
+
+                $newTargetOrder = $targetOrder;
+
+                if ('after' === $mode) {
+                    $newTargetOrder += 1;
                 }
 
 
-                QuickPdo::update("ek_category", [], []);
+                $shopId = (int)$shopId;
 
+                $q = "
+update ek_category set `order` = `order`+1
+where shop_id=$shopId  
+and category_id=$parentId
+and `order` >= $newTargetOrder
+    ";
+
+                QuickPdo::freeQuery($q);
+                QuickPdo::update("ek_category", [
+                    'category_id' => $parentId,
+                    'order' => $newTargetOrder,
+                ], [
+                    ["id", "=", $sourceId],
+                ]);
 
                 return true;
                 break;
@@ -829,7 +865,8 @@ cl.category_id,
 cl.label,
 cl.slug,
 cl.description,
-c.name
+c.name,
+c.order
 
 from ek_category c 
 inner join ek_category_lang cl on cl.category_id=c.id 
@@ -1051,13 +1088,18 @@ select
 cl.category_id,
 cl.label,
 cl.slug,
-c.name
+c.name,
+c.order
 
 from ek_category c 
 inner join ek_category_lang cl on cl.category_id=c.id 
   
 where c.category_id=$categoryId
 and c.id != $categoryId
+
+order by c.order asc
+
+
             ");
         foreach ($rows as $row) {
 
