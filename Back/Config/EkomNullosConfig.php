@@ -76,13 +76,13 @@ class EkomNullosConfig
             case "tax":
                 $item = [
                     "label" => "Tax",
-                    "route" => "NullosAdmin_Ekom_Tax_Form",
+                    "route" => false,
                 ];
                 break;
             case "tax_translation":
                 $item = [
                     "label" => "Tax Translation",
-                    "route" => "NullosAdmin_Ekom_TaxTranslation_Form",
+                    "route" => false,
                 ];
                 break;
             default:
