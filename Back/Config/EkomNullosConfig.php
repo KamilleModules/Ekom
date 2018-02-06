@@ -61,6 +61,18 @@ class EkomNullosConfig
                     "route" => "NullosAdmin_Ekom_PaymentMethod_List",
                 ];
                 break;
+            case "product_attribute":
+                $item = [
+                    "label" => "Product attribute",
+                    "route" => false,
+                ];
+                break;
+            case "product_attribute_translation":
+                $item = [
+                    "label" => "Product attribute translation",
+                    "route" => false,
+                ];
+                break;
             case "shopmix":
                 $item = [
                     "label" => "Shop Mix",
@@ -82,6 +94,18 @@ class EkomNullosConfig
             case "tax_translation":
                 $item = [
                     "label" => "Tax Translation",
+                    "route" => false,
+                ];
+                break;
+            case "user":
+                $item = [
+                    "label" => "User",
+                    "route" => false,
+                ];
+                break;
+            case "user_group":
+                $item = [
+                    "label" => "User group",
                     "route" => false,
                 ];
                 break;

@@ -10,6 +10,7 @@ use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
@@ -53,6 +54,57 @@ use QuickPdo\QuickPdo;
  */
 class DiscountLayer
 {
+
+    public static function getItemsByShopId($shopId, $langId)
+    {
+        $shopId = (int)$shopId;
+        $langId = (int)$langId;
+        return QuickPdo::fetchAll("
+select d.id, l.label 
+from ek_discount d 
+inner join ek_discount_lang l on l.discount_id=d.id
+where d.shop_id=$shopId
+and l.lang_id=$langId
+        
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
+
+
+    public static function countDiscountByShopId($shopId)
+    {
+        $shopId = (int)$shopId;
+        return QuickPdo::fetch("
+select count(*) as count 
+from ek_discount 
+where shop_id=$shopId        
+        ", [], \PDO::FETCH_COLUMN);
+    }
+
+
+
+    public static function getHumanIdentifier($discountId)
+    {
+        $discountId = (int)$discountId;
+        $s = "";
+        if (false !== ($row = QuickPdo::fetch("select * from ek_discount where id=$discountId"))) {
+            $type = $row['type'];
+            switch ($type) {
+                case "percent":
+                    $s = $row['operand'] . "% (" . $row['target'] . ")";
+                    break;
+                case "amount":
+                    // we want symbolic representation here
+                    $s = E::price($row['operand'], false) .  " (" . $row['target'] . ")";
+                    break;
+                default:
+                    throw new \Exception("Unknown discount type: $type");
+                    break;
+            }
+        }
+        return $s;
+    }
 
     public static function getBadge(array $discount)
     {

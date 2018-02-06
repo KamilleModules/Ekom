@@ -68,6 +68,12 @@ and cl.lang_id=$langId
         return QuickPdo::fetch("select * from ek_coupon where id=$id");
     }
 
+    public static function getCouponCodeById($id)
+    {
+        $id = (int)$id;
+        return QuickPdo::fetch("select code from ek_coupon where id=$id", [], \PDO::FETCH_COLUMN);
+    }
+
     /**
      *
      * Apply coupon(s) (or not) to the given cartModel (as defined at the top of the CartLayer class).

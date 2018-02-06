@@ -36,7 +36,9 @@ class TaxLayer
 {
 
 
-    public static function getTaxAmountById($taxId){
+    public static function getTaxAmountById($taxId)
+    {
+        $taxId = (int)$taxId;
         return QuickPdo::fetch("
 select amount from ek_tax where id=$taxId        
         ", [], \PDO::FETCH_COLUMN);

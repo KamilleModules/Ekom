@@ -37,6 +37,10 @@ context vars
 
 The context vars represent the default environment the admin user is interacting with.    
 
+The shop should be chosen first.
+Then the currency is the display currency: the currency in which prices will be displayed in 
+the back office, not the shop.base_currency_id!
+
 
 
 Those are stored in the nullos user's storage (in the php session, nullos key),

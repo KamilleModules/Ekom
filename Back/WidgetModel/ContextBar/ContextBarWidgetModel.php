@@ -14,16 +14,25 @@ class ContextBarWidgetModel
 {
     public static function getModel()
     {
+
+        $shopIsSet = QuickStartWizard::isShopSet();
+        if (true === $shopIsSet) {
+            $currencies = CurrencyLayer::getCurrencyEntriesByShopId(EkomNullosUser::getEkomValue("shop_id"));
+        } else {
+            $currencies = "Veuillez d'abord choisir le shop";
+        }
+
+
         return [
             'shopHost' => EkomNullosUser::getEkomValue("shop_host", null),
             'currencyIsoCode' => EkomNullosUser::getEkomValue("currency_iso_code", null),
             'langIsoCode' => EkomNullosUser::getEkomValue("lang_iso_code", null),
             //
             'currencyIsSet' => QuickStartWizard::isCurrencySet(),
-            'shopIsSet' => QuickStartWizard::isShopSet(),
+            'shopIsSet' => $shopIsSet,
             'langIsSet' => QuickStartWizard::isLangSet(),
             'shops' => ShopLayer::getShopEntries(),
-            'currencies' => CurrencyLayer::getCurrencyEntries(),
+            'currencies' => $currencies,
             'languages' => LangLayer::getLangEntries(),
         ];
     }

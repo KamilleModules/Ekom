@@ -19,6 +19,7 @@ use Kamille\Services\XConfig;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
+use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\JsApiLoader\EkomJsApiLoader;
 use Module\Ekom\Notifier\EkomNotifier;
@@ -34,6 +35,13 @@ class E
 {
 
     private static $conf = null;
+
+
+    public static function isBackOffice()
+    {
+
+        return ApplicationRegistry::get("isBackoffice", false);
+    }
 
 
     public static function uriSite()
@@ -343,8 +351,11 @@ class E
     /**
      * Return a price formatted according to the shop settings.
      */
-    public static function price($number)
+    public static function price($number, $convertPrice = true)
     {
+        if (true === $convertPrice) {
+            $number = self::priceRealValue($number);
+        }
         $moneyFormatArgs = self::conf("moneyFormatArgs");
         return self::formatPrice($number, $moneyFormatArgs);
     }
@@ -475,5 +486,16 @@ class E
             $moneySymbol,
         ], $moneyFormat);
         return $ret;
+    }
+
+    private static function priceRealValue($number)
+    {
+        if (E::isBackOffice()) {
+            $rate = EkomNullosUser::getEkomValue("currency_exchange_rate");
+        } else {
+            $rate = 1;
+            XLog::error("not implemented yet: exchange rate in front");
+        }
+        return round($number * $rate, 2);
     }
 }

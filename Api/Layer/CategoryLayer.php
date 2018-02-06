@@ -26,6 +26,7 @@ class CategoryLayer
 {
 
 
+
     public static function deleteCategory($categoryId, $shopId = null)
     {
         $whereConds = [
