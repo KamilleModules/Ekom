@@ -19,7 +19,41 @@ class ProductCardLayer
 {
 
 
-    public static function getProductCardIdByRef($ref){
+    public static function getItems()
+    {
+        $ret = [];
+        $rows = QuickPdo::fetchAll("
+select 
+cl.product_card_id, cl.label, cl.slug 
+from ek_product_card_lang cl 
+inner join ek_product p on p.product_card_id=cl.product_card_id
+");
+        foreach ($rows as $row) {
+            $s = self::getRepresentationByLabelSlug($row['label'], $row['slug']);
+            $ret[$row["product_card_id"]] = $row["product_card_id"] . ". " . $s;
+        }
+        return $ret;
+    }
+
+
+    public static function getRepresentationById($id)
+    {
+        $id = (int)$id;
+        $s = null;
+        if (false !== ($info = QuickPdo::fetch("select label, slug from ek_product_card_lang
+where product_card_id=$id
+"))) {
+            $s = self::getRepresentationByLabelSlug($info['label'], $info['slug']);
+        }
+        if (!$s) {
+            $s = "(all empty)";
+        }
+        return $s;
+    }
+
+
+    public static function getProductCardIdByRef($ref)
+    {
         return QuickPdo::fetch("select product_card_id from ek_product where reference=:ref", [
             'ref' => $ref,
         ], \PDO::FETCH_COLUMN);
@@ -190,6 +224,26 @@ and l.lang_id=$langId
                 $deletedIds[] = $id;
             }
         }
+    }
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    private static function getRepresentationByLabelSlug($label, $slug)
+    {
+        $s = null;
+        if ('' !== trim($label)) {
+            $s = $label;
+        } elseif ($slug) {
+            {
+                $s = ':' . $slug;
+            }
+        }
+        if (!$s) {
+            $s = "(all empty)";
+        }
+        return $s;
     }
 
 }

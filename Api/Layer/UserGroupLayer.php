@@ -12,6 +12,16 @@ class UserGroupLayer
 {
 
 
+
+    public static function getEntries()
+    {
+        return QuickPdo::fetchAll('
+select id, name
+from ek_user_group
+', [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
     public static function userHasGroup($groupName, $userId = null)
     {
         $userId = E::getUserId($userId);

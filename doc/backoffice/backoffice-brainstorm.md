@@ -38,8 +38,17 @@ context vars
 The context vars represent the default environment the admin user is interacting with.    
 
 The shop should be chosen first.
+
+Then the lang is the lang used to visualize the backoffice.
+For instance if you display an user address, then the country label is displayed using
+the selected lang.
+
 Then the currency is the display currency: the currency in which prices will be displayed in 
 the back office, not the shop.base_currency_id!
+
+
+
+
 
 
 
@@ -289,6 +298,59 @@ update mode ("update this line" button).
 
 
 
+pivot links
+================
+2018-02-07
+
+
+Pivot links is a gui tool used in forms.
+
+
+Characteristics
+-------------------
+
+- Pivot links are created inside forms only (not lists).
+- a pivot link is actually a button
+- when you click on a pivot link, it opens a new tab in the browser, where you can manage the dependencies of a source object
+        For instance, if your source object is an user, then you can put a pivot link pointing to a page where
+        you can manage the addresses (dependencies) related to that user.
+
+
+
+Benefits
+--------------
+
+Some benefits related to the pivot links are:
+
+- it doesn't take much space (it's just a button)
+- you can attach multiple pivot links to an object, thus making the gui more powerful
+- it tends to keep things simple (close to the original database schema)
+
+
+
+For aesthetics reasons, pivot links are often (if not always) dispensed as formAfterElements (see next section)
+
+
+Form after elements
+=======================        
+2018-02-07
+
+
+The idea with formAfterElement (fae) is that a form might contain more than one element.
+
+The mandatory element of a form is the form itself, but then the developer might want to add various elements
+after the form. For instance, pivot links, related lists, separators, tips, ...what do I know...
+
+
+For aesthetics reasons; in order to be able to arrange those after elements, we put them in an array called
+formAfterElements.
+
+The main benefit of doing so is to be able to decide in which order those elements appear.        
+
+To make things more homogeneous, each fae has the same structure; it's an array with the following entries:
+
+- type: pivotLink|...
+- ...depends on the type
 
         
 
@@ -304,46 +366,3 @@ update mode ("update this line" button).
 
 
  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

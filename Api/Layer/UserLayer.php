@@ -51,6 +51,11 @@ use QuickPdo\QuickPdoExceptionTool;
 class UserLayer
 {
 
+    public static function getUserRepresentationById($id)
+    {
+        $id = (int)$id;
+        return QuickPdo::fetch("select email from ek_user where id=$id", [], \PDO::FETCH_COLUMN);
+    }
 
     /**
      * @param $hash
@@ -67,7 +72,6 @@ class UserLayer
                 QuickPdo::update("ek_user", ['active' => 1], [
                     ['id', "=", $info['id']],
                 ]);
-
 
 
                 $email = $info['email'];

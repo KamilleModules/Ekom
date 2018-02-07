@@ -9,7 +9,7 @@ class EkomNullosConfig
     public static function getBreadcrumbItem($pageName)
     {
         $item = [
-            "label" => "Unknown",
+            "label" => "Unknown ($pageName)",
             "route" => "NullosAdmin_home",
         ];
         switch ($pageName) {
@@ -73,6 +73,24 @@ class EkomNullosConfig
                     "route" => false,
                 ];
                 break;
+            case "product":
+                $item = [
+                    "label" => "Product",
+                    "route" => false,
+                ];
+                break;
+            case "product_card":
+                $item = [
+                    "label" => "Product card",
+                    "route" => false,
+                ];
+                break;
+            case "product_card_lang":
+                $item = [
+                    "label" => "Product card lang",
+                    "route" => false,
+                ];
+                break;
             case "shopmix":
                 $item = [
                     "label" => "Shop Mix",
@@ -100,6 +118,24 @@ class EkomNullosConfig
             case "user":
                 $item = [
                     "label" => "User",
+                    "route" => false,
+                ];
+                break;
+            case "user_address":
+                $item = [
+                    "label" => "User address",
+                    "route" => false,
+                ];
+                break;
+            case "user_has_address":
+                $item = [
+                    "label" => "User has address",
+                    "route" => false,
+                ];
+                break;
+            case "user_has_user_group":
+                $item = [
+                    "label" => "User has group",
                     "route" => false,
                 ];
                 break;
