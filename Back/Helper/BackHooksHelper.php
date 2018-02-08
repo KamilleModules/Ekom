@@ -12,7 +12,9 @@ use Models\AdminSidebarMenu\Lee\Objects\Section;
 use Module\Ekom\Api\Layer\CurrencyLayer;
 use Module\Ekom\Api\Layer\InvoiceLayer;
 use Module\Ekom\Api\Layer\LangLayer;
+use Module\Ekom\Api\Layer\ProductLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
+use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
@@ -33,7 +35,7 @@ class BackHooksHelper
             ->addItem(Item::create()
                 ->setActive(true)
                 ->setName("catalog")
-                ->setLabel("Catalog")
+                ->setLabel("Catalogue")
                 ->setIcon("fa fa-book")
                 ->setLink("#")
                 ->addItem(Item::create()
@@ -179,6 +181,32 @@ class BackHooksHelper
                         ->setLink(N::link("NullosAdmin_Ekom_ProductAttributeValue_List"))
                     )
                 )
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("product_feature_container")
+                    ->setLabel("Product feature")
+                    ->setIcon("fa fa-cogs")
+                    ->setLink("#")
+                    ->addItem(Item::create()
+                        ->setActive(true)
+                        ->setName("feature")
+                        ->setLabel("Product feature")
+                        ->setLink(N::link("NullosAdmin_Ekom_Feature_List"))
+                    )
+                    ->addItem(Item::create()
+                        ->setActive(true)
+                        ->setName("feature_value")
+                        ->setLabel("Product feature value")
+                        ->setLink(N::link("NullosAdmin_Ekom_FeatureValue_List"))
+                    )
+                )
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("product_comment")
+                    ->setLabel("Product comment")
+                    ->setIcon("fa fa-comments-o")
+                    ->setLink(N::link("NullosAdmin_Ekom_ProductComment_List"))
+                )
             )
             ->addItem(Item::create()
                 ->setActive(true)
@@ -257,5 +285,112 @@ where email=:email
             'currency_id' => $currencyId,
             'currency_iso_code' => $currencyIsoCode,
         ];
+    }
+
+
+    public static function NullosAdmin_SokoForm_NullosBootstrapRenderer_AutocompleteInitialValue(&$label, $action, $value)
+    {
+        if ($value) {
+
+            $langId = EkomNullosUser::getEkomValue("lang_id");
+
+            switch ($action) {
+                case "auto.address":
+                    $value = (int)$value;
+                    $label = QuickPdo::fetch("
+                    select 
+concat(
+  a.id, 
+  '. ',
+  a.first_name, 
+  ' ',
+  a.last_name, 
+  ' ',
+  a.address, 
+  ' ',
+  a.postcode, 
+  ' ',
+  a.city, 
+  ' ',
+  UPPER(l.label)
+  ) as label
+from ek_address a 
+inner join ek_country c on c.id=a.country_id
+inner join ek_country_lang l on l.country_id=c.id
+where a.id=$value
+and l.lang_id=$langId
+             
+                    ", [], \PDO::FETCH_COLUMN);
+                    break;
+                case "auto.category":
+                    $value = (int)$value;
+                    $label = QuickPdo::fetch("
+select 
+concat(
+  id, 
+  '. ',
+  `name`
+  ) as label
+from ek_category  
+where 
+id=$value
+", [], \PDO::FETCH_COLUMN);
+                    break;
+                case "auto.discount":
+                    $value = (int)$value;
+                    $label = QuickPdo::fetch("
+select 
+l.label
+from ek_discount d 
+inner join ek_discount_lang l on l.discount_id=d.id
+where 
+d.id=$value
+and l.lang_id=$langId
+", [], \PDO::FETCH_COLUMN);
+                    break;
+                case "auto.product":
+                    $label = ProductLayer::getReferenceByProductId($value);
+                    break;
+                case "auto.product_card":
+                    $value = (int)$value;
+                    $label = QuickPdo::fetch("
+select 
+concat (product_card_id, '. ', label) as label
+from ek_product_card_lang  
+where 
+product_card_id=$value
+and lang_id=$langId
+", [], \PDO::FETCH_COLUMN);
+                    break;
+                case "auto.user":
+                    $value = (int)$value;
+                    $label = QuickPdo::fetch("
+select 
+concat (
+CASE WHEN first_name != '' OR last_name != ''
+THEN
+concat(first_name, ' ', last_name, ':')
+ELSE
+''
+END,
+email,
+CASE WHEN pseudo != ''
+THEN
+concat(' (', pseudo, ')')
+ELSE
+''
+END 
+
+
+
+) as label
+from ek_user  
+where id=$value
+", [], \PDO::FETCH_COLUMN);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }

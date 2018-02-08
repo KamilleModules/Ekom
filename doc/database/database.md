@@ -836,6 +836,15 @@ Label, description and slug can be overridden at the shop level with the shop_ha
 ek_product_has_product_attribute
 =================
 
+
+- product_id: pk, uk1
+- product_attribute_id: pk, uk1
+- product_attribute_value_id: pk
+- order: number
+
+
+
+
 Binding product to attributes.
 
 Note that products are bound to attributes and values regardless of the 

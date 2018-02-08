@@ -357,6 +357,56 @@ To make things more homogeneous, each fae has the same structure; it's an array 
 
 
 
+Nullos reactive components
+==========================
+2018-02-08
+
+
+A reactive component is a form element which listens to another element event to populate itself.
+The most common example of reactive component is also known as chained select, where when you select the country
+in a select box, the city select box refreshes.
+
+
+The approach of this chained select problem using the reactive component illustrates the reactive component mechanism
+perfectly. The implementation is the following:
+
+- create a regular select box for the countries
+- then create a reactive select box for the cities.
+- the reactive select box comes with a js wrapper that listens to the countries.
+        When countries is changed, the reactive select box fetches the cities, using a configured ajax service.
+        The ajax service returns json items used to populate the cities reactive select box.
+        
+        
+In ekom, this is used in the backoffice with 
+the product has feature table (feature values depends on the selected feature).
+        
+        
+        
+Menu organization
+=====================
+2018-02-08
+
+
+Some random thoughts about the menu organization.
+
+There are the following main items:
+
+- catalog
+- products modelization (fabrique des produits)
+
+
+The main difference is that the products modelization is general to the whole ekom module, it's not bound 
+to a shop in particular, whereas the catalog is always specific to the shop_id defined in the context (learn
+more about context at the top of this document).
+
+One should always start with products modelization, THEN only the catalog.
+In fact, products modelized can be used by any shop.
+
+ 
+
+
+
+
 
 
 

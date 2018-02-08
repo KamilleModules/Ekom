@@ -43,6 +43,24 @@ class EkomNullosConfig
                     "route" => "NullosAdmin_Ekom_CountryTranslation_List",
                 ];
                 break;
+            case "feature":
+                $item = [
+                    "label" => "Feature",
+                    "route" => false,
+                ];
+                break;
+            case "feature_lang":
+                $item = [
+                    "label" => "Feature lang",
+                    "route" => false,
+                ];
+                break;
+            case "feature_value":
+                $item = [
+                    "label" => "Feature value",
+                    "route" => false,
+                ];
+                break;
             case "lang":
                 $item = [
                     "label" => "Lang",
@@ -88,6 +106,30 @@ class EkomNullosConfig
             case "product_card_lang":
                 $item = [
                     "label" => "Product card lang",
+                    "route" => false,
+                ];
+                break;
+            case "product_comment":
+                $item = [
+                    "label" => "Product comment",
+                    "route" => false,
+                ];
+                break;
+            case "product_has_product_attribute":
+                $item = [
+                    "label" => "Product has attribute",
+                    "route" => false,
+                ];
+                break;
+            case "product_has_feature":
+                $item = [
+                    "label" => "Product has feature",
+                    "route" => false,
+                ];
+                break;
+            case "product_lang":
+                $item = [
+                    "label" => "Product lang",
                     "route" => false,
                 ];
                 break;

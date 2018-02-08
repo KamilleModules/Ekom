@@ -31,6 +31,17 @@ class ProductLayer
 {
 
 
+    public static function getReferenceByProductId($id)
+    {
+        $id = (int)$id;
+        return QuickPdo::fetch("
+select reference from ek_product where id=$id        
+        ", [], \PDO::FETCH_COLUMN);
+
+
+    }
+
+
     public static function getIds($shopId = null)
     {
         $shopId = E::getShopId($shopId);

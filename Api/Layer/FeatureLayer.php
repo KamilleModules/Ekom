@@ -12,6 +12,61 @@ use QuickPdo\QuickPdo;
 
 class FeatureLayer
 {
+
+
+    public static function getValueItems($langId, $featureId = null)
+    {
+        $langId = (int)$langId;
+
+        $q = '
+select f.id, concat (f.id, ". ", fl.value) as `value` 
+from ek_feature_value f 
+left join ek_feature_value_lang fl on fl.feature_value_id=f.id and fl.lang_id=' . $langId;
+        if (null !== $featureId) {
+            $featureId = (int)$featureId;
+            $q .= " where f.feature_id=$featureId";
+        }
+        return QuickPdo::fetchAll($q, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
+    public static function getItems($langId)
+    {
+        $langId = (int)$langId;
+        return QuickPdo::fetchAll('
+select f.id, concat (f.id, ". ", fl.name) as name 
+from ek_feature f 
+left join ek_feature_lang fl on fl.feature_id=f.id and fl.lang_id=' . $langId, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+    public static function getRepresentationById($featureId, $langId)
+    {
+        $featureId = (int)$featureId;
+        $langId = (int)$langId;
+        $res = QuickPdo::fetch("
+select name from ek_feature_lang where feature_id=$featureId and lang_id=$langId        
+        ", [], \PDO::FETCH_COLUMN);
+        if ($res) {
+            return $res;
+        }
+        return "#$featureId";
+    }
+
+
+    public static function getFeatureValueRepresentationById($featureValueId, $langId)
+    {
+        $featureValueId = (int)$featureValueId;
+        $langId = (int)$langId;
+        $res = QuickPdo::fetch("
+select value from ek_feature_value_lang where feature_value_id=$featureValueId and lang_id=$langId        
+        ", [], \PDO::FETCH_COLUMN);
+        if ($res) {
+            return $res;
+        }
+        return "#$featureValueId";
+    }
+
+
     public static function getFeaturesModelByProductId($productId, $shopId = null, $langId = null)
     {
         EkomApi::inst()->initWebContext();
