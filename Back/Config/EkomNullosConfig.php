@@ -12,6 +12,7 @@ class EkomNullosConfig
             "label" => "Unknown ($pageName)",
             "route" => "NullosAdmin_home",
         ];
+
         switch ($pageName) {
             case "admin":
                 $item = [
@@ -115,6 +116,18 @@ class EkomNullosConfig
                     "route" => false,
                 ];
                 break;
+            case "product_group":
+                $item = [
+                    "label" => "Product group",
+                    "route" => false,
+                ];
+                break;
+            case "product_group_has_product":
+                $item = [
+                    "label" => "Product group has product",
+                    "route" => false,
+                ];
+                break;
             case "product_has_product_attribute":
                 $item = [
                     "label" => "Product has attribute",
@@ -133,6 +146,24 @@ class EkomNullosConfig
                     "route" => false,
                 ];
                 break;
+            case "shop_has_product_lang":
+                $item = [
+                    "label" => "Shop has product translation",
+                    "route" => "NullosAdmin_Ekom_ShopHasProductLang_List",
+                ];
+                break;
+            case "shop_has_product":
+                $item = [
+                    "label" => "Shop has product",
+                    "route" => "NullosAdmin_Ekom_ShopHasProduct_List",
+                ];
+                break;
+            case "shop_has_product_has_tag":
+                $item = [
+                    "label" => "Shop has product tag",
+                    "route" => "NullosAdmin_Ekom_ShopHasProductTag_List",
+                ];
+                break;
             case "shopmix":
                 $item = [
                     "label" => "Shop Mix",
@@ -143,6 +174,12 @@ class EkomNullosConfig
                 $item = [
                     "label" => "Shop Mix Currency Form",
                     "route" => "NullosAdmin_Ekom_ShopMix_CurrencyForm",
+                ];
+                break;
+            case "tag":
+                $item = [
+                    "label" => "tag",
+                    "route" => "NullosAdmin_Ekom_Tag_List",
                 ];
                 break;
             case "tax":

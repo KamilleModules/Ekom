@@ -14,6 +14,15 @@ use QuickPdo\QuickPdo;
 class SellerLayer
 {
 
+    public static function getItems($shopId)
+    {
+        return QuickPdo::fetchAll("
+select id, name from ek_seller 
+where shop_id=$shopId
+order by name asc        
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
     public static function getIdByName($name, $shopId = null)
     {
         $shopId = E::getShopId($shopId);

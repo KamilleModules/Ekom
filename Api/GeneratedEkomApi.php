@@ -56,7 +56,6 @@ use Module\Ekom\Api\Object\ProductLang;
 use Module\Ekom\Api\Object\ProductPurchaseStat;
 use Module\Ekom\Api\Object\ProductType;
 use Module\Ekom\Api\Object\Provider;
-use Module\Ekom\Api\Object\ProviderHasShopHasProduct;
 use Module\Ekom\Api\Object\Seller;
 use Module\Ekom\Api\Object\SellerHasAddress;
 use Module\Ekom\Api\Object\Shop;
@@ -69,6 +68,7 @@ use Module\Ekom\Api\Object\ShopHasPaymentMethod;
 use Module\Ekom\Api\Object\ShopHasProduct;
 use Module\Ekom\Api\Object\ShopHasProductCard;
 use Module\Ekom\Api\Object\ShopHasProductCardLang;
+use Module\Ekom\Api\Object\ShopHasProductHasProvider;
 use Module\Ekom\Api\Object\ShopHasProductHasTag;
 use Module\Ekom\Api\Object\ShopHasProductLang;
 use Module\Ekom\Api\Object\Tag;
@@ -482,13 +482,6 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('provider');
     }
     /**
-     * @return ProviderHasShopHasProduct
-     */
-    public function providerHasShopHasProduct()
-    {
-        return $this->getObject('providerHasShopHasProduct');
-    }
-    /**
      * @return Seller
      */
     public function seller()
@@ -571,6 +564,13 @@ class GeneratedEkomApi extends XiaoApi
     public function shopHasProductCardLang()
     {
         return $this->getObject('shopHasProductCardLang');
+    }
+    /**
+     * @return ShopHasProductHasProvider
+     */
+    public function shopHasProductHasProvider()
+    {
+        return $this->getObject('shopHasProductHasProvider');
     }
     /**
      * @return ShopHasProductHasTag

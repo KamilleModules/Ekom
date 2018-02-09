@@ -11,6 +11,20 @@ use QuickPdo\QuickPdo;
 class ProductGroupLayer
 {
 
+
+
+    public static function getReferenceByGroupId($id)
+    {
+        $id = (int)$id;
+        return QuickPdo::fetch("
+select name from ek_product_group where id=$id        
+        ", [], \PDO::FETCH_COLUMN);
+
+
+    }
+
+
+
     public static function getAllGroupNames($shopId = null)
     {
         $shopId = E::getShopId($shopId);

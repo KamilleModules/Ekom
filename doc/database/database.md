@@ -1720,16 +1720,17 @@ He is the supplier of the shop owner (considered as the retailer in this case).
 - name: uq1
 
 
-ek_provider_has_shop_has_product
+ek_shop_has_product_has_provider
 ==================
 
 A provider can provide multiple products.
 The same product can be provided by different providers.
 
 
+- shop_id: pk
+- product_id: pk
 - provider_id: pk
-- shop_has_product_shop_id: pk
-- shop_has_product_product_id: pk
+- wholesale_price: number
 
 
 ek_manufacturer

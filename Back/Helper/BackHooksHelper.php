@@ -34,16 +34,37 @@ class BackHooksHelper
             ->setActive(true)
             ->addItem(Item::create()
                 ->setActive(true)
+                ->setName("marketing")
+                /**
+                 * Will contain:
+                 * - discounts
+                 * - coupons
+                 * - bundle
+                 * - groups (although this one could be in management)
+                 */
+                ->setLabel("Marketing")
+                ->setIcon("fa fa-crosshairs")
+                ->setLink("#")
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("product_group")
+                    ->setLabel("Groupes de produits")
+                    ->setIcon("fa fa-th-large")
+                    ->setLink(N::link("NullosAdmin_Ekom_ProductGroup_List"))
+                )
+            )
+            ->addItem(Item::create()
+                ->setActive(true)
                 ->setName("catalog")
                 ->setLabel("Catalogue")
                 ->setIcon("fa fa-book")
                 ->setLink("#")
                 ->addItem(Item::create()
                     ->setActive(true)
-                    ->setName("tags")
-                    ->setLabel("Tags")
-                    ->setIcon("fa fa-tags")
-                    ->setLink(N::link("NullosAdmin_Ekom_Tags_List"))
+                    ->setName("catalog_products_container")
+                    ->setLabel("Products")
+                    ->setIcon("fa fa-dot-circle-o")
+                    ->setLink(N::link("NullosAdmin_Ekom_ProductGroup_List"))
                 )
             )
             ->addItem(Item::create()
@@ -207,6 +228,13 @@ class BackHooksHelper
                     ->setIcon("fa fa-comments-o")
                     ->setLink(N::link("NullosAdmin_Ekom_ProductComment_List"))
                 )
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("tags")
+                    ->setLabel("Tags")
+                    ->setIcon("fa fa-tags")
+                    ->setLink(N::link("NullosAdmin_Ekom_Tag_List"))
+                )
             )
             ->addItem(Item::create()
                 ->setActive(true)
@@ -349,7 +377,26 @@ and l.lang_id=$langId
 ", [], \PDO::FETCH_COLUMN);
                     break;
                 case "auto.product":
-                    $label = ProductLayer::getReferenceByProductId($value);
+                    $value = (int)$value;
+                    $label = QuickPdo::fetch("
+select
+concat( 
+case when pl.label is not null and pl.label != '' 
+then
+concat (pl.label, '. ')
+else 
+''
+end, 
+concat ('ref=', p.reference)
+) as label
+
+from ek_product p
+left join ek_product_lang pl on pl.product_id=p.id
+
+ 
+where 
+p.id=$value
+", [], \PDO::FETCH_COLUMN);
                     break;
                 case "auto.product_card":
                     $value = (int)$value;
@@ -360,6 +407,15 @@ from ek_product_card_lang
 where 
 product_card_id=$value
 and lang_id=$langId
+", [], \PDO::FETCH_COLUMN);
+                    break;
+                case "auto.tag":
+                    $value = (int)$value;
+                    $label = QuickPdo::fetch("
+select 
+concat (t.id, '. ', t.name) as label
+from ek_tag t  
+where t.id=$value
 ", [], \PDO::FETCH_COLUMN);
                     break;
                 case "auto.user":

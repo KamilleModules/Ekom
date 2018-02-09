@@ -11,6 +11,20 @@ use QuickPdo\QuickPdo;
 class ProductTypeLayer
 {
 
+
+
+    public static function getItems($shopId)
+    {
+        return QuickPdo::fetchAll("
+select id, name from ek_product_type 
+where shop_id=$shopId
+order by name asc        
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
+
+
     public function getProductIdsByProductType($productType, $shopId = null)
     {
         EkomApi::inst()->initWebContext();
