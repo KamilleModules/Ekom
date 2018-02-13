@@ -14,6 +14,13 @@ use QuickPdo\QuickPdo;
 class SellerLayer
 {
 
+
+    public static function getRowAvatar($sellerId)
+    {
+        return self::getNameById($sellerId);
+    }
+
+
     public static function getItems($shopId)
     {
         return QuickPdo::fetchAll("

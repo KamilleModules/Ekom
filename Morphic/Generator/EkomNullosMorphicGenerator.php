@@ -7,6 +7,7 @@ namespace Module\Ekom\Morphic\Generator;
 use ArrayToString\ArrayToStringTool;
 use Bat\FileSystemTool;
 use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
+use Module\Ekom\Morphic\Generator\ConfigFile\EkomFormConfigFileGenerator;
 use Module\NullosAdmin\Morphic\Generator\NullosMorphicGenerator;
 
 class EkomNullosMorphicGenerator extends NullosMorphicGenerator
@@ -18,6 +19,7 @@ class EkomNullosMorphicGenerator extends NullosMorphicGenerator
     {
         parent::__construct();
         $this->configFileDir = ApplicationParameters::get("app_dir") . "/config/morphic/Ekom/generated/form";
+        $this->setFormConfigFileGen(EkomFormConfigFileGenerator::create());
     }
 
 
