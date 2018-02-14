@@ -4,7 +4,10 @@
 namespace Module\Ekom\Morphic\Generator\ConfigFile;
 
 
+use Bat\CaseTool;
 use Module\NullosAdmin\Morphic\Generator\ConfigFile\NullosFormConfigFileGenerator;
+use PhpFile\PhpFile;
+use QuickPdo\QuickPdo;
 
 class EkomFormConfigFileGenerator extends NullosFormConfigFileGenerator
 {
@@ -28,9 +31,112 @@ EEE;
     }
 
 
-    protected function getPivotLinkRoute(array $operation, array $config)
+    protected function getPivotLinkRoute($table)
     {
-        $Camel = $operation['CamelCase'];
+        if (0 === strpos($table, 'ek_')) {
+            $table = substr($table, 3);
+        }
+        $Camel = CaseTool::snakeToFlexiblePascal($table);
         return "NullosAdmin_Ekom_" . $Camel . "_List";
     }
+
+
+    protected function getPivotLinkLabels($table, array $operation)
+    {
+        return $this->getPivotLinkLabelsByPrefix("ek_", $table, $operation);
+    }
+
+
+
+    //--------------------------------------------
+    // CONTROL SPECIFIC
+    //--------------------------------------------
+    protected function doPrepareColumnControl(PhpFile $file, $params, array $config)
+    {
+        $type = $params['type'];
+        $col = $params['column'];
+        $label = $params['label'];
+
+
+        switch ($type) {
+            case "date":
+
+                $file->addUseStatement(<<<EEE
+use Module\Ekom\SokoForm\Control\EkomSokoDateControl;
+EEE
+                );
+
+                $file->addBodyStatement(<<<EEE
+        ->addControl(EkomSokoDateControl::create()
+            ->setName("$col")
+            ->setLabel('$label')
+        )
+EEE
+                );
+                return true;
+                break;
+        }
+
+
+        return false;
+    }
+
+
+    protected function doPrepareForeignKeyControl(PhpFile $file, $params, array $config)
+    {
+
+
+        $col = $params['column'];
+        $label = $params['label'];
+        $isInRic = $params['isInRic'];
+
+
+        if ('shop_id' !== $col) {
+
+
+            $autocomplete2ServiceId = [];
+            if (array_key_exists("autoComplete", $config)) {
+                $autocomplete2ServiceId = $config['autoComplete'];
+            }
+
+
+            //--------------------------------------------
+            // auto complete
+            //--------------------------------------------
+            if (array_key_exists($col, $autocomplete2ServiceId)) {
+
+                $service = $autocomplete2ServiceId[$col];
+
+                $sValue = '';
+                if ($isInRic) {
+                    $sValue = '
+->setValue($' . $col . ')                
+                ';
+                }
+
+
+                $file->addBodyStatement(<<<EEE
+        ->addControl(SokoAutocompleteInputControl::create()
+            ->setAutocompleteOptions(BackFormHelper::createSokoAutocompleteOptions([
+                'action' => "$service",
+            ]))
+            ->setName("$col")
+            ->setLabel('$label')
+            ->setProperties([
+                'readonly' => \$isUpdate,
+            ])
+            $sValue
+        )
+EEE
+                );
+            }
+            //--------------------------------------------
+            // regular foreign key
+            //--------------------------------------------
+            else {
+                parent::doPrepareForeignKeyControl($file, $params, $config);
+            }
+        }
+    }
+
 }
