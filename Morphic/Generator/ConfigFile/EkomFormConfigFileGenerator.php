@@ -31,7 +31,7 @@ EEE;
     }
 
 
-    protected function getPivotLinkRoute($table)
+    protected function getPivotLinkRoute($table, array $dbPrefixes)
     {
         if (0 === strpos($table, 'ek_')) {
             $table = substr($table, 3);
@@ -41,9 +41,9 @@ EEE;
     }
 
 
-    protected function getPivotLinkLabels($table, array $operation)
+    protected function getPivotLinkLabels($table, array $operation, array $dbPrefixes)
     {
-        return $this->getPivotLinkLabelsByPrefix("ek_", $table, $operation);
+        return $this->getPivotLinkLabelsByPrefix($dbPrefixes, $table, $operation);
     }
 
 

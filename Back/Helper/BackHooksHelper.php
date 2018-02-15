@@ -3,22 +3,14 @@
 
 namespace Module\Ekom\Back\Helper;
 
-use Kamille\Architecture\Registry\ApplicationRegistry;
-use Kamille\Ling\Z;
+use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Models\AdminSidebarMenu\Lee\LeeAdminSidebarMenuModel;
-use Models\AdminSidebarMenu\Lee\Objects\Badge;
 use Models\AdminSidebarMenu\Lee\Objects\Item;
 use Models\AdminSidebarMenu\Lee\Objects\Section;
 use Module\Ekom\Api\Layer\CurrencyLayer;
-use Module\Ekom\Api\Layer\InvoiceLayer;
 use Module\Ekom\Api\Layer\LangLayer;
-use Module\Ekom\Api\Layer\ProductLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Back\User\EkomNullosUser;
-use Module\Ekom\Exception\EkomUserMessageException;
-use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
-use Module\Ekom\Utils\E;
-use Module\Ekom\Utils\Pdf\PdfHtmlInfoInterface;
 use Module\NullosAdmin\Utils\N;
 use QuickPdo\QuickPdo;
 
@@ -26,12 +18,61 @@ class BackHooksHelper
 {
 
 
+
+    public static function Ekom_Back_getElementAvatar(array &$avatar, $table, array $context=[])
+    {
+
+    }
+
+
+
+    public static function getGeneratedMenuLocation()
+    {
+        return ApplicationParameters::get("app_dir") . "/store/Ekom/Nullos/generated-menu.php";
+    }
+
+
+    public static function getGeneratedRoutesLocation()
+    {
+        return ApplicationParameters::get("app_dir") . "/store/Ekom/Nullos/generated-routes.php";
+    }
+
+
     public static function NullosAdmin_layout_sideBarMenuModelObject(LeeAdminSidebarMenuModel $sideBarMenuModel)
     {
-        $sideBarMenuModel->addSection(Section::create()
+
+
+        $section = Section::create()
             ->setName("ekom")
             ->setLabel("Ekom")
-            ->setActive(true)
+            ->setActive(true);
+        $sideBarMenuModel->addSection($section);
+
+
+        //--------------------------------------------
+        // GENERATED PART
+        //--------------------------------------------
+        $generatedItemFile = BackHooksHelper::getGeneratedMenuLocation();
+        if (file_exists($generatedItemFile)) {
+            /**
+             * Tip: use EkomNullosMorphicGenerator (the morphic-generator.php script) to
+             * generate the whole database in a short amount of time
+             */
+            $generatedItem = Item::create()
+                ->setActive(true)
+                ->setName("generated")
+                ->setLabel("Generated")
+                ->setIcon("fa fa-magic")
+                ->setLink("#");
+            include $generatedItemFile;
+            $section->addItem($generatedItem);
+        }
+
+
+        //--------------------------------------------
+        // EKOM PART
+        //--------------------------------------------
+        $section
             ->addItem(Item::create()
                 ->setActive(true)
                 ->setName("test")
@@ -298,8 +339,7 @@ class BackHooksHelper
                     ->setIcon("fa fa-medkit")
                     ->setLink(N::link("NullosAdmin_Ekom_Tools_AppSanityCheck"))
                 )
-            )
-        );
+            );
     }
 
     public static function NullosAdmin_User_hasRight(&$hasRight, $privilege)
