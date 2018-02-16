@@ -30,11 +30,39 @@ class EkomListConfigFileGenerator extends NullosListConfigFileGenerator
     }
 
 
-    protected function getSqlQuery(array $operation, array $config, array $contextCols=[])
+    protected function getSqlQuery(array $operation, array $config, array $contextCols = [])
     {
         if ("something") {
 
         }
         return parent::getSqlQuery($operation, $config, $contextCols);
     }
+
+
+    protected function onPhpFileReady(PhpFile $file, array $operation)
+    {
+        $columnTypes = $operation['columnTypes'];
+        if (array_key_exists("shop_id", $columnTypes)) {
+            $file->addHeadStatement(<<<EEE
+\$shop_id = EkomNullosUser::getEkomValue("shop_id");
+EEE
+            );
+            $file->addUseStatement('use Module\Ekom\Back\User\EkomNullosUser;');
+
+        }
+    }
+
+
+    protected function onSqlQueryAddedAfter(PhpFile $file, array $operation)
+    {
+        $columnTypes = $operation['columnTypes'];
+        if (array_key_exists("shop_id", $columnTypes)) {
+            $file->addBodyStatement(<<<EEE
+\$q .= ' where shop_id=' . \$shop_id;
+EEE
+            );
+
+        }
+    }
+
 }

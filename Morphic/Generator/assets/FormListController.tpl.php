@@ -4,6 +4,9 @@ namespace Controller\Ekom\Back\Generated\ProductGroup;
 
 use Controller\Ekom\Back\Pattern\EkomBackSimpleFormListController;
 use Core\Services\Hooks;
+use Module\Ekom\Utils\E;
+use OrmTools\Helper\OrmToolsHelper;
+use QuickPdo\QuickPdo;
 
 
 class ProductGroupListController extends EkomBackSimpleFormListController
@@ -14,13 +17,11 @@ class ProductGroupListController extends EkomBackSimpleFormListController
         // begin
 
         return $this->doRenderFormList([
-            'title' => "$labelUcFirst",
+            'title' => "$title",
             'breadcrumb' => "$name",
             'form' => "$name",
             'list' => "$name",
             'ric' => 777,
-            'newItemBtnText' => "Add a new $label",
-            'newItemBtnRoute' => $route,
             // lastProperties
         ]);
     }

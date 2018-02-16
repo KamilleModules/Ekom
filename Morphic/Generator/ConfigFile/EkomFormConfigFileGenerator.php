@@ -33,11 +33,14 @@ EEE;
 
     protected function getPivotLinkRoute($table, array $dbPrefixes)
     {
-        if (0 === strpos($table, 'ek_')) {
-            $table = substr($table, 3);
+        foreach ($dbPrefixes as $prefix) {
+            if (0 === strpos($table, $prefix)) {
+                $table = substr($table, strlen($prefix));
+                break;
+            }
         }
         $Camel = CaseTool::snakeToFlexiblePascal($table);
-        return "NullosAdmin_Ekom_" . $Camel . "_List";
+        return "NullosAdmin_Ekom_Generated_" . $Camel . "_List";
     }
 
 

@@ -19,7 +19,7 @@ class BackHooksHelper
 
 
 
-    public static function Ekom_Back_getElementAvatar(array &$avatar, $table, array $context=[])
+    public static function Ekom_Back_getElementAvatar(&$avatar, $table, array $context=[])
     {
 
     }
