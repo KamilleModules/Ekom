@@ -33,12 +33,12 @@ EEE;
 
     protected function getPivotLinkRoute($table, array $dbPrefixes)
     {
-        foreach ($dbPrefixes as $prefix) {
-            if (0 === strpos($table, $prefix)) {
-                $table = substr($table, strlen($prefix));
-                break;
-            }
-        }
+//        foreach ($dbPrefixes as $prefix) {
+//            if (0 === strpos($table, $prefix)) {
+//                $table = substr($table, strlen($prefix));
+//                break;
+//            }
+//        }
         $Camel = CaseTool::snakeToFlexiblePascal($table);
         return "NullosAdmin_Ekom_Generated_" . $Camel . "_List";
     }
@@ -64,10 +64,7 @@ EEE;
         switch ($type) {
             case "date":
 
-                $file->addUseStatement(<<<EEE
-use Module\Ekom\SokoForm\Control\EkomSokoDateControl;
-EEE
-                );
+
 
                 $file->addBodyStatement(<<<EEE
         ->addControl(EkomSokoDateControl::create()

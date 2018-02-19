@@ -23,6 +23,7 @@ class EkomNullosMorphicGenerator extends NullosMorphicGenerator
 
     protected $operations;
     protected $operationsTable2Route;
+    protected $tablesToProcess;
 
 
     public function __construct()
@@ -30,6 +31,7 @@ class EkomNullosMorphicGenerator extends NullosMorphicGenerator
         parent::__construct();
         $this->operations = [];
         $this->operationsTable2Route = [];
+        $this->tablesToProcess = null;
         $base = ApplicationParameters::get("app_dir") . "/config/morphic/Ekom/generated";
         $this->configFileDirForm = $base;
         $this->configFileDirList = $base;
@@ -38,6 +40,15 @@ class EkomNullosMorphicGenerator extends NullosMorphicGenerator
     }
 
 
+    public function setTablesToProcess(array $tablesToProcess)
+    {
+        $this->tablesToProcess = $tablesToProcess;
+        return $this;
+    }
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
     protected function onGenerateAfter() // override me
     {
         $operations = $this->operations;
@@ -59,8 +70,17 @@ EEE
         foreach ($operations as $c) {
 
 
+            if (null !== $this->tablesToProcess && !in_array($c['elementTable'], $this->tablesToProcess, true)) {
+                continue;
+            }
+
+
             if ('simple' === $c['elementType']) {
 
+                /**
+                 * Note: for the label, I prefer the elementTable instead of the elementLabelPlural,
+                 * because with multiple modules,
+                 */
                 //--------------------------------------------
                 // CREATE MENU
                 //--------------------------------------------
@@ -68,7 +88,7 @@ EEE
     ->addItem(Item::create()
         ->setActive(true)
         ->setName("$c[elementName]")
-        ->setLabel("$c[elementLabelPlural]")
+        ->setLabel("$c[elementTable]")
         ->setIcon("$c[icon]")
         ->setLink(N::link("$c[elementRoute]"))
     )
@@ -104,6 +124,9 @@ EEE
         $this->operations[] = $operation;
         $c = $operation;
         $camel = $c['CamelCase'];
+        if (null !== $this->tablesToProcess && !in_array($c['elementTable'], $this->tablesToProcess, true)) {
+            return;
+        }
 
         $controllerContent = $this->getControllerContent($c);
         $appRoot = ApplicationParameters::get("app_dir");
@@ -263,7 +286,7 @@ select $repr from `' . $leftTable . '` where ' . $sContextKeyToForeign . '
 
             $zeLeft = $leftTable;
             MorphicGeneratorHelper::dropTablePrefix($zeLeft);
-            $leftCamel = CaseTool::snakeToFlexiblePascal($zeLeft);
+            $leftCamel = CaseTool::snakeToFlexiblePascal($leftTable);
 
 
             $rightTable = OrmToolsHelper::getHasRightTable($table, $dbPrefixes);
