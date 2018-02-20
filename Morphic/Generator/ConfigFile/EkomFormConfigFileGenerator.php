@@ -49,7 +49,26 @@ EEE;
         return $this->getPivotLinkLabelsByPrefix($dbPrefixes, $table, $operation);
     }
 
+    protected function prepareCustomForeignQuery(&$query, array $config, PhpFile $file)
+    {
+        //--------------------------------------------
+        // CONTEXT VARS ALLOWED
+        //--------------------------------------------
+        $contextVars = [
+            "shop_id",
+            "lang_id",
+            "currency_id",
+        ];
 
+
+        $atLeast = false;
+        foreach ($contextVars as $var) {
+            if (false !== strpos($query, '$' . $var)) {
+                $file->addHeadStatement('$' . $var . ' = EkomNullosUser::getEkomValue("' . $var . '");');
+                $atLeast = true;
+            }
+        }
+    }
 
     //--------------------------------------------
     // CONTROL SPECIFIC
@@ -63,7 +82,6 @@ EEE;
 
         switch ($type) {
             case "date":
-
 
 
                 $file->addBodyStatement(<<<EEE

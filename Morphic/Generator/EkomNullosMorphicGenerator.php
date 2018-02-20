@@ -191,6 +191,7 @@ break;
         $camel = $c['CamelCase'];
         $columns = $operation['columns'];
         $table = $operation['elementTable'];
+
         $leftTable = OrmToolsHelper::getHasLeftTable($table);
         $file = __DIR__ . "/assets/FormListController.tpl.php";
 
@@ -240,7 +241,9 @@ break;
                 }
             }
 
-
+            if('ekev_event_has_course_has_participant' === $table){
+                az($contextCols, $operation);
+            }
             $begin .= $indent . '$table = "' . $table . '";' . PHP_EOL;
             $begin .= $indent . '$context = [' . PHP_EOL;
             $columnFkeys = $operation['columnFkeys'];
