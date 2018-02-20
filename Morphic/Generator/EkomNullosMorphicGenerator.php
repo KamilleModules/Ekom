@@ -229,8 +229,18 @@ break;
         //--------------------------------------------            
 ';
 
+
+            $leftRightTables = null;
             $dbPrefixes = (array_key_exists("dbPrefixes", $config)) ? $config['dbPrefixes'] : [];
-            $contextCols = MorphicGeneratorHelper::getContextFieldsByHasTable($table);
+            if (array_key_exists("leftAndRights", $config)) {
+                $leftAndRights = $config['leftAndRights'];
+                if (array_key_exists($table, $leftAndRights)) {
+                    $leftRightTables = $leftAndRights[$table];
+                }
+            }
+            $contextCols = MorphicGeneratorHelper::getContextFieldsByHasTable($table, $leftRightTables);
+
+
             $sArgs = '';
             $count = 0;
             foreach ($contextCols as $col) {
@@ -241,9 +251,11 @@ break;
                 }
             }
 
-            if('ekev_event_has_course_has_participant' === $table){
-                az($contextCols, $operation);
-            }
+//            if ('ekev_event_has_course_has_participant' === $table) {
+//                az($contextCols, $operation);
+//            }
+
+
             $begin .= $indent . '$table = "' . $table . '";' . PHP_EOL;
             $begin .= $indent . '$context = [' . PHP_EOL;
             $columnFkeys = $operation['columnFkeys'];
