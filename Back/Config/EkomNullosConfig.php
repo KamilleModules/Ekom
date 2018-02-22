@@ -3,14 +3,19 @@
 
 namespace Module\Ekom\Back\Config;
 
+use Core\Services\A;
+
 class EkomNullosConfig
 {
 
     public static function getBreadcrumbItem($pageName)
     {
+
+
+
         $item = [
             "label" => "Unknown ($pageName)",
-            "route" => "NullosAdmin_home",
+            "route" => A::route(),
         ];
 
         switch ($pageName) {
