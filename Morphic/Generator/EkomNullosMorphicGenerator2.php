@@ -4,10 +4,72 @@
 namespace Module\Ekom\Morphic\Generator;
 
 
+use Module\Ekom\Back\Helper\BackHooksHelper;
 use Module\NullosAdmin\Morphic\Generator\NullosMorphicGenerator2;
+use PhpFile\PhpFile;
 
 class EkomNullosMorphicGenerator2 extends NullosMorphicGenerator2
 {
+    public function generate()
+    {
+        parent::generate();
+        $this->onGenerateAfter();
+    }
+
+
+    protected function onGenerateAfter() // override me
+    {
+        $generatedItemFile = BackHooksHelper::getGeneratedMenuLocation();
+        $generatedRouteFile = BackHooksHelper::getGeneratedRoutesLocation();
+        $menu = PhpFile::create();
+        $route = PhpFile::create();
+        $menu->addUseStatement(<<<EEE
+use Models\AdminSidebarMenu\Lee\Objects\Item;
+use Module\NullosAdmin\Utils\N;
+EEE
+        );
+        $menu->addBodyStatement('$generatedItem');
+
+
+        foreach ($this->db2TableInfo as $db => $tableInfos) {
+            foreach ($tableInfos as $tableInfo) {
+
+
+                if (false !== $tableInfo['ai']) {
+                    /**
+                     * Note: for the label, I prefer the elementTable instead of the elementLabelPlural,
+                     * because with multiple modules it makes it easier to spot the module
+                     */
+                    //--------------------------------------------
+                    // CREATE MENU
+                    //--------------------------------------------
+                    $menu->addBodyStatement(<<<EEE
+    ->addItem(Item::create()
+        ->setActive(true)
+        ->setName("$tableInfo[table]")
+        ->setLabel("$tableInfo[table]")
+        ->setIcon("")
+        ->setLink(N::link("$tableInfo[route]"))
+    )
+EEE
+                    );
+                }
+
+
+                //--------------------------------------------
+                // CREATE ROUTES
+                //--------------------------------------------
+                $path = 'Controller\Ekom\Back\\Generated\\' . $tableInfo['camel'] . '\\' . $tableInfo['camel'] . 'ListController';
+                $route->addBodyStatement(<<<EEE
+\$routes["$tableInfo[route]"] = ["/ekom/generated/$tableInfo[table]/list", null, null, "$path:render"];
+EEE
+                );
+            }
+        }
+        $menu->addBodyStatement(';');
+        $menu->render($generatedItemFile);
+        $route->render($generatedRouteFile);
+    }
 
 
     protected function _getControllerClassHeader(array $tableInfo)
@@ -35,7 +97,7 @@ EEE;
 
     protected function _getControllerRenderWithNoParentMethodExtraVar(array $tableInfo)
     {
-        return '"menuCurrentRoute" => "$tableInfo[route]",';
+        return '"menuCurrentRoute" => "' . $tableInfo['route'] . '",';
     }
 
 
@@ -58,5 +120,81 @@ EEE;
 
         return $s;
     }
+
+    protected function _getFormInferred(array $tableInfo)
+    {
+        return [
+            'shop_id',
+            'lang_id',
+            'currency_id',
+        ];
+    }
+
+
+    protected function _getFormConfigFileTop(array $tableInfo, array $inferred)
+    {
+        $s = <<<EEE
+<?php 
+
+        
+use QuickPdo\QuickPdo;
+use Kamille\Utils\Morphic\Helper\MorphicHelper;
+use Module\Ekom\Back\User\EkomNullosUser;
+use SokoForm\Form\SokoFormInterface;
+use SokoForm\Form\SokoForm;
+use SokoForm\Control\SokoAutocompleteInputControl;
+use SokoForm\Control\SokoInputControl;
+use SokoForm\Control\SokoChoiceControl;
+use SokoForm\Control\SokoBooleanChoiceControl;
+use Module\Ekom\Utils\E;
+use Module\Ekom\Back\Helper\BackFormHelper;
+use Module\Ekom\SokoForm\Control\EkomSokoDateControl;
+
+
+EEE;
+
+        if ($inferred) {
+            $s .= '// inferred data (can be overridden by fkeys)' . PHP_EOL;
+            foreach ($inferred as $col) {
+                $s .= '$' . $col . ' = EkomNullosUser::getEkomValue("' . $col . '");' . PHP_EOL;
+            }
+        }
+        return $s;
+    }
+
+
+    protected function getAutocompleteControlContent($column)
+    {
+        return <<<EEE
+            ->setAutocompleteOptions(BackFormHelper::createSokoAutocompleteOptions([
+                'action' => "auto.$column",
+            ]))         
+EEE;
+    }
+
+    protected function doPrepareColumnControl(&$s, array $params, array $tableInfo)
+    {
+        $type = $params['type'];
+        $col = $params['column'];
+        $label = $params['label'];
+
+
+        switch ($type) {
+            case "date":
+
+
+                $s .= PHP_EOL . <<<EEE
+        ->addControl(EkomSokoDateControl::create()
+            ->setName("$col")
+            ->setLabel('$label')
+        )
+EEE;
+                return true;
+                break;
+        }
+
+        return false;
+    }
+
 
 }
