@@ -165,6 +165,9 @@ EEE;
 
     protected function getAutocompleteControlContent($column)
     {
+        if ('_id' === substr($column, -3)) {
+            $column = substr($column, 0, -3);
+        }
         return <<<EEE
             ->setAutocompleteOptions(BackFormHelper::createSokoAutocompleteOptions([
                 'action' => "auto.$column",
