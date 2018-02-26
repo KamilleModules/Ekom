@@ -455,6 +455,17 @@ class E
         return '/modules/Ekom/img';
     }
 
+
+    public static function getEcpUri($action, array $extraParams = [])
+    {
+
+        $s = "/service/Ekom/ecp/api?action=" . $action;
+        if ($extraParams) {
+            $s .= '&' . http_build_query($extraParams);
+        }
+        return $s;
+    }
+
     //--------------------------------------------
     //
     //--------------------------------------------
