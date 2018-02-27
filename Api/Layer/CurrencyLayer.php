@@ -4,10 +4,38 @@
 namespace Module\Ekom\Api\Layer;
 
 
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 class CurrencyLayer
 {
+
+    public static function getExchangeRates(array $currencies, $shopId = null)
+    {
+        if (null === $shopId) {
+            $shopId = E::getShopId();
+        }
+
+        $shopId = (int)$shopId;
+
+        $markers = [];
+        $c = 0;
+        foreach ($currencies as $iso) {
+            $markers[":a$c"] = $iso;
+            $c++;
+        }
+
+        $sCurrencies = implode(', ', array_keys($markers));
+
+
+        return QuickPdo::fetchAll("
+select c.iso_code, h.exchange_rate 
+from ek_currency c 
+inner join ek_shop_has_currency h on h.currency_id=c.id 
+where h.shop_id=$shopId         
+and c.iso_code in ($sCurrencies)
+        ", $markers, \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
 
 
     /**

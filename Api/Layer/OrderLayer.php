@@ -6,7 +6,9 @@ namespace Module\Ekom\Api\Layer;
 
 use Core\Services\A;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Util\CurrencyUtil;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Helper\SqlQueryHelper;
 use Module\Ekom\Status\EkomOrderStatus;
 use Module\Ekom\Utils\E;
 use Module\ThisApp\ThisAppConfig;
@@ -14,6 +16,102 @@ use QuickPdo\QuickPdo;
 
 class OrderLayer
 {
+
+
+
+    public static function getOrdersAmountAndCountByDate($dateStart = null, $dateEnd = null)
+    {
+        $q = "select date(date) as date, currency_iso_code, sum(amount) as sum, count(*) as count  from ek_order where 1";
+        $markers = [];
+        SqlQueryHelper::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "date");
+        $q .= " group by date(date)";
+        $all = QuickPdo::fetchAll($q, $markers);
+        return $all;
+    }
+
+
+    /**
+     * @param null $dateStart
+     * @param null $dateEnd
+     * @param null|false|string $currencyIso
+     *          if false, return an array
+     *
+     * @return array, depends on the value of currencyIso:
+     *          if currencyIso is false, then return an array of currencyIsoCode => amount
+     *          else,
+     *              return the total amount for the date range in the given currency iso code
+     *
+     */
+    public static function getOrdersAmountAndCount($dateStart = null, $dateEnd = null, $currencyIso = null, array $options = [])
+    {
+
+        $options = array_replace([
+            'queryWhereExtra' => '',
+            'queryWhereExtraMarkers' => [],
+        ], $options);
+
+        $qExtra = $options['queryWhereExtra'];
+        $qExtraMarkers = $options['queryWhereExtraMarkers'];
+
+
+        $q = "select currency_iso_code, sum(amount) as sum, count(*) as count  from ek_order where 1";
+
+        $markers = $qExtraMarkers;
+        SqlQueryHelper::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "date");
+        if ($qExtra) {
+            $q .= $qExtra;
+        }
+        $q .= " group by currency_iso_code";
+
+
+        $all = QuickPdo::fetchAll($q, $markers);
+
+
+        $defaultCurrencyIso = E::getCurrencyIso();
+        if (null === $currencyIso) {
+            $currencyIso = $defaultCurrencyIso;
+        }
+
+
+        /**
+         * Flattening the currency
+         * ---------------------------
+         * The difficulty with this method is that the order table contains orders in
+         * potentially different currencies, so we need to transpose all order amounts
+         * into ONE currency before processing the data;
+         */
+
+        $total = 0;
+        $countTotal = 0;
+        foreach ($all as $item) {
+
+            $currency = $item['currency_iso_code'];
+            $amount = $item['sum'];
+            $count = $item['count'];
+
+
+            // count
+            $countTotal += $count;
+
+            // sum
+            if ($currencyIso === $currency) {
+                $total += $amount;
+            } else {
+                if ("" === $currency) {
+                    $currency = $defaultCurrencyIso;
+                }
+                if ($currencyIso !== $currency) {
+                    $amount = CurrencyUtil::convertAmount($amount, $currency, $currencyIso);
+                }
+                $total += $amount;
+            }
+        }
+        return [
+            $total, // sum
+            $countTotal, // count
+        ];
+
+    }
 
 
     public static function countFailingOrderByUserId($userId)
@@ -41,7 +139,7 @@ and s.code in ('" . implode("', '", $errorCodes) . "')
 
     }
 
-    public static function getBasicStatsByUser($userId, $table="ek_order")
+    public static function getBasicStatsByUser($userId, $table = "ek_order")
     {
 
         $userId = (int)$userId;
@@ -76,7 +174,7 @@ from ek_order
 where user_id=$userId
 group by payment_method, payment_method_extra
 
-        ", [], \PDO::FETCH_COLUMN|\PDO::FETCH_UNIQUE);
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
 
     public static function getRefById($id)

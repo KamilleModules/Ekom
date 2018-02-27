@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 
 use Bat\StringTool;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Helper\SqlQueryHelper;
 use Module\ThisApp\Ekom\Helper\CartHelper;
 use QuickPdo\QuickPdo;
 
@@ -33,6 +34,7 @@ class ProductPurchaseStatLayer
                 "total_without_tax" => $box['priceLineWithoutTaxRaw'],
                 "attribute_selection" => serialize($box['attributesSelection']),
                 "product_details_selection" => serialize($box['productDetailsSelection']),
+                "wholesale_price" => $box['wholesale_price'],
             ]);
 
         }
@@ -56,5 +58,16 @@ where user_id=$userId
             }
         }
         return $rows;
+    }
+
+
+    public static function getDate2WholeSalePrice($dateStart = null, $dateEnd = null)
+    {
+        $q = "select date(purchase_date) as date, sum(wholesale_price) as wholesale_price_sum from ek_product_purchase_stat where 1";
+        $markers = [];
+        SqlQueryHelper::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "purchase_date");
+        $q .= " group by date(purchase_date)";
+        $all = QuickPdo::fetchAll($q, $markers, \PDO::FETCH_COLUMN|\PDO::FETCH_UNIQUE);
+        return $all;
     }
 }

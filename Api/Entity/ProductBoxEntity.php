@@ -556,6 +556,7 @@ class ProductBoxEntity
 
 
                         "ref" => $p['reference'],
+                        "wholesale_price" => $p['wholesale_price'],
                         "weight" => $p['weight'],
                         "description" => $description,
                         //

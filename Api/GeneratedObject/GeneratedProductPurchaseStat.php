@@ -45,6 +45,7 @@ class GeneratedProductPurchaseStat extends TableCrudObject
 			'total_without_tax' => '',
 			'attribute_selection' => '',
 			'product_details_selection' => '',
+			'wholesale_price' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

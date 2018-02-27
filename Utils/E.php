@@ -155,8 +155,12 @@ class E
         if (null !== $shopId) {
             return (int)$shopId;
         }
-        EkomApi::inst()->initWebContext();
-        return (int)ApplicationRegistry::get("ekom.shop_id");
+        if (false === E::isBackOffice()) {
+            EkomApi::inst()->initWebContext();
+            return (int)ApplicationRegistry::get("ekom.shop_id");
+        } else {
+            return EkomNullosUser::getEkomValue("shop_id");
+        }
     }
 
     public static function getLangId($langId = null)
@@ -164,8 +168,12 @@ class E
         if (null !== $langId) {
             return (int)$langId;
         }
-        EkomApi::inst()->initWebContext();
-        return (int)ApplicationRegistry::get("ekom.lang_id");
+        if (false === E::isBackOffice()) {
+            EkomApi::inst()->initWebContext();
+            return (int)ApplicationRegistry::get("ekom.lang_id");
+        } else {
+            return EkomNullosUser::getEkomValue("lang_id");
+        }
     }
 
     public static function getCurrencyId($currencyId = null)
@@ -173,20 +181,32 @@ class E
         if (null !== $currencyId) {
             return (int)$currencyId;
         }
-        EkomApi::inst()->initWebContext();
-        return (int)ApplicationRegistry::get("ekom.currency_id");
+        if (false === E::isBackOffice()) {
+            EkomApi::inst()->initWebContext();
+            return (int)ApplicationRegistry::get("ekom.currency_id");
+        } else {
+            return EkomNullosUser::getEkomValue("currency_id");
+        }
     }
 
     public static function getCurrencyIso()
     {
-        EkomApi::inst()->initWebContext();
-        return ApplicationRegistry::get("ekom.currency_iso");
+        if (false === E::isBackOffice()) {
+            EkomApi::inst()->initWebContext();
+            return ApplicationRegistry::get("ekom.currency_iso");
+        } else {
+            return EkomNullosUser::getEkomValue("currency_iso_code");
+        }
     }
 
     public static function getLangIso()
     {
-        EkomApi::inst()->initWebContext();
-        return ApplicationRegistry::get("ekom.lang_iso");
+        if (false === E::isBackOffice()) {
+            EkomApi::inst()->initWebContext();
+            return ApplicationRegistry::get("ekom.lang_iso");
+        } else {
+            return EkomNullosUser::getEkomValue("lang_iso_code");
+        }
     }
 
     /**

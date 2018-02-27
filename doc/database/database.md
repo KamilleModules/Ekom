@@ -1818,6 +1818,7 @@ Like in many stats tables, we don't use foreign keys, as we need to have "stable
 - total: total paid by the user for this item (priceLine) 
 - attribute_selection: blob, memory of the product identity 1/2
 - product_details_selection: blob, memory of the product identity 2/2
+- wholesale_price: number, the wholesale price
 
 
 
