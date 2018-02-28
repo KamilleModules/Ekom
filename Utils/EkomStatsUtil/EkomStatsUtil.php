@@ -4,9 +4,15 @@
 namespace Module\Ekom\Utils\EkomStatsUtil;
 
 
+use Module\Ekom\Api\Layer\NewsletterLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\ProductPurchaseStatLayer;
+use Module\Ekom\Api\Layer\ShopLayer;
+use Module\Ekom\Api\Layer\UserLayer;
+use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Status\EkomOrderStatus;
 use Module\Ekom\Utils\E;
+use Module\EkomCartTracker\Api\Layer\EkomCartTrackerCartLayer;
 use Module\EkomUserTracker\Api\Layer\UserTrackerLayer;
 
 class EkomStatsUtil implements EkomStatsUtilInterface
@@ -14,6 +20,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     protected $dateStart;
     protected $dateEnd;
     protected $currency;
+    protected $shopId;
     protected $_ipByDate;
     protected $_orderByDate;
 
@@ -23,6 +30,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
         $this->dateStart = null;
         $this->dateEnd = null;
         $this->currency = null;
+        $this->shopId = null;
         $this->_ipByDate = null;
         $this->_orderByDate = null;
         $this->_dateToNbOrder = null;
@@ -38,12 +46,14 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     {
         $options = array_replace([
             "currency" => E::getCurrencyIso(),
+            "shopId" => null,
         ], $options);
 
 
         $this->dateStart = $dateStart;
         $this->dateEnd = $dateEnd;
         $this->currency = $options['currency'];
+        $this->shopId = $options['shopId'];
 
         return $this;
     }
@@ -83,6 +93,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
      */
     public function getRevenues(array $options = [])
     {
+        $options['shopId'] = $this->shopId;
         return OrderLayer::getOrdersAmountAndCount($this->dateStart, $this->dateEnd, $this->currency, $options);
     }
 
@@ -127,7 +138,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
 
     public function getNetProfit()
     {
-        $date2Wholesale = ProductPurchaseStatLayer::getDate2WholeSalePrice();
+        $date2Wholesale = ProductPurchaseStatLayer::getDate2WholeSalePrice($this->dateStart, $this->dateEnd, $this->shopId);
         $wholesaleTotal = array_sum($date2Wholesale);
         $rev = $this->getRevenues();
         $orderTotal = $rev[0];
@@ -137,14 +148,56 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     }
 
 
+    public function getNbPreparingOrder()
+    {
+        return OrderLayer::getNbOrderWithStatuses([
+            EkomOrderStatus::STATUS_PREPARING_ORDER,
+        ], $this->dateStart, $this->dateEnd, $this->shopId);
+    }
+
+    public function getNbAbandonedCarts()
+    {
+        return EkomCartTrackerCartLayer::getNbAbandonedCarts($this->dateStart, $this->dateEnd, $this->shopId);
+    }
+
+    public function getNbNewCustomers()
+    {
+        return UserLayer::getNbNewUsers($this->dateStart, $this->dateEnd, $this->shopId);
+    }
+
+
+    public function getNbNewNewsletterSubscribers()
+    {
+        return NewsletterLayer::getNbNewSubscribers($this->dateStart, $this->dateEnd, $this->shopId);
+    }
+
+    public function getNbTotalNewsletterSubscribers()
+    {
+        return NewsletterLayer::getNbTotalSubscribers($this->dateStart, $this->dateEnd, $this->shopId);
+    }
+
+
+    public function getGraph($type)
+    {
+        switch ($type) {
+            case "revenue":
+                return $this->getRevenueGraph();
+                break;
+            default:
+                throw new EkomException("Unknown type: $type");
+                break;
+        }
+    }
+
 
     //--------------------------------------------
     //
     //--------------------------------------------
+
     protected function getOrderByDate()
     {
         if (null === $this->_orderByDate) {
-            $this->_orderByDate = OrderLayer::getOrdersAmountAndCountByDate($this->dateStart, $this->dateEnd);
+            $this->_orderByDate = OrderLayer::getOrdersAmountAndCountByDate($this->dateStart, $this->dateEnd, $this->shopId);
             $this->_dateToNbOrder = [];
             foreach ($this->_orderByDate as $item) {
                 $this->_dateToNbOrder[$item['date']] = $item['count'];
@@ -158,8 +211,22 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     protected function getIpByDate()
     {
         if (null === $this->_ipByDate) {
-            $this->_ipByDate = UserTrackerLayer::getIpInfo($this->dateStart, $this->dateEnd);
+            $host = null;
+            if (null !== $this->shopId) {
+                $host = ShopLayer::getHostById($this->shopId);
+                if (false === $host) {
+                    throw new EkomException("This shop is not available anymore: " . $this->shopId);
+                }
+            }
+            $this->_ipByDate = UserTrackerLayer::getIpInfo($this->dateStart, $this->dateEnd, $host);
         }
         return $this->_ipByDate;
+    }
+
+
+
+    protected function getRevenueGraph(){
+        $options['shopId'] = $this->shopId;
+        return OrderLayer::getOrdersAmountAndCountGraph($this->dateStart, $this->dateEnd, $this->currency, $options);
     }
 }

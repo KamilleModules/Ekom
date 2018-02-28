@@ -56,6 +56,7 @@ use Module\Ekom\Api\Object\ProductLang;
 use Module\Ekom\Api\Object\ProductPurchaseStat;
 use Module\Ekom\Api\Object\ProductType;
 use Module\Ekom\Api\Object\Provider;
+use Module\Ekom\Api\Object\ProviderHasShopHasProduct;
 use Module\Ekom\Api\Object\Seller;
 use Module\Ekom\Api\Object\SellerHasAddress;
 use Module\Ekom\Api\Object\Shop;
@@ -480,6 +481,13 @@ class GeneratedEkomApi extends XiaoApi
     public function provider()
     {
         return $this->getObject('provider');
+    }
+    /**
+     * @return ProviderHasShopHasProduct
+     */
+    public function providerHasShopHasProduct()
+    {
+        return $this->getObject('providerHasShopHasProduct');
     }
     /**
      * @return Seller

@@ -1780,6 +1780,7 @@ ek_product_group_has_product
 ek_newsletter
 ==================
 - id: pk
+- shop_id: fk
 - email: uk
 - subscribe_date: datetime, the date when the user subscribed
 - unsubscribe_date: null||datetime, null means that the user is still subscribed.

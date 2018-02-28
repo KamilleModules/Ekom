@@ -31,6 +31,16 @@ class ProductLayer
 {
 
 
+    public static function getNbOutOfStockProducts($shopId = null)
+    {
+        $shopId = E::getShopId($shopId);
+        return QuickPdo::fetch("select count(*) as count
+from ek_shop_has_product 
+where shop_id=$shopId    
+and quantity=0    
+        ", [], \PDO::FETCH_UNIQUE | \PDO::FETCH_COLUMN);
+    }
+
     public static function getReferenceByProductId($id)
     {
         $id = (int)$id;

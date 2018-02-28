@@ -31,6 +31,7 @@ class GeneratedNewsletter extends TableCrudObject
     {
         $base = [
 			'id' => null,
+			'shop_id' => 0,
 			'email' => '',
 			'subscribe_date' => '',
 			'unsubscribe_date' => null,

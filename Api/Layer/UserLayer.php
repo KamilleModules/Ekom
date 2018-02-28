@@ -21,6 +21,7 @@ use Module\Ekom\Utils\E;
 use Module\ThisApp\ThisAppConfig;
 use QuickPdo\QuickPdo;
 use QuickPdo\QuickPdoExceptionTool;
+use QuickPdo\QuickPdoStmtTool;
 
 
 /**
@@ -50,6 +51,27 @@ use QuickPdo\QuickPdoExceptionTool;
  */
 class UserLayer
 {
+
+    public static function getNbNewUsers($dateStart = null, $dateEnd = null, $shopId = null)
+    {
+
+        $q = "
+select count(*) as count
+from ek_user
+where 1         
+        ";
+
+        if (null !== $shopId) {
+            $shopId = (int)$shopId;
+            $q .= " and shop_id=$shopId";
+        }
+
+        $markers = [];
+        QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "date_creation");
+
+        return (int)QuickPdo::fetch($q, $markers, \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+
+    }
 
     public static function getUserRepresentationById($id)
     {

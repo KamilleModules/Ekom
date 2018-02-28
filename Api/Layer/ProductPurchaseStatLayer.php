@@ -8,7 +8,9 @@ use Bat\StringTool;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Helper\SqlQueryHelper;
 use Module\ThisApp\Ekom\Helper\CartHelper;
+use QuickPdo\Helper\QuickPdoHelper;
 use QuickPdo\QuickPdo;
+use QuickPdo\QuickPdoStmtTool;
 
 class ProductPurchaseStatLayer
 {
@@ -61,13 +63,20 @@ where user_id=$userId
     }
 
 
-    public static function getDate2WholeSalePrice($dateStart = null, $dateEnd = null)
+    public static function getDate2WholeSalePrice($dateStart = null, $dateEnd = null, $shopId = null)
     {
         $q = "select date(purchase_date) as date, sum(wholesale_price) as wholesale_price_sum from ek_product_purchase_stat where 1";
         $markers = [];
-        SqlQueryHelper::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "purchase_date");
+
+
+        if (null !== $shopId) {
+            $q .= " and shop_id=" . (int)$shopId;
+        }
+
+
+        QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "purchase_date");
         $q .= " group by date(purchase_date)";
-        $all = QuickPdo::fetchAll($q, $markers, \PDO::FETCH_COLUMN|\PDO::FETCH_UNIQUE);
+        $all = QuickPdo::fetchAll($q, $markers, \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
         return $all;
     }
 }
