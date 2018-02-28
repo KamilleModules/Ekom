@@ -288,10 +288,14 @@ class CartLayer
         $this->writeToLocalStore();
     }
 
-    public function clean()
+    public function clean($source = null)
     {
+        /**
+         * Source is being set to "checkout" by CheckoutOrderUtil
+         * when it cleans the cart after placing the order
+         */
         $_SESSION['ekom'][$this->sessionName] = [];
-        $this->writeToLocalStore();
+        $this->writeToLocalStore($source);
     }
 
 
@@ -374,18 +378,32 @@ class CartLayer
     //--------------------------------------------
     //
     //--------------------------------------------
-    protected function writeToLocalStore()
+    protected function writeToLocalStore($operationName = null)
     {
+        $shopId = E::getShopId();
+        $userId = null;
+        $cart = [];
+
+
         if (true === SessionUser::isConnected()) {
-            $shopId = E::getShopId();
             if (null !== ($userId = SessionUser::getValue('id'))) {
                 if (array_key_exists($shopId, $_SESSION['ekom'][$this->sessionName])) {
-                    $this->getCartLocalStore()->saveUserCart($userId, $shopId, $_SESSION['ekom'][$this->sessionName][$shopId]);
+                    $cart = $_SESSION['ekom'][$this->sessionName][$shopId];
+                    $this->getCartLocalStore()->saveUserCart($userId, $shopId, $cart);
                 }
             } else {
                 XLog::error("[$this->moduleName] - $this->className: in shop#$shopId, this user doesn't have an id: " . ArrayToStringTool::toPhpArray($_SESSION));
             }
+        } else {
+            if (array_key_exists($shopId, $_SESSION['ekom'][$this->sessionName])) {
+                $cart = $_SESSION['ekom'][$this->sessionName][$shopId];
+            }
         }
+
+
+        Hooks::call("Ekom_onCartUpdate", $shopId, $userId, $cart, $operationName);
+
+
         /**
          * A change in the cart should invalidate the cache
          */

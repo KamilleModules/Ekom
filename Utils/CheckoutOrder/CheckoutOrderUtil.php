@@ -725,7 +725,7 @@ class CheckoutOrderUtil
 
 
             if (false === $this->testMode) {
-                CartLayer::create()->clean();
+                CartLayer::create()->clean("checkout");
                 CurrentCheckoutData::clean();
             } else {
                 az("test mode", $orderModel);
