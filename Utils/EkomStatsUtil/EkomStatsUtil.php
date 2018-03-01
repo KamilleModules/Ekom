@@ -4,6 +4,7 @@
 namespace Module\Ekom\Utils\EkomStatsUtil;
 
 
+use Bat\DateTool;
 use Module\Ekom\Api\Layer\NewsletterLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\ProductPurchaseStatLayer;
@@ -128,8 +129,13 @@ class EkomStatsUtil implements EkomStatsUtilInterface
         foreach ($ipByDate as $item) {
             $date = $item['date'];
             $nbOrder = (array_key_exists($date, $date2NbOrder)) ? $date2NbOrder[$date] : 0;
-            $nbVisit = $item['nb_unique'];
-            $ret[$date] = $nbOrder / $nbVisit * 100;
+            $nbVisit = (int)$item['nb_unique'];
+            if (0 === $nbVisit) {
+                $v = 0;
+            } else {
+                $v = $nbOrder / $nbVisit * 100;
+            }
+            $ret[$date] = $v;
         }
 
         if (0 === count($ret)) {
@@ -186,13 +192,13 @@ class EkomStatsUtil implements EkomStatsUtilInterface
             case "revenue":
                 return $this->getRevenueGraph();
                 break;
-            case "nbOrder":
+            case "nbOrders":
                 return $this->getNbOrderGraph();
                 break;
             case "avgCart":
                 return $this->getAverageCartGraph();
                 break;
-            case "visitor":
+            case "visitors":
                 return $this->getVisitorGraph();
                 break;
             case "conversionRate":
@@ -286,9 +292,21 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     {
         $ret = [];
         $rows = $this->getIpByDate();
-        foreach ($rows as $item) {
-            $ret[$item['date']] = (int)$item['nb_total'];
+
+        $date2NbTotal = [];
+        foreach($rows as $row){
+            $date2NbTotal[$row["date"]] = $row['nb_total'];
         }
+
+        DateTool::foreachDateRange($this->dateStart, $this->dateEnd, function ($curDate) use (&$ret, $date2NbTotal) {
+            $value = 0;
+            if (array_key_exists($curDate, $date2NbTotal)) {
+                $value = (int)$date2NbTotal[$curDate];
+            }
+            $ret[$curDate] = $value;
+        });
+
+
         return $ret;
     }
 
@@ -296,6 +314,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     public function getConversionRateGraph()
     {
         $ret = [];
+        $date2Rate = [];
         $ipByDate = $this->getIpByDate();
 
 
@@ -306,8 +325,16 @@ class EkomStatsUtil implements EkomStatsUtilInterface
             $date = $item['date'];
             $nbOrder = (array_key_exists($date, $date2NbOrder)) ? $date2NbOrder[$date] : 0;
             $nbVisit = $item['nb_unique'];
-            $ret[$date] = $nbOrder / $nbVisit * 100;
+            $date2Rate[$date] = $nbOrder / $nbVisit * 100;
         }
+
+        DateTool::foreachDateRange($this->dateStart, $this->dateEnd, function ($curDate) use (&$ret, $date2Rate) {
+            $value = 0;
+            if (array_key_exists($curDate, $date2Rate)) {
+                $value = $date2Rate[$curDate];
+            }
+            $ret[$curDate] = $value;
+        });
 
         return $ret;
     }
