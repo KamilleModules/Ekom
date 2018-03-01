@@ -10,23 +10,38 @@ use Module\Ekom\Utils\EkomStatsUtil\EkomStatsUtil;
 use Module\EkomCartTracker\Api\Layer\EkomCartTrackerCartLayer;
 use Module\EkomUserTracker\Api\Layer\UserTrackerLayer;
 
-class DefaultDashboardModel{
+class DefaultDashboardModel
+{
 
 
-    public static function getModel(){
+    public static function getModel($dateStart = null, $dateEnd = null, $shopId = null, array $options = [])
+    {
 
-        $dateStart = date('Y-m-d H:i:s');
-        $dateEnd = date('Y-m-d H:i:s', strtotime("+2 day"));
+        $options = array_replace([
+            "mode" => 'default', // default||ajax
+            "graph" => "revenue",
+        ], $options);
+
+        $mode = $options['mode'];
+        $graph = $options['graph'];
 
 
-        $dateEnd = "2017-12-13 23:59:59";
-        $dateStart = "2017-12-13 00:00:00";
+        if (null === $dateStart && null === $dateEnd) {
+            $dateStart = date('Y-m-d H:i:s');
+            $dateEnd = date('Y-m-t H:i:s'); // last day of month
+        } else {
+            if (null === $dateStart) {
+                $dateStart = date('Y-m-d H:i:s');
+            }
+            if (null === $dateEnd) {
+                $dateEnd = date('Y-m-d H:i:s');
+            }
+        }
 
-        $dateStart = null;
-        $dateEnd = null;
 
-        $shopId = 1;
-
+        if (null === $shopId) {
+            $shopId = E::getShopId($shopId);
+        }
 
 
         $o = EkomStatsUtil::create()
@@ -36,14 +51,15 @@ class DefaultDashboardModel{
             ]);
 
 
-
         $info = $o->getRevenues();
         list($amount, $count) = $info;
+        $avgCart = (0 === $count) ? 0 : $amount / $count;
 
-        $ret = [
+
+        $ajaxRet = [
             "revenue" => E::price($amount), // CA HT
             "nbOrders" => $count,
-            "avgCart" => E::price($amount / $count),
+            "avgCart" => E::price($avgCart),
             "visitors" => $o->getNbIp(), // total
             "conversionRate" => $o->getConversionRate() . ' %',
             "netProfit" => E::price($o->getNetProfit()),
@@ -55,9 +71,35 @@ class DefaultDashboardModel{
             "nbNewCustomers" => $o->getNbNewCustomers(),
             "nbNewNewsletterSubscribers" => $o->getNbNewNewsletterSubscribers(),
             "nbTotalNewsletterSubscribers" => $o->getNbTotalNewsletterSubscribers(),
+            "graph" => self::toGraphData($o->getGraph($graph)),
 
         ];
+
+        if ("ajax" === $mode) {
+            return $ajaxRet;
+        }
+
+        $ret = $ajaxRet;
+        $format = "Y-m-d";
+        $ret["startDate"] = date($format, strtotime($dateStart));
+        $ret["endDate"] = date($format, strtotime($dateEnd));
         return $ret;
     }
 
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    private static function toGraphData(array $graph)
+    {
+
+        $ret = [];
+        foreach ($graph as $date => $value) {
+            $ret[] = [
+                strtotime($date) * 1000,
+                $value,
+            ];
+        }
+        return $ret;
+    }
 }

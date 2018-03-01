@@ -247,6 +247,7 @@ where 1
             }
         });
 
+        ksort($ret);
         return $ret;
     }
 

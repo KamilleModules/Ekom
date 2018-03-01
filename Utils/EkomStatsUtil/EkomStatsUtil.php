@@ -132,6 +132,9 @@ class EkomStatsUtil implements EkomStatsUtilInterface
             $ret[$date] = $nbOrder / $nbVisit * 100;
         }
 
+        if (0 === count($ret)) {
+            return 0;
+        }
         return round(array_sum($ret) / count($ret), 2);
     }
 
@@ -183,6 +186,21 @@ class EkomStatsUtil implements EkomStatsUtilInterface
             case "revenue":
                 return $this->getRevenueGraph();
                 break;
+            case "nbOrder":
+                return $this->getNbOrderGraph();
+                break;
+            case "avgCart":
+                return $this->getAverageCartGraph();
+                break;
+            case "visitor":
+                return $this->getVisitorGraph();
+                break;
+            case "conversionRate":
+                return $this->getConversionRateGraph();
+                break;
+            case "netProfit":
+                return $this->getNetProfitGraph();
+                break;
             default:
                 throw new EkomException("Unknown type: $type");
                 break;
@@ -224,9 +242,90 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     }
 
 
-
-    protected function getRevenueGraph(){
+    protected function getRevenueGraph()
+    {
+        $ret = [];
         $options['shopId'] = $this->shopId;
-        return OrderLayer::getOrdersAmountAndCountGraph($this->dateStart, $this->dateEnd, $this->currency, $options);
+        $rows = OrderLayer::getOrdersAmountAndCountGraph($this->dateStart, $this->dateEnd, $this->currency, $options);
+        foreach ($rows as $date => $item) {
+            $ret[$date] = (float)$item["sum"];
+        }
+        return $ret;
+    }
+
+    protected function getNbOrderGraph()
+    {
+        $ret = [];
+        $options['shopId'] = $this->shopId;
+        $rows = OrderLayer::getOrdersAmountAndCountGraph($this->dateStart, $this->dateEnd, $this->currency, $options);
+        foreach ($rows as $date => $item) {
+            $ret[$date] = (int)$item["count"];
+        }
+        return $ret;
+    }
+
+    protected function getAverageCartGraph()
+    {
+        $ret = [];
+        $options['shopId'] = $this->shopId;
+        $rows = OrderLayer::getOrdersAmountAndCountGraph($this->dateStart, $this->dateEnd, $this->currency, $options);
+        foreach ($rows as $date => $item) {
+            $count = (int)$item['count'];
+            if (0 === $count) {
+                $result = 0;
+            } else {
+                $result = $item['sum'] / $count;
+            }
+
+            $ret[$date] = round($result, 2);
+        }
+        return $ret;
+    }
+
+    protected function getVisitorGraph()
+    {
+        $ret = [];
+        $rows = $this->getIpByDate();
+        foreach ($rows as $item) {
+            $ret[$item['date']] = (int)$item['nb_total'];
+        }
+        return $ret;
+    }
+
+
+    public function getConversionRateGraph()
+    {
+        $ret = [];
+        $ipByDate = $this->getIpByDate();
+
+
+        $this->getOrderByDate();
+        $date2NbOrder = $this->_dateToNbOrder;
+
+        foreach ($ipByDate as $item) {
+            $date = $item['date'];
+            $nbOrder = (array_key_exists($date, $date2NbOrder)) ? $date2NbOrder[$date] : 0;
+            $nbVisit = $item['nb_unique'];
+            $ret[$date] = $nbOrder / $nbVisit * 100;
+        }
+
+        return $ret;
+    }
+
+
+    public function getNetProfitGraph()
+    {
+        $ret = [];
+        $date2Wholesale = ProductPurchaseStatLayer::getDate2WholeSalePrice($this->dateStart, $this->dateEnd, $this->shopId);
+
+        $date2NetProfit = $this->getRevenueGraph();
+
+
+        foreach ($date2NetProfit as $date => $revenue) {
+            $wholesale = (array_key_exists($date, $date2Wholesale)) ? $date2Wholesale[$date] : 0;
+            $profit = $revenue - $wholesale;
+            $ret[$date] = E::trimPrice($profit);
+        }
+        return $ret;
     }
 }
