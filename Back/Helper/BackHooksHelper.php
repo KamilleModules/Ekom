@@ -13,7 +13,10 @@ use Module\Ekom\Api\Layer\CurrencyLayer;
 use Module\Ekom\Api\Layer\LangLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Back\User\EkomNullosUser;
+use Module\Ekom\Back\Util\QuickStartWizard\QuickStartWizard;
+use Module\Ekom\Back\WidgetModel\ContextBar\ContextBarWidgetModel;
 use Module\Ekom\Back\WidgetModel\Dashboard\DefaultDashboardModel;
+use Module\NullosAdmin\Helper\NullosGuiEnvironment;
 use Module\NullosAdmin\Utils\N;
 use QuickPdo\QuickPdo;
 
@@ -21,12 +24,10 @@ class BackHooksHelper
 {
 
 
-
-    public static function Ekom_Back_getElementAvatar(&$avatar, $table, array $context=[])
+    public static function Ekom_Back_getElementAvatar(&$avatar, $table, array $context = [])
     {
 
     }
-
 
 
     public static function getGeneratedMenuLocation()
@@ -352,31 +353,60 @@ class BackHooksHelper
             );
     }
 
-    public static function NullosAdmin_prepareHomePageClaws(ClawsInterface $claws)
+    public static function NullosAdmin_prepareClaws(ClawsInterface $claws, $type = null)
     {
+        //--------------------------------------------
+        // ENSURE THAT CONTEXT VARS ARE PROPERLY SET
+        //--------------------------------------------
+        /**
+         * The currency, lang, and shop must be defined
+         * prior to any other actions.
+         */
+        $message = null;
+        if (false === QuickStartWizard::checkApp($message)) {
+            NullosGuiEnvironment::addNotification($message, "error");
+        }
 
-        $claws->removeWidget("maincontent.body");
 
-        $model = DefaultDashboardModel::getModel();
+        $model = ContextBarWidgetModel::getModel();
+
+
         $claws
-            ->setWidget("maincontent.pageTop", ClawsWidget::create()
-                ->setTemplate('Ekom/Main/PageTop/default')
-                ->setConf([
-                    "breadcrumbs" => BreadcrumbsHelper::getBreadCrumbsModel([
-                        "dashboard",
-                    ]),
-                    "title" => "Tableau de bord",
-                    "buttons" => [],
-                    "buttonsList" => [],
-                ])
-            )
-            //--------------------------------------------
-            // MAIN
-            //--------------------------------------------
-            ->setWidget("maincontent.body", ClawsWidget::create()
-                ->setTemplate('NullosAdmin/Main/Dashboard/default')
-                ->setConf($model)
+            ->setWidget("topbar_right.ekomContextBar", ClawsWidget::create()
+                ->setTemplate('NullosAdmin/TopBar/EkomContextBar/default')
+                ->setConf($model), "last"
             );
+
+
+        //--------------------------------------------
+        // HOME SPECIFIC
+        //--------------------------------------------
+        if ('home' === $type) {
+
+            $claws->removeWidget("maincontent.body");
+
+            $model = DefaultDashboardModel::getModel();
+            $claws
+                ->setWidget("maincontent.pageTop", ClawsWidget::create()
+                    ->setTemplate('Ekom/Main/PageTop/default')
+                    ->setConf([
+                        "breadcrumbs" => BreadcrumbsHelper::getBreadCrumbsModel([
+                            "dashboard",
+                        ]),
+                        "title" => "Tableau de bord",
+                        "buttons" => [],
+                        "buttonsList" => [],
+                    ])
+                )
+                //--------------------------------------------
+                // MAIN
+                //--------------------------------------------
+                ->setWidget("maincontent.body", ClawsWidget::create()
+                    ->setTemplate('NullosAdmin/Main/Dashboard/default')
+                    ->setConf($model)
+                );
+        }
+
     }
 
     public static function NullosAdmin_User_hasRight(&$hasRight, $privilege)
