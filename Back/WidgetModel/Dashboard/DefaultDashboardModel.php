@@ -56,6 +56,7 @@ class DefaultDashboardModel
         $avgCart = (0 === $count) ? 0 : $amount / $count;
 
 
+
         $ajaxRet = [
             "revenue" => E::price($amount), // CA HT
             "nbOrders" => $count,

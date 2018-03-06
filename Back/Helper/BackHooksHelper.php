@@ -4,6 +4,8 @@
 namespace Module\Ekom\Back\Helper;
 
 use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
+use Kamille\Utils\Claws\ClawsInterface;
+use Kamille\Utils\Claws\ClawsWidget;
 use Models\AdminSidebarMenu\Lee\LeeAdminSidebarMenuModel;
 use Models\AdminSidebarMenu\Lee\Objects\Item;
 use Models\AdminSidebarMenu\Lee\Objects\Section;
@@ -11,6 +13,7 @@ use Module\Ekom\Api\Layer\CurrencyLayer;
 use Module\Ekom\Api\Layer\LangLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Back\User\EkomNullosUser;
+use Module\Ekom\Back\WidgetModel\Dashboard\DefaultDashboardModel;
 use Module\NullosAdmin\Utils\N;
 use QuickPdo\QuickPdo;
 
@@ -346,6 +349,33 @@ class BackHooksHelper
                     ->setIcon("fa fa-medkit")
                     ->setLink(N::link("NullosAdmin_Ekom_Tools_AppSanityCheck"))
                 )
+            );
+    }
+
+    public static function NullosAdmin_prepareHomePageClaws(ClawsInterface $claws)
+    {
+
+        $claws->removeWidget("maincontent.body");
+
+        $model = DefaultDashboardModel::getModel();
+        $claws
+            ->setWidget("maincontent.pageTop", ClawsWidget::create()
+                ->setTemplate('Ekom/Main/PageTop/default')
+                ->setConf([
+                    "breadcrumbs" => BreadcrumbsHelper::getBreadCrumbsModel([
+                        "dashboard",
+                    ]),
+                    "title" => "Tableau de bord",
+                    "buttons" => [],
+                    "buttonsList" => [],
+                ])
+            )
+            //--------------------------------------------
+            // MAIN
+            //--------------------------------------------
+            ->setWidget("maincontent.body", ClawsWidget::create()
+                ->setTemplate('NullosAdmin/Main/Dashboard/default')
+                ->setConf($model)
             );
     }
 

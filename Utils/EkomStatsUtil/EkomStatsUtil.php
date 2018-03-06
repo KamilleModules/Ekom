@@ -236,7 +236,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     {
         if (null === $this->_ipByDate) {
             $host = null;
-            if (null !== $this->shopId) {
+            if (null !== $this->shopId && 0!== $this->shopId) {
                 $host = ShopLayer::getHostById($this->shopId);
                 if (false === $host) {
                     throw new EkomException("This shop is not available anymore: " . $this->shopId);
