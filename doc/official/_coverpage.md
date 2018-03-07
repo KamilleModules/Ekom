@@ -1,6 +1,6 @@
 <!-- _coverpage.md -->
 
-<img src="image/ekom.png" alt="Drawing" />
+<img src="image/ekom-logo.png" alt="Drawing" />
 
 # Ekom Docs <small>1.0</small>
 

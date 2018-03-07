@@ -1,9 +1,8 @@
-* Guides Backoffice
-  * [Créer un backoffice simple](tutoriel-creation-bo.md)
-  
-* Services, Hooks, Config
-  * [Hooks](hooks.md)
-  
+* Le backoffice: manuel utilisateur 
+  * [Introduction](user/back/user-backoffice.md)
+  * [L'environnement graphique](user/back/environnement.md)
+  * [L'administration générée](user/back/generated-admin.md)
+  * [Les objets de l'admin générée](user/back/generated-admin-objects.md)
   
   
   

@@ -15,6 +15,7 @@ class EkomNullosConfig
 
         $item = [
             "label" => "Unknown ($pageName)",
+            "label" => ucfirst($pageName),
             "route" => A::route(),
         ];
 
