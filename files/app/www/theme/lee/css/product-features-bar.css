@@ -1,0 +1,100 @@
+/**
+Breakpoints:
+
+
+
+style:
+780
+  topmenu (catalog and social icons) appear
+900
+
+
+slider:
+768
+1170
+
+
+ */
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway.eot");
+  src: url("Raleway.eot?#iefix") format("embedded-opentype"), url("Raleway.woff") format("woff"), url("Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2';
+  src: url("TradeGothicNo2-Bold.eot");
+  src: url("TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("TradeGothicNo2-Bold.woff") format("woff"), url("TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway-Bold.eot");
+  src: url("Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("Raleway-Bold.woff") format("woff"), url("Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT';
+  src: url("TradeGothicLT.eot");
+  src: url("TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("TradeGothicLT.woff") format("woff"), url("TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'next';
+  src: url("TradeGothicNextLTPro-BdCm.eot");
+  src: url("TradeGothicNextLTPro-BdCm.eot?#iefix") format("embedded-opentype"), url("TradeGothicNextLTPro-BdCm.woff") format("woff"), url("TradeGothicNextLTPro-BdCm.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+.table-form.no-label tr td input {
+  height: 30px;
+  padding-left: 12px;
+  font-size: 0.7em;
+  color: #a3a9ad;
+  font-family: "TradeGothic LT";
+  font-weight: normal; }
+.table-form.no-label tr td input[type=checkbox] {
+  width: auto;
+  height: auto; }
+
+.product-features-bar {
+  background: #f8f8f8;
+  height: 50px;
+  margin-top: 0px; }
+
+.product-features-bar ul {
+  display: flex;
+  justify-content: center; }
+
+.product-features-bar li {
+  padding: 0 30px;
+  margin: 0 3px;
+  box-sizing: border-box;
+  height: 50px;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 25%;
+  text-align: center; }
+
+.product-features-bar li.active {
+  background: #333333;
+  border-bottom: 2px solid #e30613; }
+
+.product-features-bar li:not(.active):hover {
+  background: rgba(255, 255, 255, 0.01);
+  border-bottom: 2px solid #e30613; }
+
+.product-features-bar li a {
+  color: #333;
+  display: block;
+  height: 100%;
+  line-height: 46px;
+  font-family: "TradeGothicNo.2";
+  font-weight: bold;
+  white-space: nowrap; }
+
+.product-features-bar li.active a {
+  color: white; }
+
+/*# sourceMappingURL=product-features-bar.css.map */

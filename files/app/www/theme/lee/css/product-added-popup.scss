@@ -1,0 +1,152 @@
+@import "variables";
+
+
+
+.product-added-popup {
+
+  position: relative;
+  @include font(raleway);
+
+  .top-line {
+    h2 {
+      font-size: 1.5em;
+      @include font(ralewayBold);
+    }
+  }
+
+  .main-content {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+
+    .image-container {
+      img {
+        width: 300px;
+        height: 300px;
+      }
+    }
+
+    .product-container {
+
+      border-right: 2px solid gray;
+      margin-right: 20px;
+      margin-left: 15px;
+      padding-right: 40px;
+
+      .title {
+        font-size: 1.2em;
+        font-weight: bold;
+      }
+      .ref {
+        font-size: 0.8em;
+        font-weight: normal;
+        margin-top: 3px;
+        color: #999;
+      }
+
+      .rating-container {
+        display: flex;
+        color: $red;
+        margin-top: 6px;
+
+        .rating {
+          margin-right: 15px;
+          unicode-bidi: bidi-override;
+          direction: rtl;
+          display: flex; // prevent starts from wrapping
+        }
+
+        .rating > span {
+          display: inline-block;
+          position: relative;
+          width: 1.1em;
+        }
+
+        .rating > span:before {
+          content: "\2605";
+          position: absolute;
+          color: #dfdfde;
+        }
+
+        .rating > span.hover:before,
+        .rating > span.hover ~ span:before {
+          content: "\2605";
+          position: absolute;
+          color: $red;
+        }
+      }
+
+      .value {
+        color: #9e9c9d;
+
+        &.price {
+          color: $red;
+          font-size: 1.1em;
+          font-weight: bold;
+
+          abbr {
+            font-size: 0.6em;
+          }
+        }
+      }
+
+      .weight {
+        margin-top: 20px;
+      }
+      .quantity {
+        margin-top: 36px;
+      }
+      .price {
+        margin-top: 36px;
+      }
+      .product-link {
+        margin-top: 20px;
+      }
+    }
+
+    .cart-info {
+
+      font-size: 1.2em;
+      padding-left: 20px;
+
+      .cart-summary {
+        margin-top: 10px;
+        font-size: 0.8em;
+
+        tr {
+          height: 40px;
+
+          td:first-child {
+            width: 70%;
+            padding-right: 20px;
+          }
+
+          &.small-height {
+            height: 20px;
+          }
+
+          .bold {
+            font-weight: bold;
+            font-size: 1.2em;
+          }
+
+          .small-text {
+            font-size: 0.7em;
+          }
+
+          .order-total {
+            font-weight: bold;
+          }
+        }
+      }
+    }
+
+  }
+
+  .resume-purchase-link-container {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
+
+}

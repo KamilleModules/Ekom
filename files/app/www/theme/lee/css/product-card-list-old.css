@@ -1,0 +1,194 @@
+/**
+Breakpoints:
+
+
+
+style:
+780
+  topmenu (catalog and social icons) appear
+900
+
+
+slider:
+768
+1170
+
+
+ */
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway.eot");
+  src: url("Raleway.eot?#iefix") format("embedded-opentype"), url("Raleway.woff") format("woff"), url("Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2';
+  src: url("TradeGothicNo2-Bold.eot");
+  src: url("TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("TradeGothicNo2-Bold.woff") format("woff"), url("TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway-Bold.eot");
+  src: url("Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("Raleway-Bold.woff") format("woff"), url("Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT';
+  src: url("TradeGothicLT.eot");
+  src: url("TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("TradeGothicLT.woff") format("woff"), url("TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'next';
+  src: url("TradeGothicNextLTPro-BdCm.eot");
+  src: url("TradeGothicNextLTPro-BdCm.eot?#iefix") format("embedded-opentype"), url("TradeGothicNextLTPro-BdCm.woff") format("woff"), url("TradeGothicNextLTPro-BdCm.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+.table-form.no-label tr td input {
+  height: 30px;
+  padding-left: 12px;
+  font-size: 0.7em;
+  color: #a3a9ad;
+  font-family: "TradeGothic LT";
+  font-weight: normal; }
+.table-form.no-label tr td input[type=checkbox] {
+  width: auto;
+  height: auto; }
+
+.widget-product-card-list {
+  margin-top: 15px; }
+  .widget-product-card-list .title {
+    color: red; }
+  .widget-product-card-list .ajax-target .ajax-target {
+    width: 500px;
+    height: 500px; }
+
+.widget-listfilter {
+  padding: 20px;
+  /*------------------------------------
+  - WIDGET LISTFILTER SUMMARY
+  ------------------------------------*/
+  /*------------------------------------
+  - WIDGET LISTFILTER ATTRIBUTES
+  ------------------------------------*/
+  /*------------------------------------
+  - WIDGET LISTFILTER DISCOUNT
+  ------------------------------------*/ }
+  .widget-listfilter .listfilter-title {
+    font-weight: bold;
+    padding: 9px;
+    background: #f0f0f0; }
+  .widget-listfilter .listfilter-link:hover {
+    text-decoration: underline; }
+  .widget-listfilter.widget-listfilter-summary {
+    padding: 20px; }
+    .widget-listfilter.widget-listfilter-summary .inner {
+      padding: 8px; }
+      .widget-listfilter.widget-listfilter-summary .inner .top-title {
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+        font-size: 1.3em; }
+      .widget-listfilter.widget-listfilter-summary .inner .box-container {
+        background: #f9f9f9;
+        border: 1px solid #f6f6f6;
+        margin-top: 40px;
+        padding: 10px;
+        overflow: auto;
+        clear: both; }
+        .widget-listfilter.widget-listfilter-summary .inner .box-container .title-box {
+          font-weight: bold;
+          margin-top: 5px; }
+        .widget-listfilter.widget-listfilter-summary .inner .box-container .filter-box {
+          margin-top: 15px; }
+          .widget-listfilter.widget-listfilter-summary .inner .box-container .filter-box .filter {
+            display: flex;
+            align-items: center; }
+            .widget-listfilter.widget-listfilter-summary .inner .box-container .filter-box .filter a.delete-box {
+              display: flex;
+              align-items: center;
+              width: 100%; }
+              .widget-listfilter.widget-listfilter-summary .inner .box-container .filter-box .filter a.delete-box:hover {
+                text-decoration: line-through; }
+              .widget-listfilter.widget-listfilter-summary .inner .box-container .filter-box .filter a.delete-box .delete-icon {
+                display: block;
+                width: 24px;
+                height: 24px;
+                background: transparent url(/theme/lee/img/icons/close.png) no-repeat center center;
+                background-size: contain;
+                margin-right: 5px; }
+        .widget-listfilter.widget-listfilter-summary .inner .box-container .clear-all-box {
+          margin-top: 20px; }
+  .widget-listfilter .attribute-box .attribute-links {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    padding: 3px;
+    padding-bottom: 12px; }
+    .widget-listfilter .attribute-box .attribute-links .link-box {
+      display: flex;
+      align-items: center;
+      margin-top: 3px;
+      font-size: 0.9em; }
+      .widget-listfilter .attribute-box .attribute-links .link-box .c-box {
+        display: block;
+        cursor: pointer;
+        margin-right: 9px;
+        width: 20px;
+        height: 20px; }
+  .widget-listfilter .attribute-box .attribute-color-links {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start; }
+    .widget-listfilter .attribute-box .attribute-color-links .color {
+      margin: 0 3px;
+      width: 25px;
+      height: 25px;
+      border-radius: 30px;
+      text-indent: -100000px;
+      cursor: pointer;
+      border: 1px solid #929292; }
+  .widget-listfilter .attribute-box .slider-box {
+    padding: 35px 0;
+    display: flex;
+    flex-direction: column; }
+    .widget-listfilter .attribute-box .slider-box .slider-container .back-bar .pointer-label {
+      font-size: 13px;
+      top: -24px; }
+    .widget-listfilter .attribute-box .slider-box .slider-container .scale ins {
+      font-size: 13px; }
+    .widget-listfilter .attribute-box .slider-box .range-box {
+      text-align: center;
+      margin: 0 auto; }
+    .widget-listfilter .attribute-box .slider-box .ok-box {
+      margin-top: 30px;
+      display: flex;
+      justify-content: flex-end; }
+      .widget-listfilter .attribute-box .slider-box .ok-box.hidden {
+        display: none; }
+      .widget-listfilter .attribute-box .slider-box .ok-box button {
+        display: block;
+        border: none;
+        background: #ff6c00;
+        color: white;
+        padding: 3px 7px;
+        text-transform: uppercase;
+        font-size: 0.8em;
+        cursor: pointer; }
+  .widget-listfilter.widget-listfilter-discount .discount-boxes {
+    padding-top: 13px;
+    display: flex;
+    flex-wrap: wrap; }
+    .widget-listfilter.widget-listfilter-discount .discount-boxes .discount-box {
+      font-family: "TradeGothic LT";
+      font-weight: normal;
+      margin: 0 5px;
+      display: flex;
+      flex-direction: column;
+      color: black; }
+      .widget-listfilter.widget-listfilter-discount .discount-boxes .discount-box .badge {
+        font-size: 0.8em; }
+
+/*# sourceMappingURL=product-card-list-old.css.map */

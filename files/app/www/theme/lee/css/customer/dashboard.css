@@ -1,0 +1,85 @@
+/*------------------------------------
+- DIR UP
+------------------------------------*/
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway.eot");
+  src: url("../Raleway.eot?#iefix") format("embedded-opentype"), url("../Raleway.woff") format("woff"), url("../Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2-up';
+  src: url("../TradeGothicNo2-Bold.eot");
+  src: url("../TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("../TradeGothicNo2-Bold.woff") format("woff"), url("../TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway-Bold.eot");
+  src: url("../Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("../Raleway-Bold.woff") format("woff"), url("../Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT-up';
+  src: url("../TradeGothicLT.eot");
+  src: url("../TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("../TradeGothicLT.woff") format("woff"), url("../TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+.widget-dashboard {
+  padding-bottom: 180px; }
+  .widget-dashboard .line {
+    display: flex;
+    justify-content: space-between; }
+    .widget-dashboard .line .block {
+      padding: 1px; }
+      .widget-dashboard .line .block .top-space-order,
+      .widget-dashboard .line .block .top-space-preferences,
+      .widget-dashboard .line .block .top-space-information,
+      .widget-dashboard .line .block .top-space-points {
+        width: 300px;
+        height: 200px;
+        background-size: contain; }
+      .widget-dashboard .line .block .top-space-order {
+        background: url(/theme/lee/img/icons/customer/order.jpg) center center no-repeat; }
+      .widget-dashboard .line .block .top-space-preferences {
+        background: url(/theme/lee/img/icons/customer/preferences.jpg) center center no-repeat; }
+      .widget-dashboard .line .block .top-space-information {
+        background: url(/theme/lee/img/icons/customer/information.jpg) center center no-repeat; }
+      .widget-dashboard .line .block .top-space-points {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center; }
+        .widget-dashboard .line .block .top-space-points .bignumber {
+          font-size: 4.2em;
+          padding-bottom: 41px;
+          margin-bottom: 17px;
+          border-bottom: 5px solid black;
+          font-family: Raleway-up;
+          font-weight: normal;
+          text-align: center; }
+        .widget-dashboard .line .block .top-space-points .bigtext {
+          text-align: center;
+          font-size: 1.7em;
+          font-family: Raleway-up;
+          font-weight: normal; }
+      .widget-dashboard .line .block .title {
+        color: #e20613;
+        font-size: 1.67em;
+        font-family: Raleway-up;
+        font-weight: bold;
+        margin-top: 9px; }
+      .widget-dashboard .line .block .links {
+        margin-top: 15px; }
+        .widget-dashboard .line .block .links a {
+          color: #525252;
+          display: block;
+          font-family: Raleway-up;
+          font-weight: normal;
+          font-size: 1.15em;
+          line-height: 1.17em; }
+          .widget-dashboard .line .block .links a em {
+            color: #e20613;
+            font-style: normal; }
+
+/*# sourceMappingURL=dashboard.css.map */

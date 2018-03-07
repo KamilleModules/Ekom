@@ -1,0 +1,46 @@
+/*------------------------------------
+- DIR UP
+------------------------------------*/
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway.eot");
+  src: url("../Raleway.eot?#iefix") format("embedded-opentype"), url("../Raleway.woff") format("woff"), url("../Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2-up';
+  src: url("../TradeGothicNo2-Bold.eot");
+  src: url("../TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("../TradeGothicNo2-Bold.woff") format("woff"), url("../TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway-Bold.eot");
+  src: url("../Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("../Raleway-Bold.woff") format("woff"), url("../Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT-up';
+  src: url("../TradeGothicLT.eot");
+  src: url("../TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("../TradeGothicLT.woff") format("woff"), url("../TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+.widget-breadcrumbs {
+  font-family: Raleway-up;
+  font-weight: normal;
+  margin: -15px auto 10px auto;
+  padding-top: 7px;
+  color: #7d7d7d;
+  font-size: 0.8em; }
+  .widget-breadcrumbs > ul {
+    display: flex; }
+    .widget-breadcrumbs > ul .first-link {
+      color: #4e4d4d; }
+    .widget-breadcrumbs > ul .sep {
+      margin: 0 6px; }
+    .widget-breadcrumbs > ul a {
+      color: #7d7d7d; }
+      .widget-breadcrumbs > ul a:hover {
+        text-decoration: underline; }
+
+/*# sourceMappingURL=breadcrumbs.css.map */

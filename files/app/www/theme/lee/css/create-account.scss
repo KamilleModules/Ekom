@@ -1,0 +1,50 @@
+.widget-create-account {
+
+  .off-success-message,
+  .off-error-message {
+    padding: 10px;
+    margin-bottom: 20px;
+  }
+
+  .off-success-message {
+    color: green;
+    border: 1px solid green;
+  }
+
+  .off-error-message {
+    color: red;
+    border: 1px solid red;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  &.b2b {
+    .b2b-show {
+      display: block;
+    }
+    .b2c-show {
+      display: none;
+    }
+  }
+  &.b2c {
+    .b2c-show {
+      display: block;
+    }
+    .b2b-show {
+      display: none;
+    }
+  }
+
+  .social-icons-container {
+    display: flex;
+    .social-icon {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+}
+
+

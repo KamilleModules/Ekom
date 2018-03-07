@@ -1,0 +1,189 @@
+/**
+Breakpoints:
+
+
+
+style:
+780
+  topmenu (catalog and social icons) appear
+900
+
+
+slider:
+768
+1170
+
+
+ */
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway.eot");
+  src: url("Raleway.eot?#iefix") format("embedded-opentype"), url("Raleway.woff") format("woff"), url("Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2';
+  src: url("TradeGothicNo2-Bold.eot");
+  src: url("TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("TradeGothicNo2-Bold.woff") format("woff"), url("TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway-Bold.eot");
+  src: url("Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("Raleway-Bold.woff") format("woff"), url("Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT';
+  src: url("TradeGothicLT.eot");
+  src: url("TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("TradeGothicLT.woff") format("woff"), url("TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'next';
+  src: url("TradeGothicNextLTPro-BdCm.eot");
+  src: url("TradeGothicNextLTPro-BdCm.eot?#iefix") format("embedded-opentype"), url("TradeGothicNextLTPro-BdCm.woff") format("woff"), url("TradeGothicNextLTPro-BdCm.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+.table-form.no-label tr td input {
+  height: 30px;
+  padding-left: 12px;
+  font-size: 0.7em;
+  color: #a3a9ad;
+  font-family: "TradeGothic LT";
+  font-weight: normal; }
+.table-form.no-label tr td input[type=checkbox] {
+  width: auto;
+  height: auto; }
+
+.mini-cart-panel {
+  display: block;
+  background: white;
+  position: fixed;
+  top: 40px;
+  right: 20px;
+  padding: 17px;
+  width: 440px;
+  font-family: "TradeGothic LT";
+  font-weight: normal;
+  transform: translateY(-800px);
+  transition: transform ease-out 200ms;
+  z-index: 520;
+  /* be above the contact tab */
+  box-shadow: 0px 10px 40px -10px rgba(0, 0, 0, 0.5); }
+  .mini-cart-panel.opened {
+    display: block;
+    transform: translateY(0); }
+  .mini-cart-panel .header {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #c3c0bf;
+    display: flex;
+    justify-content: flex-start; }
+    .mini-cart-panel .header h1 {
+      font-size: 1.1em;
+      color: #1d1d1b;
+      flex: auto; }
+      .mini-cart-panel .header h1 .smaller {
+        font-size: 0.75em; }
+    .mini-cart-panel .header .panel-close {
+      color: black; }
+  .mini-cart-panel .product-list {
+    padding-bottom: 18px; }
+    .mini-cart-panel .product-list .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-top: 1px solid #eee;
+      padding-top: 14px;
+      padding-bottom: 14px; }
+      .mini-cart-panel .product-list .cart-item.first {
+        border-top: none; }
+      .mini-cart-panel .product-list .cart-item .left .remove-item {
+        display: block;
+        font-size: 0.7em;
+        text-decoration: none;
+        color: #464148;
+        font-family: Raleway;
+        font-weight: bold; }
+        .mini-cart-panel .product-list .cart-item .left .remove-item:hover {
+          text-decoration: underline; }
+      .mini-cart-panel .product-list .cart-item .middle {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        margin-left: 15px;
+        flex: auto; }
+        .mini-cart-panel .product-list .cart-item .middle .product-label {
+          font-size: 0.7em;
+          text-decoration: underline;
+          color: #464148;
+          font-family: Raleway;
+          font-weight: bold;
+          display: block; }
+        .mini-cart-panel .product-list .cart-item .middle .ref {
+          font-size: 0.7em;
+          font-family: Raleway;
+          font-weight: bold;
+          display: block; }
+        .mini-cart-panel .product-list .cart-item .middle .info-line {
+          display: flex;
+          align-items: center;
+          font-size: 0.8em; }
+          .mini-cart-panel .product-list .cart-item .middle .info-line .attributes {
+            font-size: 1em;
+            display: block;
+            margin: 10px 0; }
+          .mini-cart-panel .product-list .cart-item .middle .info-line .quantity-info {
+            margin-left: 10px; }
+            .mini-cart-panel .product-list .cart-item .middle .info-line .quantity-info .quantity-input {
+              width: 40px; }
+      .mini-cart-panel .product-list .cart-item .right .price {
+        position: relative;
+        top: 80px;
+        font-size: 0.9em;
+        color: #e20613;
+        font-family: "TradeGothicNo.2";
+        font-weight: bold; }
+        .mini-cart-panel .product-list .cart-item .right .price abbr {
+          position: relative;
+          font-size: 0.6em;
+          top: -4px;
+          right: 4px; }
+  .mini-cart-panel .bottom-part {
+    padding-top: 0px;
+    border-top: 1px solid #c3c0bf; }
+    .mini-cart-panel .bottom-part .price-table {
+      font-family: "TradeGothic LT";
+      font-weight: normal;
+      font-size: 1em;
+      font-weight: bold;
+      width: 100%; }
+      .mini-cart-panel .bottom-part .price-table tr {
+        height: 28px; }
+        .mini-cart-panel .bottom-part .price-table tr td:first-of-type {
+          text-align: left; }
+        .mini-cart-panel .bottom-part .price-table tr td:last-of-type {
+          text-align: right; }
+        .mini-cart-panel .bottom-part .price-table tr .total-without-tax,
+        .mini-cart-panel .bottom-part .price-table tr .total-with-tax {
+          color: #e20613;
+          font-family: "TradeGothicNo.2";
+          font-weight: bold; }
+    .mini-cart-panel .bottom-part .small-text {
+      font-size: 0.7em;
+      line-height: 2.4em;
+      font-weight: normal; }
+      .mini-cart-panel .bottom-part .small-text b {
+        font-size: 1.3em; }
+    .mini-cart-panel .bottom-part .bottom-actions {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      margin-top: 30px; }
+      .mini-cart-panel .bottom-part .bottom-actions button {
+        width: 210px;
+        margin-top: 6px; }
+
+/*# sourceMappingURL=mini-cart-dropdown.css.map */

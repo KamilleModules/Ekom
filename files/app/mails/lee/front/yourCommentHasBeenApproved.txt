@@ -1,0 +1,7 @@
+Thank you for dropping a comment on our website.
+
+Your comment for product "{productLabel} (ref: {productRef})" has been approved.
+
+Url: {productUri}
+
+Cheers, the team.

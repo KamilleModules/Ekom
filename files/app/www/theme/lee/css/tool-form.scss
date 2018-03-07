@@ -1,0 +1,330 @@
+@import "variables";
+
+$thisGray: #e9e9e9;
+
+.tool-form {
+
+  color: #666;
+
+  .hidden {
+    display: none;
+  }
+
+  .form-handling-error {
+    color: $red;
+    text-align: left;
+    font-size: 0.95em;
+    border: 1px solid $red;
+    margin-bottom: 20px;
+    line-height: 2.6em;
+    padding-left: 10px;
+  }
+
+  .form-handling-success {
+    color: #24aa40;
+    text-align: left;
+    font-size: 0.95em;
+    border: 1px solid #24aa40;
+    margin-bottom: 20px;
+    line-height: 2.9em;
+    padding-left: 20px;
+  }
+
+  .w100 {
+    width: 100%;
+  }
+
+  form.table-form {
+    margin: 0 auto;
+    font-size: 0.8em;
+
+    .submit-container {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    &.no-label tr td {
+
+      label.birthday {
+        margin-right: 10px;
+        display: block;
+      }
+
+      input {
+        font-size: 0.9em;
+        color: #666;
+        border: 1px solid $thisGray;
+      }
+
+      .radio-inputs {
+        display: flex;
+        align-items: center;
+
+        input {
+          margin-left: 10px;
+          margin-right: 4px;
+
+          &:first-of-type {
+            margin-left: 0px;
+          }
+        }
+      }
+
+      .error {
+        color: $red;
+      }
+
+      .asterisk {
+
+        font-size: 1em;
+        margin-right: 2px;
+        position: relative;
+        top: -13px;
+        color: $red;
+
+      }
+
+      .phone-line {
+        display: flex;
+        align-items: center;
+
+        .phone-prefix-selector-trigger {
+          background: #f7f7f7;
+          width: 75px;
+          height: 30px;
+          padding-left: 8px;
+          display: flex;
+          align-items: center;
+          color: #989898;
+          border: 1px solid $thisGray;
+          cursor: pointer;
+        }
+      }
+
+      .phone-prefix-selector {
+
+        display: none;
+        border: 1px solid $thisGray;
+        width: 65px;
+        position: absolute;
+        top: 10px;
+
+        &.selecting {
+          display: block;
+        }
+
+        li {
+          display: flex;
+          align-items: center;
+          background: white;
+          padding: 5px;
+          cursor: pointer;
+          color: #989898;
+
+          &:hover {
+            background: #f7f7f7;
+          }
+        }
+      }
+
+      .flag {
+        width: 20px;
+        height: 11px;
+        background-image: url(#{$themeUri}/css/icons-sprite.png);
+        background-repeat: no-repeat;
+
+        &.flag-france {
+          background-position: -0px -382px;
+        }
+        &.flag-germany {
+          background-position: -20px -382px;
+        }
+        &.flag-luxembourg {
+          background-position: -40px -382px;
+        }
+      }
+
+    }
+
+    & > .title-with-radio {
+      display: flex;
+
+      .title-text {
+        @include font(ralewayBold);
+        font-size: 1.18em;
+        text-transform: uppercase;
+        margin-right: 20px;
+        color: black;
+      }
+
+      .title-radio {
+        @include font(trade);
+        display: flex;
+
+        input {
+          margin-left: 10px;
+          margin-right: 4px;
+        }
+      }
+    }
+
+    .title-bar {
+      background: #535353;
+      color: white;
+      margin-top: 19px;
+      padding: 5px 15px;
+
+      &.red {
+        background: $red;
+
+      }
+
+    }
+
+    /*------------------------------------
+    - EXTRA FIELDS
+    ------------------------------------*/
+    .pro-extra-info {
+      .bloc {
+
+        .title-label {
+          font-weight: bold;
+        }
+
+      }
+    }
+
+    /*------------------------------------
+    -
+    ------------------------------------*/
+    .submit-container {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+  }
+
+  .control {
+    display: flex;
+    align-items: center;
+  }
+
+  .subscriptions {
+    .control {
+      color: #989898;
+      margin-top: 20px;
+
+      &.mt40 {
+        margin-top: 40px;
+      }
+
+      .red-label, .error {
+        color: $red;
+      }
+    }
+  }
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  padding-bottom: 30px;
+  padding-top: 30px;
+
+  .step {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    background: #d2d2d2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    .step-number {
+      color: white;
+      @include font(raleway);
+      font-size: 2em;
+      position: relative;
+      display: flex;
+      justify-content: center;
+
+      .step-label {
+        display: none;
+        position: absolute;
+        @include font(ralewayBold);
+        color: $red;
+        top: 39px;
+
+        font-size: 0.5em;
+        white-space: nowrap;
+
+      }
+    }
+
+    &.active {
+
+      background: $red;
+
+      .step-number {
+        .step-label {
+          display: block;
+        }
+      }
+    }
+
+  }
+
+  .linker {
+    height: 3px;
+    border: 3px solid gray;
+    width: 121px;
+    margin: 0 7px;
+  }
+
+}
+
+.step-1 {
+  .step-1-show {
+    display: block;
+  }
+  .step-2-show {
+    display: none;
+  }
+  .step-3-show {
+    display: none;
+  }
+  .step-1-hide {
+    display: none !important;
+  }
+}
+
+.step-2 {
+  .step-1-show {
+    display: none;
+  }
+  .step-2-show {
+    display: block;
+  }
+  .step-3-show {
+    display: none;
+  }
+  .step-2-hide {
+    display: none !important;
+  }
+}
+
+.step-3 {
+  .step-1-show {
+    display: none;
+  }
+  .step-2-show {
+    display: none;
+  }
+  .step-3-show {
+    display: block;
+  }
+  .step-3-hide {
+    display: none !important;
+  }
+}

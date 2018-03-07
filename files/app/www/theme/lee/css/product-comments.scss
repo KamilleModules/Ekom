@@ -1,0 +1,128 @@
+@import "variables";
+
+.widget-product-comments {
+
+  .line {
+    margin-top: 10px;
+  }
+
+
+  .average-line {
+    margin-top: 50px;
+
+    h4 {
+      font-size: 2em;
+      text-transform: uppercase;
+      @include font(tradeBold);
+      letter-spacing: -1px;
+    }
+  }
+
+  .no-comments-yet {
+    margin-top: 20px;
+  }
+
+  .write-comment-btn,
+  .login-btn
+  {
+    background: $red;
+    color: white;
+    text-transform: uppercase;
+    padding: 14px 15px;
+    border: none;
+    @include font(tradeBold);
+    cursor: pointer;
+  }
+
+  .line-button {
+    margin-top: 34px;
+  }
+
+  .comments-filters {
+    margin-top: 34px;
+    display: flex;
+    justify-content: center;
+
+    .filter {
+      margin: 0px 50px;
+      font-size: 1.3em;
+
+      &.active {
+        color: $red;
+      }
+    }
+  }
+
+  .comments {
+
+    .comment {
+
+      margin-top: 26px;
+
+      .pseudo {
+        font-size: 1.3em;
+        @include font(tradeBold);
+      }
+
+      .rating-line {
+        display: flex;
+
+        .rating-container {
+          display: flex;
+          color: $red;
+          position: relative;
+          left: -4px;
+
+          .rating {
+            margin-right: 15px;
+            unicode-bidi: bidi-override;
+            direction: rtl;
+            display: flex; // prevent starts from wrapping
+          }
+
+          .rating > span {
+            display: inline-block;
+            position: relative;
+            width: 1.2em;
+            font-size: 1.7em;
+
+          }
+
+          .rating > span:before {
+            content: "\2605";
+            position: absolute;
+            color: #dfdfde;
+          }
+
+          .rating > span.hover:before,
+          .rating > span.hover ~ span:before {
+            content: "\2605";
+            position: absolute;
+            color: $red;
+          }
+        }
+
+        .date {
+          color: #ccc;
+          font-size: 1.1em;
+        }
+      }
+
+      & > .title {
+        margin-top: 30px;
+        font-size: 1.5em;
+        @include font(tradeBold);
+        text-transform: uppercase;
+        letter-spacing: -1px;
+      }
+
+      & > .comment-text {
+        margin-top: 13px;
+        line-height: 1.8em;
+        font-size: 0.9em;
+
+      }
+    }
+  }
+
+}

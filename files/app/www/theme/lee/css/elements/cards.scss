@@ -1,0 +1,154 @@
+$layerOpacity: 0.9;
+
+
+.cards-elements {
+  &.grid {
+
+    display: flex;
+    flex-wrap: wrap;
+
+    .card {
+      height: 400px;
+      width: 250px;
+      overflow: hidden;
+      font-size: 1rem;
+      margin-left: 17px;
+      margin-top: 20px;
+      cursor: pointer;
+
+      //&:nth-child(3n - 2) {
+      //  margin-left: 0px;
+      //}
+
+      .image-box {
+        height: 330px;
+        overflow: hidden;
+        position: relative;
+
+        .main-image {
+          width: 250px;
+          height: 250px;
+        }
+
+        .badge {
+          position: absolute;
+
+          &.badge-new {
+            top: 0;
+            left: 0;
+            background: white;
+            opacity: $layerOpacity;
+            color: #333;
+            padding: 7px;
+            font-weight: bold;
+          }
+
+          &.badge-private-sale {
+            bottom: 0;
+            left: 0;
+            background: #010124;
+            color: white;
+            text-transform: uppercase;
+            z-index: 1;
+            padding: 7px;
+            font-weight: normal;
+          }
+        }
+
+        .attribute-layer {
+          position: absolute;
+          background: rgba(255, 255, 255, $layerOpacity);
+          z-index: 1;
+          bottom: -100%;
+          left: 0;
+          right: 0;
+          transition: bottom 0.25s;
+          box-sizing: border-box;
+          padding: 25px 45px 25px 8px;
+
+          .attributes-list {
+            display: flex;
+            flex-wrap: wrap;
+
+            li {
+              border-right: 1px solid black;
+              padding-right: 5px;
+              padding-left: 5px;
+              margin-top: 5px;
+
+              span {
+                color: #d2d2d2;
+                text-decoration: line-through;
+                cursor: default;
+
+              }
+
+              &:last-child {
+                border-right: none;
+              }
+            }
+
+            a {
+              font-size: 0.9em;
+            }
+          }
+        }
+
+        .preview-layer {
+          position: absolute;
+          z-index: 2;
+          bottom: 0;
+          right: 0;
+          width: 70px;
+          height: 50px;
+          background: transparent url(/theme/lee/img/icons/eye.png) no-repeat center 15px;
+          background-size: 23px;
+
+          .text {
+            text-align: center;
+            font-size: 0.7em;
+            display: none;
+          }
+
+        }
+      }
+
+      .price-box {
+        font-size: 1.2em;
+        margin-top: 5px;
+        font-weight: bold;
+      }
+
+      .label-box {
+        font-size: 0.7em;
+        margin-top: 2px;
+      }
+      .color-palette-box {
+        .color-list {
+          display: flex;
+          flex-wrap: wrap;
+
+          li {
+            display: block;
+            width: 10px;
+            height: 10px;
+          }
+        }
+      }
+
+      &:hover,
+      &.hover {
+        .attribute-layer {
+          bottom: 0;
+        }
+
+        .preview-layer {
+          .text {
+            display: block;
+          }
+        }
+      }
+
+    }
+  }
+}

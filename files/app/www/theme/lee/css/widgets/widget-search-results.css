@@ -1,0 +1,59 @@
+/*------------------------------------
+- DIR UP
+------------------------------------*/
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway.eot");
+  src: url("../Raleway.eot?#iefix") format("embedded-opentype"), url("../Raleway.woff") format("woff"), url("../Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2-up';
+  src: url("../TradeGothicNo2-Bold.eot");
+  src: url("../TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("../TradeGothicNo2-Bold.woff") format("woff"), url("../TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway-Bold.eot");
+  src: url("../Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("../Raleway-Bold.woff") format("woff"), url("../Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT-up';
+  src: url("../TradeGothicLT.eot");
+  src: url("../TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("../TradeGothicLT.woff") format("woff"), url("../TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+.widget-search-results .header {
+  margin-top: 30px; }
+  .widget-search-results .header .header-top {
+    display: flex;
+    flex-wrap: wrap; }
+    .widget-search-results .header .header-top .user-search {
+      flex: auto;
+      font-family: "TradeGothicNo.2-up";
+      font-weight: bold;
+      font-size: 2em; }
+      .widget-search-results .header .header-top .user-search .deco-text {
+        color: #d41823; }
+    .widget-search-results .header .header-top .info-result {
+      font-family: Raleway-up;
+      font-weight: normal;
+      white-space: nowrap;
+      font-size: 1em; }
+      .widget-search-results .header .header-top .info-result em {
+        color: #d41823;
+        font-weight: bold; }
+  .widget-search-results .header .filter-bar {
+    margin-top: 30px; }
+.widget-search-results .results-list-container {
+  margin-top: 0px; }
+  .widget-search-results .results-list-container .product-boxes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; }
+    .widget-search-results .results-list-container .product-boxes .product-box {
+      margin: 0 20px; }
+
+/*# sourceMappingURL=widget-search-results.css.map */

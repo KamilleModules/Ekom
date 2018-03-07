@@ -1,0 +1,45 @@
+@import "variables";
+
+.layout-account {
+
+  & > .title {
+    color: $red;
+    padding-top: 45px;
+    font-size: 1.1em;
+    a {
+      color: $red;
+    }
+  }
+
+  .main {
+    display: flex;
+
+    .sidebar {
+      width: 40%;
+      margin-right: 30px;
+      margin-top: 50px;
+    }
+
+    & > .main-content {
+      width: 80%;
+    }
+  }
+
+  // used in wishlist
+  .widget-product-card-list {
+    .sort-element {
+      .simpleselect {
+        width: 350px;
+      }
+    }
+
+
+    // in wishlist: 3 produts per line instead of 2
+    &.carousel-products .product-boxes .product-box {
+      margin: 0 10px;
+    }
+  }
+
+}
+
+

@@ -1,0 +1,22 @@
+.cart .product-list .item .ekom-card-combination-items {
+  margin-top: 7px;
+  margin-bottom: 7px; }
+  .cart .product-list .item .ekom-card-combination-items .ekom-card-combination-item {
+    display: flex;
+    align-items: center; }
+    .cart .product-list .item .ekom-card-combination-items .ekom-card-combination-item .label {
+      font-weight: bold;
+      margin-right: 10px;
+      font-size: 0.9em; }
+    .cart .product-list .item .ekom-card-combination-items .ekom-card-combination-item .attributes {
+      margin: 0px;
+      margin-top: 2px;
+      white-space: nowrap; }
+      .cart .product-list .item .ekom-card-combination-items .ekom-card-combination-item .attributes .attribute {
+        border-right: 1px solid black;
+        padding: 0 5px;
+        font-size: 0.7em; }
+        .cart .product-list .item .ekom-card-combination-items .ekom-card-combination-item .attributes .attribute:last-of-type {
+          border-right: none; }
+
+/*# sourceMappingURL=cart.css.map */

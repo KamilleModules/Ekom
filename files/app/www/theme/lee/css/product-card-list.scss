@@ -1,0 +1,515 @@
+@import "variables";
+
+/*------------------------------------
+- PRODUCTS
+------------------------------------*/
+.widget-product-card-list {
+
+  .title {
+    color: red;
+  }
+
+  .widget-title {
+    font-size: 1.3em;
+    height: 60px;
+    text-align: left;
+    padding-left: 10px;
+    margin-top: 18px;
+  }
+
+  .ajax-target {
+    .ajax-target {
+      width: 500px;
+      height: 500px;
+      &.open {
+
+      }
+    }
+  }
+
+  &.carousel-products {
+
+    margin-top: 0px;
+    .product-boxes {
+      flex-wrap: wrap;
+      height: auto;
+
+      .product-box {
+        margin: 0 20px;
+      }
+    }
+
+  }
+
+}
+
+/*------------------------------------
+- SIDE BAR
+------------------------------------*/
+$sidebarWidgetPadding: 20px;
+.product-list-sidebar {
+
+  .product-list-sidebar-toptext {
+    @include font(raleway);
+  }
+  .product-list-sidebar-inner {
+    background: #f7f7f7;
+    margin-top: 10px;
+    padding: 10px;
+
+    /**
+     * html structure:
+     * - listfilter-box
+     * ----- listfilter-title
+     * ----- listfilter-body
+     */
+    .listfilter-box {
+
+      border-top: 2px solid white;
+      padding-top: 10px;
+      padding-bottom: 10px;
+
+      &.no-border-top {
+        border-top: none;
+      }
+
+      .listfilter-title {
+        @include font(next);
+        text-transform: uppercase;
+        text-align: center;
+        font-weight: bold;
+        padding: 9px;
+        font-size: 1.4em;
+        position: relative;
+        cursor: pointer;
+
+        .listfilter-title-toggler {
+          position: absolute;
+          right: 0px;
+
+          i {
+            background-image: url(#{$themeUri}/css/icons-sprite.png);
+            background-repeat: no-repeat;
+            width: 24px;
+            height: 24px;
+            background-position: -120px -72px;
+          }
+        }
+      }
+
+      &.open {
+        .listfilter-title {
+          .listfilter-title-toggler {
+            i {
+              background-position: -144px -72px;
+            }
+          }
+        }
+      }
+
+      .listfilter-body {
+        font-size: 1em;
+
+        .pretty {
+          input {
+            width: auto;
+            min-width: 0;
+          }
+
+          .state {
+            label::before {
+              border-color: #ececec;
+              background: white;
+              box-shadow: 1px 1px 2px -2px rgba(0, 0, 0, 0.5);
+            }
+          }
+
+        }
+
+      }
+
+      .listfilter-link {
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+    }
+
+    /*------------------------------------
+    - WIDGET LISTFILTER SUMMARY
+    ------------------------------------*/
+    .widget-listfilter-summary {
+
+      .listfilter-title {
+        font-size: 1.4em;
+      }
+
+      .top-title {
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+        font-size: 1.3em;
+      }
+
+      .box-container {
+        background: #f9f9f9;
+        border: 1px solid #f6f6f6;
+        overflow: auto;
+        clear: both;
+        font-size: 0.8em;
+
+        .title-box {
+          font-weight: bold;
+          margin-top: 5px;
+        }
+
+        .filter-box {
+          margin-top: 15px;
+
+          .filter {
+            display: flex;
+            align-items: center;
+            //white-space: nowrap;
+
+            a.delete-box {
+
+              display: flex;
+              align-items: center;
+              width: 100%;
+
+              &:hover {
+                text-decoration: line-through;
+              }
+
+              .delete-icon {
+                display: block;
+                width: 24px;
+                height: 24px;
+                background: transparent url(/theme/lee/img/icons/close.png) no-repeat center center;
+                background-size: contain;
+                margin-right: 5px;
+              }
+            }
+
+          }
+        }
+
+        .clear-all-box {
+          margin-top: 20px;
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+
+    }
+
+    /*------------------------------------
+    - WIDGET LISTFILTER ATTRIBUTES
+    ------------------------------------*/
+    .attribute-box {
+
+      .attribute-links {
+        margin-top: 8px;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        padding: 3px;
+        padding-bottom: 12px;
+
+        .link-box {
+          display: flex;
+          align-items: center;
+          margin-top: 3px;
+          font-size: 0.9em;
+
+          .c-box {
+            display: block;
+            cursor: pointer;
+            margin-right: 9px;
+            width: 20px;
+            height: 20px;
+          }
+        }
+
+      }
+
+      .attribute-color-links {
+
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+
+        .color {
+          margin: 0 3px;
+          width: 25px;
+          height: 25px;
+          border-radius: 30px;
+          text-indent: -100000px;
+          cursor: pointer;
+          border: 1px solid #929292;
+        }
+      }
+
+      /*------------------------------------
+      - PRICE
+      ------------------------------------*/
+      .slider-box {
+        padding: 35px 0;
+        display: flex;
+        flex-direction: column;
+
+        &.price-box {
+          padding: 35px 0 15px 0;
+        }
+
+        .slider-container {
+          padding-top: 20px;
+          .back-bar {
+
+            .pointer {
+              background-image: none;
+              background-color: white;
+              border: 1px solid #eee;
+              box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+              width: 17px;
+              height: 17px;
+              top: -7px;
+            }
+
+            .pointer-label {
+              @include font(tradeBold);
+              font-size: 13px;
+              top: -44px;
+              padding: 8px;
+              box-shadow: 1px 3px 4px 0px rgba(0, 0, 0, 0.1);
+              color: black;
+
+              &::before {
+                width: 0;
+                height: 0;
+                border-style: solid;
+                border-width: 5px 5px 0 5px;
+                border-color: #fff transparent transparent transparent;
+                position: absolute;
+                top: 29px;
+                left: 40%;
+              }
+            }
+          }
+
+          .scale ins {
+            font-size: 13px;
+            display: none;
+          }
+
+          &.theme-green {
+            .back-bar {
+              background-image: none;
+              background-color: white;
+
+              .selected-bar {
+                background-image: none;
+                background-color: $red;
+              }
+            }
+          }
+
+        }
+
+        .range-box {
+          text-align: center;
+          margin: 0 auto;
+        }
+
+        .button-box {
+          margin-top: 30px;
+          display: flex;
+          justify-content: flex-end;
+          color: #525252;
+
+          form {
+            display: flex;
+
+            .ok-box {
+              &.hidden {
+                display: none;
+              }
+              display: block;
+              border: none;
+              background: #ff6c00;
+              color: white;
+              padding: 3px 7px;
+              margin-right: 5px;
+              text-transform: uppercase;
+              font-size: 0.8em;
+              cursor: pointer;
+            }
+
+            .remove-box {
+
+              display: inline-block;
+
+              &.hidden {
+                display: none;
+              }
+
+              a {
+                display: inline-block;
+                border: none;
+                background: #c6c6c6;;
+                color: white;
+                padding: 3px 7px;
+                text-transform: uppercase;
+                font-size: 0.8em;
+                cursor: pointer;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    /*------------------------------------
+    - WIDGET LISTFILTER DISCOUNT
+    ------------------------------------*/
+    &.widget-listfilter-discount {
+      .discount-boxes {
+        padding-top: 13px;
+        display: flex;
+        flex-wrap: wrap;
+        .discount-box {
+
+          @include font(trade);
+          margin: 0 5px;
+          display: flex;
+          flex-direction: column;
+          color: black;
+
+          .badge {
+            font-size: 0.8em;
+          }
+
+        }
+      }
+    }
+
+    /*------------------------------------
+    - EVENTS & TRAINING
+    ------------------------------------*/
+    .widget-listfilter-events {
+      .listfilter-body {
+        display: flex;
+        flex-wrap: wrap;
+
+        section {
+          h4 {
+            margin-top: 20px;
+          }
+        }
+
+        section:first-of-type {
+          h4 {
+            margin-top: 0px;
+          }
+        }
+
+
+        .location-box {
+          display: flex;
+          margin-right: 10px;
+          text-transform: uppercase;
+          width: 46%;
+          margin-top: 12px;
+          font-size: 0.9em;
+
+          a {
+            font-size: 0.9em;
+            text-decoration: none;
+            &:hover {
+              text-decoration: underline !important;
+            }
+          }
+        }
+
+        .date-selector {
+          display: flex;
+          border: 1px solid #c4cacf;
+          width: 100%;
+          background: transparent;
+          transition: background 1s;
+
+          input {
+            padding: 10px;
+            border: none;
+            background: transparent;
+            flex: auto;
+          }
+
+          i {
+            margin-top: 3px;
+            margin-right: 3px;
+          }
+
+          &.highlighted {
+            background: #f9ff00;
+          }
+
+        }
+
+        .calendars {
+          width: 300px;
+          overflow: hidden;
+          margin-top: 5px;
+
+          .calendar-slider {
+            position: relative;
+            left: 0px;
+            display: flex;
+
+            .lee-calendar {
+              margin: 0 30px;
+
+              .date-info {
+                text-align: center;
+                padding: 10px 0;
+              }
+
+              .header {
+                width: 211px;
+              }
+
+              &.calendar-one {
+                .active {
+                  background: #e30606;
+                  color: white;
+                  box-shadow: none;
+                  border-top-left-radius: 50px;
+                  border-bottom-left-radius: 50px;
+                  border-top-right-radius: 0px;
+                  border-bottom-right-radius: 0px;
+                }
+              }
+
+              &.calendar-two {
+                .active {
+                  color: white;
+                  background: #e30606;
+                  box-shadow: none;
+                  border-top-right-radius: 50px;
+                  border-bottom-right-radius: 50px;
+                  border-top-left-radius: 0px;
+                  border-bottom-left-radius: 0px;
+                }
+              }
+
+            }
+          }
+
+        }
+      }
+    }
+  }
+}
+

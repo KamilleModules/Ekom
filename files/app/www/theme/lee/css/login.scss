@@ -1,0 +1,41 @@
+@import "variables";
+
+.widget-login {
+
+  display: flex;
+  justify-content: space-between;
+  padding-top: 47px;
+
+  h2 {
+    color: $red;
+    @include font(raleway);
+    font-size: 1.5em;
+  }
+  .text {
+    font-size: 1.3em;
+    color: #585858;
+    margin-top: 15px;
+    margin-bottom: 25px;
+  }
+
+  .left-column {
+
+  }
+
+  .right-column {
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .thin-text {
+      font-size: 0.7em;
+      color: #a3a9ad;
+      @include font(trade);
+    }
+
+    .error {
+      color: $red;
+    }
+  }
+}

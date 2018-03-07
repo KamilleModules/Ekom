@@ -1,0 +1,11 @@
+A new comment on the product "{productLabel} ({productRef})" is waiting for your approval.
+
+Product uri: {productUri}
+
+The text was:
+
+{title}
+{comment}
+
+
+Posted {date}

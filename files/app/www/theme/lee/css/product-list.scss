@@ -1,0 +1,202 @@
+@import "variables";
+
+$colorRedCart: $red;
+$colorRedPrice: $red;
+$colorBorderInput: #999;
+
+
+.product-list {
+
+  /*------------------------------------
+  - product list
+  ------------------------------------*/
+  .item {
+    display: flex;
+    flex-direction: column;
+
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+
+  .item:first-of-type {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  .item .product-bar {
+    display: flex;
+  }
+
+  .item .product-bar .image {
+    margin-right: 25px;
+    width: 150px;
+  }
+
+  .item .product-bar .image img {
+    max-width: none;
+  }
+
+  .item .product-bar .product-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    //border-right: 1px solid $colorGrayBorder;
+    width: 270px;
+
+    a{
+      color: black;
+    }
+  }
+
+  .item .product-bar .product-info .label {
+    @include font(ralewayBold);
+    font-size: 0.9em;
+    text-decoration: underline;
+
+  }
+
+  .item .product-bar .product-info .ref {
+    font-weight: bold;
+    font-size: 0.7em;
+  }
+
+  .item .product-bar .product-info .attributes {
+    font-size: 0.9em;
+    margin-top: 6px;
+
+    .attribute-name {
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 0.8em;
+    }
+
+    .attribute-value {
+      text-transform: uppercase;
+      font-size: 0.8em;
+    }
+  }
+
+  .item .product-bar .product-info .stock-info {
+    font-size: 0.9em;
+    margin-top: 6px;
+  }
+
+  .item .product-bar .quantity-container {
+    margin-left: 40px;
+    padding-right: 0px;
+
+    .quantity-plusminus-boxes {
+      display: flex;
+
+      .minus-box {
+        border: 1px solid gray;
+        font-size: 2.7em;
+        padding: 7px;
+        text-align: center;
+        width: 39px;
+        height: 36px;
+        padding-top: 3px;
+        cursor: pointer;
+      }
+
+      .plus-box {
+        border: 1px solid gray;
+        font-size: 2em;
+        padding: 7px;
+        text-align: center;
+        width: 39px;
+        height: 36px;
+        padding-top: 7px;
+        cursor: pointer;
+
+      }
+
+      .quantity {
+        margin: 0px 18px;
+        height: 30px;
+        line-height: 33px;
+        color: #bbb;
+      }
+    }
+
+    .unit-price {
+      font-size: 0.75em;
+      font-weight: bold;
+      margin-top: 13px;
+      white-space: nowrap;
+
+      .unit-price-text {
+        position: relative;
+        abbr {
+          position: absolute;
+          top: -5px;
+          font-size: 0.7em;
+        }
+      }
+
+    }
+
+  }
+
+  .item .product-bar .price-container {
+    margin-left: 40px;
+    margin-right: 10px;
+  }
+
+  .item .product-bar .price-container .price-with-tax,
+  .item .product-bar .price-container .price-to-pay,
+  .item .product-bar .price-container .price-without-tax {
+    color: $colorRedPrice;
+    @include font(tradeBold);
+    font-size: 1.4em;
+    position: relative;
+  }
+
+  .item .product-bar .price-container .price-to-pay abbr,
+  .item .product-bar .price-container .price-with-tax abbr {
+    position: absolute;
+    font-size: 0.5em;
+    right: -20px;
+    bottom: 4px;
+    font-style: normal;
+
+  }
+
+  .item .product-bar .price-container .price-without-tax {
+    font-size: 1em;
+    text-align: left;
+    margin-top: 15px;
+    position: relative;
+    color: dimgray;
+    top: -7px;
+
+    &.linethrough {
+      text-decoration: line-through;
+    }
+
+    abbr {
+      position: absolute;
+      font-size: 0.6em;
+      font-style: normal;
+      bottom: 3px;
+
+    }
+  }
+
+  .item .action-bar {
+    margin-top: 20px;
+  }
+
+  .item .action-bar a {
+    text-decoration: underline;
+    @include font(trade);
+    font-weight: bold;
+    font-size: 0.8em;
+  }
+
+  .item .action-bar a:first-of-type,
+  .item .action-bar a:nth-of-type(2) {
+    margin-right: 20px;
+  }
+}

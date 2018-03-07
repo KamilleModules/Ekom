@@ -1,0 +1,80 @@
+@import "variables";
+
+.sort-element {
+
+  .nb-items-box {
+    font-size: 0.8em;
+    display: flex;
+    align-items: center;
+
+    .nb-items {
+      margin-right: 4px;
+    }
+  }
+
+  .action-bar {
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    margin-top: 5px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+
+    .sort-box {
+
+      display: flex;
+
+      form {
+        display: flex;
+        align-items: center;
+
+        .simpleselect {
+          display: inline-block;
+          margin: 0 5px;
+        }
+      }
+
+      .sort-dir-btn {
+        display: inline-block;
+        border: none;
+        width: 32px;
+        height: 32px;
+        background: white;
+        color: black;
+        font-weight: bold;
+        transition: background-color 200ms linear;
+
+        &:hover {
+          background: black;
+          color: white;
+        }
+      }
+    }
+
+  }
+
+}
+
+/*------------------------------------
+- PRODUCT LIST
+------------------------------------*/
+.carousel-product-list {
+  .sort-element {
+
+    @include font2(trade);
+
+    .action-bar {
+      border: none;
+      margin-top: -13px;
+      padding-top: 0px;
+      padding-left: 13px;
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .sort-element .action-bar .sort-box form .simpleselect {
+    margin-left: 15px;
+    text-align: left;
+  }
+}

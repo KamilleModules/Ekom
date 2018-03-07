@@ -1,0 +1,129 @@
+@import "variables";
+
+.widget-product-events-agenda {
+
+  margin-top: 40px;
+
+  .top-title {
+    font-size: 0.9em;
+  }
+
+  .agenda-columns {
+    display: flex;
+    //flex-wrap: wrap;
+    justify-content: space-around;
+    clear: both;
+    padding-top: 30px;
+
+    .day {
+      font-size: 0.75em;
+
+      .title {
+        color: red;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      .hours {
+        li {
+          height: 30px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 250px;
+
+          .time {
+            font-weight: bold;
+          }
+
+          .label {
+            margin-left: 4px;
+          }
+
+        }
+      }
+
+    }
+
+  }
+}
+
+.widget-product-events-presenters {
+  margin-top: 40px;
+  font-size: 0.9em;
+
+  .carousel-products {
+    clear: both;
+    padding-top: 20px;
+  }
+}
+
+.widget-product-events-location {
+  margin-top: 40px;
+  font-size: 0.9em;
+
+  .location-container {
+    padding-top: 10px;
+    padding-bottom: 30px;
+    clear: both;
+    display: flex;
+    height: 270px;
+
+    .map {
+      flex: auto;
+      width: 70%;
+      margin-right: 5%;
+
+    }
+    .info {
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 30px;
+
+      .top {
+        flex: auto;
+        .main {
+          font-weight: bold;
+          display: block;
+        }
+      }
+    }
+  }
+}
+
+.widget-product-events-hotel {
+  .hotel-container {
+    clear: both;
+    display: flex;
+    padding-bottom: 40px;
+
+    .left {
+      width: 70%;
+      flex: auto;
+      margin-right: 10px;
+
+      // here the user is free to operate inside the .client class
+      .client {
+        .pad {
+          padding: 10px;
+        }
+      }
+
+      .hotel-label {
+        padding-top: 30px;
+      }
+
+      .more-info {
+        margin-top: 10px;
+      }
+    }
+    .right {
+
+    }
+
+    .no-hotel {
+      margin-top: 20px;
+    }
+
+  }
+}

@@ -1,0 +1,133 @@
+/**
+Breakpoints:
+
+
+
+style:
+780
+  topmenu (catalog and social icons) appear
+900
+
+
+slider:
+768
+1170
+
+
+ */
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway.eot");
+  src: url("Raleway.eot?#iefix") format("embedded-opentype"), url("Raleway.woff") format("woff"), url("Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2';
+  src: url("TradeGothicNo2-Bold.eot");
+  src: url("TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("TradeGothicNo2-Bold.woff") format("woff"), url("TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway-Bold.eot");
+  src: url("Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("Raleway-Bold.woff") format("woff"), url("Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT';
+  src: url("TradeGothicLT.eot");
+  src: url("TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("TradeGothicLT.woff") format("woff"), url("TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'next';
+  src: url("TradeGothicNextLTPro-BdCm.eot");
+  src: url("TradeGothicNextLTPro-BdCm.eot?#iefix") format("embedded-opentype"), url("TradeGothicNextLTPro-BdCm.woff") format("woff"), url("TradeGothicNextLTPro-BdCm.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+.table-form.no-label tr td input {
+  height: 30px;
+  padding-left: 12px;
+  font-size: 0.7em;
+  color: #a3a9ad;
+  font-family: "TradeGothic LT";
+  font-weight: normal; }
+.table-form.no-label tr td input[type=checkbox] {
+  width: auto;
+  height: auto; }
+
+.widget-product-bundles .line {
+  margin-top: 10px; }
+.widget-product-bundles .bundles {
+  margin-top: 10px;
+  margin-bottom: 20px; }
+  .widget-product-bundles .bundles .bundle {
+    margin-top: 20px;
+    display: flex; }
+    .widget-product-bundles .bundles .bundle .product-images {
+      display: flex;
+      align-items: center; }
+      .widget-product-bundles .bundles .bundle .product-images img {
+        display: inline-block;
+        height: 200px; }
+      .widget-product-bundles .bundles .bundle .product-images .plus {
+        display: inline-block;
+        font-size: 2.5em;
+        margin-left: 10px;
+        margin-right: 10px; }
+    .widget-product-bundles .bundles .bundle .payment-block {
+      margin-left: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 20px; }
+      .widget-product-bundles .bundles .bundle .payment-block .price-info .price-with-tax.line-through {
+        color: gray;
+        text-decoration: line-through;
+        font-size: 1.1em; }
+      .widget-product-bundles .bundles .bundle .payment-block .price-info .price-with-tax abbr {
+        font-size: 0.6em;
+        position: relative;
+        top: -8px; }
+      .widget-product-bundles .bundles .bundle .payment-block .price-info .sale-price {
+        color: #e20613;
+        font-size: 1.4em;
+        font-weight: bold;
+        margin-left: 4px; }
+        .widget-product-bundles .bundles .bundle .payment-block .price-info .sale-price abbr {
+          font-size: 0.6em;
+          position: relative;
+          top: -8px; }
+      .widget-product-bundles .bundles .bundle .payment-block .description {
+        margin-top: 10px;
+        font-size: 0.9em;
+        flex: auto; }
+        .widget-product-bundles .bundles .bundle .payment-block .description > span {
+          display: block; }
+        .widget-product-bundles .bundles .bundle .payment-block .description ul {
+          margin-top: 7px; }
+          .widget-product-bundles .bundles .bundle .payment-block .description ul li {
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap; }
+            .widget-product-bundles .bundles .bundle .payment-block .description ul li label {
+              margin-left: 5px;
+              white-space: nowrap; }
+            .widget-product-bundles .bundles .bundle .payment-block .description ul li a {
+              text-decoration: underline;
+              margin-left: 6px;
+              color: #0093ff;
+              white-space: nowrap; }
+            .widget-product-bundles .bundles .bundle .payment-block .description ul li .price {
+              color: #e20613;
+              margin-left: 7px;
+              white-space: nowrap; }
+              .widget-product-bundles .bundles .bundle .payment-block .description ul li .price.line-through {
+                text-decoration: line-through;
+                color: #bababa; }
+      .widget-product-bundles .bundles .bundle .payment-block .buy-button {
+        padding: 5px 44px;
+        font-size: 0.8em; }
+
+/*# sourceMappingURL=product-bundles.css.map */

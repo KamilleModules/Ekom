@@ -1,0 +1,77 @@
+@import "account-variables";
+
+.widget-training-history {
+
+  .container {
+
+    .training-item {
+
+      margin-top: 20px;
+
+      .collapsible-bar {
+
+        .training-name {
+          flex: auto;
+          margin-left: 5px;
+        }
+        .training-session {
+          margin-right: 10px;
+        }
+      }
+
+      .content {
+
+        margin-top: 16px;
+
+        .info {
+          @include font2(raleway);
+
+          .line {
+            line-height: 1.5em;
+          }
+        }
+
+        .downloads {
+          margin-top: 15px;
+          margin-bottom: 50px;
+          display: flex;
+          flex-wrap: wrap;
+
+          .download-item {
+
+            display: flex;
+            flex-direction: column;
+
+            .title-block {
+              padding: 15px;
+              padding-bottom: 3px;
+              flex: auto;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+
+              .title {
+                @include font2(trade);
+                text-align: center;
+                font-weight: bold;
+              }
+            }
+
+            &.bus-block {
+              width: 170px;
+              margin: 10px;
+
+            }
+
+            .bottom {
+              margin-top: 9px;
+            }
+          }
+        }
+      }
+
+    }
+
+  }
+
+}

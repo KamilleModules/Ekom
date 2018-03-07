@@ -1,0 +1,84 @@
+@import "account-variables";
+
+.widget-dashboard {
+
+  padding-bottom: 180px;
+
+  .line {
+    display: flex;
+    justify-content: space-between;
+
+    .block {
+      padding: 1px;
+
+      .top-space-order,
+      .top-space-preferences,
+      .top-space-information,
+      .top-space-points {
+        width: 300px;
+        height: 200px;
+        background-size: contain;
+      }
+
+      .top-space-order {
+        background: url(/theme/lee/img/icons/customer/order.jpg) center center no-repeat;
+      }
+      .top-space-preferences {
+        background: url(/theme/lee/img/icons/customer/preferences.jpg) center center no-repeat;
+      }
+      .top-space-information {
+        background: url(/theme/lee/img/icons/customer/information.jpg) center center no-repeat;
+      }
+
+      .top-space-points {
+
+        display: flex;
+        flex-direction:column;
+        align-items: stretch;
+        justify-content: center;
+
+
+        .bignumber {
+          font-size: 4.2em;
+          padding-bottom: 41px;
+          margin-bottom: 17px;
+          border-bottom: 5px solid black;
+          @include font2(raleway);
+          text-align: center;
+        }
+
+        .bigtext {
+          text-align: center;
+          font-size: 1.7em;
+          @include font2(raleway);
+        }
+      }
+
+      .title {
+        color: $red;
+        font-size: 1.67em;
+        @include font2(ralewayBold);
+        margin-top: 9px;
+      }
+
+      .links {
+        margin-top: 15px;
+
+
+        a {
+          color: $gray;
+          display: block;
+          @include font2(raleway);
+          font-size: 1.15em;
+          line-height: 1.17em;
+
+          em {
+            color: $red;
+            font-style: normal;
+          }
+        }
+      }
+
+    }
+  }
+}

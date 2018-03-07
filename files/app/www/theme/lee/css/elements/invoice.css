@@ -1,0 +1,55 @@
+/*------------------------------------
+- DIR UP
+------------------------------------*/
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway.eot");
+  src: url("../Raleway.eot?#iefix") format("embedded-opentype"), url("../Raleway.woff") format("woff"), url("../Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2-up';
+  src: url("../TradeGothicNo2-Bold.eot");
+  src: url("../TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("../TradeGothicNo2-Bold.woff") format("woff"), url("../TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway-Bold.eot");
+  src: url("../Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("../Raleway-Bold.woff") format("woff"), url("../Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT-up';
+  src: url("../TradeGothicLT.eot");
+  src: url("../TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("../TradeGothicLT.woff") format("woff"), url("../TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+.invoice-elements {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap; }
+  .invoice-elements .invoice-element {
+    font-family: "TradeGothic LT-up";
+    font-weight: normal;
+    margin: 10px; }
+    .invoice-elements .invoice-element .facture {
+      padding-top: 10px;
+      font-weight: bold;
+      text-align: center;
+      font-size: 1.1em; }
+    .invoice-elements .invoice-element .lines {
+      padding: 10px;
+      line-height: 1.6em; }
+      .invoice-elements .invoice-element .lines .line {
+        white-space: nowrap;
+        width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis; }
+        .invoice-elements .invoice-element .lines .line .value.small {
+          font-size: 0.6em; }
+
+.simpleselect {
+  width: 250px !important; }
+
+/*# sourceMappingURL=invoice.css.map */

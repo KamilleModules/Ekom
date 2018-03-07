@@ -1,0 +1,71 @@
+@import "variables";
+
+.widget-category-summary {
+  margin-top: 25px;
+  margin-bottom: 30px;
+  @include font2(trade);
+
+  .main-block {
+    margin-top: 0px;
+
+    h2 {
+      font-size: 1.5em;
+      line-height: 1.2em;
+      color: black;
+
+      .colored {
+        color: $red;
+      }
+    }
+
+    .description {
+      font-size: 0.8em;
+      line-height: 1.3em;
+      margin-top: 20px;
+
+      .truncated{
+        color: $red;
+        text-decoration: underline;
+      }
+
+      .description_suite{
+        display: none;
+        margin-left: -4px;
+      }
+    }
+  }
+
+  .aux-block {
+
+    display: flex;
+    justify-content: flex-start;
+    flex: auto;
+    margin-top: 21px;
+    margin-bottom: 60px;
+
+    .col {
+      margin: 0 10px;
+
+      &:first-of-type{
+        margin-left: 0px;
+      }
+
+      ul {
+        li {
+
+          a {
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9em;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+
+        }
+      }
+    }
+  }
+
+}

@@ -1,0 +1,120 @@
+<?php 
+
+use QuickPdo\QuickPdo;
+use Kamille\Utils\Morphic\Helper\MorphicHelper;
+use Module\Ekom\Back\User\EkomNullosUser;
+use SokoForm\Form\SokoFormInterface;
+use SokoForm\Form\SokoForm;
+use SokoForm\Control\SokoAutocompleteInputControl;
+use SokoForm\Control\SokoInputControl;
+use SokoForm\Control\SokoChoiceControl;
+use SokoForm\Control\SokoBooleanChoiceControl;
+use Module\Ekom\Utils\E;
+use Module\Ekom\Back\Helper\BackFormHelper;
+use Module\Ekom\SokoForm\Control\EkomSokoDateControl;
+
+
+$choice_order_status_id = QuickPdo::fetchAll("select id, concat(id, \". \", code) as label from kamille.ek_order_status", [], \PDO::FETCH_COLUMN|\PDO::FETCH_UNIQUE);
+
+
+//--------------------------------------------
+// SIMPLE FORM PATTERN
+//--------------------------------------------
+$ric=[
+    'id',
+];
+$order_id = MorphicHelper::getFormContextValue("order_id", $context);
+$avatar = MorphicHelper::getFormContextValue("avatar", $context);
+$id = (array_key_exists('id', $_GET)) ? $_GET['id'] : null;
+        
+//--------------------------------------------
+// UPDATE|INSERT MODE
+//--------------------------------------------
+$isUpdate = MorphicHelper::getIsUpdate($ric);
+        
+//--------------------------------------------
+// FORM
+//--------------------------------------------
+$conf = [
+    //--------------------------------------------
+    // FORM WIDGET
+    //--------------------------------------------
+    'title' => "Order has order status",
+    //--------------------------------------------
+    // SOKO FORM
+    'form' => SokoForm::create()
+        ->setName("soko-form-ek_order_has_order_status")
+        ->addControl(SokoInputControl::create()
+            ->setName("id")
+            ->setLabel("Id")
+            ->setProperties([
+                'readonly' => true,
+            ])
+            ->setValue($id)
+        )
+        ->addControl(SokoInputControl::create()
+            ->setName("order_id")
+            ->setLabel("Order id")
+            ->setProperties([
+                'readonly' => true,
+            ])
+            ->setValue($order_id)
+        )
+        ->addControl(SokoChoiceControl::create()
+            ->setName("order_status_id")
+            ->setLabel('Order status id')
+            ->setChoices($choice_order_status_id)
+            ->setProperties([
+                'readonly' => $isUpdate,
+            ])
+            
+        )
+        ->addControl(EkomSokoDateControl::create()
+            ->useDatetime()
+            ->setName("date")
+            ->setLabel("Date")
+            ->addProperties([
+                "required" => true,                       
+            ])
+                        
+        )
+        ->addControl(SokoInputControl::create()
+            ->setName("extra")
+            ->setLabel("Extra")
+        )
+    ,        
+    'feed' => MorphicHelper::getFeedFunction("ek_order_has_order_status"),
+    'process' => function ($fData, SokoFormInterface $form) use ($isUpdate, $avatar, $id) {
+
+        
+
+        if (false === $isUpdate) {
+            QuickPdo::insert("ek_order_has_order_status", [
+				"order_id" => $fData["order_id"],
+				"order_status_id" => $fData["order_status_id"],
+				"date" => $fData["date"],
+				"extra" => $fData["extra"],
+
+            ]);
+            $form->addNotification("Le/la Order has order status pour le/la order \"$avatar\" a bien été ajouté(e)", "success");
+        } else {
+            QuickPdo::update("ek_order_has_order_status", [
+				"order_id" => $fData["order_id"],
+				"order_status_id" => $fData["order_status_id"],
+				"date" => $fData["date"],
+				"extra" => $fData["extra"],
+
+            ], [
+				["id", "=", $id],
+            
+            ]);
+            $form->addNotification("Le/la Order has order status pour le/la order \"$avatar\" a bien été mis(e) à jour", "success");
+        }
+        return false;
+    },
+    //--------------------------------------------
+    // to fetch values
+    'ric' => $ric,
+];
+
+

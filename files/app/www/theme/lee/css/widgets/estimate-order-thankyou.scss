@@ -1,0 +1,49 @@
+@import "variables";
+
+$thisColor: #525252;
+
+.widget-estimate-order-thank-you {
+
+  padding-bottom: 350px;
+
+  @include font2(trade);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .title {
+    font-size: 1.7em;
+    color: $thisColor;
+    font-weight: bold;
+  }
+
+  .main-text {
+    margin-top: 23px;
+    font-size: 1.25em;
+    line-height: 1.2em;
+    color: #7d7d7d;
+  }
+
+  .teaser {
+    color: #e30613;
+    margin-top: 8px;
+
+    .important {
+      font-weight: bold;
+    }
+  }
+
+  .goto-estimate-btn {
+    margin-top: 20px;
+  }
+
+  .image-container {
+    margin-top: 20px;
+  }
+
+  .continue-purchase-btn {
+    margin-top: 20px;
+  }
+
+}

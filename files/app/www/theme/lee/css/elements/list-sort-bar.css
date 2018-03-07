@@ -1,0 +1,25 @@
+.list-sort-bar-element .nb-items-box {
+  font-size: 0.8em; }
+.list-sort-bar-element .action-bar {
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  margin-top: 5px;
+  padding-top: 10px;
+  padding-bottom: 10px; }
+  .list-sort-bar-element .action-bar .sort-box {
+    display: flex; }
+    .list-sort-bar-element .action-bar .sort-box .sort-dir-btn {
+      display: inline-block;
+      border: none;
+      width: 32px;
+      height: 32px;
+      background: white;
+      color: black;
+      font-weight: bold;
+      transition: background-color 200ms linear; }
+      .list-sort-bar-element .action-bar .sort-box .sort-dir-btn:hover {
+        background: black;
+        color: white; }
+
+/*# sourceMappingURL=list-sort-bar.css.map */

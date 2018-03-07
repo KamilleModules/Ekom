@@ -1,0 +1,157 @@
+/**
+Breakpoints:
+
+
+
+style:
+780
+  topmenu (catalog and social icons) appear
+900
+
+
+slider:
+768
+1170
+
+
+ */
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway.eot");
+  src: url("Raleway.eot?#iefix") format("embedded-opentype"), url("Raleway.woff") format("woff"), url("Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2';
+  src: url("TradeGothicNo2-Bold.eot");
+  src: url("TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("TradeGothicNo2-Bold.woff") format("woff"), url("TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway-Bold.eot");
+  src: url("Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("Raleway-Bold.woff") format("woff"), url("Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT';
+  src: url("TradeGothicLT.eot");
+  src: url("TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("TradeGothicLT.woff") format("woff"), url("TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'next';
+  src: url("TradeGothicNextLTPro-BdCm.eot");
+  src: url("TradeGothicNextLTPro-BdCm.eot?#iefix") format("embedded-opentype"), url("TradeGothicNextLTPro-BdCm.woff") format("woff"), url("TradeGothicNextLTPro-BdCm.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+.table-form.no-label tr td input {
+  height: 30px;
+  padding-left: 12px;
+  font-size: 0.7em;
+  color: #a3a9ad;
+  font-family: "TradeGothic LT";
+  font-weight: normal; }
+.table-form.no-label tr td input[type=checkbox] {
+  width: auto;
+  height: auto; }
+
+.seo-text {
+  font-size: 13px;
+  line-height: 1.4em;
+  padding-top: 10px; }
+
+.category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px; }
+
+.category-grid .item {
+  margin: 10px;
+  width: 300px;
+  font-family: "TradeGothic LT";
+  color: #4e4e4f; }
+
+.category-grid .item .text {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #838383; }
+
+.category-grid .item .text b {
+  font-size: 13px; }
+
+.category-grid-widget .flex-line {
+  display: flex; }
+  .category-grid-widget .flex-line .item {
+    margin: 2%;
+    font-family: "TradeGothic LT";
+    color: #4e4e4f;
+    width: 30%;
+    position: relative; }
+    .category-grid-widget .flex-line .item.space-2 {
+      width: 64%; }
+    .category-grid-widget .flex-line .item h2 {
+      position: absolute;
+      top: 12px;
+      left: 20px;
+      z-index: 10;
+      font-family: "TradeGothicNo.2";
+      font-weight: bold;
+      line-height: 1.1em;
+      color: #666;
+      transition: color .5s ease; }
+    .category-grid-widget .flex-line .item .text {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #838383; }
+      .category-grid-widget .flex-line .item .text b {
+        font-size: 13px; }
+    .category-grid-widget .flex-line .item .image {
+      position: relative; }
+      .category-grid-widget .flex-line .item .image .overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: black;
+        opacity: 0;
+        z-index: 1;
+        transition: opacity .5s ease; }
+      .category-grid-widget .flex-line .item .image .video-overlay {
+        position: absolute;
+        width: 160px;
+        height: 160px;
+        background: url(/theme/lee/css/icons-sprite.png) -266px -304px no-repeat;
+        z-index: 10;
+        transition: opacity .5s ease;
+        top: 70px;
+        right: 0;
+        left: 240px;
+        cursor: pointer; }
+      .category-grid-widget .flex-line .item .image .link-product {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        position: absolute;
+        width: 180px;
+        height: 36px;
+        z-index: 2;
+        bottom: 40px;
+        background: white;
+        padding: 0;
+        left: 52px;
+        padding-top: 8px;
+        text-align: center;
+        font-family: Raleway;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.88em; }
+    .category-grid-widget .flex-line .item:hover h2 {
+      color: white; }
+    .category-grid-widget .flex-line .item:hover .overlay {
+      opacity: 0.5; }
+    .category-grid-widget .flex-line .item:hover .link-product {
+      opacity: 1; }
+    .category-grid-widget .flex-line .item:hover .video-overlay {
+      opacity: 1; }
+
+/*# sourceMappingURL=page-category.css.map */

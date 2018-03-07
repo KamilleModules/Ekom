@@ -1,0 +1,135 @@
+@import "variables";
+
+.seo-text {
+  font-size: 13px;
+  line-height: 1.4em;
+  padding-top: 10px;
+}
+
+.category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.category-grid .item {
+  margin: 10px;
+  width: 300px;
+  font-family: "TradeGothic LT";
+  color: #4e4e4f;
+
+}
+
+.category-grid .item .text {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #838383;
+}
+
+.category-grid .item .text b {
+  font-size: 13px;
+}
+
+.category-grid-widget {
+  .flex-line {
+    display: flex;
+
+    .item {
+      margin: 2%;
+      font-family: "TradeGothic LT";
+      color: #4e4e4f;
+      width: 30%;
+      position: relative;
+
+      &.space-2 {
+        width: 64%;
+      }
+
+      h2 {
+        position: absolute;
+        top: 12px;
+        left: 20px;
+        z-index: 10;
+        @include font(tradeBold);
+        line-height: 1.1em;
+        color: #666;
+        transition: color .5s ease;
+      }
+
+      .text {
+        margin-top: 6px;
+        font-size: 12px;
+        color: #838383;
+
+        b {
+          font-size: 13px;
+        }
+      }
+
+      .image {
+        position: relative;
+
+        .overlay {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          background: black;
+          opacity: 0;
+          z-index: 1;
+          transition: opacity .5s ease;
+        }
+
+        .video-overlay {
+          position: absolute;
+          width: 160px;
+          height: 160px;
+          background: url(#{$themeUri}/css/icons-sprite.png) -266px -304px no-repeat;
+          //opacity: 0;
+          z-index: 10;
+          transition: opacity .5s ease;
+          top: 70px;
+          right: 0;
+          left: 240px;
+          cursor: pointer;
+        }
+
+        .link-product {
+          opacity: 0;
+          transition: opacity 0.2s ease;
+          position: absolute;
+          width: 180px;
+          height: 36px;
+          z-index: 2;
+          bottom: 40px;
+          background: white;
+          padding: 0;
+          left: 52px;
+          padding-top: 8px;
+          text-align: center;
+          @include font(ralewayBold);
+          text-transform: uppercase;
+          font-size: 0.88em;
+        }
+      }
+
+      &:hover {
+        h2 {
+          color: white;
+        }
+
+        .overlay {
+          opacity: 0.5;
+        }
+
+        .link-product {
+          opacity: 1;
+        }
+
+        .video-overlay {
+          opacity: 1;
+        }
+      }
+    }
+  }
+}

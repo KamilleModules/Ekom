@@ -1,0 +1,268 @@
+/**
+This contains the soko form styling for the whole application.
+*/
+/**
+Breakpoints:
+
+
+
+style:
+780
+  topmenu (catalog and social icons) appear
+900
+
+
+slider:
+768
+1170
+
+
+ */
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway.eot");
+  src: url("Raleway.eot?#iefix") format("embedded-opentype"), url("Raleway.woff") format("woff"), url("Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2';
+  src: url("TradeGothicNo2-Bold.eot");
+  src: url("TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("TradeGothicNo2-Bold.woff") format("woff"), url("TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway-Bold.eot");
+  src: url("Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("Raleway-Bold.woff") format("woff"), url("Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT';
+  src: url("TradeGothicLT.eot");
+  src: url("TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("TradeGothicLT.woff") format("woff"), url("TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'next';
+  src: url("TradeGothicNextLTPro-BdCm.eot");
+  src: url("TradeGothicNextLTPro-BdCm.eot?#iefix") format("embedded-opentype"), url("TradeGothicNextLTPro-BdCm.woff") format("woff"), url("TradeGothicNextLTPro-BdCm.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+.table-form.no-label tr td input {
+  height: 30px;
+  padding-left: 12px;
+  font-size: 0.7em;
+  color: #a3a9ad;
+  font-family: "TradeGothic LT";
+  font-weight: normal; }
+.table-form.no-label tr td input[type=checkbox] {
+  width: auto;
+  height: auto; }
+
+.soko-error-container {
+  display: none; }
+  .soko-error-container.soko-active {
+    display: table-row; }
+  .soko-error-container .soko-error {
+    color: #e20613; }
+
+/*------------------------------------
+- TABLE FLAVOUR STYLING
+------------------------------------*/
+.soko-form {
+  font-size: 0.8em;
+  /*------------------------------------
+  - DIFFERENT SIZES
+  ------------------------------------*/
+  /*------------------------------------
+  - CREATE ACCOUNT SPECIFIC
+  ------------------------------------*/ }
+  .soko-form.not-smaller {
+    font-size: 1em; }
+  .soko-form .soko-notification {
+    margin-bottom: 20px; }
+  .soko-form .separator {
+    border: none;
+    border-top: 1px solid #e3e3e3; }
+  .soko-form .title-with-radio {
+    display: flex;
+    align-items: center; }
+    .soko-form .title-with-radio .title-text {
+      font-family: Raleway;
+      font-weight: bold;
+      font-size: 1.18em;
+      text-transform: uppercase;
+      margin-right: 20px;
+      color: black; }
+    .soko-form .title-with-radio .title-radio {
+      font-family: "TradeGothic LT";
+      font-weight: normal;
+      display: flex; }
+      .soko-form .title-with-radio .title-radio input {
+        margin-left: 10px;
+        margin-right: 4px; }
+  .soko-form .title-bar {
+    background: #535353;
+    color: white;
+    margin-top: 19px;
+    margin-bottom: 5px;
+    padding: 5px 15px; }
+  .soko-form table {
+    width: 100%; }
+  .soko-form .asterisk {
+    font-size: 1em;
+    margin-right: 2px;
+    position: relative;
+    top: -6px;
+    color: #e20613; }
+  .soko-form input {
+    height: 30px;
+    padding-left: 12px;
+    font-weight: normal;
+    font-family: "TradeGothic LT";
+    font-weight: normal;
+    font-size: 0.9em;
+    color: #666;
+    border: 1px solid #e9e9e9; }
+    .soko-form input[type=checkbox] {
+      height: auto; }
+  .soko-form .radio-container {
+    display: flex;
+    align-items: center; }
+    .soko-form .radio-container input {
+      margin-left: 10px;
+      margin-right: 4px; }
+      .soko-form .radio-container input:first-of-type {
+        margin-left: 0px; }
+  .soko-form .checkbox-container {
+    display: flex;
+    align-items: center; }
+    .soko-form .checkbox-container input {
+      margin-left: 10px;
+      margin-right: 4px; }
+      .soko-form .checkbox-container input:first-of-type {
+        margin-left: 0px; }
+  .soko-form .phone-line-container .asterisk {
+    position: absolute;
+    top: 4px;
+    left: -13px; }
+  .soko-form .phone-line-container .phone-line {
+    display: flex;
+    align-items: center;
+    position: relative;
+    left: 13px; }
+    .soko-form .phone-line-container .phone-line .phone-prefix-selector-trigger {
+      background: #f7f7f7;
+      width: 75px;
+      height: 30px;
+      padding-left: 8px;
+      display: flex;
+      align-items: center;
+      color: #989898;
+      border: 1px solid #e1e1e1;
+      cursor: pointer; }
+  .soko-form .phone-line-container .phone-prefix-selector {
+    display: none;
+    border: 1px solid #e1e1e1;
+    width: 76px;
+    position: absolute;
+    top: 4px;
+    left: 13px;
+    z-index: 1; }
+    .soko-form .phone-line-container .phone-prefix-selector.selecting {
+      display: block; }
+    .soko-form .phone-line-container .phone-prefix-selector li {
+      display: flex;
+      align-items: center;
+      background: white;
+      padding: 5px;
+      padding-left: 8px;
+      cursor: pointer;
+      color: #989898; }
+      .soko-form .phone-line-container .phone-prefix-selector li:hover {
+        background: #f7f7f7; }
+  .soko-form .phone-line-container .flag {
+    width: 20px;
+    height: 11px;
+    background-image: url(/theme/lee/css/icons-sprite.png);
+    background-repeat: no-repeat; }
+    .soko-form .phone-line-container .flag.flag-33, .soko-form .phone-line-container .flag.flag-france {
+      background-position: -0px -382px; }
+    .soko-form .phone-line-container .flag.flag-32, .soko-form .phone-line-container .flag.flag-germany {
+      background-position: -20px -382px; }
+    .soko-form .phone-line-container .flag.flag-352, .soko-form .phone-line-container .flag.flag-luxembourg {
+      background-position: -40px -382px; }
+  .soko-form .soko-datepicker-container img {
+    display: inline;
+    margin-left: 6px; }
+  .soko-form .pro-country-hidden {
+    display: none; }
+  .soko-form.soko-size-1 {
+    width: 560px; }
+    .soko-form.soko-size-1 table tr {
+      height: 39px; }
+      .soko-form.soko-size-1 table tr.soko-error-container, .soko-form.soko-size-1 table tr.no-height {
+        height: auto; }
+      .soko-form.soko-size-1 table tr.title-mini {
+        font-weight: bold;
+        height: 30px; }
+        .soko-form.soko-size-1 table tr.title-mini label {
+          position: relative;
+          top: 5px; }
+    .soko-form.soko-size-1 table input[type=text],
+    .soko-form.soko-size-1 table input[type=password] {
+      width: 530px; }
+      .soko-form.soko-size-1 table input[type=text].input-phone,
+      .soko-form.soko-size-1 table input[type=password].input-phone {
+        width: 454px; }
+      .soko-form.soko-size-1 table input[type=text].soko-datepicker,
+      .soko-form.soko-size-1 table input[type=password].soko-datepicker {
+        width: 467px; }
+    .soko-form.soko-size-1.h29 tr {
+      height: 29px; }
+  .soko-form.soko-size-2 tr {
+    height: 34px; }
+    .soko-form.soko-size-2 tr.title-mini {
+      font-weight: bold;
+      height: 30px; }
+      .soko-form.soko-size-2 tr.title-mini label {
+        position: relative;
+        top: 5px; }
+  .soko-form.soko-size-2 input[type=text],
+  .soko-form.soko-size-2 input[type=password] {
+    width: 330px; }
+    .soko-form.soko-size-2 input[type=text].input-phone,
+    .soko-form.soko-size-2 input[type=password].input-phone {
+      width: 254px; }
+    .soko-form.soko-size-2 input[type=text].soko-datepicker,
+    .soko-form.soko-size-2 input[type=password].soko-datepicker {
+      width: 267px; }
+  .soko-form .social-icons-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    margin-top: 30px; }
+    .soko-form .social-icons-container .social-icon {
+      margin: 0 15px;
+      display: block;
+      width: 64px;
+      height: 64px;
+      background: url(/theme/lee/css/icons-sprite.png) no-repeat center center; }
+      .soko-form .social-icons-container .social-icon.social-icon-facebook {
+        background-position: -128px -208px; }
+      .soko-form .social-icons-container .social-icon.social-icon-twitter {
+        background-position: -192px -208px; }
+      .soko-form .social-icons-container .social-icon.social-icon-instagram {
+        background-position: -256px -208px; }
+      .soko-form .social-icons-container .social-icon.social-icon-pinterest {
+        background-position: -320px -208px; }
+  .soko-form.container-b2b .b2b-bloc {
+    display: block; }
+  .soko-form.container-b2b .b2c-bloc {
+    display: none; }
+  .soko-form.container-b2c .b2b-bloc {
+    display: none; }
+  .soko-form.container-b2c .b2c-bloc {
+    display: block; }
+
+/*# sourceMappingURL=soko-form.css.map */

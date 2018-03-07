@@ -1,0 +1,312 @@
+@import "variables";
+
+$baseUri: "/img/maps";
+
+@mixin usa() {
+  position: absolute;
+  width: 130px;
+  height: 82px;
+  background: url(#{$themeUri}/css/icons-sprite.png) -0px -478px no-repeat;
+  cursor: pointer;
+  z-index: 1;
+
+  &:hover {
+    background: url(#{$themeUri}/css/icons-sprite.png) -144px -478px no-repeat;
+  }
+
+  span {
+    position: relative;
+    top: 76px;
+    left: 40px;
+    font-size: 0.8em;
+  }
+  &:hover {
+    span {
+      font-weight: bold;
+    }
+  }
+
+}
+
+@mixin france() {
+  position: absolute;
+  width: 95px;
+  height: 98px;
+  background: url(#{$themeUri}/css/icons-sprite.png) -0px -728px no-repeat;
+  cursor: pointer;
+  z-index: 1;
+
+  &:hover {
+    background: url(#{$themeUri}/css/icons-sprite.png) -144px -728px no-repeat;
+  }
+
+  span{
+    position: relative;
+    top: 90px;
+    left: 30px;
+    font-size: 0.8em;
+  }
+  &:hover {
+    span {
+      font-weight: bold;
+    }
+  }
+
+}
+
+@mixin belgium() {
+  position: absolute;
+  width: 106px;
+  height: 107px;
+  background: url(#{$themeUri}/css/icons-sprite.png) -0px -560px no-repeat;
+  cursor: pointer;
+  z-index: 1;
+
+  &:hover {
+    background: url(#{$themeUri}/css/icons-sprite.png) -144px -561px no-repeat;
+  }
+
+  span{
+    position: relative;
+    top: 101px;
+    left: 33px;
+    font-size: 0.8em;
+  }
+
+  &:hover {
+    span {
+      font-weight: bold;
+    }
+  }
+
+}
+
+@mixin luxembourg() {
+  position: absolute;
+  width: 79px;
+  height: 62px;
+  background: url(#{$themeUri}/css/icons-sprite.png) -0px -667px no-repeat;
+  cursor: pointer;
+  z-index: 1;
+
+  &:hover {
+    background: url(#{$themeUri}/css/icons-sprite.png) -144px -667px no-repeat;
+  }
+
+  span{
+    position: relative;
+    top: 57px;
+    left: -10px;
+    font-size: 0.8em;
+  }
+
+  &:hover {
+    span {
+      font-weight: bold;
+    }
+  }
+}
+
+.widget-search-module {
+
+  display: flex;
+  margin-top: 20px;
+
+  .col-left {
+    margin-right: 20px;
+    flex: auto;
+
+    .map {
+      position: relative;
+      height: 350px;
+      min-width: 400px;
+
+      .title {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 160px;
+        font-size: 1em;
+        line-height: 1.4em;
+      }
+
+      .pin {
+        position: absolute;
+        background: url(#{$baseUri}/pin.png) -0px 0px no-repeat;
+        width: 40px;
+        height: 42px;
+        cursor: pointer;
+        z-index: 3;
+      }
+
+      .pin-info {
+        @include font2(trade);
+        background: black;
+        position: absolute;
+        padding: 5px;
+        left: 35px;
+        min-width: 100px;
+        line-height: 0.8em;
+        z-index: 4;
+        display: none;
+
+        a {
+          color: white;
+          font-size: 0.7em;
+        }
+
+        &.visible {
+          display: block;
+        }
+
+      }
+
+      .main {
+        position: absolute;
+        width: 315px;
+        height: 302px;
+        left: 58px;
+        top: 20px;
+      }
+
+      &.main-fr {
+        .main {
+          background: url(#{$baseUri}/france.png) -0px 0px no-repeat;
+        }
+
+        .mini-1 {
+          @include usa();
+          top: 200px;
+        }
+        .mini-2 {
+          @include belgium();
+          left: 370px;
+        }
+        .mini-3 {
+          @include luxembourg();
+          left: 414px;
+          top: 133px;
+        }
+      }
+
+      &.main-us {
+        .main {
+          background: url(#{$baseUri}/usa.png) -0px 0px no-repeat;
+        }
+
+        .mini-1 {
+          @include france();
+          top: 200px;
+          left: 360px;
+        }
+        .mini-2 {
+          @include belgium();
+          left: 350px;
+        }
+        .mini-3 {
+          @include luxembourg();
+          left: 384px;
+          top: 123px;
+        }
+      }
+
+      &.main-be {
+        .main {
+          background: url(#{$baseUri}/belgium.png) -0px 0px no-repeat;
+        }
+
+        .mini-1 {
+          @include usa();
+          top: 200px;
+        }
+        .mini-2 {
+          @include luxembourg();
+          left: 350px;
+        }
+        .mini-3 {
+          @include france();
+          left: 384px;
+          top: 123px;
+        }
+      }
+
+      &.main-lu {
+        .main {
+          background: url(#{$baseUri}/luxembourg.png) -0px 0px no-repeat;
+        }
+
+        .mini-1 {
+          @include usa();
+          top: 200px;
+        }
+        .mini-2 {
+          @include belgium();
+          left: 350px;
+        }
+        .mini-3 {
+          @include france();
+          left: 384px;
+          top: 123px;
+        }
+      }
+
+    }
+  }
+
+  .col-right {
+    .header {
+      display: flex;
+      align-items: center;
+      background: $red;
+      padding: 5px;
+      padding-left: 15px;
+
+
+      span {
+        flex: auto;
+        display: block;
+        color: white;
+        font-size: 0.8em;
+      }
+      i {
+        background: url(#{$themeUri}/css/icons-sprite.png) -288px 0px no-repeat;
+        display: block;
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    table {
+      margin-top: 12px;
+      .simpleselect {
+        font-size: 0.7em;
+        margin-left: 40px;
+
+        .placeholder{
+          height: 15px;
+          overflow: hidden;
+        }
+
+      }
+    }
+
+    .search-footer {
+      margin-top: 70px;
+      text-align: right;
+
+      a {
+        font-size: 0.6em;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .datepicker {
+      margin-left: 40px;
+      height: 30px;
+      padding-left: 10px;
+      width: 200px;
+    }
+  }
+}

@@ -1,0 +1,64 @@
+/*------------------------------------
+- DIR UP
+------------------------------------*/
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway.eot");
+  src: url("../Raleway.eot?#iefix") format("embedded-opentype"), url("../Raleway.woff") format("woff"), url("../Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2-up';
+  src: url("../TradeGothicNo2-Bold.eot");
+  src: url("../TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("../TradeGothicNo2-Bold.woff") format("woff"), url("../TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway-Bold.eot");
+  src: url("../Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("../Raleway-Bold.woff") format("woff"), url("../Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT-up';
+  src: url("../TradeGothicLT.eot");
+  src: url("../TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("../TradeGothicLT.woff") format("woff"), url("../TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+.widget-related-training {
+  font-family: "TradeGothic LT-up";
+  font-weight: normal;
+  margin-top: 30px; }
+  .widget-related-training .list-training {
+    clear: both;
+    padding-top: 1px; }
+    .widget-related-training .list-training .item {
+      margin-top: 30px;
+      display: flex; }
+      .widget-related-training .list-training .item .left-block {
+        flex: auto;
+        margin-right: 30px; }
+        .widget-related-training .list-training .item .left-block .line {
+          font-weight: bold;
+          display: flex; }
+          .widget-related-training .list-training .item .left-block .line .title {
+            margin-right: 40px;
+            font-size: 1.1em; }
+          .widget-related-training .list-training .item .left-block .line .duration {
+            font-size: 0.9em;
+            color: #929090;
+            margin-right: 100px;
+            white-space: nowrap; }
+          .widget-related-training .list-training .item .left-block .line .price {
+            font-size: 1.1em; }
+        .widget-related-training .list-training .item .left-block .line2 {
+          margin-top: 20px;
+          line-height: 1.5em;
+          font-size: 1.1em;
+          color: #8f8f8f; }
+        .widget-related-training .list-training .item .left-block .line3 {
+          margin-top: 20px; }
+      .widget-related-training .list-training .item .right-block img {
+        width: 250px; }
+
+/*# sourceMappingURL=widget-related-training.css.map */

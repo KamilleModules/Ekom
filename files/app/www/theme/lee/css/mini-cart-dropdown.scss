@@ -1,0 +1,200 @@
+@import "variables";
+
+.mini-cart-panel {
+  display: block;
+  background: white;
+  position: fixed;
+  top: 40px;
+  right: 20px;
+  padding: 17px;
+  width: 440px;
+  @include font(trade);
+  transform: translateY(-800px);
+  transition: transform ease-out 200ms;
+  z-index: 520; /* be above the contact tab */
+  box-shadow: 0px 10px 40px -10px rgba(0, 0, 0, 0.5);
+
+  &.opened {
+    display: block;
+    transform: translateY(0);
+  }
+
+  .header {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #c3c0bf;
+    display: flex;
+    justify-content: flex-start;
+
+    h1 {
+      font-size: 1.1em;
+      color: #1d1d1b;
+      flex: auto;
+
+      .smaller {
+        font-size: 0.75em;
+      }
+    }
+
+    .panel-close {
+      color: black;
+    }
+  }
+
+  .product-list {
+
+    padding-bottom: 18px;
+
+    .cart-item {
+
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-top: 1px solid #eee;
+      padding-top: 14px;
+      padding-bottom: 14px;
+
+      &.first {
+        border-top: none;
+      }
+
+      .left {
+        .remove-item {
+          display: block;
+          font-size: 0.7em;
+          text-decoration: none;
+          color: #464148;
+          @include font(ralewayBold);
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+
+      .middle {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        margin-left: 15px;
+        flex: auto;
+
+        .product-label {
+          font-size: 0.7em;
+          text-decoration: underline;
+          color: #464148;
+          @include font(ralewayBold);
+          display: block;
+        }
+
+        .ref {
+          font-size: 0.7em;
+          @include font(ralewayBold);
+          display: block;
+        }
+
+        .info-line {
+
+          display: flex;
+          align-items: center;
+          font-size: 0.8em;
+
+          .attributes {
+            font-size: 1em;
+            display: block;
+            margin: 10px 0;
+          }
+
+          .quantity-info {
+
+            margin-left: 10px;
+
+            .quantity-input {
+              width: 40px;
+            }
+          }
+
+        }
+      }
+
+      .right {
+
+        .price {
+          position: relative;
+          top: 80px;
+
+          font-size: 0.9em;
+          color: $red;
+          @include font(tradeBold);
+
+          abbr {
+
+            position: relative;
+            font-size: 0.6em;
+            top: -4px;
+            right: 4px;
+
+          }
+        }
+      }
+
+    }
+  }
+
+  .bottom-part {
+    padding-top: 0px;
+    border-top: 1px solid #c3c0bf;
+
+    .price-table {
+      @include font(trade);
+      font-size: 1em;
+      font-weight: bold;
+      width: 100%;
+
+      tr {
+        height: 28px;
+
+        td:first-of-type {
+          text-align: left;
+        }
+
+        td:last-of-type {
+          text-align: right;
+        }
+
+        .total-without-tax,
+        .total-with-tax {
+          color: $red;
+          @include font(tradeBold);
+        }
+      }
+
+    }
+
+    .small-text {
+      font-size: 0.7em;
+      line-height: 2.4em;
+      font-weight: normal;
+
+      b {
+        font-size: 1.3em;
+      }
+    }
+
+    .bottom-actions {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      margin-top: 30px;
+
+      button {
+        width: 210px;
+        margin-top: 6px;
+      }
+
+    }
+
+  }
+
+}

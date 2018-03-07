@@ -1,0 +1,16 @@
+@import "variables";
+
+.widget-product-trainers {
+  margin-bottom: 40px;
+  .list-trainers {
+
+    clear: both;
+    padding-top: 20px;
+
+    .item {
+      img {
+        width: 200px;
+      }
+    }
+  }
+}

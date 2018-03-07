@@ -1,0 +1,187 @@
+@import "variables";
+
+.payment-method-credit-card {
+
+  .credit-card-options-container {
+    padding: 20px 0;
+
+    .main-line {
+
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      .title {
+        font-size: 0.8em;
+        margin-right: 10px;
+        white-space: nowrap;
+      }
+    }
+
+    .user-messages {
+      .user-message {
+        font-size: 0.7em;
+        margin-top: 20px;
+
+        &.error {
+          h3 {
+            color: $red;
+          }
+
+          .error-text {
+            color: $red;
+          }
+
+          .info-text {
+            color: #841e98;
+            font-size: 1.2em;
+            font-weight: bold;
+            white-space: nowrap;
+          }
+        }
+
+        .title {
+          display: block;
+          text-decoration: underline;
+        }
+      }
+
+      .asterisk-inline {
+        color: red;
+        font-size: 2.3em;
+        vertical-align: middle;
+      }
+
+      .asterisk-text {
+        font-style: italic;
+        margin-top: 10px;
+        .asterisk {
+          font-size: 2em;
+          color: red;
+          vertical-align: middle;
+        }
+      }
+    }
+
+    $echeancierBorderColor: #ddd;
+    .echeancier-container {
+      font-size: 0.7em;
+      margin-top: 20px;
+
+      .echeancier {
+
+        table {
+          border-collapse: collapse;
+          @include font2(trade);
+        }
+        table, tr, td {
+          border: 1px solid $echeancierBorderColor;
+        }
+        td {
+          padding: 5px;
+
+          &:last-child {
+            text-align: right;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+  }
+
+  .credit-cards-container {
+    margin-bottom: 20px;
+
+    .credit-card-container {
+      display: flex;
+      background: whitesmoke;
+      padding: 15px;
+      border: 1px solid #dadada;
+      margin-top: 10px;
+      border-radius: 5px;
+      font-size: 0.8em;
+
+      &.active {
+        border: 2px solid #dadada;
+      }
+
+      .left {
+
+        flex: auto;
+        .line {
+          display: flex;
+          align-items: center;
+
+          .card-icon {
+            display: inline-block;
+            margin-right: 10px;
+          }
+
+          .info {
+            margin-right: 10px;
+          }
+          .label {
+            margin-right: 10px;
+          }
+
+        }
+      }
+
+      .right {
+        display: flex;
+        flex-direction: column;
+
+        .links {
+          flex: auto;
+        }
+      }
+
+    }
+  }
+}
+
+.ingenico-credit-card-iframe {
+  border: none;
+
+  &.hidden {
+    display: none;
+  }
+
+  .res-zone {
+    display: none;
+  }
+
+  iframe {
+    width: 100%;
+    height: 400px;
+    border: none;
+  }
+
+  &.loading {
+    iframe {
+      display: none;
+    }
+  }
+}
+
+.payment-method-transfer {
+
+  font-size: 0.7em;
+  margin-top: 12px;
+
+  $ibanBorderColor: #ddd;
+  .iban-table {
+    cursor: default;
+
+    @include font2(trade);
+
+    border-collapse: collapse;
+
+    tr, td {
+      border: 1px solid $ibanBorderColor;
+    }
+    td {
+      padding: 9px;
+    }
+
+  }
+}

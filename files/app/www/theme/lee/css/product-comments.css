@@ -1,0 +1,139 @@
+/**
+Breakpoints:
+
+
+
+style:
+780
+  topmenu (catalog and social icons) appear
+900
+
+
+slider:
+768
+1170
+
+
+ */
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway.eot");
+  src: url("Raleway.eot?#iefix") format("embedded-opentype"), url("Raleway.woff") format("woff"), url("Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2';
+  src: url("TradeGothicNo2-Bold.eot");
+  src: url("TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("TradeGothicNo2-Bold.woff") format("woff"), url("TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway-Bold.eot");
+  src: url("Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("Raleway-Bold.woff") format("woff"), url("Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT';
+  src: url("TradeGothicLT.eot");
+  src: url("TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("TradeGothicLT.woff") format("woff"), url("TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'next';
+  src: url("TradeGothicNextLTPro-BdCm.eot");
+  src: url("TradeGothicNextLTPro-BdCm.eot?#iefix") format("embedded-opentype"), url("TradeGothicNextLTPro-BdCm.woff") format("woff"), url("TradeGothicNextLTPro-BdCm.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+.table-form.no-label tr td input {
+  height: 30px;
+  padding-left: 12px;
+  font-size: 0.7em;
+  color: #a3a9ad;
+  font-family: "TradeGothic LT";
+  font-weight: normal; }
+.table-form.no-label tr td input[type=checkbox] {
+  width: auto;
+  height: auto; }
+
+.widget-product-comments .line {
+  margin-top: 10px; }
+.widget-product-comments .average-line {
+  margin-top: 50px; }
+  .widget-product-comments .average-line h4 {
+    font-size: 2em;
+    text-transform: uppercase;
+    font-family: "TradeGothicNo.2";
+    font-weight: bold;
+    letter-spacing: -1px; }
+.widget-product-comments .no-comments-yet {
+  margin-top: 20px; }
+.widget-product-comments .write-comment-btn,
+.widget-product-comments .login-btn {
+  background: #e20613;
+  color: white;
+  text-transform: uppercase;
+  padding: 14px 15px;
+  border: none;
+  font-family: "TradeGothicNo.2";
+  font-weight: bold;
+  cursor: pointer; }
+.widget-product-comments .line-button {
+  margin-top: 34px; }
+.widget-product-comments .comments-filters {
+  margin-top: 34px;
+  display: flex;
+  justify-content: center; }
+  .widget-product-comments .comments-filters .filter {
+    margin: 0px 50px;
+    font-size: 1.3em; }
+    .widget-product-comments .comments-filters .filter.active {
+      color: #e20613; }
+.widget-product-comments .comments .comment {
+  margin-top: 26px; }
+  .widget-product-comments .comments .comment .pseudo {
+    font-size: 1.3em;
+    font-family: "TradeGothicNo.2";
+    font-weight: bold; }
+  .widget-product-comments .comments .comment .rating-line {
+    display: flex; }
+    .widget-product-comments .comments .comment .rating-line .rating-container {
+      display: flex;
+      color: #e20613;
+      position: relative;
+      left: -4px; }
+      .widget-product-comments .comments .comment .rating-line .rating-container .rating {
+        margin-right: 15px;
+        unicode-bidi: bidi-override;
+        direction: rtl;
+        display: flex; }
+      .widget-product-comments .comments .comment .rating-line .rating-container .rating > span {
+        display: inline-block;
+        position: relative;
+        width: 1.2em;
+        font-size: 1.7em; }
+      .widget-product-comments .comments .comment .rating-line .rating-container .rating > span:before {
+        content: "\2605";
+        position: absolute;
+        color: #dfdfde; }
+      .widget-product-comments .comments .comment .rating-line .rating-container .rating > span.hover:before,
+      .widget-product-comments .comments .comment .rating-line .rating-container .rating > span.hover ~ span:before {
+        content: "\2605";
+        position: absolute;
+        color: #e20613; }
+    .widget-product-comments .comments .comment .rating-line .date {
+      color: #ccc;
+      font-size: 1.1em; }
+  .widget-product-comments .comments .comment > .title {
+    margin-top: 30px;
+    font-size: 1.5em;
+    font-family: "TradeGothicNo.2";
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: -1px; }
+  .widget-product-comments .comments .comment > .comment-text {
+    margin-top: 13px;
+    line-height: 1.8em;
+    font-size: 0.9em; }
+
+/*# sourceMappingURL=product-comments.css.map */

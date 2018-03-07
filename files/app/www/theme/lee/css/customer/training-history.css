@@ -1,0 +1,68 @@
+/*------------------------------------
+- DIR UP
+------------------------------------*/
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway.eot");
+  src: url("../Raleway.eot?#iefix") format("embedded-opentype"), url("../Raleway.woff") format("woff"), url("../Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2-up';
+  src: url("../TradeGothicNo2-Bold.eot");
+  src: url("../TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("../TradeGothicNo2-Bold.woff") format("woff"), url("../TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway-Bold.eot");
+  src: url("../Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("../Raleway-Bold.woff") format("woff"), url("../Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT-up';
+  src: url("../TradeGothicLT.eot");
+  src: url("../TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("../TradeGothicLT.woff") format("woff"), url("../TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+.widget-training-history .container .training-item {
+  margin-top: 20px; }
+  .widget-training-history .container .training-item .collapsible-bar .training-name {
+    flex: auto;
+    margin-left: 5px; }
+  .widget-training-history .container .training-item .collapsible-bar .training-session {
+    margin-right: 10px; }
+  .widget-training-history .container .training-item .content {
+    margin-top: 16px; }
+    .widget-training-history .container .training-item .content .info {
+      font-family: Raleway-up;
+      font-weight: normal; }
+      .widget-training-history .container .training-item .content .info .line {
+        line-height: 1.5em; }
+    .widget-training-history .container .training-item .content .downloads {
+      margin-top: 15px;
+      margin-bottom: 50px;
+      display: flex;
+      flex-wrap: wrap; }
+      .widget-training-history .container .training-item .content .downloads .download-item {
+        display: flex;
+        flex-direction: column; }
+        .widget-training-history .container .training-item .content .downloads .download-item .title-block {
+          padding: 15px;
+          padding-bottom: 3px;
+          flex: auto;
+          display: flex;
+          flex-direction: column;
+          justify-content: center; }
+          .widget-training-history .container .training-item .content .downloads .download-item .title-block .title {
+            font-family: "TradeGothic LT-up";
+            font-weight: normal;
+            text-align: center;
+            font-weight: bold; }
+        .widget-training-history .container .training-item .content .downloads .download-item.bus-block {
+          width: 170px;
+          margin: 10px; }
+        .widget-training-history .container .training-item .content .downloads .download-item .bottom {
+          margin-top: 9px; }
+
+/*# sourceMappingURL=training-history.css.map */

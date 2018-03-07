@@ -1,0 +1,359 @@
+/**
+Breakpoints:
+
+
+
+style:
+780
+  topmenu (catalog and social icons) appear
+900
+
+
+slider:
+768
+1170
+
+
+ */
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway.eot");
+  src: url("Raleway.eot?#iefix") format("embedded-opentype"), url("Raleway.woff") format("woff"), url("Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2';
+  src: url("TradeGothicNo2-Bold.eot");
+  src: url("TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("TradeGothicNo2-Bold.woff") format("woff"), url("TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway-Bold.eot");
+  src: url("Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("Raleway-Bold.woff") format("woff"), url("Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT';
+  src: url("TradeGothicLT.eot");
+  src: url("TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("TradeGothicLT.woff") format("woff"), url("TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'next';
+  src: url("TradeGothicNextLTPro-BdCm.eot");
+  src: url("TradeGothicNextLTPro-BdCm.eot?#iefix") format("embedded-opentype"), url("TradeGothicNextLTPro-BdCm.woff") format("woff"), url("TradeGothicNextLTPro-BdCm.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+.table-form.no-label tr td input {
+  height: 30px;
+  padding-left: 12px;
+  font-size: 0.7em;
+  color: #a3a9ad;
+  font-family: "TradeGothic LT";
+  font-weight: normal; }
+.table-form.no-label tr td input[type=checkbox] {
+  width: auto;
+  height: auto; }
+
+.cart-container .cart-title-line {
+  display: flex;
+  justify-content: flex-start; }
+  .cart-container .cart-title-line .cart-text {
+    flex: auto;
+    text-transform: uppercase;
+    font-family: Raleway;
+    font-weight: bold;
+    color: #e20613;
+    font-size: 1.4em; }
+  .cart-container .cart-title-line .continue-shopping-link {
+    color: #e20613; }
+.cart-container .cart {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  /*------------------------------------
+  - RIGHT BLOCK
+  ------------------------------------*/ }
+  .cart-container .cart .product-list {
+    width: 66%;
+    /*------------------------------------
+    - product list
+    ------------------------------------*/ }
+    .cart-container .cart .product-list .seller-product-list {
+      padding: 20px;
+      box-sizing: border-box;
+      border: 1px solid #ddd; }
+      .cart-container .cart .product-list .seller-product-list .header-line {
+        display: flex; }
+        .cart-container .cart .product-list .seller-product-list .header-line .seller-box {
+          flex: auto;
+          font-size: 0.85em; }
+          .cart-container .cart .product-list .seller-product-list .header-line .seller-box .seller {
+            font-weight: bold; }
+        .cart-container .cart .product-list .seller-product-list .header-line .total {
+          text-transform: uppercase;
+          color: #e20613;
+          position: relative;
+          left: 10px;
+          top: -13px;
+          font-weight: bold; }
+    .cart-container .cart .product-list .item {
+      display: flex;
+      flex-direction: column;
+      margin-top: 20px;
+      padding-top: 20px; }
+    .cart-container .cart .product-list .item:first-of-type {
+      border-top: none;
+      margin-top: 0;
+      padding-top: 0; }
+    .cart-container .cart .product-list .item .product-bar {
+      display: flex; }
+    .cart-container .cart .product-list .item .product-bar .image {
+      margin-right: 25px;
+      width: 150px; }
+    .cart-container .cart .product-list .item .product-bar .image img {
+      max-width: none; }
+    .cart-container .cart .product-list .item .product-bar .product-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 270px; }
+    .cart-container .cart .product-list .item .product-bar .product-info .label {
+      font-family: Raleway;
+      font-weight: bold;
+      font-size: 0.9em;
+      text-decoration: underline; }
+    .cart-container .cart .product-list .item .product-bar .product-info .ref {
+      font-weight: bold;
+      font-size: 0.7em; }
+    .cart-container .cart .product-list .item .product-bar .product-info .attributes {
+      font-size: 0.9em;
+      margin-top: 6px; }
+      .cart-container .cart .product-list .item .product-bar .product-info .attributes .attribute-name {
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.8em; }
+      .cart-container .cart .product-list .item .product-bar .product-info .attributes .attribute-value {
+        text-transform: uppercase;
+        font-size: 0.8em; }
+    .cart-container .cart .product-list .item .product-bar .product-info .stock-info {
+      font-size: 0.9em;
+      margin-top: 6px; }
+    .cart-container .cart .product-list .item .product-bar .quantity-container {
+      margin-left: 40px;
+      padding-right: 0px; }
+    .cart-container .cart .product-list .item .product-bar .quantity-container .label {
+      font-weight: bold;
+      font-size: 0.7em; }
+    .cart-container .cart .product-list .item .product-bar .quantity-container .quantity-input {
+      width: 80px;
+      border: 1px solid #999;
+      padding: 6px 10px;
+      height: 35px;
+      font-size: 1.3em; }
+    .cart-container .cart .product-list .item .product-bar .price-container {
+      margin-left: 40px;
+      margin-right: 10px; }
+    .cart-container .cart .product-list .item .product-bar .price-container .price-with-tax,
+    .cart-container .cart .product-list .item .product-bar .price-container .price-to-pay,
+    .cart-container .cart .product-list .item .product-bar .price-container .price-without-tax {
+      color: #e20613;
+      font-family: "TradeGothicNo.2";
+      font-weight: bold;
+      font-size: 1.5em;
+      letter-spacing: -1px;
+      position: relative; }
+    .cart-container .cart .product-list .item .product-bar .price-container .price-to-pay em,
+    .cart-container .cart .product-list .item .product-bar .price-container .price-with-tax em {
+      position: absolute;
+      font-size: 0.5em;
+      right: -20px;
+      bottom: 4px;
+      font-style: normal; }
+    .cart-container .cart .product-list .item .product-bar .price-container .price-without-tax {
+      font-size: 1em;
+      color: black;
+      text-align: left;
+      margin-top: 15px;
+      position: relative; }
+      .cart-container .cart .product-list .item .product-bar .price-container .price-without-tax.linethrough {
+        text-decoration: line-through; }
+      .cart-container .cart .product-list .item .product-bar .price-container .price-without-tax em {
+        position: absolute;
+        font-size: 0.6em;
+        font-style: normal;
+        right: 15px;
+        bottom: 3px; }
+    .cart-container .cart .product-list .item .action-bar {
+      margin-top: 20px; }
+    .cart-container .cart .product-list .item .action-bar a {
+      text-decoration: underline;
+      font-family: "TradeGothic LT";
+      font-weight: normal;
+      font-weight: bold;
+      font-size: 0.8em; }
+    .cart-container .cart .product-list .item .action-bar a:first-of-type {
+      margin-right: 20px; }
+  .cart-container .cart .right-block {
+    width: 30%;
+    margin-left: 50px; }
+    .cart-container .cart .right-block .block {
+      margin-top: 15px;
+      margin-bottom: 15px; }
+    .cart-container .cart .right-block .cart-summary {
+      border: 1px solid #ddd;
+      background: #f8f8f8;
+      padding: 15px; }
+      .cart-container .cart .right-block .cart-summary h1 {
+        color: #e20613;
+        text-align: center;
+        text-transform: uppercase;
+        font-family: "TradeGothicNo.2";
+        font-weight: bold;
+        font-size: 1.6em;
+        margin-top: 11px; }
+      .cart-container .cart .right-block .cart-summary table {
+        margin-top: 50px;
+        width: 100%;
+        border-collapse: collapse;
+        vertical-align: top; }
+      .cart-container .cart .right-block .cart-summary table tr {
+        height: 35px; }
+      .cart-container .cart .right-block .cart-summary table .price {
+        font-weight: bold;
+        position: relative;
+        text-align: right;
+        padding-right: 10px; }
+      .cart-container .cart .right-block .cart-summary table .price em {
+        position: absolute;
+        font-size: 0.5em;
+        font-style: normal;
+        right: -9px;
+        bottom: 8px; }
+      .cart-container .cart .right-block .cart-summary table .visible {
+        display: table-row !important; }
+      .cart-container .cart .right-block .cart-summary table .promo {
+        display: none;
+        color: #e20613; }
+      .cart-container .cart .right-block .cart-summary table .promo-message-success,
+      .cart-container .cart .right-block .cart-summary table .promo-message-error {
+        text-align: center;
+        display: none; }
+      .cart-container .cart .right-block .cart-summary table .promo-msg-success,
+      .cart-container .cart .right-block .cart-summary table .promo-msg-error {
+        padding: 21px;
+        margin: 14px;
+        font-size: 0.9em;
+        position: relative; }
+      .cart-container .cart .right-block .cart-summary table .promo-msg-error .coupon-message-close,
+      .cart-container .cart .right-block .cart-summary table .promo-msg-success .coupon-message-close {
+        display: block;
+        position: absolute;
+        top: 3px;
+        right: 7px;
+        color: white !important; }
+        .cart-container .cart .right-block .cart-summary table .promo-msg-error .coupon-message-closehover,
+        .cart-container .cart .right-block .cart-summary table .promo-msg-success .coupon-message-closehover {
+          color: white !important; }
+      .cart-container .cart .right-block .cart-summary table .promo-message-success.visible,
+      .cart-container .cart .right-block .cart-summary table .promo-message-error.visible {
+        display: table-row; }
+      .cart-container .cart .right-block .cart-summary table .promo-msg-success {
+        color: white;
+        background: green; }
+      .cart-container .cart .right-block .cart-summary table .promo-msg-error {
+        color: white;
+        background: #e20613; }
+      .cart-container .cart .right-block .cart-summary table .coupon-details {
+        color: #bbb;
+        font-size: 0.8em;
+        height: 20px;
+        display: none; }
+        .cart-container .cart .right-block .cart-summary table .coupon-details a {
+          color: #bbb !important; }
+          .cart-container .cart .right-block .cart-summary table .coupon-details a:hover {
+            text-decoration: underline; }
+        .cart-container .cart .right-block .cart-summary table .coupon-details td:last-of-type {
+          text-align: right; }
+      .cart-container .cart .right-block .cart-summary table tr.sep {
+        border-bottom: 1px solid #555; }
+      .cart-container .cart .right-block .cart-summary table .total {
+        color: #e20613;
+        font-family: "TradeGothicNo.2";
+        font-weight: bold;
+        font-size: 1.6em;
+        height: 50px; }
+      .cart-container .cart .right-block .cart-summary table .total .price {
+        font-size: 0.8em; }
+        .cart-container .cart .right-block .cart-summary table .total .price em {
+          right: -9px;
+          bottom: 12px; }
+    .cart-container .cart .right-block .coupon-form {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center; }
+    .cart-container .cart .right-block .coupon-form input {
+      border: 1px solid #999;
+      padding: 6px 10px;
+      height: 35px;
+      margin-left: 10px; }
+    .cart-container .cart .right-block .coupon-form button {
+      margin-left: 10px;
+      width: auto !important;
+      height: 35px;
+      border: 1px solid #999;
+      line-height: 0.6em; }
+    .cart-container .cart .right-block button.front-button {
+      width: 100%;
+      font-size: 1.3em; }
+    .cart-container .cart .right-block button.front-button.button-gray {
+      width: 100%;
+      font-size: 1.2em;
+      color: black; }
+    .cart-container .cart .right-block .continue-purchase {
+      text-align: right;
+      margin-top: 20px; }
+      .cart-container .cart .right-block .continue-purchase a {
+        text-decoration: underline;
+        font-size: 1.2em;
+        font-weight: bold; }
+    .cart-container .cart .right-block .payment-options {
+      width: 100%;
+      background: black;
+      color: white;
+      text-align: center;
+      height: 37px;
+      font-size: 1.5em;
+      line-height: 1.4em;
+      margin-top: 100px; }
+    .cart-container .cart .right-block .block-capsule {
+      margin-top: 50px; }
+      .cart-container .cart .right-block .block-capsule .capsule {
+        display: flex;
+        align-items: stretch;
+        border: 1px solid #eee; }
+        .cart-container .cart .right-block .block-capsule .capsule .title {
+          background: black;
+          color: white;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          text-align: center;
+          text-transform: uppercase; }
+        .cart-container .cart .right-block .block-capsule .capsule .text {
+          background: white;
+          color: black;
+          text-align: center;
+          padding: 7px; }
+          .cart-container .cart .right-block .block-capsule .capsule .text .phone {
+            font-weight: bold;
+            font-family: "TradeGothicNo.2";
+            font-weight: bold;
+            font-size: 1.2em; }
+          .cart-container .cart .right-block .block-capsule .capsule .text .details {
+            font-size: 0.7em;
+            line-height: 1em;
+            margin-top: 7px; }
+
+/*# sourceMappingURL=2017-07-12-cart.css.map */

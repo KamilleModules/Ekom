@@ -1,0 +1,68 @@
+/*------------------------------------
+- DIR UP
+------------------------------------*/
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway.eot");
+  src: url("../Raleway.eot?#iefix") format("embedded-opentype"), url("../Raleway.woff") format("woff"), url("../Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2-up';
+  src: url("../TradeGothicNo2-Bold.eot");
+  src: url("../TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("../TradeGothicNo2-Bold.woff") format("woff"), url("../TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway-Bold.eot");
+  src: url("../Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("../Raleway-Bold.woff") format("woff"), url("../Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT-up';
+  src: url("../TradeGothicLT.eot");
+  src: url("../TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("../TradeGothicLT.woff") format("woff"), url("../TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+.widget-category-summary {
+  margin-top: 25px;
+  margin-bottom: 30px;
+  font-family: "TradeGothic LT-up";
+  font-weight: normal; }
+  .widget-category-summary .main-block {
+    margin-top: 0px; }
+    .widget-category-summary .main-block h2 {
+      font-size: 1.5em;
+      line-height: 1.2em;
+      color: black; }
+      .widget-category-summary .main-block h2 .colored {
+        color: #d41823; }
+    .widget-category-summary .main-block .description {
+      font-size: 0.8em;
+      line-height: 1.3em;
+      margin-top: 20px; }
+      .widget-category-summary .main-block .description .truncated {
+        color: #d41823;
+        text-decoration: underline; }
+      .widget-category-summary .main-block .description .description_suite {
+        display: none;
+        margin-left: -4px; }
+  .widget-category-summary .aux-block {
+    display: flex;
+    justify-content: flex-start;
+    flex: auto;
+    margin-top: 21px;
+    margin-bottom: 60px; }
+    .widget-category-summary .aux-block .col {
+      margin: 0 10px; }
+      .widget-category-summary .aux-block .col:first-of-type {
+        margin-left: 0px; }
+      .widget-category-summary .aux-block .col ul li a {
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 0.9em; }
+        .widget-category-summary .aux-block .col ul li a:hover {
+          text-decoration: underline; }
+
+/*# sourceMappingURL=widget-category-summary.css.map */

@@ -1,0 +1,30 @@
+/**
+This contains the notifications styling for the whole application.
+ */
+/*------------------------------------
+- SOKO NOTIFICATIONS
+- using the SokoNotificationRenderer object
+------------------------------------*/
+.soko-notification {
+  padding: 20px; }
+
+.soko-notification.soko-notification-success {
+  background: #86d286;
+  border: 1px solid #56b03a; }
+
+.soko-notification.soko-notification-warning {
+  background: #e99231;
+  border: 1px solid #b0743a;
+  color: white; }
+
+.soko-notification.soko-notification-error {
+  background: #c21313;
+  border: 1px solid #900c0c;
+  color: white; }
+
+.soko-notification.soko-notification-info {
+  background: #1378c2;
+  border: 1px solid #0c6690;
+  color: white; }
+
+/*# sourceMappingURL=notifications.css.map */

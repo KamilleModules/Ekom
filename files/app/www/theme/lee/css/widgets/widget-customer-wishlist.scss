@@ -1,0 +1,28 @@
+@import "variables";
+
+.widget-customer-wishlist {
+
+  .wishlist-actions {
+    text-align: left;
+    margin-top: 20px;
+    margin-bottom: 10px;
+
+    .remove-wishlist-btn {
+      font-size: 0.8em;
+    }
+  }
+
+  .remove-wishlist-item-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+  }
+
+  .wishlist-delete-item {
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+}

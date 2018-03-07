@@ -1,0 +1,296 @@
+/**
+Breakpoints:
+
+
+
+style:
+780
+  topmenu (catalog and social icons) appear
+900
+
+
+slider:
+768
+1170
+
+
+ */
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway.eot");
+  src: url("Raleway.eot?#iefix") format("embedded-opentype"), url("Raleway.woff") format("woff"), url("Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2';
+  src: url("TradeGothicNo2-Bold.eot");
+  src: url("TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("TradeGothicNo2-Bold.woff") format("woff"), url("TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway-Bold.eot");
+  src: url("Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("Raleway-Bold.woff") format("woff"), url("Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT';
+  src: url("TradeGothicLT.eot");
+  src: url("TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("TradeGothicLT.woff") format("woff"), url("TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'next';
+  src: url("TradeGothicNextLTPro-BdCm.eot");
+  src: url("TradeGothicNextLTPro-BdCm.eot?#iefix") format("embedded-opentype"), url("TradeGothicNextLTPro-BdCm.woff") format("woff"), url("TradeGothicNextLTPro-BdCm.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+.table-form.no-label tr td input {
+  height: 30px;
+  padding-left: 12px;
+  font-size: 0.7em;
+  color: #a3a9ad;
+  font-family: "TradeGothic LT";
+  font-weight: normal; }
+.table-form.no-label tr td input[type=checkbox] {
+  width: auto;
+  height: auto; }
+
+.f-line {
+  display: flex;
+  align-items: center; }
+
+/**
+ * Used at least in:
+ * - /customer/invoices
+ * - /customer/training-history
+ *
+ * Bus block is a small finite width block
+ * composed of two color-contrasted horizontal
+ * blocks stacked on top of the other.
+ *
+ * There is a small border around the bus block.
+ * You should set the width of the bus block
+ * yourself.
+ *
+ *
+ * The top one is transparent and contains the
+ * meaningful text, it takes most of the vertical
+ * space.
+ * The colored block is called bottom block and
+ * sits at the very bottom, is
+ * vertically thinner, and is a downloadable link
+ * in itself
+ *
+ * Here is an example markup of the bottom:
+ *
+ *            <a href="#" class="bottom">
+ *               TELECHARGER
+ *               <span class="icon-download">&nbsp;</span>
+ *           </a>
+ */
+.bus-block {
+  border: 1px solid #e7e7e7;
+  width: 250px;
+  color: #525252; }
+  .bus-block .bottom {
+    background: #a9a9a9;
+    color: white;
+    font-size: 1em;
+    padding: 7px;
+    margin-top: 5px;
+    display: flex;
+    text-align: center;
+    justify-content: center; }
+    .bus-block .bottom .icon-download {
+      width: 12px;
+      height: 12px;
+      background: url(/theme/lee/css/icons-sprite.png) -24px -48px no-repeat;
+      display: inline-block;
+      position: relative;
+      top: 4px;
+      margin-left: 5px; }
+
+/*------------------------------------
+- SPECIFIC
+------------------------------------*/
+.widget-contact-sav {
+  font-family: Raleway;
+  font-weight: normal; }
+  .widget-contact-sav .block {
+    padding: 15px; }
+    .widget-contact-sav .block .horaires {
+      margin-bottom: 10px; }
+    .widget-contact-sav .block .f-line {
+      margin-top: 2px; }
+    .widget-contact-sav .block .phone-icon {
+      width: 24px;
+      height: 24px;
+      background: url(/theme/lee/css/icons-sprite.png) -263px 0px no-repeat;
+      margin-right: 9px; }
+    .widget-contact-sav .block .phone-number {
+      font-weight: bold;
+      margin-right: 5px; }
+    .widget-contact-sav .block .phone-precision {
+      font-size: 0.9em; }
+    .widget-contact-sav .block .mail-icon {
+      width: 24px;
+      height: 24px;
+      background: url(/theme/lee/css/icons-sprite.png) -263px -24px no-repeat;
+      margin-right: 9px; }
+    .widget-contact-sav .block .mail-text a {
+      color: #585858; }
+      .widget-contact-sav .block .mail-text a:hover {
+        text-decoration: underline; }
+
+.widget-customer-subscription.tool-form .subscriptions {
+  margin-top: 30px; }
+  .widget-customer-subscription.tool-form .subscriptions .control {
+    margin-top: 7px; }
+.widget-customer-subscription.tool-form .social-container {
+  margin-top: 40px; }
+  .widget-customer-subscription.tool-form .social-container .social-icons-bar {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center; }
+    .widget-customer-subscription.tool-form .social-container .social-icons-bar .icon {
+      margin: 0 15px;
+      display: block;
+      width: 64px;
+      height: 64px;
+      background: url(/theme/lee/css/icons-sprite.png) no-repeat center center; }
+      .widget-customer-subscription.tool-form .social-container .social-icons-bar .icon.icon-facebook {
+        background-position: -128px -208px; }
+      .widget-customer-subscription.tool-form .social-container .social-icons-bar .icon.icon-twitter {
+        background-position: -192px -208px; }
+      .widget-customer-subscription.tool-form .social-container .social-icons-bar .icon.icon-instagram {
+        background-position: -256px -208px; }
+      .widget-customer-subscription.tool-form .social-container .social-icons-bar .icon.icon-pinterest {
+        background-position: -320px -208px; }
+
+.widget-order-history {
+  font-family: Raleway;
+  font-weight: normal; }
+  .widget-order-history .content {
+    margin-bottom: 28px; }
+  .widget-order-history .header {
+    margin-top: 16px;
+    line-height: 1.6em; }
+    .widget-order-history .header .status-bar {
+      display: flex;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      align-items: center; }
+      .widget-order-history .header .status-bar .status {
+        font-family: "TradeGothic LT";
+        font-weight: normal;
+        padding: 4px;
+        border: 1px solid #dadada;
+        margin: 0 5px;
+        font-size: 0.7em; }
+        .widget-order-history .header .status-bar .status.active {
+          border: 2px solid #383838;
+          font-weight: bold; }
+        .widget-order-history .header .status-bar .status.done {
+          text-decoration: line-through; }
+        .widget-order-history .header .status-bar .status.error {
+          color: #e20613;
+          border: 2px solid #e20613;
+          font-weight: bold; }
+        .widget-order-history .header .status-bar .status.hidden {
+          display: none; }
+  .widget-order-history .product-list {
+    margin-top: 50px; }
+    .widget-order-history .product-list .item .product-bar .image {
+      width: 120px; }
+    .widget-order-history .product-list .item .product-bar .quantity-container {
+      margin-left: 0px; }
+    .widget-order-history .product-list .item .product-bar .cart-quantity {
+      font-size: 3em;
+      position: relative;
+      top: 40px;
+      margin-right: 14px;
+      width: 62px; }
+      .widget-order-history .product-list .item .product-bar .cart-quantity .quantity {
+        white-space: nowrap; }
+        .widget-order-history .product-list .item .product-bar .cart-quantity .quantity span {
+          font-size: 0.5em; }
+  .widget-order-history .cartoon-total-recap {
+    display: flex;
+    justify-content: flex-end; }
+    .widget-order-history .cartoon-total-recap table {
+      border: 1px solid black;
+      border-collapse: collapse; }
+    .widget-order-history .cartoon-total-recap tr, .widget-order-history .cartoon-total-recap td, .widget-order-history .cartoon-total-recap th {
+      border: 1px solid black; }
+    .widget-order-history .cartoon-total-recap td, .widget-order-history .cartoon-total-recap th {
+      padding: 5px; }
+  .widget-order-history .repayment-schedule {
+    margin-bottom: 20px; }
+  .widget-order-history .addresses {
+    margin-top: 50px; }
+    .widget-order-history .addresses table {
+      width: 100%; }
+      .widget-order-history .addresses table .title {
+        font-weight: bold; }
+      .widget-order-history .addresses table .info {
+        margin-top: 20px; }
+      .widget-order-history .addresses table tr {
+        vertical-align: top; }
+        .widget-order-history .addresses table tr td {
+          padding-bottom: 20px; }
+        .widget-order-history .addresses table tr td:first-of-type {
+          width: 100%; }
+        .widget-order-history .addresses table tr td:last-of-type {
+          min-width: 200px; }
+  .widget-order-history .shipping-info .label {
+    font-weight: bold; }
+  .widget-order-history .extra-comment {
+    margin-top: 10px;
+    font-size: 0.7em;
+    color: #e20613; }
+
+.widget-customer-account-loyalty-points .detailed-points {
+  margin-top: 20px; }
+.widget-customer-account-loyalty-points .loyalty-point {
+  font-size: 1.2em;
+  font-weight: bold; }
+
+.echeancier-container {
+  font-size: 0.7em;
+  font-family: "TradeGothic LT";
+  font-weight: normal;
+  margin-top: 15px; }
+  .echeancier-container .echeancier table {
+    border-collapse: collapse; }
+  .echeancier-container .echeancier table, .echeancier-container .echeancier tr, .echeancier-container .echeancier td {
+    border: 1px solid #ddd; }
+  .echeancier-container .echeancier td {
+    padding-bottom: 0px !important;
+    padding: 5px; }
+    .echeancier-container .echeancier td:last-child {
+      text-align: right; }
+    .echeancier-container .echeancier td:last-of-type {
+      min-width: 0px !important; }
+
+.carrier-table {
+  border: 1px solid black;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 10px; }
+  .carrier-table *::before, .carrier-table *::after {
+    content: none; }
+  .carrier-table tr, .carrier-table th, .carrier-table td {
+    border: 1px solid black; }
+  .carrier-table td {
+    padding: 5px; }
+
+.widget-customer-account-loyalty-points .container {
+  padding-bottom: 30px; }
+.widget-customer-account-loyalty-points .loyalty-incentive {
+  padding-top: 20px;
+  border-top: 1px solid #585858; }
+  .widget-customer-account-loyalty-points .loyalty-incentive form {
+    margin-top: 20px; }
+
+/*# sourceMappingURL=customer-all.css.map */

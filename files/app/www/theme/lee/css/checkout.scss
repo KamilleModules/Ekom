@@ -1,0 +1,76 @@
+@import "variables";
+
+.checkout-tunnel {
+
+  .checkout-event-form {
+
+    .event-section {
+
+      .errors {
+        color: red;
+        font-size: 0.8em;
+
+        &.big {
+          font-weight: bold;
+          font-size: 1em;
+          margin-top: 5px;
+        }
+      }
+
+      .cours-container {
+        h4.cours {
+          margin-top: 10px;
+          background: #ddd;
+          padding: 5px;
+          color: #8c8c8c;
+        }
+
+      }
+
+      fieldset {
+        border: none;
+
+        legend {
+          background: black;
+          width: 100%;
+          display: block;
+          color: white;
+          padding: 8px;
+          margin-top: 20px;
+        }
+        .person {
+          margin-top: 20px;
+
+          .person-title {
+            display: flex;
+            justify-content: space-between;
+
+            h4 {
+              text-align: left;
+              flex: auto;
+            }
+
+            label {
+              font-size: 0.8em;
+            }
+
+          }
+
+          table {
+            width: 100%;
+            input {
+              width: 100%;
+              padding: 5px;
+            }
+          }
+        }
+      }
+
+    }
+
+    .submit-container {
+      text-align: right;
+      margin-top: 20px;
+    }
+  }
+}

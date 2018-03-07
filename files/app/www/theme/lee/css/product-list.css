@@ -1,0 +1,190 @@
+/**
+Breakpoints:
+
+
+
+style:
+780
+  topmenu (catalog and social icons) appear
+900
+
+
+slider:
+768
+1170
+
+
+ */
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway.eot");
+  src: url("Raleway.eot?#iefix") format("embedded-opentype"), url("Raleway.woff") format("woff"), url("Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2';
+  src: url("TradeGothicNo2-Bold.eot");
+  src: url("TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("TradeGothicNo2-Bold.woff") format("woff"), url("TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway-Bold.eot");
+  src: url("Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("Raleway-Bold.woff") format("woff"), url("Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT';
+  src: url("TradeGothicLT.eot");
+  src: url("TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("TradeGothicLT.woff") format("woff"), url("TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'next';
+  src: url("TradeGothicNextLTPro-BdCm.eot");
+  src: url("TradeGothicNextLTPro-BdCm.eot?#iefix") format("embedded-opentype"), url("TradeGothicNextLTPro-BdCm.woff") format("woff"), url("TradeGothicNextLTPro-BdCm.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+.table-form.no-label tr td input {
+  height: 30px;
+  padding-left: 12px;
+  font-size: 0.7em;
+  color: #a3a9ad;
+  font-family: "TradeGothic LT";
+  font-weight: normal; }
+.table-form.no-label tr td input[type=checkbox] {
+  width: auto;
+  height: auto; }
+
+.product-list {
+  /*------------------------------------
+  - product list
+  ------------------------------------*/ }
+  .product-list .item {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    padding-top: 20px; }
+  .product-list .item:first-of-type {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0; }
+  .product-list .item .product-bar {
+    display: flex; }
+  .product-list .item .product-bar .image {
+    margin-right: 25px;
+    width: 150px; }
+  .product-list .item .product-bar .image img {
+    max-width: none; }
+  .product-list .item .product-bar .product-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 270px; }
+    .product-list .item .product-bar .product-info a {
+      color: black; }
+  .product-list .item .product-bar .product-info .label {
+    font-family: Raleway;
+    font-weight: bold;
+    font-size: 0.9em;
+    text-decoration: underline; }
+  .product-list .item .product-bar .product-info .ref {
+    font-weight: bold;
+    font-size: 0.7em; }
+  .product-list .item .product-bar .product-info .attributes {
+    font-size: 0.9em;
+    margin-top: 6px; }
+    .product-list .item .product-bar .product-info .attributes .attribute-name {
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 0.8em; }
+    .product-list .item .product-bar .product-info .attributes .attribute-value {
+      text-transform: uppercase;
+      font-size: 0.8em; }
+  .product-list .item .product-bar .product-info .stock-info {
+    font-size: 0.9em;
+    margin-top: 6px; }
+  .product-list .item .product-bar .quantity-container {
+    margin-left: 40px;
+    padding-right: 0px; }
+    .product-list .item .product-bar .quantity-container .quantity-plusminus-boxes {
+      display: flex; }
+      .product-list .item .product-bar .quantity-container .quantity-plusminus-boxes .minus-box {
+        border: 1px solid gray;
+        font-size: 2.7em;
+        padding: 7px;
+        text-align: center;
+        width: 39px;
+        height: 36px;
+        padding-top: 3px;
+        cursor: pointer; }
+      .product-list .item .product-bar .quantity-container .quantity-plusminus-boxes .plus-box {
+        border: 1px solid gray;
+        font-size: 2em;
+        padding: 7px;
+        text-align: center;
+        width: 39px;
+        height: 36px;
+        padding-top: 7px;
+        cursor: pointer; }
+      .product-list .item .product-bar .quantity-container .quantity-plusminus-boxes .quantity {
+        margin: 0px 18px;
+        height: 30px;
+        line-height: 33px;
+        color: #bbb; }
+    .product-list .item .product-bar .quantity-container .unit-price {
+      font-size: 0.75em;
+      font-weight: bold;
+      margin-top: 13px;
+      white-space: nowrap; }
+      .product-list .item .product-bar .quantity-container .unit-price .unit-price-text {
+        position: relative; }
+        .product-list .item .product-bar .quantity-container .unit-price .unit-price-text abbr {
+          position: absolute;
+          top: -5px;
+          font-size: 0.7em; }
+  .product-list .item .product-bar .price-container {
+    margin-left: 40px;
+    margin-right: 10px; }
+  .product-list .item .product-bar .price-container .price-with-tax,
+  .product-list .item .product-bar .price-container .price-to-pay,
+  .product-list .item .product-bar .price-container .price-without-tax {
+    color: #e20613;
+    font-family: "TradeGothicNo.2";
+    font-weight: bold;
+    font-size: 1.4em;
+    position: relative; }
+  .product-list .item .product-bar .price-container .price-to-pay abbr,
+  .product-list .item .product-bar .price-container .price-with-tax abbr {
+    position: absolute;
+    font-size: 0.5em;
+    right: -20px;
+    bottom: 4px;
+    font-style: normal; }
+  .product-list .item .product-bar .price-container .price-without-tax {
+    font-size: 1em;
+    text-align: left;
+    margin-top: 15px;
+    position: relative;
+    color: dimgray;
+    top: -7px; }
+    .product-list .item .product-bar .price-container .price-without-tax.linethrough {
+      text-decoration: line-through; }
+    .product-list .item .product-bar .price-container .price-without-tax abbr {
+      position: absolute;
+      font-size: 0.6em;
+      font-style: normal;
+      bottom: 3px; }
+  .product-list .item .action-bar {
+    margin-top: 20px; }
+  .product-list .item .action-bar a {
+    text-decoration: underline;
+    font-family: "TradeGothic LT";
+    font-weight: normal;
+    font-weight: bold;
+    font-size: 0.8em; }
+  .product-list .item .action-bar a:first-of-type,
+  .product-list .item .action-bar a:nth-of-type(2) {
+    margin-right: 20px; }
+
+/*# sourceMappingURL=product-list.css.map */

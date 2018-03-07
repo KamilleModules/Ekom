@@ -1,0 +1,223 @@
+
+@import "variables";
+
+//$productBoxHeight: 240px;
+$productBoxHeight: 350px;
+
+/*------------------------------------
+-
+------------------------------------*/
+.carousel-products {
+  text-align: center;
+  margin-top: 30px;
+  //padding-bottom: 30px;
+  background: white;
+
+  .slick-dots {
+    bottom: 25px;
+  }
+
+  .window > .title {
+    font-size: 1.7em;
+    @include font(ralewayBold);
+    color: #0d0d0d;
+    font-weight: bold;
+  }
+
+  .product-boxes {
+    display: flex;
+    justify-content: center;
+    //position: relative;
+    //margin-top: 60px;
+    height: $productBoxHeight + 60px;
+
+    // only for small carousels
+    //.slick-list {
+    //  padding-left: 80px;
+    //  padding-right: 80px;
+    //}
+
+    .product-box {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      outline: 0;
+      margin-top: 0;
+      cursor: pointer;
+
+      .slickinner {
+        transition: transform 0.18s;
+        overflow: hidden;
+        background: white;
+        z-index: 1;
+        width: 180px;
+        position: relative;
+        margin-top: 25px;
+      }
+
+      .inner {
+        position: relative;
+        display: flex;
+        height: $productBoxHeight - 30px;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px;
+        margin: 0 auto;
+        border: 1px solid #f9f9f9;
+      }
+
+      .promo,
+      .newproduct {
+        position: absolute;
+        top: 8px;
+        color: white;
+        display: block;
+        font-size: 13px;
+        padding: 4px;
+      }
+
+      .promo {
+        left: 8px;
+        background: #e30613;
+      }
+
+      .newproduct {
+        right: 8px;
+        background: #000;
+      }
+
+      .image-container {
+        margin-top: 40px;
+        height: 160px;
+        overflow: hidden;
+      }
+
+      .image-container img {
+        height: 100%;
+      }
+
+      .title {
+        margin-top: 10px;
+        font-weight: bold;
+        @include font(ralewayBold);
+        color: #464148;
+        font-size: 14px;
+        text-decoration: none;
+      }
+
+      .ref {
+        font-size: 0.6em;
+        white-space: nowrap;
+      }
+
+      .bottom {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 13px;
+        width: 100%;
+        //height: 5.4vw;
+        position: absolute;
+        bottom: 5px;
+        left: 0;
+        right: 0;
+      }
+
+      .bottom .price {
+        /*flex: auto;*/
+        color: #e30613;
+        font-size: 16px;
+        font-weight: bold;
+        font-family: "Open Sans";
+        white-space: nowrap;
+      }
+
+      .bottom .price .exponent {
+        font-size: 0.5em;
+        vertical-align: super;
+      }
+
+      .bottom .oldprice {
+        color: #464148;
+        font-family: "Open Sans";
+        text-decoration: line-through;
+        margin-right: 5px;
+        white-space: nowrap;
+      }
+
+      .bottom .oldprice .amount {
+        text-decoration: line-through;
+        font-size: 12px;
+      }
+
+      .bottom .oldprice .exponent {
+        font-size: 0.5em;
+        text-decoration: line-through;
+        position: relative;
+        top: -5px;
+      }
+
+      .product-preview-trigger {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        //background: #a9a9a9 url(#{$themeUri}/img/icons/preview.png) center no-repeat;
+        background: white url(#{$themeUri}/img/icons/bookmark-red.png) center no-repeat;
+        background-size: 30px;
+        border: none;
+        text-indent: -10000px;
+        width: 40px;
+        cursor: alias;
+        height: 30px;
+        display: none;
+      }
+
+      .slickinner:hover {
+        box-shadow: 0px 0px 9px rgba(0, 0, 0, 0.3);
+        transform: scale(1.05);
+        z-index: 2;
+      }
+
+      .slickinner:hover .product-preview-trigger {
+        display: block;
+      }
+    }
+
+    // search results
+    &.poster {
+      height: auto;
+
+      .product-box {
+
+        margin: 0 10px;
+
+        .slickinner:hover {
+          box-shadow: none;
+          transform: none;
+        }
+      }
+    }
+
+  }
+
+}
+//
+//.product-page {
+//  .carousel-products {
+//    margin-top: 60px;
+//    .product-boxes {
+//      height: 350px;
+//      .product-box {
+//        .image-container {
+//          margin-top: auto;
+//          height: auto;
+//        }
+//
+//        .inner{
+//          height: auto;
+//        }
+//      }
+//    }
+//  }
+//}

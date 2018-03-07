@@ -1,4 +1,4 @@
-$Ekom module
+Ekom module
 =================
 2017-04-25
 

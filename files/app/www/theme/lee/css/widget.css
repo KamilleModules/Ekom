@@ -1,0 +1,128 @@
+.widget-hero {
+    padding-top: 80px;
+    padding-bottom: 60px;
+}
+
+.widget-standard {
+    font-size: 14px;
+}
+
+.widget-standard .two-columns {
+    display: flex;
+    justify-content: space-between;
+}
+
+.widget-standard .two-columns .column-50 {
+    width: 48%;
+}
+
+.widget-standard h1 {
+    font-family: "TradeGothic LT";
+    margin-bottom: 50px;
+    font-size: 3em;
+}
+
+.widget-standard h2.title-underline {
+    padding-bottom: 7px;
+    border-bottom: 1px solid #e5e5e5;
+    font-weight: normal;
+    font-size: 1.5em;
+    line-height: 1.2222em;
+    margin-bottom: 15px;
+}
+
+.widget-standard .buttons-set {
+    margin: 10px 0 0;
+    padding-top: 10px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.widget-standard .buttons-set .button {
+    display: inline-block;
+    margin: 0;
+    border: 0;
+    overflow: visible;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: normal;
+    white-space: nowrap;
+    text-align: center;
+    background-color: #ddd;
+    color: #333;
+    line-height: 45px;
+    padding: 0 25px;
+    min-width: 180px;
+    transition: color 300ms ease-in-out, background-color 300ms ease-in-out;
+    -moz-transition: color 300ms ease-in-out, background-color 300ms ease-in-out;
+    -webkit-transition: color 300ms ease-in-out, background-color 300ms ease-in-out;
+    -o-transition: color 300ms ease-in-out, background-color 300ms ease-in-out;
+}
+
+.widget-standard .buttons-set .button:hover,
+.widget-standard .buttons-set .button:focus {
+    background-color: #5bd2ec !important;
+    color: #ffffff !important;
+}
+
+.widget-standard .form-list li {
+    margin: 0 0 8px;
+}
+
+.widget-standard .form-list label {
+    /*float: left;*/
+    font-weight: bold;
+    position: relative;
+    z-index: 0;
+    margin: 0 0 2px 0;
+}
+
+.widget-standard .form-list label.required em {
+    color: #ee001c;
+    /*float: right;*/
+    font-style: normal;
+    position: absolute;
+    top: 0;
+    right: -14px;
+}
+
+/*.form-list input.input-text {*/
+/*width: 262px;*/
+/*}*/
+
+.widget-standard .form-list input.input-text:hover,
+.widget-standard .form-list input.input-text:focus {
+    border-color: #aaa;
+    color: #333;
+    outline: none;
+}
+
+.widget-standard .form-list input.input-text {
+    transition: color 300ms ease-in-out, background-color 300ms ease-in-out, border-color 300ms ease-in-out;
+    padding: 8px;
+    text-overflow: ellipsis;
+    height: 36px;
+    width: 262px;
+    background: #fff;
+    border: 1px solid #ddd;
+    color: #888;
+    box-sizing: border-box;
+    border-radius: 0px;
+    box-shadow: none;
+    font: 14px/18px Arial, Helvetica, sans-serif;
+    vertical-align: middle;
+}
+
+.widget-standard p.required {
+    color: #ee001c;
+    text-align: right;
+}
+
+.widget-standard a {
+    color: #333333;
+    transition: color 300ms ease-in-out, background-color 300ms ease-in-out;
+    text-decoration: none;
+}
+
+.widget-standard a:hover {
+    color: #3ec2df;
+}

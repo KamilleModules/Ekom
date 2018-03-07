@@ -1,0 +1,51 @@
+@import "variables";
+
+$productBarHeight: 50px;
+
+.product-features-bar {
+  background: #f8f8f8;
+  height: $productBarHeight;
+  margin-top: 0px;
+}
+
+.product-features-bar ul {
+  display: flex;
+  justify-content: center;
+}
+
+.product-features-bar li {
+  padding: 0 30px;
+  margin: 0 3px;
+  box-sizing: border-box;
+  height: 50px;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 25%;
+  text-align: center;
+}
+
+.product-features-bar li.active {
+  background: #333333;
+  border-bottom: 2px solid #e30613;
+}
+
+
+.product-features-bar li:not(.active):hover {
+  background: rgba(255,255,255,0.01);
+  border-bottom: 2px solid #e30613;
+}
+
+.product-features-bar li a {
+  color: #333;
+  display: block;
+  height: 100%;
+  line-height: $productBarHeight - 4px;
+  @include font(tradeBold);
+  white-space: nowrap;
+}
+
+.product-features-bar li.active a {
+  color: white;
+}

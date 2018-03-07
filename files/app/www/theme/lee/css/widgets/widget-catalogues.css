@@ -1,0 +1,27 @@
+.widget-catalogues {
+  margin-bottom: 300px; }
+  .widget-catalogues .catalogues-list {
+    margin-top: 28px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap; }
+    .widget-catalogues .catalogues-list .item {
+      margin: 10px;
+      display: flex;
+      flex-direction: column; }
+      .widget-catalogues .catalogues-list .item .title {
+        margin-top: 20px;
+        font-weight: bold; }
+      .widget-catalogues .catalogues-list .item .action {
+        margin-top: 20px;
+        display: flex; }
+        .widget-catalogues .catalogues-list .item .action .blank {
+          flex: auto; }
+        .widget-catalogues .catalogues-list .item .action a {
+          display: block;
+          width: 48%;
+          text-align: center;
+          padding: 3px;
+          border-radius: 0px; }
+
+/*# sourceMappingURL=widget-catalogues.css.map */

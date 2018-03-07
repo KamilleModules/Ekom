@@ -1,0 +1,124 @@
+/**
+ * TABLE FORM
+ * ==============
+ * 2017-07-01
+ *
+ * This is the css markup for a form using tables.
+ * You can use it in a popup or in line.
+ * Feel free to tweak the values according to your requirements.
+ * You can always find a safe copy at http://todo
+ * -------------
+ *
+ * Have a look at the example markup in the doc. Enjoy!
+ *
+ *
+ *
+ *
+ */
+
+.table-form {
+
+  font-size: 1em;
+
+  .table-form-title {
+    margin-bottom: 20px;
+
+    h3 {
+      font-size: 1.8em;
+      border-bottom: 1px solid gray;
+      padding-bottom: 17px;
+
+    }
+  }
+
+  .off-success-message {
+    color: green;
+  }
+
+  .off-error-message {
+    color: red;
+  }
+
+  .off-success-message-container,
+  .off-error-message-container {
+    display: none;
+  }
+
+  table {
+    width: 100%;
+
+    .error {
+      color: #ee001c;
+      font-weight: normal;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    tr {
+
+      padding-bottom: 10px;
+
+      td {
+        font-size: 1em;
+        padding-top: 10px;
+
+        .error {
+          color: red;
+        }
+
+        input {
+          width: 100%;
+          padding: 3px;
+
+          &[type=checkbox],
+          &[type=radio] {
+            width: auto;
+          }
+        }
+
+        textarea {
+          width: 100%;
+          min-width: 330px;
+          min-height: 160px;
+        }
+
+        &:first-child {
+          text-align: left;
+        }
+
+        &:last-child {
+          padding-left: 10px;
+        }
+      }
+
+    }
+  }
+
+  .table-form-bottom {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+    margin-top: 20px;
+
+    button {
+      margin: 0 10px;
+      padding: 10px;
+      border: none;
+      border-radius: 2px;
+      color: white;
+      cursor: pointer;
+
+      &.cancel-btn {
+        background: #bbb;
+      }
+
+      &.submit-btn {
+        background: #509f50;
+      }
+    }
+  }
+
+}

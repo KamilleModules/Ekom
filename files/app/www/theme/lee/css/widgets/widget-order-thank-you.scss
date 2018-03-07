@@ -1,0 +1,43 @@
+@import "variables";
+
+.widget-order-thank-you {
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  text-align: center;
+
+  .head-title {
+    font-size: 1.3em;
+    margin-top: 30px;
+    font-weight: bold;
+    @include font2(tradeBold);
+  }
+
+  .text {
+    margin-top: 30px;
+  }
+
+  .points-info {
+    margin-top: 30px;
+    color: $red;
+
+    b {
+      @include font2(tradeBold);
+      display: block;
+      font-size: 1.8em;
+      font-weight: bold;
+      margin-top: 3px;
+    }
+  }
+
+  .page-button {
+    @include font2(tradeBold);
+    margin-top: 65px;
+    margin-bottom: 100px;
+    font-size: 0.9em !important;
+    padding: 6px 13px !important;
+  }
+}

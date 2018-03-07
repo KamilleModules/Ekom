@@ -1,0 +1,30 @@
+@import "variables";
+
+
+
+.widget-breadcrumbs {
+
+  @include font2(raleway);
+
+  margin: -15px auto 10px auto;
+  padding-top: 7px;
+  color: #7d7d7d;
+  font-size: 0.8em;
+
+  & > ul {
+    display: flex;
+    .first-link {
+      color: #4e4d4d;
+    }
+    .sep {
+      margin: 0 6px;
+    }
+
+    a {
+      color: #7d7d7d;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}

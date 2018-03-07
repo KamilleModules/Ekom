@@ -1,0 +1,127 @@
+@import "variables";
+
+.widget-product-bundles {
+
+  .line {
+    margin-top: 10px;
+  }
+
+
+
+  .bundles {
+    margin-top: 10px;
+    margin-bottom: 20px;
+
+    .bundle {
+      margin-top: 20px;
+      display: flex;
+
+      .product-images {
+        display: flex;
+        align-items: center;
+
+        img {
+          display: inline-block;
+          height: 200px;
+        }
+
+        .plus {
+          display: inline-block;
+          font-size: 2.5em;
+          margin-left: 10px;
+          margin-right: 10px;
+        }
+      }
+
+      .payment-block {
+        //flex: auto;
+        margin-left: 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+
+        .price-info {
+          .price-with-tax {
+            &.line-through {
+              color: gray;
+              text-decoration: line-through;
+              font-size: 1.1em;
+            }
+            abbr {
+              font-size: 0.6em;
+              position: relative;
+              top: -8px;
+            }
+          }
+
+          .sale-price {
+            color: $red;
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-left: 4px;
+
+            abbr {
+              font-size: 0.6em;
+              position: relative;
+              top: -8px;
+            }
+          }
+        }
+
+        .description {
+          margin-top: 10px;
+          font-size: 0.9em;
+
+          flex: auto;
+          & > span {
+            display: block;
+          }
+
+          ul {
+            margin-top: 7px;
+            li {
+              display: flex;
+              align-items: center;
+              flex-wrap: nowrap;
+
+              label {
+                margin-left: 5px;
+                white-space: nowrap;
+              }
+
+              a {
+                text-decoration: underline;
+                margin-left: 6px;
+                color: #0093ff;
+                white-space: nowrap;
+              }
+
+              .price {
+                color: $red;
+                margin-left: 7px;
+                white-space: nowrap;
+
+                &.line-through{
+                  text-decoration: line-through;
+                  color: $grayTextDisabled;
+                }
+
+              }
+            }
+          }
+
+        }
+
+        .buy-button {
+          padding: 5px 44px;
+          font-size: 0.8em;
+
+        }
+      }
+
+    }
+  }
+
+}

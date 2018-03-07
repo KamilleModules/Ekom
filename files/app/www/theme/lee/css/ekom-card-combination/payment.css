@@ -1,0 +1,22 @@
+.ekom-card-combination-items {
+  margin-top: 7px;
+  margin-bottom: 7px; }
+  .ekom-card-combination-items .ekom-card-combination-item {
+    display: flex;
+    align-items: center; }
+    .ekom-card-combination-items .ekom-card-combination-item .label {
+      font-weight: bold;
+      margin-right: 10px;
+      font-size: 0.9em; }
+    .ekom-card-combination-items .ekom-card-combination-item .attributes {
+      margin: 0px;
+      margin-top: 2px;
+      white-space: nowrap; }
+      .ekom-card-combination-items .ekom-card-combination-item .attributes .attribute {
+        border-right: 1px solid black;
+        padding: 0 5px;
+        font-size: 0.7em; }
+        .ekom-card-combination-items .ekom-card-combination-item .attributes .attribute:last-of-type {
+          border-right: none; }
+
+/*# sourceMappingURL=payment.css.map */

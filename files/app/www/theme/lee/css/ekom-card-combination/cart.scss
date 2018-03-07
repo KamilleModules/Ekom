@@ -1,0 +1,33 @@
+.cart .product-list .item .ekom-card-combination-items {
+
+  margin-top: 7px;
+  margin-bottom: 7px;
+
+  .ekom-card-combination-item {
+    display: flex;
+    align-items: center;
+    .label {
+      font-weight: bold;
+      margin-right: 10px;
+      font-size: 0.9em;
+    }
+
+    .attributes {
+
+      margin: 0px;
+      margin-top: 2px;
+
+      white-space: nowrap;
+
+      .attribute {
+        border-right: 1px solid black;
+        padding: 0 5px;
+        font-size: 0.7em;
+
+        &:last-of-type {
+          border-right: none;
+        }
+      }
+    }
+  }
+}

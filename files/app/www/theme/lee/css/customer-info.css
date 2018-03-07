@@ -1,0 +1,18 @@
+.customer-info table {
+  border-collapse: collapse;
+  border: 1px solid black; }
+.customer-info tr, .customer-info th, .customer-info td {
+  border: 1px solid black; }
+.customer-info td, .customer-info th {
+  padding: 5px; }
+.customer-info tr.separator {
+  border-top: 2px solid black;
+  height: 1px;
+  max-height: 1px; }
+  .customer-info tr.separator td {
+    display: none; }
+
+.flex {
+  display: flex; }
+
+/*# sourceMappingURL=customer-info.css.map */

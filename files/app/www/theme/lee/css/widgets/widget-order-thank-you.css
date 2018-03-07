@@ -1,0 +1,61 @@
+/*------------------------------------
+- DIR UP
+------------------------------------*/
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway.eot");
+  src: url("../Raleway.eot?#iefix") format("embedded-opentype"), url("../Raleway.woff") format("woff"), url("../Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2-up';
+  src: url("../TradeGothicNo2-Bold.eot");
+  src: url("../TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("../TradeGothicNo2-Bold.woff") format("woff"), url("../TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway-up';
+  src: url("../Raleway-Bold.eot");
+  src: url("../Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("../Raleway-Bold.woff") format("woff"), url("../Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT-up';
+  src: url("../TradeGothicLT.eot");
+  src: url("../TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("../TradeGothicLT.woff") format("woff"), url("../TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+.widget-order-thank-you {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  text-align: center; }
+  .widget-order-thank-you .head-title {
+    font-size: 1.3em;
+    margin-top: 30px;
+    font-weight: bold;
+    font-family: "TradeGothicNo.2-up";
+    font-weight: bold; }
+  .widget-order-thank-you .text {
+    margin-top: 30px; }
+  .widget-order-thank-you .points-info {
+    margin-top: 30px;
+    color: #d41823; }
+    .widget-order-thank-you .points-info b {
+      font-family: "TradeGothicNo.2-up";
+      font-weight: bold;
+      display: block;
+      font-size: 1.8em;
+      font-weight: bold;
+      margin-top: 3px; }
+  .widget-order-thank-you .page-button {
+    font-family: "TradeGothicNo.2-up";
+    font-weight: bold;
+    margin-top: 65px;
+    margin-bottom: 100px;
+    font-size: 0.9em !important;
+    padding: 6px 13px !important; }
+
+/*# sourceMappingURL=widget-order-thank-you.css.map */

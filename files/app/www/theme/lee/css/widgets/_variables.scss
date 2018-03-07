@@ -1,0 +1,66 @@
+$red: #d41823;
+$gray: #525252;
+$themeUri: "/theme/lee";
+
+@mixin font2($type) {
+  @if $type == raleway {
+    font-family: Raleway-up;
+    font-weight: normal;
+  }
+  @if $type == ralewayBold {
+    font-family: Raleway-up;
+    font-weight: bold;
+  }
+  @if $type == trade {
+    font-family: "TradeGothic LT-up";
+    font-weight: normal;
+  }
+  @if $type == tradeBold {
+    font-family: "TradeGothicNo.2-up";
+    font-weight: bold;
+  }
+}
+
+
+/*------------------------------------
+- DIR UP
+------------------------------------*/
+@font-face {
+  font-family: 'Raleway-up';
+  src: url('../Raleway.eot');
+  src: url('../Raleway.eot?#iefix') format('embedded-opentype'),
+  url('../Raleway.woff') format('woff'),
+  url('../Raleway.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TradeGothicNo.2-up';
+  src: url('../TradeGothicNo2-Bold.eot');
+  src: url('../TradeGothicNo2-Bold.eot?#iefix') format('embedded-opentype'),
+  url('../TradeGothicNo2-Bold.woff') format('woff'),
+  url('../TradeGothicNo2-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Raleway-up';
+  src: url('../Raleway-Bold.eot');
+  src: url('../Raleway-Bold.eot?#iefix') format('embedded-opentype'),
+  url('../Raleway-Bold.woff') format('woff'),
+  url('../Raleway-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TradeGothic LT-up';
+  src: url('../TradeGothicLT.eot');
+  src: url('../TradeGothicLT.eot?#iefix') format('embedded-opentype'),
+  url('../TradeGothicLT.woff') format('woff'),
+  url('../TradeGothicLT.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}

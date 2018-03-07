@@ -1,0 +1,27 @@
+.widget-create-account .off-success-message,
+.widget-create-account .off-error-message {
+  padding: 10px;
+  margin-bottom: 20px; }
+.widget-create-account .off-success-message {
+  color: green;
+  border: 1px solid green; }
+.widget-create-account .off-error-message {
+  color: red;
+  border: 1px solid red; }
+.widget-create-account .hidden {
+  display: none; }
+.widget-create-account.b2b .b2b-show {
+  display: block; }
+.widget-create-account.b2b .b2c-show {
+  display: none; }
+.widget-create-account.b2c .b2c-show {
+  display: block; }
+.widget-create-account.b2c .b2b-show {
+  display: none; }
+.widget-create-account .social-icons-container {
+  display: flex; }
+  .widget-create-account .social-icons-container .social-icon {
+    width: 24px;
+    height: 24px; }
+
+/*# sourceMappingURL=create-account.css.map */

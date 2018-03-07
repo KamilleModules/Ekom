@@ -1,0 +1,14 @@
+.widget-last-featured-event .container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center; }
+  .widget-last-featured-event .container .main-event {
+    margin: 0 10px; }
+  .widget-last-featured-event .container .side-col {
+    margin-top: 100px; }
+    .widget-last-featured-event .container .side-col iframe {
+      width: 180px;
+      height: 140px; }
+
+/*# sourceMappingURL=events.css.map */

@@ -1,0 +1,52 @@
+@import "variables";
+
+.widget-product-features {
+
+  margin-top: 10px;
+  margin-bottom: 60px;
+
+  .line {
+    margin-top: 10px;
+  }
+
+
+  .features-line {
+    display: flex;
+
+    .features-description {
+      margin-top: 10px;
+      width: 60%;
+
+      p {
+        font-size: 0.8em;
+        line-height: 2em;
+      }
+    }
+
+    .features-details {
+      margin-left: 50px;
+      background: #F7F8F9;
+      border-left: 3px solid #E0E2E2;
+      padding: 15px;
+      width: 40%;
+
+      li {
+
+        display: flex;
+        padding: 4px;
+        font-size: 0.9em;
+
+        .feature-name {
+          color: $red;
+          display: inline-block;
+          font-weight: bold;
+          white-space: nowrap;
+        }
+        .feature-value {
+          display: inline-block;
+          margin-left: 5px;
+        }
+      }
+    }
+  }
+}

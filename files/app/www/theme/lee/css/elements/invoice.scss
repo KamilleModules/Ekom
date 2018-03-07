@@ -1,0 +1,42 @@
+@import "variables";
+
+
+.invoice-elements {
+
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  .invoice-element {
+    @include font2(trade);
+    margin: 10px;
+
+
+    .facture {
+      padding-top: 10px;
+      font-weight: bold;
+      text-align: center;
+      font-size: 1.1em;
+    }
+    .lines {
+      padding: 10px;
+      line-height: 1.6em;
+
+      .line {
+        white-space: nowrap;
+        width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        .value.small {
+          font-size: 0.6em;
+        }
+      }
+    }
+  }
+}
+
+.simpleselect{
+  width: 250px !important;
+}
+

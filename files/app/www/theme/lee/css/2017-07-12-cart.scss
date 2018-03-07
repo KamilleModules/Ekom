@@ -1,0 +1,450 @@
+@import "variables";
+
+$colorRedCart: $red;
+$colorRedPrice: $red;
+$colorBorderInput: #999;
+
+.cart-container {
+
+  .cart-title-line {
+    display: flex;
+    justify-content: flex-start;
+
+    .cart-text {
+      flex: auto;
+      text-transform: uppercase;
+      @include font(ralewayBold);
+      color: $red;
+      font-size: 1.4em;
+    }
+
+    .continue-shopping-link {
+      color: $red;
+    }
+  }
+
+  .cart {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+
+    .product-list {
+      width: 66%;
+
+      .seller-product-list {
+        padding: 20px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+
+        .header-line {
+          display: flex;
+          .seller-box {
+            flex: auto;
+            font-size: 0.85em;
+
+            .seller {
+              font-weight: bold;
+            }
+          }
+
+          .total {
+            text-transform: uppercase;
+            color: $red;
+            position: relative;
+            left: 10px;
+            top: -13px;
+            font-weight: bold;
+
+          }
+        }
+      }
+
+      /*------------------------------------
+      - product list
+      ------------------------------------*/
+      .item {
+        display: flex;
+        flex-direction: column;
+
+        margin-top: 20px;
+        padding-top: 20px;
+      }
+
+      .item:first-of-type {
+        border-top: none;
+        margin-top: 0;
+        padding-top: 0;
+      }
+
+      .item .product-bar {
+        display: flex;
+      }
+
+      .item .product-bar .image {
+        margin-right: 25px;
+        width: 150px;
+      }
+
+      .item .product-bar .image img {
+        max-width: none;
+      }
+
+      .item .product-bar .product-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        //border-right: 1px solid $colorGrayBorder;
+        width: 270px;
+      }
+
+      .item .product-bar .product-info .label {
+        @include font(ralewayBold);
+        font-size: 0.9em;
+        text-decoration: underline;
+
+      }
+
+      .item .product-bar .product-info .ref {
+        font-weight: bold;
+        font-size: 0.7em;
+      }
+
+      .item .product-bar .product-info .attributes {
+        font-size: 0.9em;
+        margin-top: 6px;
+
+        .attribute-name {
+          font-weight: bold;
+          text-transform: uppercase;
+          font-size: 0.8em;
+        }
+
+        .attribute-value {
+          text-transform: uppercase;
+          font-size: 0.8em;
+        }
+      }
+
+      .item .product-bar .product-info .stock-info {
+        font-size: 0.9em;
+        margin-top: 6px;
+      }
+
+      .item .product-bar .quantity-container {
+        margin-left: 40px;
+        padding-right: 0px;
+      }
+
+      .item .product-bar .quantity-container .label {
+        font-weight: bold;
+        font-size: 0.7em;
+      }
+
+      .item .product-bar .quantity-container .quantity-input {
+        width: 80px;
+        border: 1px solid $colorBorderInput;
+        padding: 6px 10px;
+        height: 35px;
+        font-size: 1.3em;
+      }
+
+      .item .product-bar .price-container {
+        margin-left: 40px;
+        margin-right: 10px;
+      }
+
+      .item .product-bar .price-container .price-with-tax,
+      .item .product-bar .price-container .price-to-pay,
+      .item .product-bar .price-container .price-without-tax {
+        color: $colorRedPrice;
+        @include font(tradeBold);
+        font-size: 1.5em;
+        letter-spacing: -1px;
+        position: relative;
+      }
+
+      .item .product-bar .price-container .price-to-pay em,
+      .item .product-bar .price-container .price-with-tax em {
+        position: absolute;
+        font-size: 0.5em;
+        right: -20px;
+        bottom: 4px;
+        font-style: normal;
+
+      }
+
+      .item .product-bar .price-container .price-without-tax {
+        font-size: 1em;
+        color: black;
+        text-align: left;
+        margin-top: 15px;
+        position: relative;
+
+        &.linethrough {
+          text-decoration: line-through;
+        }
+
+        em {
+          position: absolute;
+          font-size: 0.6em;
+          font-style: normal;
+          right: 15px;
+          bottom: 3px;
+
+        }
+      }
+
+      .item .action-bar {
+        margin-top: 20px;
+      }
+
+      .item .action-bar a {
+        text-decoration: underline;
+        @include font(trade);
+        font-weight: bold;
+        font-size: 0.8em;
+      }
+
+      .item .action-bar a:first-of-type {
+        margin-right: 20px;
+      }
+
+    }
+
+    /*------------------------------------
+    - RIGHT BLOCK
+    ------------------------------------*/
+    .right-block {
+      width: 30%;
+      margin-left: 50px;
+
+      .block {
+        margin-top: 15px;
+        margin-bottom: 15px;
+      }
+
+      .cart-summary {
+        border: 1px solid #ddd;
+        background: #f8f8f8;
+        padding: 15px;
+
+        h1 {
+          color: $colorRedCart;
+          text-align: center;
+          text-transform: uppercase;
+          @include font(tradeBold);
+          font-size: 1.6em;
+          margin-top: 11px;
+        }
+
+        table {
+          margin-top: 50px;
+          width: 100%;
+          border-collapse: collapse;
+          vertical-align: top;
+        }
+
+        table tr {
+          height: 35px;
+        }
+
+        table .price {
+          font-weight: bold;
+          position: relative;
+          text-align: right;
+          padding-right: 10px;
+        }
+
+        table .price em {
+          position: absolute;
+          font-size: 0.5em;
+          font-style: normal;
+          right: -9px;
+          bottom: 8px;
+        }
+
+        table .visible {
+          display: table-row !important;
+        }
+
+        table .promo {
+          display: none;
+          color: $red;
+        }
+
+        table .promo-message-success,
+        table .promo-message-error {
+          text-align: center;
+          display: none;
+        }
+
+        table .promo-msg-success,
+        table .promo-msg-error {
+          padding: 21px;
+          margin: 14px;
+          font-size: 0.9em;
+          position: relative;
+        }
+
+        table .promo-msg-error .coupon-message-close,
+        table .promo-msg-success .coupon-message-close {
+          display: block;
+          position: absolute;
+          top: 3px;
+          right: 7px;
+          color: white !important;
+
+          &hover {
+            color: white !important;
+          }
+        }
+
+        table .promo-message-success.visible,
+        table .promo-message-error.visible {
+          display: table-row;
+        }
+        table .promo-msg-success {
+          color: white;
+          background: $colorGreen;
+        }
+        table .promo-msg-error {
+          color: white;
+          background: $colorRedPrice;
+        }
+
+        table .coupon-details {
+          color: #bbb;
+          font-size: 0.8em;
+          height: 20px;
+          display: none;
+
+          a {
+            color: #bbb !important;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+
+          td:last-of-type {
+            text-align: right;
+          }
+        }
+
+        table tr.sep {
+          border-bottom: 1px solid #555;
+        }
+
+        table .total {
+          color: $red;
+          @include font(tradeBold);
+          font-size: 1.6em;
+          height: 50px;
+        }
+
+        table .total .price {
+          font-size: 0.8em;
+
+          em {
+            right: -9px;
+            bottom: 12px;
+          }
+        }
+      }
+      .coupon-form {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+      }
+
+      .coupon-form input {
+        border: 1px solid $colorBorderInput;
+        padding: 6px 10px;
+        height: 35px;
+        margin-left: 10px;
+      }
+
+      .coupon-form button {
+        margin-left: 10px;
+        width: auto !important;
+        height: 35px;
+        border: 1px solid $colorBorderInput;
+        line-height: 0.6em;
+      }
+
+      button.front-button {
+        width: 100%;
+        font-size: 1.3em;
+      }
+
+      button.front-button.button-gray {
+        width: 100%;
+        font-size: 1.2em;
+        color: black;
+      }
+
+      .continue-purchase {
+        text-align: right;
+        margin-top: 20px;
+
+        a {
+          text-decoration: underline;
+          font-size: 1.2em;
+          font-weight: bold;
+        }
+      }
+
+      .payment-options {
+        width: 100%;
+        background: black;
+        color: white;
+        text-align: center;
+        height: 37px;
+        font-size: 1.5em;
+        line-height: 1.4em;
+        margin-top: 100px;
+      }
+
+      .block-capsule {
+
+        margin-top: 50px;
+
+        .capsule {
+          display: flex;
+          align-items: stretch;
+          border: 1px solid #eee;
+
+          .title {
+            background: black;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            text-transform: uppercase;
+          }
+
+          .text {
+            background: white;
+            color: black;
+            text-align: center;
+            padding: 7px;
+
+            .phone {
+              font-weight: bold;
+              @include font(tradeBold);
+              font-size: 1.2em;
+            }
+
+            .details {
+              font-size: 0.7em;
+              line-height: 1em;
+              margin-top: 7px;
+            }
+          }
+        }
+      }
+
+    }
+  }
+}

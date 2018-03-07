@@ -1,0 +1,78 @@
+/**
+ * TABLE FORM
+ * ==============
+ * 2017-07-01
+ *
+ * This is the css markup for a form using tables.
+ * You can use it in a popup or in line.
+ * Feel free to tweak the values according to your requirements.
+ * You can always find a safe copy at http://todo
+ * -------------
+ *
+ * Have a look at the example markup in the doc. Enjoy!
+ *
+ *
+ *
+ *
+ */
+.table-form {
+  font-size: 1em; }
+  .table-form .table-form-title {
+    margin-bottom: 20px; }
+    .table-form .table-form-title h3 {
+      font-size: 1.8em;
+      border-bottom: 1px solid gray;
+      padding-bottom: 17px; }
+  .table-form .off-success-message {
+    color: green; }
+  .table-form .off-error-message {
+    color: red; }
+  .table-form .off-success-message-container,
+  .table-form .off-error-message-container {
+    display: none; }
+  .table-form table {
+    width: 100%; }
+    .table-form table .error {
+      color: #ee001c;
+      font-weight: normal; }
+    .table-form table .hidden {
+      display: none; }
+    .table-form table tr {
+      padding-bottom: 10px; }
+      .table-form table tr td {
+        font-size: 1em;
+        padding-top: 10px; }
+        .table-form table tr td .error {
+          color: red; }
+        .table-form table tr td input {
+          width: 100%;
+          padding: 3px; }
+          .table-form table tr td input[type=checkbox], .table-form table tr td input[type=radio] {
+            width: auto; }
+        .table-form table tr td textarea {
+          width: 100%;
+          min-width: 330px;
+          min-height: 160px; }
+        .table-form table tr td:first-child {
+          text-align: left; }
+        .table-form table tr td:last-child {
+          padding-left: 10px; }
+  .table-form .table-form-bottom {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+    margin-top: 20px; }
+    .table-form .table-form-bottom button {
+      margin: 0 10px;
+      padding: 10px;
+      border: none;
+      border-radius: 2px;
+      color: white;
+      cursor: pointer; }
+      .table-form .table-form-bottom button.cancel-btn {
+        background: #bbb; }
+      .table-form .table-form-bottom button.submit-btn {
+        background: #509f50; }
+
+/*# sourceMappingURL=table-form.css.map */

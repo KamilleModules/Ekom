@@ -1,0 +1,248 @@
+/**
+Breakpoints:
+
+
+
+style:
+780
+  topmenu (catalog and social icons) appear
+900
+
+
+slider:
+768
+1170
+
+
+ */
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway.eot");
+  src: url("Raleway.eot?#iefix") format("embedded-opentype"), url("Raleway.woff") format("woff"), url("Raleway.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothicNo.2';
+  src: url("TradeGothicNo2-Bold.eot");
+  src: url("TradeGothicNo2-Bold.eot?#iefix") format("embedded-opentype"), url("TradeGothicNo2-Bold.woff") format("woff"), url("TradeGothicNo2-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'Raleway';
+  src: url("Raleway-Bold.eot");
+  src: url("Raleway-Bold.eot?#iefix") format("embedded-opentype"), url("Raleway-Bold.woff") format("woff"), url("Raleway-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+@font-face {
+  font-family: 'TradeGothic LT';
+  src: url("TradeGothicLT.eot");
+  src: url("TradeGothicLT.eot?#iefix") format("embedded-opentype"), url("TradeGothicLT.woff") format("woff"), url("TradeGothicLT.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+@font-face {
+  font-family: 'next';
+  src: url("TradeGothicNextLTPro-BdCm.eot");
+  src: url("TradeGothicNextLTPro-BdCm.eot?#iefix") format("embedded-opentype"), url("TradeGothicNextLTPro-BdCm.woff") format("woff"), url("TradeGothicNextLTPro-BdCm.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal; }
+.table-form.no-label tr td input {
+  height: 30px;
+  padding-left: 12px;
+  font-size: 0.7em;
+  color: #a3a9ad;
+  font-family: "TradeGothic LT";
+  font-weight: normal; }
+.table-form.no-label tr td input[type=checkbox] {
+  width: auto;
+  height: auto; }
+
+/*------------------------------------
+- PRODUCT PAGE
+------------------------------------*/
+.product-box {
+  display: flex;
+  justify-content: flex-start;
+  /*------------------------------------
+  - PRODUCT VIEWBOX
+  ------------------------------------*/
+  /*------------------------------------
+  - PRODUCT INFO
+  ------------------------------------*/ }
+  .product-box .photos-nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 86px;
+    min-width: 86px;
+    margin-right: 20px; }
+    .product-box .photos-nav .slick-arrow {
+      border: none;
+      text-indent: -10000px;
+      cursor: pointer;
+      display: block;
+      height: 24px;
+      width: 24px;
+      margin: 8px auto; }
+    .product-box .photos-nav .slick-prev.slick-arrow {
+      background: url(/theme/lee/css/icons-sprite.png) -48px -72px no-repeat; }
+    .product-box .photos-nav .slick-next.slick-arrow {
+      background: url(/theme/lee/css/icons-sprite.png) -24px -72px no-repeat; }
+    .product-box .photos-nav .vertical-carousel ul {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start; }
+  .product-box .product-viewbox {
+    width: 880px;
+    margin-right: 20px; }
+    .product-box .product-viewbox .image-container {
+      position: relative; }
+    .product-box .product-viewbox .image-container .video-wrapper {
+      display: none; }
+    .product-box .product-viewbox .image-container .video-wrapper video,
+    .product-box .product-viewbox .image-container .video-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 100;
+      background: black; }
+    .product-box .product-viewbox .contact-us-banner {
+      background: #dfdfdf;
+      padding: 10px 5px;
+      margin-top: 25px;
+      font-family: "TradeGothic LT";
+      font-size: 1.2em;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      display: flex;
+      justify-content: space-between;
+      line-height: 1em; }
+    .product-box .product-viewbox .contact-us-banner span {
+      margin: 0px 10px; }
+    .product-box .product-viewbox .contact-us-info {
+      width: 70%;
+      margin: 10px auto 0 auto; }
+  .product-box .product-info {
+    font-family: Raleway;
+    font-weight: normal;
+    min-width: 48%; }
+    .product-box .product-info > .label {
+      font-size: 1.3em;
+      font-weight: bold;
+      text-transform: uppercase; }
+    .product-box .product-info .meta {
+      margin-top: 5px;
+      display: flex;
+      justify-content: flex-start; }
+    .product-box .product-info .meta .reference {
+      flex: auto; }
+    .product-box .product-info .description {
+      margin-top: 10px;
+      font-size: 0.9em; }
+    .product-box .product-info .availability {
+      float: none !important;
+      margin: 0 !important; }
+    .product-box .product-info .availability-countdown {
+      color: #f00;
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-top: 10px;
+      display: none; }
+      .product-box .product-info .availability-countdown.visible {
+        display: block; }
+    .product-box .product-info .product-discount .price {
+      font-family: "TradeGothicNo.2";
+      font-weight: bold;
+      font-size: 2em;
+      margin-top: 18px;
+      margin-bottom: 15px;
+      position: relative;
+      display: inline-block;
+      margin-right: 40px; }
+    .product-box .product-info .product-discount .price em {
+      position: absolute;
+      top: -4px;
+      right: -28px;
+      font-size: 0.5em;
+      font-style: normal; }
+    .product-box .product-info .product-discount .original-price.has-discount {
+      text-decoration: line-through; }
+    .product-box .product-info .pay-helpers {
+      font-style: italic;
+      font-size: 1em;
+      text-decoration: underline; }
+    .product-box .product-info .card-combinations .card-combination {
+      padding: 20px;
+      border-bottom: 1px solid #ddd;
+      display: flex; }
+      .product-box .product-info .card-combinations .card-combination:first-of-type {
+        border-top: 1px solid #ddd;
+        margin-top: 20px; }
+      .product-box .product-info .card-combinations .card-combination .image {
+        margin-right: 10px;
+        width: 150px; }
+      .product-box .product-info .card-combinations .card-combination > .info {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around; }
+        .product-box .product-info .card-combinations .card-combination > .info .title {
+          font-size: 1.1em;
+          font-weight: bold; }
+          .product-box .product-info .card-combinations .card-combination > .info .title .quantity-precision {
+            font-size: 0.8em;
+            font-weight: normal; }
+        .product-box .product-info .card-combinations .card-combination > .info .price-info-line {
+          font-size: 0.8em;
+          margin-top: 15px; }
+          .product-box .product-info .card-combinations .card-combination > .info .price-info-line .saving {
+            margin-right: 15px; }
+          .product-box .product-info .card-combinations .card-combination > .info .price-info-line .price-value.original-price {
+            text-decoration: line-through; }
+        .product-box .product-info .card-combinations .card-combination > .info .price-line {
+          display: flex;
+          align-items: center;
+          font-size: 0.8em;
+          margin-top: 15px; }
+          .product-box .product-info .card-combinations .card-combination > .info .price-line .sale-price {
+            font-size: 1.7em;
+            margin-left: 10px;
+            font-weight: bold; }
+        .product-box .product-info .card-combinations .card-combination > .info .attribute-selectors {
+          margin-top: 30px;
+          display: flex; }
+          .product-box .product-info .card-combinations .card-combination > .info .attribute-selectors .attribute-selector {
+            margin: 0px 3px; }
+            .product-box .product-info .card-combinations .card-combination > .info .attribute-selectors .attribute-selector .title {
+              font-size: 1em;
+              font-weight: normal; }
+        .product-box .product-info .card-combinations .card-combination > .info .product-link {
+          margin-top: 10px; }
+          .product-box .product-info .card-combinations .card-combination > .info .product-link a {
+            font-size: 0.8em; }
+    .product-box .product-info .line {
+      margin-top: 30px; }
+      .product-box .product-info .line .quantity {
+        margin-right: 20px; }
+      .product-box .product-info .line .quantity input {
+        width: 60px;
+        height: 30px; }
+      .product-box .product-info .line .bookmarks {
+        display: block;
+        padding-left: 41px;
+        height: 32px;
+        padding-top: 13px;
+        background: url(/theme/lee/css/icons-sprite.png) 0px -272px no-repeat; }
+      .product-box .product-info .line .add-to-estimate {
+        margin-right: 20px; }
+      .product-box .product-info .line .front-button.button-red.disabled {
+        background: #8f8f8f;
+        opacity: 0.3;
+        cursor: not-allowed; }
+    .product-box .product-info .connect {
+      font-style: italic;
+      margin-top: 10px;
+      text-decoration: underline; }
+
+/*# sourceMappingURL=product-box-ekom-card-combination.css.map */

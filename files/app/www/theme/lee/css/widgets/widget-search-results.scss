@@ -1,0 +1,54 @@
+@import "variables";
+
+.widget-search-results {
+
+  .header {
+
+    margin-top: 30px;
+
+    .header-top {
+      display: flex;
+      flex-wrap: wrap;
+
+      .user-search {
+        flex: auto;
+        @include font2(tradeBold);
+        font-size: 2em;
+
+        .deco-text {
+          color: $red;
+        }
+      }
+
+      .info-result {
+        @include font2(raleway);
+        white-space: nowrap;
+        font-size: 1em;
+        em {
+          color: $red;
+          font-weight: bold;
+        }
+      }
+    }
+
+    .filter-bar {
+      margin-top: 30px;
+    }
+  }
+
+  .results-list-container {
+
+    margin-top: 0px;
+
+    .product-boxes {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+
+      .product-box {
+        margin: 0 20px;
+      }
+    }
+  }
+
+}

@@ -1,0 +1,32 @@
+$borderColor: black;
+
+.customer-info {
+  table {
+    border-collapse: collapse;
+    border: 1px solid $borderColor;
+  }
+
+  tr, th, td {
+    border: 1px solid $borderColor;
+  }
+
+  td, th {
+    padding: 5px;
+  }
+
+  tr.separator {
+    border-top: 2px solid $borderColor;
+    height: 1px;
+    max-height: 1px;
+
+    td{
+      display: none;
+    }
+  }
+
+}
+
+
+.flex{
+  display: flex;
+}
