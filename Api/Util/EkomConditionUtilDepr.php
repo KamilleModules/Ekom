@@ -6,7 +6,7 @@ namespace Module\Ekom\Api\Util;
 
 use BeeFramework\Notation\String\ShortCode\Tool\ShortCodeTool;
 
-class EkomConditionUtil
+class EkomConditionUtilDepr
 {
     /**
      *

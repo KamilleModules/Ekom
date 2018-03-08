@@ -173,9 +173,56 @@ Les champs sont les suivants:
 - category: la catégorie sur laquelle appliquer la réduction
 - discount: la réduction à appliquer (ek_discount)
 - active: est-ce que cette réduction est active (1) ou pas (0) sur le frontoffice
-- conditions: définit sous quelles conditions cette réduction s'applique (date, autre).
-Ce système n'est pas encore implémenté, et donc la réduction s'applique tout le temps.
+- conditions: définit sous quelles conditions cette réduction s'applique.
+Le [language des conditions](concept/ekom-conditions-language.md) ekom est utilisé.
+Le contexte est le suivant (valeurs données à titre d'exemple):
+    - date: 2018-03-08
+    - product_card_id: 56
+    - product_details: []
+    - product_id: 56
+    - shop_id: 1
+    - lang_id: 1
+    - currency_id: 1
+    - ThisApp_isPro: true
+    - ThisApp_userShippingArea: FR
+    - ThisApp_userOriginArea: 0    
+
+
+!> Lorsque vous modifiez une condition, assurez vous de bien rafraîchir le cache du front office également.
+
+
+#### ek_category_has_product_card
+
+Les liaisons entre les catégories et les `cartes`.
+
+Les champs sont:
+
+- category: la catégorie
+- product card: la carte
+
+
+
+#### ek_category_lang
+
+Les traductions pour les catégories.
+
+
+Les champs sont:
+
+- category: la catégorie
+- lang: la langue
+- label: le label de la catégorie (le nom de la catégorie sur le front)
+- description: la description de la catégorie
+- slug: le morceau d'url utilisé pour les liens vers cette catégorie
+- meta title: le contenu de la balise meta title
+- meta description: le contenu de la balise meta description
+- meta keywords: le contenu de la balise meta keywords
 
 
 
 
+
+ek_country
+-----------------------
+
+Les pays disponibles.

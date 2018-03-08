@@ -300,8 +300,10 @@ class ProductBoxEntity
         //--------------------------------------------
         $discountInfo = [];
         if (false !== $discount) {
+            $discountContext = $productBoxContext;
+//            $discountContext['datetime'] = date("Y-m-d H:i:s");
             $conditions = $discount['conditions'];
-            if (true === SimpleConditionResolverUtil::create()->evaluate($conditions, $productBoxContext)) {
+            if (true === SimpleConditionResolverUtil::create()->evaluate($conditions, $discountContext)) {
                 $discountInfo = DiscountLayer::applyDiscount($discount, $rawOriginalPrice);
                 $discountInfo['label'] = $discount['label'];
             }
