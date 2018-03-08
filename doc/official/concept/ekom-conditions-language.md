@@ -40,6 +40,9 @@ Voici un exemple de context possible:
 - ThisApp_userOriginArea: 0
 
 
+Dans l'exemple ci-dessous, on devine que les 3 dernières variables sont apportées par le module `ThisApp`.
+
+
 
 
 

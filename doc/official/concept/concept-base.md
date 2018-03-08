@@ -35,7 +35,7 @@ Multi-Shop / Multi-Lang
 
 Le module Ekom permet d'administer plusieurs **shops** simultanément.
 
-Chaque shop est un magasin virtuel qui vous permet de gérer une ou plusieurs boutique réelle.
+Chaque `shop` est un **magasin virtuel** qui vous permet de gérer une ou plusieurs boutique réelle.
 
 En général, on n'a besoin que d'un shop pour faire du commerce.
 
@@ -47,6 +47,16 @@ est lié à un shop et à une langue.
 
 
 
+Le catalogue général
+-----------------
 
+Dans Ekom, le catalogue général est un catalogue qui n'appartient à aucun shop en particulier.
 
+Lorsqu'on crée des cartes/produits, on doit d'abord les créer dans le catalogue général.
+
+Ensuite, on peut les associer au magasin virtuel (shop) que l'on veut.
+
+Dans le catalogue général, les produits peuvent avoir des références.
+
+Cependant, en général, on redéfinit ces références par shop lorsque l'on associe un produit au shop.
 

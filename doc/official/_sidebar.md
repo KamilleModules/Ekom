@@ -8,6 +8,9 @@
 * Concepts 
   * [Concepts de base](concept/concept-base.md)
   * [Language des conditions ekom](concept/ekom-conditions-language.md)
+  * [Réductions et coupons](concept/discounts-and-coupons.md)
+  * [Les statuts de commande](concept/order-statuses.md)
+  * [Les packs](concept/bundle.md)
   
 * FAQ
   * [Les questions les plus fréquentes](faq.md)

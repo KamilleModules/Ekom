@@ -1584,7 +1584,7 @@ and yet we have shared pool of features and values, so that we don't waste too m
 - feature_id: pk
 - shop_id: pk
 - feature_value_id: fk
-- position: to ordre the features in the front
+- position: to order the features in the front
 
 
 
