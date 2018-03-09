@@ -24,6 +24,16 @@ class EkomModule extends ApplicationModule
         ];
     }
 
+    protected function getPlanets()
+    {
+        return [
+            /**
+             * @todo-ling: complete the list of dependencies...
+             */
+            'ling.FileDeletor',
+        ];
+    }
+
 
     protected function installDatabase()
     {

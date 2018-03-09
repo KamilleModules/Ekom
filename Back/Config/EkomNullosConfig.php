@@ -32,6 +32,12 @@ class EkomNullosConfig
                     "route" => null,
                 ];
                 break;
+            case "cache_manager":
+                $item = [
+                    "label" => "Cache Manager",
+                    "route" => null,
+                ];
+                break;
             case "currency":
                 $item = [
                     "label" => "Currency",

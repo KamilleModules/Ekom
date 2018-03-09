@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 
 use Core\Services\A;
 use Core\Services\Hooks;
+use FileDeletor\FileDeletor;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
 
@@ -19,6 +20,19 @@ use Module\Ekom\Utils\E;
  */
 class CacheLayer
 {
+
+
+    public static function deleteAll(&$nbDeleted = 0, &$nbNotDeleted = 0)
+    {
+        $entriesToDelete = [
+            "cache/derby/cache/Ekom",
+            "cache/derby/cache/Ekom.*",
+            "cache/derby/cache/Module.Ekom.*",
+            "cache/derby/related/Ekom",
+        ];
+        FileDeletor::create()->setPrefix(A::appDir() . "/")->deleteEntries($entriesToDelete, $nbDeleted, $nbNotDeleted);
+    }
+
 
     //--------------------------------------------
     // ALL
@@ -158,7 +172,6 @@ class CacheLayer
             ProductCardLayer::getProductCardIdsByCategoryId($categoryId, $shopId);
             AttributeLayer::getAvailableAttributeByCategoryId($categoryId, $shopId, $langId);
         }
-
 
 
         $productIds = ProductLayer::getIds($shopId);

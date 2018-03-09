@@ -53,6 +53,23 @@ class BackHooksHelper
         $sideBarMenuModel->addSection($section);
 
 
+        $section
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("catalog")
+                ->setLabel("Catalogue")
+                ->setIcon("fa fa-book")
+                ->setLink("#")
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("catalog_products")
+                    ->setLabel("Produits")
+//                    ->setIcon("fa fa-dot-circle-o")
+                    ->setLink(N::link("Ekom_Back_Catalog_Product_List"))
+                )
+            );
+
+
         //--------------------------------------------
         // GENERATED PART
         //--------------------------------------------
@@ -84,7 +101,7 @@ class BackHooksHelper
                     ->setName("cache-util")
                     ->setLabel("Cache")
                     ->setIcon("fa fa-spinner")
-                    ->setLink(N::link("NullosAdmin_Ekom_Test_List"))
+                    ->setLink(N::link("Ekom_Back_Utils_CacheManager"))
                 )
             );
         //--------------------------------------------
