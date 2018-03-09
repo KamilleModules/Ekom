@@ -107,13 +107,61 @@ Les `liens-pivots` sont disponibles et l'utilisateur peut cliquer dessus.
 
 #### Les liens pivots
 
-Souvent, les éléments sont liés entre eux.
-Par exemple, un groupe d'utilisateurs contient des utilisateurs, et donc le groupe et les utilisateurs sont liés.
+Les `liens pivots` sont des boutons bleus affichés en dessous des formulaire.
+Dans l'image ci-dessus, il y a un exemple de `lien-pivot` (bouton bleu qui contient le texte "Voir les user-user groups").
 
-Les `liens-pivots` permettent d'accéder rapidement aux éléments liés.
-Ils facilitent la tâche de l'utilisateur du backoffice.
+Les `liens-pivots` permettent d'accéder rapidement aux éléments liés du formulaire (par exemple si on remplit un formulaire pour ajouter un **utilisateur**,
+on aura un `lien-pivot` menant aux **groupes** associés à cet utilisateur, ou encore aux **commentaires**
+postés par cet utilisateur, etc...).
+
+Les `liens-pivots` facilitent donc la tâche de l'utilisateur du backoffice en lui donnant un accès rapide à différents éléments liés.
 
 
-Les liens pivots sont toujours affichés en dessous du formulaire.
+
+
+
+
+
+
+
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

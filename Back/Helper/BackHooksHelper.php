@@ -72,7 +72,21 @@ class BackHooksHelper
             $section->addItem($generatedItem);
         }
 
-
+        $section
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("utils")
+                ->setLabel("Utilitaires")
+                ->setIcon("fa fa-wrench")
+                ->setLink("#")
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("cache-util")
+                    ->setLabel("Cache")
+                    ->setIcon("fa fa-spinner")
+                    ->setLink(N::link("NullosAdmin_Ekom_Test_List"))
+                )
+            );
         //--------------------------------------------
         // EKOM PART
         //--------------------------------------------

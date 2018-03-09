@@ -10,7 +10,12 @@
   * [Language des conditions ekom](concept/ekom-conditions-language.md)
   * [Réductions et coupons](concept/discounts-and-coupons.md)
   * [Les statuts de commande](concept/order-statuses.md)
-  * [Les packs](concept/bundle.md)
+  * [Ventes additionnelles](concept/cross-selling.md)
+  * [Les attributs de produits et les détails de produit](concept/product-attributes-and-details.md)
+  
+* Développement
+  * [Backoffice](developer/back/back.md)
+     
   
 * FAQ
   * [Les questions les plus fréquentes](faq.md)

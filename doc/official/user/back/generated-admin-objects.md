@@ -26,9 +26,9 @@ Une adresse est composée des champs suivants:
 - postcode: le code postal
 - supplement: un champ supplémentaire pouvant contenir d'autres informations comme: "Sonner à Michel"
 - active: Ce champ peut valoir 0, 1 ou 2.
-                - 0 signifie que l'adresse n'est pas active
-                - 1 signifie que l'adresse est active
-                - 2 signifie que l'adresse a été supprimée (vous ne devriez pas vous occuper de cela)
+    - 0: signifie que l'adresse n'est pas active
+    - 1: signifie que l'adresse est active
+    - 2: signifie que l'adresse a été supprimée (vous ne devriez pas vous occuper de cela)
                 
 - country_id: le pays
 
@@ -174,7 +174,7 @@ Les champs disponibles sont:
 - iso_code: le code iso du pays (ISO 3166-1 alpha2 code https://en.wikipedia.org/wiki/ISO_3166-1)
 
 
-Les liens-pivots pour cet éléments sont:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) pour cet éléments sont:
 
 - addresses ([ek_address](#ek_address)): les adresses liées à un pays donné (voir ek_address)
 - country langs ([ek_country_lang](#ek_country_lang)): les traductions pour ce pays
@@ -217,7 +217,7 @@ au panier.
 
 
 
-Les liens-pivots pour les coupons sont les suivants:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) pour les coupons sont les suivants:
 
 - coupon langs ([ek_coupon_lang](#ek_coupon_lang)): les traductions pour le coupon donné
 
@@ -244,7 +244,7 @@ Les champs sont:
 - symbol: le symbole de la devise (par exemple: "€")
 
 
-Les liens-pivots pour les devises sont:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) pour les devises sont:
 
 - shops ([ek_shop](#ek_shop)): les magasins ayant la devise donnée comme devise par défaut (voir ek_shop dans ce document)
 - shop-currencies ([ek_shop_has_currency](#ek_shop_has_currency)): liaisons entre les shops et les devises
@@ -261,16 +261,16 @@ Les réductions.
 Les champs sont:
 
 - type: la manière dont est affectée le prix. Les valeurs possibles sont:
-        - percent: pourcentage
-        - amount: valeur fixe
+    - `percent`: pourcentage
+    - `amount`: valeur fixe
 - operand: la valeur à utiliser avec le champ type
 - target: la cible sur laquelle s'applique la réduction, les valeurs possibles sont:
-        - priceWithTax: le prix TTC
-        - priceWithoutTax: le prix HT
+    - `priceWithTax`: le prix TTC
+    - `priceWithoutTax`: le prix HT
 - shop: le shop
 
 
-Les liens-pivots sont les suivants:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont les suivants:
 
 
 - category-discounts ([ek_category_has_discount](#ek_category_has_discount)): liaisons entre les catégories et les réductions
@@ -310,7 +310,7 @@ Les champs sont:
 - id: (l'identifiant numérique de) la caractéristique produit
 
 
-Les liens-pivots sont:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
 
 - feature-langs ([ek_feature_lang](#ek_feature_lang)): les traductions des caractéristiques produit
 - feature-values ([ek_feature_value](#ek_feature_value)): la valeur associée à cette caractéristiques 
@@ -345,7 +345,7 @@ Les champs sont:
 - feature: la valeur de la caractéristique produit
 
 
-Les liens-pivots sont:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
 
 - feature value langs ([ek_feature_value_lang](#ek_feature_value_lang)): les traductions des valeurs de caractéristique-produit
 - product-features ([ek_product_has_feature](#ek_product_has_feature)): liaisons entre les produits et les caractéristiques produit ET les valeurs de ces caractéristiques
@@ -393,7 +393,7 @@ et les factures générées par Ekom.
 
 
 
-Les liens-pivots sont:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
 
 - payments ([ek_payment](#ek_payment)): les paiements associés à cette facture
 
@@ -409,7 +409,7 @@ Les champs sont:
 - label: le label de la langue
 - iso_code: l'[iso code de la langue](concept/iso-codes.md)
 
-Les liens-pivots sont:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
 
 - category langs ([ek_category_lang](#ek_category_lang)): les traductions de catégories associées à cette langue
 - country langs ([ek_country_lang](#ek_country_lang)): les traductions de pays associées à cette langue
@@ -444,7 +444,7 @@ Les champs sont les suivants:
 
 
  
-Les liens-pivots sont:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
 
 - shop-products ([ek_shop_has_product](#ek_shop_has_product)): les liaisons shop-produit dans lesquelles se trouve le manufacturer choisi
 
@@ -490,7 +490,7 @@ payment_method_extra pour préciser si le client a opté pour le paiement en une
 
 
 
-Les liens-pivots sont:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
 
 - invoices ([ek_invoice](#ek_invoice)): la/les facture(s) correspondant à cette commande
 - order-order statuses ([ek_order_has_order_status](#ek_order_has_order_status)): les liaisons entre les commandes et les statuts de commande (pour la commande choisie)  
@@ -514,7 +514,7 @@ Les champs sont:
 
 
 
-Les liens-pivots sont:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
 
 - order-order statuses ([ek_order_has_order_status](#ek_order_has_order_status)): les liaisons entre les commandes et les statuts de commande
 - order status langs ([ek_order_status_lang](#ek_order_status_lang)): les traductions de statuts de commande 
@@ -597,7 +597,7 @@ Les champs sont les suivants:
 
 
 
-Les liens-pivots sont:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
 
 - shop-payment methods ([ek_shop_has_payment_method](#ek_shop_has_payment_method)): les liaisons entre les shops et les méthodes de paiement  
 
@@ -644,7 +644,65 @@ Les champs sont les suivants:
 - weight: le poids
 - price: le prix
 - product card: la carte contenant ce produit. Cette carte doit exister avant de pouvoir ajouter le produit.
-- TODO here
+- width: la largeur du produit
+- height: la hauteur du produit
+- depth: la profondeur du produit
+
+
+
+
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
+
+- product bundle-products ([ek_product_bundle_has_product](#ek_product_bundle_has_product)): les liaisons packs-produit contenant ce produit   
+- product comments ([ek_product_comment](#ek_product_comment)): les commentaires liés à ce produit 
+- product group-products ([ek_product_group_has_product](#ek_product_group_has_product)): les liaisons entre les groupes de produits et les produits (pour ce produit) 
+- product-discounts ([ek_product_has_discount](#ek_product_has_discount)): les liaisons produits-réductions  contenant ce produit 
+- product-features ([ek_product_has_feature](#ek_product_has_feature)): les liaisons associant ce produit aux caractéristiques du produit 
+- product-product attributes ([ek_product_has_product_attribute](#ek_product_has_product_attribute)): les liaisons entre ce produit et les attributs de produit 
+- product langs ([ek_product_lang](#ek_product_lang)): les traductions pour ce produit 
+- shop-products ([ek_shop_has_product](#ek_shop_has_product)): les liaisons shop-produit contenant ce produit 
+- shop-product cards ([ek_shop_has_product_card](#ek_shop_has_product_card)): les liaisons shop-cartes ayant ce produit comme produit par défaut 
+
+
+
+
+
+
+
+ek_product_attribute
+-------------------
+
+Les [attributs de produit](concept/product-attributes-and-details.md#les-attributs-de-produit).
+
+
+Les champs sont les suivants:
+
+- name: le nom symbolique (lettres, chiffres, underscore, tiret) de l'attribut de produit
+
+
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
+
+- product attribute langs ([ek_product_attribute_lang](#ek_product_attribute_lang)): les traductions des attributs de produit pour cet attribut   
+- product-product attributes ([ek_product_has_product_attribute](#ek_product_has_product_attribute)): les liaisons entre les produits et les attributs de produit contenant cet attribut de produit
+
+
+
+ek_product_attribute_value
+-------------------
+
+Les valeurs d'[attributs de produit](concept/product-attributes-and-details.md#les-attributs-de-produit).
+
+
+Les champs sont les suivants:
+
+- value: la valeur symbolique (lettres, chiffres, underscore, tiret) de la valeur d'attribut de produit
+
+
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
+
+- product attribute value langs ([ek_product_attribute_value_lang](#ek_product_attribute_value_lang)): les traductions des attributs de produit pour cet attribut   
+- product-product attributes ([ek_product_has_product_attribute](#ek_product_has_product_attribute)): les liaisons entre les produits et les attributs de produit contenant cette valeur d'attribut de produit
+
 
 
 
@@ -653,7 +711,7 @@ Les champs sont les suivants:
 ek_product_bundle
 -------------------
 
-Les [packs](concept/bundle.md).
+Les [packs](concept/cross-selling.md#packs).
 
 
 Les champs sont les suivants:
@@ -663,7 +721,7 @@ Les champs sont les suivants:
 
 
 
-Les liens-pivots sont:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
 
 - product bundle-products ([ek_product_bundle_has_product](#ek_product_bundle_has_product)): les liaisons entre les packs et les produits 
 
@@ -672,7 +730,7 @@ Les liens-pivots sont:
 ek_product_bundle_has_product
 ------------------
 
-Les liaisons entre les [packs](concept/bundle.md) et les produits.
+Les liaisons entre les [packs](concept/cross-selling.md#packs) et les produits.
 
 Les champs sont les suivants:
 
@@ -682,6 +740,30 @@ Les champs sont les suivants:
 
 
 
+
+
+
+
+
+ek_product_card
+------------------------
+
+Les `cartes`.
+
+Les champs sont les suivants:
+
+- id: l'identifiant numérique de la carte
+
+
+
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
+
+- category-product cards ([ek_category_has_product_card](#ek_category_has_product_card)): les liaisons entre les catégories et les cartes 
+- products ([ek_product](#ek_product)): les produits ayant pour parent cette carte 
+- product card-discounts ([ek_product_card_has_discount](#ek_product_card_has_discount)): les liaisons entre cette `carte` et les réductions. 
+- product card-tax groups ([ek_product_card_has_tax_group](#ek_product_card_has_tax_group)): les liaisons cartes-groupes de taxe contenant cette carte 
+- product card langs ([ek_product_card_lang](#ek_product_card_lang)): les traductions pour cette carte du [catalogue général](concept/concept-base.md#le-catalogue-général) 
+- shop-product cards ([ek_shop_has_product_card](#ek_shop_has_product_card)): les liaisons entre les shops-cartes contenant cette carte 
 
 
 
@@ -699,6 +781,20 @@ Les champs sont les suivants:
 - conditions: définit sous quelles conditions cette réduction s'applique.
 Le [language des conditions](concept/ekom-conditions-language.md) ekom est utilisé.
 - active: est-ce que la réduction est active (1) ou inactive (0)
+
+
+
+
+ek_product_card_has_tax_group
+-----------------------
+
+Les liaisons entre les cartes et les groupes de taxe.
+
+Les champs sont les suivants:
+
+- shop: le shop
+- product card: la carte
+- tax group: le groupe de taxe
 
 
 
@@ -743,6 +839,59 @@ Vous ne devriez pas y toucher manuellement.
 
 
 
+ek_product_group
+--------------------------
+
+Les groupes de produit.
+
+Les groupes de produit peuvent être utilisés pour:
+
+- créer des [groupes de produits](concept/cross-selling.md#groupes-de-produits) arbitraires (que l'on peut afficher dans un carousel par exemple) 
+- créer une liste de [produits recommandés](concept/cross-selling.md#produits-recommandés)
+
+Les champs sont les suivants:
+
+- shop: le shop
+- name: le nom du groupe de produit. On peut également créer des produits recommandés avec la syntaxe décrite ci-dessous.
+    
+
+Pour créer une liste produits recommandés, on utilise la syntaxe suivante:
+
+```txt
+:related-{identifiantNumeriqueCarte}
+```        
+
+Remplacez {identifiantNumeriqueCarte} par l'identifiant numérique de la carte.
+Par exemple, si vous souhaitez faire en sorte qu'une liste de 3 produits A, B, C s'affiche sous le "balance board",
+vous indiquerez l'identifiant numérique du balance board (par exemple 284) comme ceci: `:related-284`.
+
+Une fois le groupe créé, vous pouvez lier les produits A, B, C de la même manière qu'un groupe de produits classique.
+
+
+
+        
+
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
+ 
+- product group-products ([ek_product_group_has_product](#ek_product_group_has_product)): les liaisons entre ce groupe de produits et les produits
+
+
+
+
+
+
+ek_product_group_has_product
+--------------------------
+
+Les liaisons entre les groupes de produits et les produits.
+
+
+Les champs sont les suivants:
+
+- product group: le groupe de produits
+- product: le produit
+- order: l'ordre dans lequel seront utilisés les produits de ce groupe. Pour l'instant, cet ordre n'a pas d'incidence
+
 
 
 
@@ -777,6 +926,19 @@ Les champs sont:
 
 
 
+ek_product_has_product_attribute
+-------------------------
+
+Les liaisons entre les produits, leurs attributs et les valeurs d'attributs correspondantes.
+
+Les champs sont les suivants:
+
+- product: le produit
+- product attribute: l'attribut de produit
+- product attribute value: la valeur de l'attribut de produit
+- order: l'ordre dans lequel sont affichés les attributs de produit sur la page produit du front
+
+
 
 
 ek_product_lang
@@ -793,6 +955,31 @@ Les champs sont les suivants:
 - meta_title: le meta title 
 - meta_description: le meta description 
 - meta_keywords: les key words 
+
+
+
+
+
+ek_product_purchase_stat
+------------------------
+
+Les statistiques d'achat des produits.
+
+Les champs sont les suivants:
+
+- purchase_date: date de l'achat
+- shop: le shop
+- user: le client
+- currency: la devise utilisée lors de l'achat
+- product id: l'identifiant numérique du produit acheté
+- product ref: la référence du produit
+- product label: le label du produit
+- quantity: la quantité achetée
+- price: le prix de vente TTC (au moment de la vente) du produit à l'unité
+- price_without_tax: le prix de vente HT (au moment de la vente) du produit à l'unité
+- total: le prix de vente TTC (au moment de la vente) de l'ensemble de ces produits (quantité x prix)
+- total_without_tax: le prix de vente HT (au moment de la vente) de l'ensemble de ces produits (quantité x prix)
+- wholesale_price: le prix d'achat du produit à l'unité
 
 
 
@@ -814,7 +1001,7 @@ Les champs sont:
 
 
 
-Les liens-pivots sont les suivants:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont les suivants:
 
 - shop-products ([ek_shop_has_product](#ek_shop_has_product)): les liaisons "shop-produit" contenant le type de produit choisi
 
@@ -833,7 +1020,7 @@ Les champs sont les suivants:
 
 
 
-Les liens-pivots sont les suivants:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont les suivants:
 
 - shop-product-providers ([ek_shop_has_product_has_provider](#ek_shop_has_product_has_provider)): les liaisons entre les "liaisons shop-produit" et les fournisseurs
 
@@ -852,7 +1039,7 @@ Les champs sont les suivants:
 
 
 
-Les liens-pivots sont les suivants:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont les suivants:
 
 - invoices ([ek_invoice](#ek_invoice)): les factures contenant ce vendeur
 - seller-addresses ([ek_seller_has_address](#ek_seller_has_address)): les liaisons entre les vendeurs et les adresses pour ce vendeur
@@ -900,7 +1087,7 @@ Les champs sont les suivants:
 
 
 
-Les liens-pivots sont les suivants:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont les suivants:
 
 - categories ([ek_category](#ek_category)): les catégories appartenant à ce shop
 - coupons ([ek_coupon](#ek_coupon)): les [coupons](concept/discounts-and-coupons.md) appartenant à ce shop
@@ -1069,7 +1256,7 @@ Vous ne devriez pas y toucher.
 
 
 
-Les liens-pivots sont les suivants:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont les suivants:
 
 - shop-product-providers ([ek_shop_has_product_has_provider](#ek_shop_has_product_has_provider)): les liaisons entre les "liaisons shop-produit" et les fournisseurs 
 - shop-product-tags ([ek_shop_has_product_has_tag](#ek_shop_has_product_has_tag)): les liaisons entre les "liaisons shop-produit" et les tags
@@ -1107,7 +1294,7 @@ Les champs sont les suivants:
 
 
 
-Les liens-pivots sont les suivants:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont les suivants:
 
 - shop-product card langs ([ek_shop_has_product_card_lang](#ek_shop_has_product_card_lang)): les traductions des liaisons entre les shops et les cartes  
 
@@ -1202,9 +1389,27 @@ Les champs sont les suivants:
 - lang: la langue
 
 
-Les liens-pivots sont les suivants:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont les suivants:
 
 - shop-product-tags ([ek_shop_has_product_has_tag](#ek_shop_has_product_has_tag)): les liaisons entre les "liaisons shop-produit" et les tags
+
+
+
+ek_tax
+--------------
+
+Les taxes.
+
+Les champs sont les suivants:
+
+- amount: le pourcentage de la taxe
+
+
+
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont les suivants:
+
+- tax group-taxes ([ek_tax_group_has_tax](#ek_tax_group_has_tax)): les liaisons entre les groupes de taxes et les taxes (contenant cette taxe) 
+- tax langs ([ek_tax_lang](#ek_tax_lang)): les traductions pour cette taxe
 
 
 
@@ -1222,7 +1427,7 @@ Les champs sont les suivants:
 
 
 
-Les liens-pivots sont les suivants:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont les suivants:
 
 - shop-product cards ([ek_shop_has_product_card](#ek_shop_has_product_card)): les liaisons entre les shops et les cartes
 - tax group-taxes ([ek_tax_group_has_tax](#ek_tax_group_has_tax)): les liaisons entre "groupes de taxes" et les taxes
@@ -1262,6 +1467,25 @@ Les champs sont les suivants:
 - label: la traduction
 
 
+ek_timezone
+----------------------
+
+Les fuseaux horaires disponibles.
+
+Les champs sont les suivants:
+
+- name: le nom du fuseau horaire. Sa valeur doit être une des valeurs de la [liste des fuseaux horaires proposée par php](http://php.net/manual/fr/timezones.php) 
+
+
+
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont les suivants:
+
+- shops ([ek_shop](#ek_shop)): les shops utilisant ce fuseau horaire
+
+
+
+
+
 
 
 ek_user
@@ -1299,7 +1523,7 @@ Consultez la documentation développeur pour modifier la configuration du module
 
 
 
-Les liens-pivots sont les suivants:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont les suivants:
 
 - invoices ([ek_invoice](#ek_invoice)): les factures de ce client
 - orders ([ek_order](#ek_order)): les commandes de ce client
@@ -1323,7 +1547,7 @@ Les champs sont les suivants:
 
 
 
-Les liens-pivots sont les suivants:
+Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont les suivants:
 
 - user-user groups ([ek_user_has_user_group](#ek_user_has_user_group)): les liaisons entre les clients et les groupes de clients
 
@@ -1393,5 +1617,6 @@ Les champs sont les suivants:
 
 
 
-Current:
-ek_product
+
+
+
