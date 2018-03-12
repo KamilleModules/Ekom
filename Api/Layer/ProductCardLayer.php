@@ -19,6 +19,17 @@ class ProductCardLayer
 {
 
 
+    /**
+     * Concept of dummy record is explained here: config/morphic/Ekom/back/catalog/product-product.form.conf.php
+     * @param $cardId
+     * @return false|int
+     */
+    public static function getDummyRecordIdByCardId($cardId)
+    {
+        $cardId = (int)$cardId;
+        return QuickPdo::fetch("select id from ek_product where product_card_id=$cardId and reference='_dummy_'", [], \PDO::FETCH_COLUMN);
+    }
+
     public static function getItems()
     {
         $ret = [];
