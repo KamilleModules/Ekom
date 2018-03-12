@@ -3,6 +3,7 @@
   * [L'environnement graphique](user/back/environnement.md)
   * [L'administration générée](user/back/generated-admin.md)
   * [Les objets de l'admin générée](user/back/generated-admin-objects.md)
+  * [Recettes pour l'admin générée](user/back/generated-admin-recipes.md)
   * [L'administration simplifiée](user/back/simplified-admin.md)
   
   

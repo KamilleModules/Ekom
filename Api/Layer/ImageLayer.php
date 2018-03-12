@@ -143,6 +143,10 @@ class ImageLayer
         return $ret;
     }
 
+
+
+
+
     /**
      * Like getImages, but removes entry starting with _, and return the default image too.
      *

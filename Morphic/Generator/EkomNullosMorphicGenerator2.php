@@ -199,5 +199,23 @@ EEE;
         return false;
     }
 
+    protected function getTableRouteByTable($table)
+    {
+        $camel = $this->getCamelByTable($table);
+        return "Ekom_Back_Generated_" . $camel . "_List";
+    }
 
+
+    protected function getForeignKeyExtraLink($fkType, $col, $label, $route)
+    {
+        if ('ai' !== $fkType) {
+            return "
+                    'extraLink' => [
+                        'text' => 'Créer un nouvel élément \"$label\"',
+                        'icon' => 'fa fa-plus',
+                        'link' => E::link('$route') . '?form',
+                    ],";
+        }
+        return "";
+    }
 }

@@ -532,7 +532,7 @@ this might be an indicator for calculating shipping costs for this product.
 The product might have no attributes at all.
 
 
-- reference: uq, the unique reference                
+- reference: string, the unique (your responsibility) reference                
 - weight: the weight in kg for the product, or 0 if the product has no weight (like a downloadable product for instance).
                 This is the weight used to compute shipping costs.
                 
@@ -592,6 +592,7 @@ and do special things, using the regular ekom hooks.
 - id: pk    
 - name: uq    
 - shop_id: uq    
+- bo_active: 0|1, whether it is available in the backoffice when the user creates a product and choose the product type.    
     
 
 
@@ -829,6 +830,14 @@ ek_product_card_lang
 
 Label, description and slug can be overridden at the shop level with the shop_has_product_card_lang table.
 
+
+
+ek_product_card_has_product_attribute
+===============
+This is used on the backoffice to ease the process of creating a product.
+
+Note: it could/should have been used on the front office too to define the order in which attributes appear on a 
+product page (but it's not implemented yet). 
 
 
 

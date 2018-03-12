@@ -60,3 +60,13 @@ Dans le catalogue général, les produits peuvent avoir des références.
 
 Cependant, en général, on redéfinit ces références par shop lorsque l'on associe un produit au shop.
 
+
+
+
+<br><br><br><br><br>
+<br><br><br><br><br>
+<br><br><br><br><br>
+<br><br><br><br><br>
+<br><br><br><br><br>
+<br><br><br><br><br>
+<br><br><br><br><br>

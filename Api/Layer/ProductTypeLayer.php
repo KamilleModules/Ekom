@@ -12,6 +12,22 @@ class ProductTypeLayer
 {
 
 
+    public static function getItemNameById($id)
+    {
+        $id=(int)$id;
+        return QuickPdo::fetch("select `name` from ek_product_type where id=$id", [], \PDO::FETCH_COLUMN);
+    }
+
+
+    public static function getDefaultItemId()
+    {
+        $id = QuickPdo::fetch("select id from ek_product_type where name='default'", [], \PDO::FETCH_COLUMN);
+        if ($id) {
+            return $id;
+        }
+        return 0;
+    }
+
 
     public static function getItems($shopId)
     {
@@ -21,8 +37,6 @@ where shop_id=$shopId
 order by name asc        
         ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
-
-
 
 
     public function getProductIdsByProductType($productType, $shopId = null)
@@ -45,9 +59,6 @@ and h.shop_id=$shopId
             \PDO::FETCH_COLUMN
         );
     }
-
-
-
 
 
     public function registerNewType($type)

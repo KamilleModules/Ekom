@@ -63,9 +63,26 @@ class BackHooksHelper
                 ->addItem(Item::create()
                     ->setActive(true)
                     ->setName("catalog_products")
-                    ->setLabel("Produits")
+                    ->setLabel("Cartes et produits")
 //                    ->setIcon("fa fa-dot-circle-o")
                     ->setLink(N::link("Ekom_Back_Catalog_Product_List"))
+                )
+            );
+
+
+        $section
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("utils")
+                ->setLabel("Utilitaires")
+                ->setIcon("fa fa-wrench")
+                ->setLink("#")
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("cache-util")
+                    ->setLabel("Cache")
+                    ->setIcon("fa fa-spinner")
+                    ->setLink(N::link("Ekom_Back_Utils_CacheManager"))
                 )
             );
 
@@ -89,21 +106,6 @@ class BackHooksHelper
             $section->addItem($generatedItem);
         }
 
-        $section
-            ->addItem(Item::create()
-                ->setActive(true)
-                ->setName("utils")
-                ->setLabel("Utilitaires")
-                ->setIcon("fa fa-wrench")
-                ->setLink("#")
-                ->addItem(Item::create()
-                    ->setActive(true)
-                    ->setName("cache-util")
-                    ->setLabel("Cache")
-                    ->setIcon("fa fa-spinner")
-                    ->setLink(N::link("Ekom_Back_Utils_CacheManager"))
-                )
-            );
         //--------------------------------------------
         // EKOM PART
         //--------------------------------------------

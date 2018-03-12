@@ -606,31 +606,6 @@ Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
 
 
 
-ek_product_attribute_lang
-----------------------
-
-Les traductions d'attributs de produits.
-
-Les champs sont:
-
-- product attribute: l'attribut de produit
-- lang: la langue
-- name: la traduction de cet attribut de produit
-
-
-ek_product_attribute_value_lang
------------------
-
-Les traductions de valeurs d'attributs de produits.
-
-Les champs sont:
-
-- product attribute value: la valeur d'attribut de produit
-- lang: la langue
-- value: la traduction de cette valeur d'attribut de produit
-
-
-
 
 ek_product
 -------------------
@@ -682,8 +657,23 @@ Les champs sont les suivants:
 
 Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
 
-- product attribute langs ([ek_product_attribute_lang](#ek_product_attribute_lang)): les traductions des attributs de produit pour cet attribut   
+- product attribute langs ([ek_product_attribute_lang](#ek_product_attribute_lang)): les traductions des attributs de produit pour cet attribut
+- product card-product attributes ([ek_product_card_has_product_attributes](#ek_product_card_has_product_attributes)): les liaisons carte-attributs de produit contenant cet attribut de produit   
 - product-product attributes ([ek_product_has_product_attribute](#ek_product_has_product_attribute)): les liaisons entre les produits et les attributs de produit contenant cet attribut de produit
+
+
+
+ek_product_attribute_lang
+----------------------
+
+Les traductions d'attributs de produits.
+
+Les champs sont:
+
+- product attribute: l'attribut de produit
+- lang: la langue
+- name: la traduction de cet attribut de produit
+
 
 
 
@@ -702,6 +692,19 @@ Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
 
 - product attribute value langs ([ek_product_attribute_value_lang](#ek_product_attribute_value_lang)): les traductions des attributs de produit pour cet attribut   
 - product-product attributes ([ek_product_has_product_attribute](#ek_product_has_product_attribute)): les liaisons entre les produits et les attributs de produit contenant cette valeur d'attribut de produit
+
+
+
+ek_product_attribute_value_lang
+-----------------
+
+Les traductions de valeurs d'attributs de produits.
+
+Les champs sont:
+
+- product attribute value: la valeur d'attribut de produit
+- lang: la langue
+- value: la traduction de cette valeur d'attribut de produit
 
 
 
@@ -761,6 +764,7 @@ Les [liens-pivots](user/back/generated-admin.md#les-liens-pivots) sont:
 - category-product cards ([ek_category_has_product_card](#ek_category_has_product_card)): les liaisons entre les catégories et les cartes 
 - products ([ek_product](#ek_product)): les produits ayant pour parent cette carte 
 - product card-discounts ([ek_product_card_has_discount](#ek_product_card_has_discount)): les liaisons entre cette `carte` et les réductions. 
+- product card-product attributes ([ek_product_card_has_product_attributes](#ek_product_card_has_product_attributes)): les liaisons entre cette `carte` et les attributs de produits. 
 - product card-tax groups ([ek_product_card_has_tax_group](#ek_product_card_has_tax_group)): les liaisons cartes-groupes de taxe contenant cette carte 
 - product card langs ([ek_product_card_lang](#ek_product_card_lang)): les traductions pour cette carte du [catalogue général](concept/concept-base.md#le-catalogue-général) 
 - shop-product cards ([ek_shop_has_product_card](#ek_shop_has_product_card)): les liaisons entre les shops-cartes contenant cette carte 
@@ -781,6 +785,22 @@ Les champs sont les suivants:
 - conditions: définit sous quelles conditions cette réduction s'applique.
 Le [language des conditions](concept/ekom-conditions-language.md) ekom est utilisé.
 - active: est-ce que la réduction est active (1) ou inactive (0)
+
+
+
+
+ek_product_card_has_product_attributes
+-------------------------------
+
+Les liaisons entre les cartes et les attributs de produits.
+Ces liaisons sont principalement utilisées dans le back office, pour faciliter le processus de création
+d'un produit.
+
+Les champs sont les suivants:
+
+- product card: la carte 
+- product attribute: l'attribut de produit 
+- order attribute: l'ordre dans lequel devraient s'afficher les attributs de produits dans le backoffice 
 
 
 
@@ -998,6 +1018,7 @@ Les champs sont:
 
 - name: le nom symbolique (lettres, chiffres et underscore) du type de produit
 - shop: le shop
+- bo_active: est-ce que ce type est disponible (1) ou pas (0) dans le backoffice lorsque l'on créé un nouveau produit
 
 
 

@@ -321,7 +321,7 @@ class E
      */
     public static function trimPrice($price)
     {
-        return (float)round($price, 2, \PHP_ROUND_HALF_DOWN);
+        return sprintf('%01.2f', (float)round($price, 2, \PHP_ROUND_HALF_DOWN));
     }
 
     public static function trimPercent($percent)
