@@ -9,6 +9,7 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use ListModifier\Circle\ListModifierCircle;
 use ListModifier\Util\RequestModifier2RowsGeneratorAdaptorUtil;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\EkomDebug;
 use Module\Ekom\Utils\ListModifiers;
@@ -18,6 +19,41 @@ use RowsGenerator\ArrayRowsGenerator;
 class ProductCardLayer
 {
 
+
+    /**
+     * IF the card is bound to AT LEAST ONE product
+     *      THEN Ensures that the card has exactly one REPRESENTATIVE product
+     */
+    public static function sanityRoutine($cardId)
+    {
+        $cardId = (int)$cardId;
+        $representativeProductId = QuickPdo::fetch("select product_id from ek_shop_has_product_card where product_card_id=$cardId", [], \PDO::FETCH_COLUMN);
+        if ($representativeProductId) {
+
+            /**
+             * Note that a product could exist in ek_product and ek_product_lang, but not in ek_shop_has_product.
+             * Those kind of products are general catalog products, we don't count them here,
+             * we only focus on shop specific products.
+             */
+            $possibleProductIds = [];
+
+            QuickPdo::fetchAll("select p.id 
+from ek_product p
+inner join ek_shop_has_product h on h.product_id=p.id
+inner join ek_shop_has_product_lang hl on hl.shop_id=h.shop_id and hl.product_id=h.product_id
+where 
+p.product_card_id=$cardId
+and l 
+");
+
+            $count = QuickPdo::fetch("select count(*) as count from ek_product where product_card_id=$cardId and id=$representativeProductId", [], \PDO::FETCH_COLUMN);
+            az($representativeProductId, $count);
+        } else {
+            throw new EkomException("This card doesn't seem to exist: $cardId, or is invalid");
+        }
+
+
+    }
 
     /**
      * Concept of dummy record is explained here: config/morphic/Ekom/back/catalog/product-product.form.conf.php
