@@ -32,9 +32,14 @@ class GeneratedCategory extends TableCrudObject
         $base = [
 			'id' => null,
 			'name' => '',
+			'label' => '',
 			'category_id' => null,
-			'shop_id' => 0,
 			'order' => 0,
+			'description' => '',
+			'slug' => '',
+			'meta_title' => '',
+			'meta_description' => '',
+			'meta_keywords' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

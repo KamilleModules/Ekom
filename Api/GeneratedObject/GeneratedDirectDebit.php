@@ -13,13 +13,13 @@ use XiaoApi\Object\TableCrudObject;
  *
  * You are supposed to extend this object.
  */
-class GeneratedProvider extends TableCrudObject
+class GeneratedDirectDebit extends TableCrudObject
 {
 
     public function __construct()
     {
         parent::__construct();
-        $this->table = "ek_provider";
+        $this->table = "ek_direct_debit";
         $this->primaryKey = ['id'];
     }
 
@@ -31,7 +31,11 @@ class GeneratedProvider extends TableCrudObject
     {
         $base = [
 			'id' => null,
-			'name' => '',
+			'invoice_id' => 0,
+			'date' => '',
+			'paid' => 0,
+			'feedback_details' => '',
+			'amount' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

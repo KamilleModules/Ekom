@@ -20,7 +20,7 @@ class GeneratedProductHasFeature extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_product_has_feature";
-        $this->primaryKey = ['product_id', 'feature_id', 'shop_id'];
+        $this->primaryKey = ['product_id', 'feature_id'];
     }
 
 
@@ -32,7 +32,6 @@ class GeneratedProductHasFeature extends TableCrudObject
         $base = [
 			'product_id' => 0,
 			'feature_id' => 0,
-			'shop_id' => 0,
 			'feature_value_id' => 0,
 			'position' => 0,
 			'technical_description' => '',

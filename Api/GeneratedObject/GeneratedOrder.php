@@ -31,7 +31,6 @@ class GeneratedOrder extends TableCrudObject
     {
         $base = [
 			'id' => null,
-			'shop_id' => null,
 			'user_id' => null,
 			'reference' => '',
 			'date' => '',
@@ -50,9 +49,6 @@ class GeneratedOrder extends TableCrudObject
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
-        if (0 === (int)$ret["shop_id"]) {
-            $ret["shop_id"] = null;
-        }
         if (0 === (int)$ret["user_id"]) {
             $ret["user_id"] = null;
         }

@@ -31,9 +31,24 @@ class GeneratedProductCard extends TableCrudObject
     {
         $base = [
 			'id' => null,
+			'label' => '',
+			'description' => '',
+			'slug' => '',
+			'meta_title' => '',
+			'meta_description' => '',
+			'meta_keywords' => '',
+			'active' => 0,
+			'product_id' => null,
+			'tax_group_id' => null,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
+        if (0 === (int)$ret["product_id"]) {
+            $ret["product_id"] = null;
+        }
+        if (0 === (int)$ret["tax_group_id"]) {
+            $ret["tax_group_id"] = null;
+        }
 
 
         return $ret;

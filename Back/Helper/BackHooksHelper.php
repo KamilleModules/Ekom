@@ -404,14 +404,15 @@ class BackHooksHelper
         }
 
 
-        $model = ContextBarWidgetModel::getModel();
+        if (false === "old") {
 
-
-        $claws
-            ->setWidget("topbar_right.ekomContextBar", ClawsWidget::create()
-                ->setTemplate('NullosAdmin/TopBar/EkomContextBar/default')
-                ->setConf($model), "last"
-            );
+//        $model = ContextBarWidgetModel::getModel();
+//        $claws
+//            ->setWidget("topbar_right.ekomContextBar", ClawsWidget::create()
+//                ->setTemplate('NullosAdmin/TopBar/EkomContextBar/default')
+//                ->setConf($model), "last"
+//            );
+        }
 
 
         //--------------------------------------------
@@ -573,11 +574,10 @@ p.id=$value
                     $value = (int)$value;
                     $label = QuickPdo::fetch("
 select 
-concat (product_card_id, '. ', label) as label
-from ek_product_card_lang  
+concat (id, '. ', label) as label
+from ek_product_card  
 where 
-product_card_id=$value
-and lang_id=$langId
+id=$value
 ", [], \PDO::FETCH_COLUMN);
                     break;
                 case "auto.tag":

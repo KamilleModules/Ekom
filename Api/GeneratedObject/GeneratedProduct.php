@@ -31,24 +31,44 @@ class GeneratedProduct extends TableCrudObject
     {
         $base = [
 			'id' => null,
-			'reference' => '',
-			'weight' => '',
-			'price' => '',
 			'product_card_id' => 0,
-			'width' => null,
+			'seller_id' => 0,
+			'product_type_id' => 0,
+			'manufacturer_id' => null,
+			'reference' => '',
+			'price' => '',
+			'label' => '',
+			'description' => '',
+			'slug' => '',
+			'meta_title' => '',
+			'meta_description' => '',
+			'meta_keywords' => '',
+			'wholesale_price' => '',
+			'quantity' => 0,
+			'out_of_stock_text' => '',
+			'active' => 0,
+			'_discount_badge' => '',
+			'_popularity' => '',
+			'codes' => '',
+			'ean' => '',
 			'height' => null,
 			'depth' => null,
+			'weight' => '',
+			'width' => null,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
-        if (0 === (int)$ret["width"]) {
-            $ret["width"] = null;
+        if (0 === (int)$ret["manufacturer_id"]) {
+            $ret["manufacturer_id"] = null;
         }
         if (0 === (int)$ret["height"]) {
             $ret["height"] = null;
         }
         if (0 === (int)$ret["depth"]) {
             $ret["depth"] = null;
+        }
+        if (0 === (int)$ret["width"]) {
+            $ret["width"] = null;
         }
 
 

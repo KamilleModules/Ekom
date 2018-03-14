@@ -20,7 +20,7 @@ class GeneratedShopConfiguration extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_shop_configuration";
-        $this->primaryKey = ['shop_id'];
+        $this->primaryKey = [];
     }
 
 
@@ -30,7 +30,6 @@ class GeneratedShopConfiguration extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
-			'shop_id' => 0,
 			'key' => '',
 			'value' => '',
 		];

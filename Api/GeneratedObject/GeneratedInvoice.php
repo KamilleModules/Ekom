@@ -31,9 +31,8 @@ class GeneratedInvoice extends TableCrudObject
     {
         $base = [
 			'id' => null,
-			'shop_id' => null,
 			'user_id' => null,
-			'order_id' => null,
+			'order_id' => 0,
 			'seller_id' => null,
 			'label' => '',
 			'invoice_number' => '',
@@ -54,14 +53,8 @@ class GeneratedInvoice extends TableCrudObject
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
-        if (0 === (int)$ret["shop_id"]) {
-            $ret["shop_id"] = null;
-        }
         if (0 === (int)$ret["user_id"]) {
             $ret["user_id"] = null;
-        }
-        if (0 === (int)$ret["order_id"]) {
-            $ret["order_id"] = null;
         }
         if (0 === (int)$ret["seller_id"]) {
             $ret["seller_id"] = null;

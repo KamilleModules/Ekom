@@ -32,7 +32,6 @@ class GeneratedProductBundle extends TableCrudObject
         $base = [
 			'id' => null,
 			'active' => 0,
-			'shop_id' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

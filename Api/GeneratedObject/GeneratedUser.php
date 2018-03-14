@@ -31,7 +31,6 @@ class GeneratedUser extends TableCrudObject
     {
         $base = [
 			'id' => null,
-			'shop_id' => 0,
 			'email' => '',
 			'pass' => '',
 			'pseudo' => '',

@@ -31,7 +31,6 @@ class GeneratedProductComment extends TableCrudObject
     {
         $base = [
 			'id' => null,
-			'shop_id' => 0,
 			'product_id' => 0,
 			'user_id' => 0,
 			'date' => '',

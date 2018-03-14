@@ -31,7 +31,6 @@ class GeneratedProductGroup extends TableCrudObject
     {
         $base = [
 			'id' => null,
-			'shop_id' => 0,
 			'name' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));

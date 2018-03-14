@@ -56,13 +56,11 @@ and h.lang_id=$langId
         ", [], \PDO::FETCH_COLUMN);
     }
 
-    public static function getNbOutOfStockProducts($shopId = null)
+    public static function getNbOutOfStockProducts()
     {
-        $shopId = E::getShopId($shopId);
         return QuickPdo::fetch("select count(*) as count
-from ek_shop_has_product 
-where shop_id=$shopId    
-and quantity=0    
+from ek_product 
+where quantity=0    
         ", [], \PDO::FETCH_UNIQUE | \PDO::FETCH_COLUMN);
     }
 
@@ -75,12 +73,10 @@ select reference from ek_product where id=$id
     }
 
 
-    public static function getIds($shopId = null)
+    public static function getIds()
     {
-        $shopId = E::getShopId($shopId);
         return QuickPdo::fetchAll("
-select product_id from ek_shop_has_product 
-where shop_id=$shopId
+select product_id from product 
 order by product_id asc        
         ", [], \PDO::FETCH_COLUMN);
 
@@ -96,7 +92,6 @@ order by product_id asc
     /**
      * @param array $info
      *
-     *      - shopId: int
      *      - langId: int
      *      - cardId: int
      *      - productId: int|null
@@ -118,11 +113,12 @@ order by product_id asc
         $userGroupNames = 0;
 
 
-        $shopId = null;
+        /**
+         * @todo-ling: call hook
+         */
         $langId = null;
         $ret = [
-            'shopId' => E::getShopId($shopId),
-            'langId' => E::getLangId($langId),
+//            'langId' => E::getLangId($langId), // use a multi lang module...
             'cardId' => $info['cardId'],
             'productId' => $info['productId'], // can be null
             'productDetails' => $info['productDetails'],
@@ -130,7 +126,7 @@ order by product_id asc
             'userCountry' => $userCountry,
             'userShippingCountry' => $userShippingCountry,
             'userGroupNames' => $userGroupNames,
-            'currencyIso' => ApplicationRegistry::get("ekom.currency_iso"),
+//            'currencyIso' => ApplicationRegistry::get("ekom.currency_iso"), // use a multi currency module
         ];
 
 //        $cardId, $shopId = null, $langId = null, $productId = null, array $productDetails = []
@@ -138,25 +134,21 @@ order by product_id asc
         return $ret;
     }
 
-    public function getProductTypeById($productId, $shopId = null)
+    public function getProductTypeById($productId)
     {
 
         $productId = (int)$productId;
-        $shopId = E::getShopId($shopId);
 
-        return A::cache()->get("Ekom.ProductLayer.getProductTypeById.$shopId.$productId", function () use ($productId, $shopId) {
+        return A::cache()->get("Ekom.ProductLayer.getProductTypeById.$productId", function () use ($productId) {
 
             return QuickPdo::fetch("
 select t.name
 from ek_product_type t 
 inner join ek_shop_has_product h on h.product_type_id=t.id 
-where h.shop_id=$shopId and h.product_id=$productId
+where h.product_id=$productId
 ", [], \PDO::FETCH_COLUMN);
 
-        }, [
-            "ek_product_type",
-            "ek_shop_has_product",
-        ]);
+        });
     }
 
     /**

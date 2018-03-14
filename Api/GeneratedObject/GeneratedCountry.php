@@ -32,6 +32,7 @@ class GeneratedCountry extends TableCrudObject
         $base = [
 			'id' => null,
 			'iso_code' => '',
+			'label' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

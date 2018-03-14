@@ -33,7 +33,6 @@ class GeneratedTaxGroup extends TableCrudObject
 			'id' => null,
 			'name' => '',
 			'label' => '',
-			'shop_id' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

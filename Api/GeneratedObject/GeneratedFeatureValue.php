@@ -32,6 +32,7 @@ class GeneratedFeatureValue extends TableCrudObject
         $base = [
 			'id' => null,
 			'feature_id' => 0,
+			'value' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

@@ -33,6 +33,8 @@ class GeneratedCurrency extends TableCrudObject
 			'id' => null,
 			'iso_code' => '',
 			'symbol' => '',
+			'exchange_rate' => '',
+			'active' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

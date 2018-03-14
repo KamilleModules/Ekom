@@ -31,10 +31,10 @@ class GeneratedDiscount extends TableCrudObject
     {
         $base = [
 			'id' => null,
+			'label' => '',
 			'type' => '',
 			'operand' => '',
 			'target' => '',
-			'shop_id' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

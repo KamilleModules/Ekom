@@ -33,7 +33,7 @@ class GeneratedOrderStatus extends TableCrudObject
 			'id' => null,
 			'code' => '',
 			'color' => '',
-			'shop_id' => 0,
+			'label' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

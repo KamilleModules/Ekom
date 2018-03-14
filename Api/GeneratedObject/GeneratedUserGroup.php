@@ -32,7 +32,6 @@ class GeneratedUserGroup extends TableCrudObject
         $base = [
 			'id' => null,
 			'name' => '',
-			'shop_id' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

@@ -14,7 +14,7 @@ class DefaultDashboardModel
 {
 
 
-    public static function getModel($dateStart = null, $dateEnd = null, $shopId = null, array $options = [])
+    public static function getModel($dateStart = null, $dateEnd = null, array $options = [])
     {
 
         $options = array_replace([
@@ -39,15 +39,9 @@ class DefaultDashboardModel
         }
 
 
-        if (null === $shopId) {
-            $shopId = E::getShopId($shopId);
-        }
-
-
         $o = EkomStatsUtil::create()
             ->prepare($dateStart, $dateEnd, [
                 'currency' => "EUR",
-                'shopId' => $shopId,
             ]);
 
 
@@ -68,7 +62,7 @@ class DefaultDashboardModel
             "activeCartsLast30Min" => EkomCartTrackerCartLayer::getNbUniqueCarts(date('Y-m-d H:i:s', strtotime("-30 minutes"))),
             "nbPreparingOrders" => $o->getNbPreparingOrder(),
             "nbAbandonedCarts" => $o->getNbAbandonedCarts(),
-            "nbOutOfStockProducts" => ProductLayer::getNbOutOfStockProducts($shopId),
+            "nbOutOfStockProducts" => ProductLayer::getNbOutOfStockProducts(),
             "nbNewCustomers" => $o->getNbNewCustomers(),
             "nbNewNewsletterSubscribers" => $o->getNbNewNewsletterSubscribers(),
             "nbTotalNewsletterSubscribers" => $o->getNbTotalNewsletterSubscribers(),

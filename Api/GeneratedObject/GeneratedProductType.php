@@ -32,7 +32,6 @@ class GeneratedProductType extends TableCrudObject
         $base = [
 			'id' => null,
 			'name' => '',
-			'shop_id' => 0,
 			'bo_active' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));

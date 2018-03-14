@@ -32,6 +32,7 @@ class GeneratedProductAttributeValue extends TableCrudObject
         $base = [
 			'id' => null,
 			'value' => '',
+			'label' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

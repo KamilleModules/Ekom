@@ -32,6 +32,7 @@ class GeneratedCategoryHasProductCard extends TableCrudObject
         $base = [
 			'category_id' => 0,
 			'product_card_id' => 0,
+			'order' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

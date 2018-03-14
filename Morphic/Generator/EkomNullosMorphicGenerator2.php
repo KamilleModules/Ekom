@@ -136,7 +136,7 @@ EEE;
         $s = <<<EEE
 <?php 
 
-        
+use Bat\SessionTool;         
 use QuickPdo\QuickPdo;
 use Kamille\Utils\Morphic\Helper\MorphicHelper;
 use Module\Ekom\Back\User\EkomNullosUser;
@@ -206,14 +206,35 @@ EEE;
     }
 
 
-    protected function getForeignKeyExtraLink($fkType, $col, $label, $route)
+    protected function getForeignKeyExtraLink($fkType, $col, $label, $route, array $tableInfo, array $fkTableInfo)
     {
         if ('ai' !== $fkType) {
+
+            $rks = $tableInfo['rks'];
+
+
+            $reversedFields = [];
+            foreach ($rks as $info) {
+                if ($info[1] === $fkTableInfo['table']) {
+                    $reversedFields = $info[2];
+                    break;
+                }
+            }
+
+
+            $linkArgs = '';
+            if ($reversedFields) {
+                foreach ($reversedFields as $k => $v) {
+                    $linkArgs .= "&$v=' . \$$k . '";
+                }
+            }
+
+
             return "
                     'extraLink' => [
                         'text' => 'Créer un nouvel élément \"$label\"',
                         'icon' => 'fa fa-plus',
-                        'link' => E::link('$route') . '?form',
+                        'link' => E::link('$route') . '?form$linkArgs',
                     ],";
         }
         return "";

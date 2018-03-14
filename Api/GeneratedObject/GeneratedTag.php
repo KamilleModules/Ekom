@@ -32,7 +32,6 @@ class GeneratedTag extends TableCrudObject
         $base = [
 			'id' => null,
 			'name' => '',
-			'lang_id' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
