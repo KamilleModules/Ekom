@@ -391,21 +391,21 @@ class BackHooksHelper
 
     public static function NullosAdmin_prepareClaws(ClawsInterface $claws, $type = null)
     {
-        //--------------------------------------------
-        // ENSURE THAT CONTEXT VARS ARE PROPERLY SET
-        //--------------------------------------------
-        /**
-         * The currency, lang, and shop must be defined
-         * prior to any other actions.
-         */
-        $message = null;
-        if (false === QuickStartWizard::checkApp($message)) {
-            NullosGuiEnvironment::addNotification($message, "error");
-        }
 
 
         if (false === "old") {
 
+            //--------------------------------------------
+            // ENSURE THAT CONTEXT VARS ARE PROPERLY SET
+            //--------------------------------------------
+            /**
+             * The currency, lang, and shop must be defined
+             * prior to any other actions.
+             */
+            $message = null;
+            if (false === QuickStartWizard::checkApp($message)) {
+                NullosGuiEnvironment::addNotification($message, "error");
+            }
 //        $model = ContextBarWidgetModel::getModel();
 //        $claws
 //            ->setWidget("topbar_right.ekomContextBar", ClawsWidget::create()
