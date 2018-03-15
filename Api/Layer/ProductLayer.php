@@ -31,28 +31,17 @@ class ProductLayer
 {
 
 
-    public static function getAvatarById($id, $shopId = null, $langId = null)
+    public static function getAvatarById($id)
     {
         $id = (int)$id;
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
 
         return QuickPdo::fetch("
 select 
  
-concat(if( '' != h.label, h.label, l.label ), ' (ref=', p.reference, ')') as label 
+concat(label, ' (ref=', reference, ')') as label 
  
-from ek_product p 
-inner join ek_product_lang l on l.product_id=p.id
-inner join ek_shop_has_product_lang h on h.product_id=p.id
- 
-where 
-p.id=$id
-and h.shop_id=$shopId
-and h.lang_id=$langId
-
-
-        
+from ek_product 
+where id=$id  
         ", [], \PDO::FETCH_COLUMN);
     }
 

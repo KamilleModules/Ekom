@@ -553,21 +553,14 @@ and l.lang_id=$langId
                     $label = QuickPdo::fetch("
 select
 concat( 
-case when pl.label is not null and pl.label != '' 
-then
-concat (pl.label, '. ')
-else 
-''
-end, 
-concat ('ref=', p.reference)
+  label, 
+  concat (' ref=', reference)
 ) as label
 
-from ek_product p
-left join ek_product_lang pl on pl.product_id=p.id
+from ek_product 
 
- 
 where 
-p.id=$value
+id=$value
 ", [], \PDO::FETCH_COLUMN);
                     break;
                 case "auto.product_card":

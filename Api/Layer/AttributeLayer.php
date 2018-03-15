@@ -14,6 +14,18 @@ use QuickPdo\QuickPdo;
 class AttributeLayer
 {
 
+
+    public static function getAttributeValueItemsById($attributeId)
+    {
+        $attributeId = (int)$attributeId;
+        return QuickPdo::fetchAll("
+select id, concat (id, '. ', label) as label 
+from ek_product_attribute_value 
+where product_attribute_id=$attributeId         
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
     public static function getAttributeNamesByShopId($shopId = null)
     {
         $shopId = E::getShopId($shopId);

@@ -31,6 +31,7 @@ class GeneratedProductAttributeValue extends TableCrudObject
     {
         $base = [
 			'id' => null,
+			'product_attribute_id' => 0,
 			'value' => '',
 			'label' => '',
 		];

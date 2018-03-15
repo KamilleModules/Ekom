@@ -20,6 +20,17 @@ class ProductCardLayer
 {
 
 
+    public static function setDefaultProduct($cardId, $productId)
+    {
+        $cardId = (int)$cardId;
+        $productId = (int)$productId;
+        QuickPdo::update("ek_product_card", [
+            "product_id" => $productId,
+        ], [
+            ['id', '=', $cardId],
+        ]);
+    }
+
     /**
      * IF the card is bound to AT LEAST ONE product
      *      THEN Ensures that the card has exactly one REPRESENTATIVE product
@@ -27,32 +38,27 @@ class ProductCardLayer
     public static function sanityRoutine($cardId)
     {
         $cardId = (int)$cardId;
-        $representativeProductId = QuickPdo::fetch("select product_id from ek_shop_has_product_card where product_card_id=$cardId", [], \PDO::FETCH_COLUMN);
-        if ($representativeProductId) {
+        $representativeProductId = QuickPdo::fetch("select product_id from ek_product_card where id=$cardId", [], \PDO::FETCH_COLUMN);
+        /**
+         * Note that if you delete the default product, the db is designed (cascade) to set the ek_product_card.product_id to null.
+         */
+        if (null === $representativeProductId) {
 
-            /**
-             * Note that a product could exist in ek_product and ek_product_lang, but not in ek_shop_has_product.
-             * Those kind of products are general catalog products, we don't count them here,
-             * we only focus on shop specific products.
-             */
-            $possibleProductIds = [];
 
-            QuickPdo::fetchAll("select p.id 
+            // do we still have at least one product for this card?
+            $id = QuickPdo::fetch("select id 
 from ek_product p
-inner join ek_shop_has_product h on h.product_id=p.id
-inner join ek_shop_has_product_lang hl on hl.shop_id=h.shop_id and hl.product_id=h.product_id
-where 
-p.product_card_id=$cardId
-and l 
-");
-
-            $count = QuickPdo::fetch("select count(*) as count from ek_product where product_card_id=$cardId and id=$representativeProductId", [], \PDO::FETCH_COLUMN);
-            az($representativeProductId, $count);
-        } else {
-            throw new EkomException("This card doesn't seem to exist: $cardId, or is invalid");
+where product_card_id=$cardId
+order by id asc
+", [], \PDO::FETCH_COLUMN);
+            if ($id) { // yes, so this will be the default product now..
+                QuickPdo::update("ek_product_card", [
+                    "product_id" => $id,
+                ], [
+                    ['id', '=', $cardId],
+                ]);
+            }
         }
-
-
     }
 
     /**
@@ -60,11 +66,11 @@ and l
      * @param $cardId
      * @return false|int
      */
-    public static function getDummyRecordIdByCardId($cardId)
-    {
-        $cardId = (int)$cardId;
-        return QuickPdo::fetch("select id from ek_product where product_card_id=$cardId and reference='_dummy_'", [], \PDO::FETCH_COLUMN);
-    }
+//    public static function getDummyRecordIdByCardId($cardId)
+//    {
+//        $cardId = (int)$cardId;
+//        return QuickPdo::fetch("select id from ek_product where product_card_id=$cardId and reference='_dummy_'", [], \PDO::FETCH_COLUMN);
+//    }
 
     public static function getItems()
     {
@@ -87,8 +93,8 @@ inner join ek_product p on p.product_card_id=cl.product_card_id
     {
         $id = (int)$id;
         $s = null;
-        if (false !== ($info = QuickPdo::fetch("select label, slug from ek_product_card_lang
-where product_card_id=$id
+        if (false !== ($info = QuickPdo::fetch("select label, slug from ek_product_card
+where id=$id
 "))) {
             $s = self::getRepresentationByLabelSlug($info['label'], $info['slug']);
         }

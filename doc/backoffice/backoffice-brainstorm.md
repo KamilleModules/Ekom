@@ -377,8 +377,18 @@ perfectly. The implementation is the following:
         The ajax service returns json items used to populate the cities reactive select box.
         
         
+Also, we trigger the countries select box change event at page init, so that we get the first triggering for free,
+giving us the opportunity to initialize our reactive select.        
+        
 In ekom, this is used in the backoffice with 
 the product has feature table (feature values depends on the selected feature).
+        
+        
+The ajax service 
+------------
+We use json.
+Receives the country selected value (the parent value), via the "parentIdentifier" (by default) property.
+It returns an array of value => label, corresponding to the cities of the parent country.      
         
         
         

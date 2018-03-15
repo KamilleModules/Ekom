@@ -109,25 +109,33 @@ EEE;
 use Module\Ekom\Back\User\EkomNullosUser;
 use Kamille\Utils\Morphic\Helper\MorphicHelper;
 
-
-\$inferred = [
-    "shop_id" => EkomNullosUser::getEkomValue("shop_id"),
-    "lang_id" => EkomNullosUser::getEkomValue("lang_id"),
-    "currency_id" => EkomNullosUser::getEkomValue("currency_id"),
-];
-
 EEE;
+//        $s = <<<EEE
+//<?php
+//
+//use Module\Ekom\Back\User\EkomNullosUser;
+//use Kamille\Utils\Morphic\Helper\MorphicHelper;
+//
+//
+//\$inferred = [
+//    "shop_id" => EkomNullosUser::getEkomValue("shop_id"),
+//    "lang_id" => EkomNullosUser::getEkomValue("lang_id"),
+//    "currency_id" => EkomNullosUser::getEkomValue("currency_id"),
+//];
+//
+//EEE;
 
         return $s;
     }
 
     protected function _getFormInferred(array $tableInfo)
     {
-        return [
-            'shop_id',
-            'lang_id',
-            'currency_id',
-        ];
+        return [];
+//        return [
+//            'shop_id',
+//            'lang_id',
+//            'currency_id',
+//        ];
     }
 
 
