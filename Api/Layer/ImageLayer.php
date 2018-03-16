@@ -144,9 +144,6 @@ class ImageLayer
     }
 
 
-
-
-
     /**
      * Like getImages, but removes entry starting with _, and return the default image too.
      *
@@ -183,6 +180,7 @@ class ImageLayer
      *
      *
      * @throws EkomApiException
+     * @return array, the array of created file paths
      */
     public function createImageCopy($path, $type, $params)
     {
@@ -192,12 +190,12 @@ class ImageLayer
             case 'products':
                 $productId = $params;
                 $dst = $imgDir . "/products/" . $this->getHashedPath($productId);
-                $this->createImageCollection($path, $dst);
+                return $this->createImageCollection($path, $dst);
                 break;
             case 'cards':
                 $cardId = $params;
                 $dst = $imgDir . "/cards/" . $this->getHashedPath($cardId);
-                $this->createImageCollection($path, $dst);
+                return $this->createImageCollection($path, $dst);
                 break;
             default:
                 throw new EkomApiException("Type not found: $type");
@@ -244,13 +242,15 @@ class ImageLayer
 
     private function createImageSerial($src, $dstDir, array $types)
     {
+        $ret = [];
         $fileName = basename($src);
         foreach ($types as $dir => $dims) {
             list($w, $h) = $dims;
             $path = $dstDir . "/" . $dir . "/" . $fileName;
             ThumbnailTool::biggest($src, $path, $w, $h);
+            $ret[] = $path;
         }
-        return true;
+        return $ret;
     }
 
     private function parseCollectionByIds(array &$ret, array $ids, $type, $identifierPrefix, $ignoreSkippable = true)
@@ -259,7 +259,7 @@ class ImageLayer
         $baseUri = $this->getImagesUriPrefix();
         foreach ($ids as $itemId) {
             $hash = $this->getHashedPath($itemId);
-            $dirPath = $imgDir . "/$type/$hash/medium";
+            $dirPath = rtrim($imgDir, '/') . "/$type/$hash/medium";
             if (file_exists($dirPath)) {
                 $imgs = YorgDirScannerTool::getFilesWithExtension($dirPath, ['jpg', 'jpeg'], false, false, false);
                 foreach ($imgs as $img) {

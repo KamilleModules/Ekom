@@ -33,6 +33,7 @@ use Module\Ekom\Api\Object\ProductBundleHasProduct;
 use Module\Ekom\Api\Object\ProductCard;
 use Module\Ekom\Api\Object\ProductCardHasDiscount;
 use Module\Ekom\Api\Object\ProductCardHasProductAttribute;
+use Module\Ekom\Api\Object\ProductCardImage;
 use Module\Ekom\Api\Object\ProductComment;
 use Module\Ekom\Api\Object\ProductGroup;
 use Module\Ekom\Api\Object\ProductGroupHasProduct;
@@ -295,6 +296,13 @@ class GeneratedEkomApi extends XiaoApi
     public function productCardHasProductAttribute()
     {
         return $this->getObject('productCardHasProductAttribute');
+    }
+    /**
+     * @return ProductCardImage
+     */
+    public function productCardImage()
+    {
+        return $this->getObject('productCardImage');
     }
     /**
      * @return ProductComment

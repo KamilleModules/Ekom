@@ -10,6 +10,7 @@ use Core\Services\Hooks;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Object\CategoryHasProductCard;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
@@ -24,6 +25,26 @@ use QuickPdo\QuickPdo;
  */
 class CategoryLayer
 {
+
+
+    public static function associateProductCardWithCategories($cardId, array $categoryIds)
+    {
+        // first clean the association of this card to categories
+        $cardId = (int)$cardId;
+        QuickPdo::delete("ek_category_has_product_card", [
+            ['product_card_id', "=", $cardId],
+        ]);
+
+
+        foreach ($categoryIds as $id) {
+            $id = (int)$id;
+            $o = new CategoryHasProductCard();
+            $o->create([
+                'product_card_id' => $cardId,
+                'category_id' => $id,
+            ]);
+        }
+    }
 
 
     public static function deleteCategory($categoryId)
