@@ -26,15 +26,11 @@ class CategoryLayer
 {
 
 
-
-    public static function deleteCategory($categoryId, $shopId = null)
+    public static function deleteCategory($categoryId)
     {
         $whereConds = [
             ["id", "=", $categoryId],
         ];
-        if (null !== $shopId) {
-            $whereConds[] = ["shop_id", "=", $shopId];
-        }
         QuickPdo::delete("ek_category", $whereConds);
     }
 
@@ -53,7 +49,7 @@ order by `order` desc
      * It should be used at the end of a drag'n'drop.
      *
      */
-    public static function moveCategory($sourceId, $targetId, $mode, $shopId, $langId, &$error = null)
+    public static function moveCategory($sourceId, $targetId, $mode, &$error = null)
     {
         switch ($mode) {
             case "before":
@@ -61,7 +57,7 @@ order by `order` desc
                 $parentId = CategoryLayer::getParentCategoryIdById($targetId);
 
 
-                $childrenItems = CategoryCoreLayer::create()->getSelfAndChildrenByCategoryId($parentId, 1, $shopId, $langId, [
+                $childrenItems = CategoryCoreLayer::create()->getSelfAndChildrenByCategoryId($parentId, 1, [
                     'order' => ["order", "asc"],
                 ], true);
                 array_shift($childrenItems);
@@ -81,12 +77,9 @@ order by `order` desc
                 }
 
 
-                $shopId = (int)$shopId;
-
                 $q = "
 update ek_category set `order` = `order`+1
-where shop_id=$shopId  
-and category_id=$parentId
+where category_id=$parentId
 and `order` >= $newTargetOrder
     ";
 
@@ -850,45 +843,37 @@ and l.slug=:slug
      *
      *
      */
-    public function getSubCategoriesByName($name, $maxDepth = -1, $wildCard = '', $shopId = null, $langId = null, $forceGenerate = false)
+    public function getSubCategoriesByName($name, $maxDepth = -1, $wildCard = '', $forceGenerate = false)
     {
         EkomApi::inst()->initWebContext();
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
 
 
-        return A::cache()->get("Ekom.CategoryLayer.getSubCategoriesByName.$shopId.$langId.$name.$maxDepth.$wildCard", function () use ($shopId, $maxDepth, $name, $langId, $wildCard) {
+        return A::cache()->get("Ekom.CategoryLayer.getSubCategoriesByName.$name.$maxDepth.$wildCard", function () use ($maxDepth, $name, $wildCard) {
 
 
             $rows = QuickPdo::fetchAll("
 select 
-cl.category_id,
-cl.label,
-cl.slug,
-cl.description,
-c.name,
-c.order
+id,
+label,
+slug,
+description,
+`name`,
+`order`
 
-from ek_category c 
-inner join ek_category_lang cl on cl.category_id=c.id 
+from ek_category  
 
 where 
-c.category_id = (
+category_id = (
   select id from ek_category 
   where `name`=:cname
-  and shop_id=$shopId
 ) 
 
-and cl.lang_id=$langId
-and c.shop_id=$shopId
-
-order by c.order asc
+order by `order` asc
         
         
         ", [
                 "cname" => $name,
             ]);
-
 
             $ret = [];
             $level = 0;
@@ -904,7 +889,7 @@ order by c.order asc
 
                 $children = [];
                 if (-1 === $maxDepth || $maxDepth > 0) {
-                    $this->doCollectDescendantsInfo($row['category_id'], $children, $level + 1, $maxDepth);
+                    $this->doCollectDescendantsInfo($row['id'], $children, $level + 1, $maxDepth);
                 }
                 $row['level'] = $level;
                 $row['children'] = $children;
@@ -1085,20 +1070,19 @@ and c.id=$categoryId
     {
         $rows = QuickPdo::fetchAll("
 select
-        
-cl.category_id,
-cl.label,
-cl.slug,
-c.name,
-c.order
+     
+id,
+label,
+slug,
+`name`,
+`order`
 
-from ek_category c 
-inner join ek_category_lang cl on cl.category_id=c.id 
+from ek_category  
   
-where c.category_id=$categoryId
-and c.id != $categoryId
+where category_id=$categoryId
+and id != $categoryId
 
-order by c.order asc
+order by `order` asc
 
 
             ");
@@ -1106,7 +1090,7 @@ order by c.order asc
 
             $children = [];
             if (-1 === $maxLevel || $level < $maxLevel) {
-                $this->doCollectDescendantsInfo($row['category_id'], $children, $level + 1, $maxLevel);
+                $this->doCollectDescendantsInfo($row['id'], $children, $level + 1, $maxLevel);
             }
             $row['uri'] = E::link("Ekom_category", ['slug' => $row['slug']]);
             $row['level'] = $level;

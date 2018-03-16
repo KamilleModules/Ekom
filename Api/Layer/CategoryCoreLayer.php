@@ -57,8 +57,6 @@ use QuickPdo\QuickPdo;
  */
 class CategoryCoreLayer
 {
-    private $_shop_id;
-    private $_lang_id;
     private $_extended;
     private static $cpt = 0;
     private static $max = 1000;
@@ -78,19 +76,15 @@ class CategoryCoreLayer
      *          - order: [$field, asc|desc]
      * @return array
      */
-    public function getSelfAndChildren($parentName, $maxLevel = -1, $shopId = null, $langId = null, array $options = [])
+    public function getSelfAndChildren($parentName, $maxLevel = -1, array $options = [])
     {
         $this->_extended = (array_key_exists('extended', $options)) ? (bool)$options['extended'] : false;
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
         $hash = HashTool::getHashByArray($options);
-        $mix = "$shopId.$langId.$parentName.$maxLevel--$hash";
+        $mix = "$parentName.$maxLevel--$hash";
         self::$cpt = 0;
 
-        return A::cache()->get("Ekom/CategoryCoreLayer/getSelfAndChildren-$mix", function () use ($shopId, $langId, $parentName, $maxLevel, $options) {
+        return A::cache()->get("Ekom/CategoryCoreLayer/getSelfAndChildren-$mix", function () use ($parentName, $maxLevel, $options) {
             $ret = [];
-            $this->_shop_id = $shopId;
-            $this->_lang_id = $langId;
             $q = $this->getQuery("name");
             $row = QuickPdo::fetch($q,
                 ['name' => $parentName]
@@ -115,25 +109,19 @@ class CategoryCoreLayer
     /**
      * @param $parentId
      * @param int $maxLevel
-     * @param null $shopId
-     * @param bool $langId
      * @param array $options
      *          - order: [$field, asc|desc]
      * @return array
      */
-    public function getSelfAndChildrenByCategoryId($parentId, $maxLevel = -1, $shopId = null, $langId = null, array $options = [], $forceGenerate = false)
+    public function getSelfAndChildrenByCategoryId($parentId, $maxLevel = -1, array $options = [], $forceGenerate = false)
     {
         $this->_extended = (array_key_exists('extended', $options)) ? (bool)$options['extended'] : false;
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
         $hash = HashTool::getHashByArray($options);
-        $mix = "$shopId.$langId.$parentId.$maxLevel--$hash";
+        $mix = "$parentId.$maxLevel--$hash";
         self::$cpt = 0;
 
-        return A::cache()->get("Ekom/CategoryCoreLayer/getSelfAndChildrenByCategoryId-$mix", function () use ($shopId, $langId, $parentId, $maxLevel, $options) {
+        return A::cache()->get("Ekom/CategoryCoreLayer/getSelfAndChildrenByCategoryId-$mix", function () use ($parentId, $maxLevel, $options) {
             $ret = [];
-            $this->_shop_id = $shopId;
-            $this->_lang_id = $langId;
             $q = $this->getQuery("id", $parentId);
             $row = QuickPdo::fetch($q);
 
@@ -159,19 +147,15 @@ class CategoryCoreLayer
     }
 
 
-    public function getSelfAndParents($catName, $maxLevel = -1, $shopId = null, $langId = null, $options = [])
+    public function getSelfAndParents($catName, $maxLevel = -1, $options = [])
     {
         $this->_extended = (array_key_exists('extended', $options)) ? (bool)$options['extended'] : false;
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
         $hash = HashTool::getHashByArray($options);
-        $mix = "$shopId.$langId.$catName.$maxLevel--$hash";
+        $mix = "$catName.$maxLevel--$hash";
         self::$cpt = 0;
 
-        return A::cache()->get("Ekom/CategoryCoreLayer/getSelfAndParents-$mix", function () use ($shopId, $langId, $catName, $maxLevel, $options) {
+        return A::cache()->get("Ekom/CategoryCoreLayer/getSelfAndParents-$mix", function () use ($catName, $maxLevel, $options) {
             $ret = [];
-            $this->_shop_id = $shopId;
-            $this->_lang_id = $langId;
 
 
             $q = $this->getQuery("name");
@@ -193,19 +177,15 @@ class CategoryCoreLayer
 
     }
 
-    public function getSelfAndParentsByCategoryId($catId, $maxLevel = -1, $shopId = null, $langId = null, $options = [])
+    public function getSelfAndParentsByCategoryId($catId, $maxLevel = -1, $options = [])
     {
         $this->_extended = (array_key_exists('extended', $options)) ? (bool)$options['extended'] : false;
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
         $hash = HashTool::getHashByArray($options);
-        $mix = "$shopId.$langId.$catId.$maxLevel--$hash";
+        $mix = "$catId.$maxLevel--$hash";
         self::$cpt = 0;
 
-        return A::cache()->get("Ekom/CategoryCoreLayer/getSelfAndParentsByCategoryId-$mix", function () use ($shopId, $langId, $catId, $maxLevel, $options) {
+        return A::cache()->get("Ekom/CategoryCoreLayer/getSelfAndParentsByCategoryId-$mix", function () use ($catId, $maxLevel, $options) {
             $ret = [];
-            $this->_shop_id = $shopId;
-            $this->_lang_id = $langId;
 
 
             $q = $this->getQuery("id", $catId);
@@ -297,66 +277,46 @@ class CategoryCoreLayer
     private function getQuery($type, $extra = null)
     {
 
-        $shopId = $this->_shop_id;
-        $langId = $this->_lang_id;
-
-        $what = "c.*";
+        $what = "*";
         if (true === $this->_extended) {
-            $what .= ",
-cl.lang_id,            
-cl.label,            
-cl.description,            
-cl.slug,            
-cl.meta_title,            
-cl.meta_description,            
-cl.meta_keywords            
+            $what .= ",            
+label,            
+description,            
+slug,            
+meta_title,            
+meta_description,            
+meta_keywords            
 ";
         }
         $q = "
 select $what 
-from ek_category c         
+from ek_category          
         ";
 
-        if (true === $this->_extended) {
-            $q .= "
-inner join ek_category_lang cl on cl.category_id=c.id
-            ";
-        }
 
 
         if ('name' === $type) {
 
             $q .= "
-where c.name=:name        
+where name=:name        
         ";
         } elseif ('id' === $type) {
 
             $q .= "
-where c.id=$extra        
+where id=$extra        
         ";
         } elseif ('collectChildrenByRow' === $type) {
             $q .= "
-where c.category_id=$extra        
+where category_id=$extra        
         ";
         } elseif ('collectParentsByRow' === $type) {
 
             $q .= "
-where c.id=$extra        
+where id=$extra        
         ";
         }
 
 
-        $shopId = E::getShopId($shopId);
-        $q .= "
-and c.shop_id=$shopId            
-            ";
-
-        if (true === $this->_extended) {
-            $langId = E::getShopId($langId);
-            $q .= "
-and cl.lang_id=$langId            
-            ";
-        }
 
         return $q;
     }

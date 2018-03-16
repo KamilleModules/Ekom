@@ -67,6 +67,14 @@ class BackHooksHelper
 //                    ->setIcon("fa fa-dot-circle-o")
                     ->setLink(N::link("Ekom_Back_Catalog_Product_List"))
                 )
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("catalog_categories")
+                    ->setLabel("Catégories")
+//                    ->setIcon("fa fa-dot-circle-o")
+                    ->setLink(N::link("Ekom_Back_Catalog_Product_List"))
+//                    ->setLink(N::link("Ekom_Back_Catalog_Category_List"))
+                )
             );
 
 
