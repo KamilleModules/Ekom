@@ -30,9 +30,15 @@ class PaymentLayer
 {
 
 
+    public static function getPaymentMethodItemsWithNameAsKey()
+    {
+        return QuickPdo::fetchAll("select `name`, label from ek_payment_method", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
     public static function getPaymentMethodItems()
     {
-        return QuickPdo::fetchAll("select id, name from ek_payment_method", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+        return QuickPdo::fetchAll("select id, label from ek_payment_method", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
 
     /**

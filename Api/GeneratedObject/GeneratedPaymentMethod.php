@@ -32,6 +32,7 @@ class GeneratedPaymentMethod extends TableCrudObject
         $base = [
 			'id' => null,
 			'name' => '',
+			'label' => '',
 			'configuration' => '',
 			'order' => 0,
 		];

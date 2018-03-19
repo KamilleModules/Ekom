@@ -4,6 +4,8 @@
 namespace Module\Ekom;
 
 
+use Module\Ekom\Back\Helper\BackHooksHelper;
+
 class EkomHooks
 {
 
@@ -13,13 +15,6 @@ class EkomHooks
     //--------------------------------------------            
     protected static function Ekom_adaptContextualConfig(array &$conf) {
             
-    }
-
-            
-    protected static function Ekom_Back_getElementAvatar(&$avatar, $table, array $context = []) {
-        // mit-start:Ekom
-        \Module\Ekom\Back\Helper\BackHooksHelper::Ekom_Back_getElementAvatar($avatar, $table, $context);
-        // mit-end:Ekom    
     }
 
             
@@ -499,6 +494,11 @@ class EkomHooks
         // mit-start:Ekom
         \Module\Ekom\Back\Helper\BackHooksHelper::NullosAdmin_User_populateConnectedUser($user);
         // mit-end:Ekom    
+    }
+    protected static function Nullos_Back_getElementAvatar(&$avatar, $table, array $context = []) {
+        // mit-start:Ekom
+        \Module\Ekom\Back\Helper\BackHooksHelper::Nullos_Back_getElementAvatar($avatar, $table, $context);
+        // mit-end:Ekom
     }
 
         

@@ -287,7 +287,7 @@ break;
 
             $begin .= '
         $avatar = null;
-        Hooks::call("Ekom_Back_getElementAvatar", $avatar, $table, $context);
+        Hooks::call("Nullos_Back_getElementAvatar", $avatar, $table, $context);
         if (null === $avatar) {
             $repr = OrmToolsHelper::getRepresentativeColumn("' . $leftTable . '");
             $avatar = QuickPdo::fetch("
