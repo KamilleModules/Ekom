@@ -34,6 +34,7 @@ class GeneratedUser extends TableCrudObject
 			'email' => '',
 			'pass' => '',
 			'pseudo' => '',
+			'company' => '',
 			'first_name' => '',
 			'last_name' => '',
 			'date_creation' => '',

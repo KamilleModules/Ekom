@@ -97,7 +97,7 @@ EEE;
 
     protected function _getControllerRenderWithNoParentMethodExtraVar(array $tableInfo)
     {
-        return '"menuCurrentRoute" => "' . $tableInfo['route'] . '",';
+//        return '"menuCurrentRoute" => $this->configValues[\'route\'],';
     }
 
 
@@ -237,14 +237,20 @@ EEE;
                 }
             }
 
+            $text = $this->getForeignKeyExtraLinkText($label, $tableInfo, $fkTableInfo);
 
             return "
-                    'extraLink' => [
-                        'text' => 'Créer un nouvel élément \"$label\"',
-                        'icon' => 'fa fa-plus',
-                        'link' => E::link('$route') . '?form$linkArgs',
-                    ],";
+                'extraLink' => [
+                    'text' => '$text',
+                    'icon' => 'fa fa-plus',
+                    'link' => E::link('$route') . '?form$linkArgs',
+                ],";
         }
         return "";
+    }
+
+    protected function getForeignKeyExtraLinkText($label, array $tableInfo, array $fkTableInfo)
+    {
+        return "Créer un nouvel élément \"$label\"";
     }
 }

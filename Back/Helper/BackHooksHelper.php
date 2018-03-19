@@ -54,6 +54,9 @@ class BackHooksHelper
 
 
         $section
+            //--------------------------------------------
+            // CATALOG
+            //--------------------------------------------
             ->addItem(Item::create()
                 ->setActive(true)
                 ->setName("catalog")
@@ -72,8 +75,68 @@ class BackHooksHelper
                     ->setName("catalog_categories")
                     ->setLabel("Catégories")
 //                    ->setIcon("fa fa-dot-circle-o")
-                    ->setLink(N::link("Ekom_Back_Catalog_Product_List"))
-//                    ->setLink(N::link("Ekom_Back_Catalog_Category_List"))
+                    ->setLink("#")
+                    ->addItem(Item::create()
+                        ->setActive(true)
+                        ->setName("catalog_categories_list")
+                        ->setLabel("Liste des catégories")
+//                    ->setIcon("fa fa-dot-circle-o")
+                        ->setLink(N::link("Ekom_Back_Catalog_Category_List"))
+                    )
+                    ->addItem(Item::create()
+                        ->setActive(true)
+                        ->setName("catalog_categories_tree")
+                        ->setLabel("Arbre des catégories")
+//                    ->setIcon("fa fa-dot-circle-o")
+                        ->setLink(N::link("Ekom_Back_Catalog_CategoryTree_List"))
+                    )
+                )
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("catalog_bundles")
+                    ->setLabel("Packs")
+                    ->setLink(N::link("Ekom_Back_Catalog_Bundle_List"))
+                )
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("catalog_attributes")
+                    ->setLabel("Attributs")
+                    ->setLink(N::link("Ekom_Back_Catalog_ProductAttribute_List"))
+                )
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("catalog_manufacturers")
+                    ->setLabel("Fabricants")
+                    ->setLink(N::link("Ekom_Back_Catalog_Manufacturer_List"))
+                )
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("catalog_providers")
+                    ->setLabel("Fournisseurs")
+                    ->setLink(N::link("Ekom_Back_Catalog_Provider_List"))
+                )
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("catalog_tags")
+                    ->setLabel("Tags")
+                    ->setLink(N::link("Ekom_Back_Catalog_Tag_List"))
+                )
+            )
+            //--------------------------------------------
+            // ORDERS
+            //--------------------------------------------
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("orders")
+                ->setLabel("Commandes")
+                ->setIcon("fa fa-credit-card")
+                ->setLink("#")
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("orders_orders")
+                    ->setLabel("Commandes")
+//                    ->setIcon("fa fa-dot-circle-o")
+                    ->setLink(N::link("Ekom_Back_Orders_Order_List"))
                 )
             );
 
@@ -520,13 +583,11 @@ concat(
   ' ',
   a.city, 
   ' ',
-  UPPER(l.label)
+  UPPER(c.label)
   ) as label
 from ek_address a 
 inner join ek_country c on c.id=a.country_id
-inner join ek_country_lang l on l.country_id=c.id
 where a.id=$value
-and l.lang_id=$langId
              
                     ", [], \PDO::FETCH_COLUMN);
                     break;

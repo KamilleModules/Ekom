@@ -27,6 +27,39 @@ class CategoryLayer
 {
 
 
+    public static function reorderCategories()
+    {
+
+
+        $o = new CategoryLayer();
+        $cats = $o->getSubCategoriesByName("home", 0, "", true);
+        self::reorderChildren($cats);
+
+        CategoryLayer::visitTree(function ($node) {
+            $children = $node['children'];
+            if ($children) {
+                self::reorderChildren($children);
+            }
+        });
+
+    }
+
+
+    public static function getTree()
+    {
+        $o = new CategoryLayer();
+        return $o->getSubCategoriesByName("home", -1, "", true);
+    }
+
+    public static function visitTree(callable $cb)
+    {
+        $tree = self::getTree();
+        foreach ($tree as $node) {
+            self::visitNode($node, $cb);
+        }
+    }
+
+
     public static function associateProductCardWithCategories($cardId, array $categoryIds)
     {
         // first clean the association of this card to categories
@@ -1140,4 +1173,36 @@ and shop_id=$shopId
     }
 
 
+    private static function visitNode(array $node, callable $cb)
+    {
+        $cb($node);
+        if (array_key_exists("children", $node) && $node['children']) {
+            foreach ($node['children'] as $childNode) {
+                self::visitNode($childNode, $cb);
+            }
+        }
+    }
+
+
+    private static function reorderChildren(array $children)
+    {
+        $previous = null;
+        foreach ($children as $node) {
+            $order = (int)$node['order'];
+            if (null === $previous) {
+                $previous = $order;
+            } else {
+                if ($order > $previous) {
+                    $previous = $order;
+                } elseif ($order <= $previous) {
+                    $previous++;
+                    QuickPdo::update("ek_category", [
+                        "order" => $previous,
+                    ], [
+                        ["id", "=", $node['id']],
+                    ]);
+                }
+            }
+        }
+    }
 }
