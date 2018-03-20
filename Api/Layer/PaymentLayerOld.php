@@ -54,7 +54,7 @@ where shop_id=$shopId and payment_method_id=$id
 //    public function getShopPaymentMethodId2Names($shopId = null)
 //    {
 //        if (null === $shopId) {
-//            EkomApi::inst()->initWebContext();
+//            
 //            $shopId = ApplicationRegistry::get("ekom.shop_id");
 //        }
 //        $shopId = (int)$shopId;
@@ -274,7 +274,7 @@ where shop_id=$shopId and payment_method_id=$id
 //    public function getShopPreferredPaymentMethodId($shopId = null)
 //    {
 //        if (null === $shopId) {
-//            EkomApi::inst()->initWebContext();
+//            
 //            $shopId = ApplicationRegistry::get("ekom.shop_id");
 //        }
 //        $shopId = (int)$shopId;
@@ -309,7 +309,7 @@ where shop_id=$shopId and payment_method_id=$id
 //    public function getDefaultPaymentMethodId($userId, $shopId = null)
 //    {
 //        if (null === $shopId) {
-//            EkomApi::inst()->initWebContext();
+//            
 //            $shopId = ApplicationRegistry::get("ekom.shop_id");
 //        }
 //
@@ -358,7 +358,7 @@ where shop_id=$shopId and payment_method_id=$id
     private function getShopPaymentMethods($shopId = null)
     {
         if (null === $shopId) {
-            EkomApi::inst()->initWebContext();
+            
             $shopId = ApplicationRegistry::get("ekom.shop_id");
         }
         $shopId = (int)$shopId;

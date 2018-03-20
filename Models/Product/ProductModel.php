@@ -279,7 +279,7 @@ and shpl.lang_id=$langId
     private function getShopLangIds($shopId, $langId)
     {
         if (null === $shopId || null === $langId) {
-            EkomApi::inst()->initWebContext();
+            
             if (null === $shopId) {
                 $shopId = ApplicationRegistry::get("ekom.shop_id");
             }

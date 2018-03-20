@@ -24,7 +24,7 @@ class BackHooksHelper
 {
 
 
-    public static function Nullos_Back_getElementAvatar(&$avatar, $table, array $context = [])
+    public static function NullosAdmin_Back_getElementAvatar(&$avatar, $table, array $context = [])
     {
 
     }
@@ -96,6 +96,12 @@ class BackHooksHelper
                     ->setName("catalog_bundles")
                     ->setLabel("Packs")
                     ->setLink(N::link("Ekom_Back_Catalog_Bundle_List"))
+                )
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("catalog_product_groups")
+                    ->setLabel("Groupes de produit")
+                    ->setLink(N::link("Ekom_Back_Catalog_ProductGroup_List"))
                 )
                 ->addItem(Item::create()
                     ->setActive(true)
@@ -496,11 +502,14 @@ class BackHooksHelper
             $model = DefaultDashboardModel::getModel();
             $claws
                 ->setWidget("maincontent.pageTop", ClawsWidget::create()
-                    ->setTemplate('Ekom/Main/PageTop/default')
+                    ->setTemplate('NullosAdmin/Main/PageTop/default')
                     ->setConf([
-                        "breadcrumbs" => BreadcrumbsHelper::getBreadCrumbsModel([
-                            "dashboard",
-                        ]),
+                        "breadcrumbs" => [
+                            [
+                                'label' => 'dashboard',
+                                'link' => '',
+                            ]
+                        ],
                         "title" => "Tableau de bord",
                         "buttons" => [],
                         "buttonsList" => [],
@@ -523,40 +532,6 @@ class BackHooksHelper
         $hasRight = true;
     }
 
-    public static function NullosAdmin_User_populateConnectedUser(array &$user)
-    {
-
-
-        $row = QuickPdo::fetch("
-select * from ek_backoffice_user
-where email=:email
-",
-            ['email' => $user['email']]
-        );
-        $shopId = 0;
-        $shopHost = "";
-        $langId = 0;
-        $langIsoCode = "";
-        $currencyId = 0;
-        $currencyIsoCode = "";
-        if (false !== $row) {
-            $shopId = (int)$row['shop_id'];
-            $langId = (int)$row['lang_id'];
-            $currencyId = (int)$row['currency_id'];
-            $shopHost = ShopLayer::getHostById($shopId);
-            $langIsoCode = LangLayer::getIsoCodeById($langId);
-            $currencyIsoCode = CurrencyLayer::getIsoCodeById($currencyId);
-        }
-
-        $user['ekom'] = [
-            'shop_id' => $shopId,
-            'shop_host' => $shopHost,
-            'lang_id' => $langId,
-            'lang_iso_code' => $langIsoCode,
-            'currency_id' => $currencyId,
-            'currency_iso_code' => $currencyIsoCode,
-        ];
-    }
 
 
     public static function NullosAdmin_SokoForm_NullosBootstrapRenderer_AutocompleteInitialValue(&$label, $action, $value)

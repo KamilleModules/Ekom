@@ -257,15 +257,14 @@ select `name` from ek_category where id=$categoryId
         if ($names) {
             $ret = QuickPdo::fetchAll("
 select        
-l.category_id,
-l.label,
-l.slug,
-l.description,
+c.category_id,
+c.label,
+c.slug,
+c.description,
 c.name,
 c.id
 
 from ek_category c 
-inner join ek_category_lang l on l.category_id=c.id
 where c.name in ('" . implode("','", $names) . "')
 
         ");
@@ -281,10 +280,10 @@ where c.name in ('" . implode("','", $names) . "')
     }
 
 
-    public static function getCardIdsByCategoryName($categoryName, $shopId = null, $recursive = true)
+    public static function getCardIdsByCategoryName($categoryName, $recursive = true)
     {
-        $categoryId = self::getCategoryIdByName($categoryName, $shopId);
-        return self::getCardIdsByCategoryId($categoryId, $shopId, $recursive);
+        $categoryId = self::getCategoryIdByName($categoryName);
+        return self::getCardIdsByCategoryId($categoryId, $recursive);
     }
 
     public static function getCardIdsByCategoryId($categoryId, $shopId = null, $recursive = true)
@@ -337,33 +336,26 @@ and `name`=:name
         ], \PDO::FETCH_COLUMN);
     }
 
-    public static function getSelfAndChildrenIdsById($categoryId, $shopId = null, $langId = null)
+    public static function getSelfAndChildrenIdsById($categoryId)
     {
         $ids = [];
-        $allCatItems = CategoryCoreLayer::create()->getSelfAndChildrenByCategoryId($categoryId, -1, $shopId, $langId);
+        $allCatItems = CategoryCoreLayer::create()->getSelfAndChildrenByCategoryId($categoryId, -1);
         foreach ($allCatItems as $item) {
             $ids[] = $item['id'];
         }
         return $ids;
     }
 
-    public static function getInfoBySlug($slug, $shopId = null, $langId = null)
+    public static function getInfoBySlug($slug)
     {
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
-
         return QuickPdo::fetch("
 select
 c.id, 
 c.name, 
-cl.label, 
-c.shop_id
+c.label
  
-from ek_category c 
-inner join ek_category_lang cl on cl.category_id=c.id 
-where cl.slug=:slug 
-and cl.lang_id=$langId 
-and c.shop_id=$shopId        
+from ek_category c  
+where c.slug=:slug         
         ", [
             'slug' => $slug,
         ]);
@@ -381,11 +373,9 @@ and c.shop_id=$shopId
     }
 
 
-    public function collectCategoryInfoTreeByCategoryId(array &$infos, $categoryId, $shopId = null, $langId = null)
+    public function collectCategoryInfoTreeByCategoryId(array &$infos, $categoryId)
     {
         $categoryId = (int)$categoryId;
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
 
 
         $row = QuickPdo::fetch("
@@ -394,25 +384,20 @@ select
 c.id,
 c.name,
 c.category_id,
-cl.label,
-cl.description,
-cl.slug
+c.label,
+c.description,
+c.slug
 
 from ek_category c 
-inner join ek_category_lang cl on cl.category_id=c.id
 
 where c.id=$categoryId
-and c.shop_id=$shopId
-and cl.lang_id=$langId
-
-
      
         ");
 
         if (false !== $row) {
             $infos[] = $row;
             if (null !== $row['category_id']) {
-                $this->collectCategoryInfoTreeByCategoryId($infos, $row['category_id'], $shopId, $langId);
+                $this->collectCategoryInfoTreeByCategoryId($infos, $row['category_id']);
             }
 
         }
@@ -448,11 +433,11 @@ and h.product_card_id in ($sIds)
     /**
      * Returns whether or not the $categoryId belongs to (or is) the $ancestorName.
      */
-    public function categoryIdBelongsTo($categoryId, $ancestorName, $shopId = null)
+    public function categoryIdBelongsTo($categoryId, $ancestorName)
     {
         $idAncestor = $this->getCategoryIdByName($ancestorName);
         $treeIds = [];
-        $this->collectCategoryIdTreeByCategoryId($treeIds, $categoryId, $shopId);
+        $this->collectCategoryIdTreeByCategoryId($treeIds, $categoryId);
         return (in_array($idAncestor, $treeIds));
     }
 
@@ -470,10 +455,9 @@ where c.name=:name
     }
 
 
-    public static function getCategoryIdByName($name, $shopId = null)
+    public static function getCategoryIdByName($name)
     {
-        $shopId = E::getShopId($shopId);
-        return QuickPdo::fetch("select id from ek_category where name=:name and shop_id=$shopId", ['name' => $name], \PDO::FETCH_COLUMN);
+        return QuickPdo::fetch("select id from ek_category where name=:name", ['name' => $name], \PDO::FETCH_COLUMN);
     }
 
 
@@ -538,15 +522,13 @@ and cl.lang_id=$langId
      *
      * maxNumber: -1|int, -1 means no limit
      */
-    public function collectProductIdsByCategoryName(array &$ids, $categoryName, $maxNumber = 7, $shopId = null)
+    public function collectProductIdsByCategoryName(array &$ids, $categoryName, $maxNumber = 7)
     {
-
-        $shopId = E::getShopId($shopId);
         $maxNumber = (int)$maxNumber;
 
 
         $catIds = [];
-        $this->collectCategoryIdTreeByCategoryName($catIds, $categoryName, $shopId);
+        $this->collectCategoryIdTreeByCategoryName($catIds, $categoryName);
 
         if ($catIds) {
 
@@ -562,15 +544,12 @@ and cl.lang_id=$langId
 
 
                 $q = "
-select shpc.product_id from ek_shop_has_product_card shpc 
-inner join ek_category_has_product_card chpc on chpc.product_card_id=shpc.product_card_id
+select c.product_id from ek_product_card c 
+inner join ek_category_has_product_card chpc on chpc.product_card_id=c.id
 inner join ek_category c on c.id=chpc.category_id 
 
-where 
-c.id=$catId
-and c.shop_id=$shopId 
-and shpc.active=1
-and shpc.shop_id=$shopId 
+where c.id=$catId
+and c.active=1 
 
 
             
@@ -629,7 +608,7 @@ where category_id in (" . implode(", ", $catIds) . ")
      */
     public function getLeafCategoryIds($shopId = null)
     {
-        EkomApi::inst()->initWebContext();
+
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $topIds = $this->getTopCategoryIds($shopId);
         $ret = [];
@@ -653,7 +632,7 @@ where category_id in (" . implode(", ", $catIds) . ")
     public function insertCategoryByLabel($label, $parentId = null, $shopId = null, $langId = null)
     {
 
-        EkomApi::inst()->initWebContext();
+
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
 
@@ -701,19 +680,14 @@ where category_id in (" . implode(", ", $catIds) . ")
     /**
      * This method return the id of the category and parent categories.
      */
-    public function collectCategoryIdTreeByCategoryId(array &$ids, $categoryId, $shopId = null)
+    public function collectCategoryIdTreeByCategoryId(array &$ids, $categoryId)
     {
-        if (null === $shopId) {
-            $shopId = E::getShopId();
-        }
-
-
         $ids[] = $categoryId;
         $parentCatId = EkomApi::inst()->category()->readColumn("category_id", [
             ["id", "=", $categoryId],
         ]);
         if (null !== $parentCatId) {
-            $this->collectCategoryIdTreeByCategoryId($ids, $parentCatId, $shopId);
+            $this->collectCategoryIdTreeByCategoryId($ids, $parentCatId);
         }
     }
 
@@ -721,20 +695,17 @@ where category_id in (" . implode(", ", $catIds) . ")
     /**
      * This method return the id of the category and parent categories.
      */
-    public function collectCategoryIdTreeByCategoryName(array &$ids, $categoryName, $shopId = null)
+    public function collectCategoryIdTreeByCategoryName(array &$ids, $categoryName)
     {
         $api = EkomApi::inst();
-        if (null === $shopId) {
-            $shopId = E::getShopId();
-        }
 
-        return A::cache()->get("Ekom.CategoryLayer.collectCategoryIdTreeByCategoryName.$shopId.$categoryName", function () use ($api, $shopId, $categoryName, &$ids) {
+        return A::cache()->get("Ekom.CategoryLayer.collectCategoryIdTreeByCategoryName.$categoryName", function () use ($api, $categoryName, &$ids) {
 
             $id = EkomApi::inst()->category()->readColumn("id", [
                 ["name", "=", $categoryName],
             ]);
             if (false !== $id) {
-                $this->collectCategoryIdTreeByCategoryId($ids, $id, $shopId);
+                $this->collectCategoryIdTreeByCategoryId($ids, $id);
             }
         }, [
             'ek_product',
@@ -746,15 +717,9 @@ where category_id in (" . implode(", ", $catIds) . ")
     /**
      * This method return the id of the product's card categories and parent categories.
      */
-    public function getCategoryIdTreeByProductId($productId, $shopId = null, $langId = null)
+    public function getCategoryIdTreeByProductId($productId)
     {
-        $api = EkomApi::inst();
-        $api->initWebContext();
-        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
-        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
-
-
-        return A::cache()->get("Ekom.CategoryLayer.getCategoryIdTreeByProductId.$shopId.$langId.$productId", function () use ($api, $shopId, $langId, $productId) {
+        return A::cache()->get("Ekom.CategoryLayer.getCategoryIdTreeByProductId.$productId", function () use ($productId) {
 
             $ret = [];
             $cardId = EkomApi::inst()->product()->readColumn("product_card_id", [
@@ -766,12 +731,7 @@ where category_id in (" . implode(", ", $catIds) . ")
                 }
             }
             return $ret;
-        }, [
-            'ek_product',
-            // getCategoryTreeByProductCardId
-            'ek_category',
-            'ek_category_lang',
-        ]);
+        });
     }
 
     /**
@@ -803,7 +763,7 @@ where category_id in (" . implode(", ", $catIds) . ")
     public function getIdBySlug($slug)
     {
 
-        EkomApi::inst()->initWebContext();
+
         $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
         $langId = (int)ApplicationRegistry::get("ekom.lang_id");
 
@@ -899,7 +859,6 @@ and l.slug=:slug
      */
     public function getSubCategoriesByName($name, $maxDepth = -1, $wildCard = '', $forceGenerate = false)
     {
-        EkomApi::inst()->initWebContext();
 
 
         return A::cache()->get("Ekom.CategoryLayer.getSubCategoriesByName.$name.$maxDepth.$wildCard", function () use ($maxDepth, $name, $wildCard) {
@@ -958,7 +917,7 @@ order by `order` asc
 
     public function getSubCategoriesBySlug($slug, $maxDepth = -1)
     {
-        EkomApi::inst()->initWebContext();
+
         $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
         $langId = (int)ApplicationRegistry::get("ekom.lang_id");
 
@@ -990,40 +949,33 @@ and cl.slug=:slug
         $categoryId = (int)$categoryId;
         return QuickPdo::fetch("
 select 
-c.id,
-c.name,
-c.category_id,
-c.shop_id,
-cl.label,
-cl.description,
-cl.slug,
-cl.meta_title,
-cl.meta_description,
-cl.meta_keywords
+id,
+`name`,
+category_id,
+label,
+description,
+slug,
+meta_title,
+meta_description,
+meta_keywords
 
 
-from ek_category c 
-inner join ek_category_lang cl on cl.category_id=c.id
-where c.id=$categoryId
+from ek_category  
+where id=$categoryId
 ");
     }
 
 
-    public function getSubCategoriesById($categoryId, $maxDepth = -1, $shopId = null, $langId = null)
+    public function getSubCategoriesById($categoryId, $maxDepth = -1)
     {
-        EkomApi::inst()->initWebContext();
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
         $categoryId = (int)$categoryId;
 
-        return A::cache()->get("Ekom.CategoryLayer.getSubCategoriesById.$shopId.$langId.$categoryId.$maxDepth", function () use ($shopId, $maxDepth, $categoryId, $langId) {
+        return A::cache()->get("Ekom.CategoryLayer.getSubCategoriesById.$categoryId.$maxDepth", function () use ($maxDepth, $categoryId) {
 
             $name = QuickPdo::fetch("select 
 name 
 from ek_category 
-where 
-shop_id=$shopId 
-and id=$categoryId
+where id=$categoryId
 ", [], \PDO::FETCH_COLUMN);
 
 
@@ -1036,17 +988,14 @@ and id=$categoryId
     /**
      * @return array of categories, or false
      */
-    public function getCategoryTreeByProductCardId($cardId, $shopId = null, $langId = null) // might be promoted to public someday
+    public function getCategoryTreeByProductCardId($cardId) // might be promoted to public someday
     {
         $api = EkomApi::inst();
-        $api->initWebContext();
-        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
-        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
 
         /**
          * Get the category of the card for this shop
          */
-        return A::cache()->get("Ekom.CategoryLayer.getCategoryTreeByProductCardId.$shopId.$langId.$cardId", function () use ($api, $shopId, $langId, $cardId) {
+        return A::cache()->get("Ekom.CategoryLayer.getCategoryTreeByProductCardId.$cardId", function () use ($api, $cardId) {
             $categoryId = $api->categoryHasProductCard()->readColumn("category_id", [
                 ["product_card_id", "=", (int)$cardId],
             ]);
@@ -1062,11 +1011,10 @@ and id=$categoryId
 c.id,
 c.name,
 c.category_id,
-l.label,
-l.slug
-from ek_category c 
-inner join ek_category_lang l on l.category_id=c.id
-where c.id=$categoryId and c.category_id!=$categoryId and c.shop_id=$shopId and l.lang_id=$langId        
+c.label,
+c.slug
+from ek_category c
+where c.id=$categoryId and c.category_id!=$categoryId         
         "))) {
                 $categoryId = $parentRow['category_id'];
                 $treeRows[] = $parentRow;
@@ -1157,7 +1105,7 @@ order by `order` asc
 
     private function getTopCategoryIds($shopId = null)
     {
-        EkomApi::inst()->initWebContext();
+
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
 
         /**

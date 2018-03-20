@@ -114,8 +114,6 @@ class EkomModule extends ApplicationModule
                 'ek_shop_has_lang',
                 'ek_shop_has_payment_method',
                 'ek_shop_has_product',
-                'ek_shop_has_product_card',
-                'ek_shop_has_product_card_lang',
                 'ek_shop_has_product_lang',
                 'ek_tax',
                 'ek_tax_group',

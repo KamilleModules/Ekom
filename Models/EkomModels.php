@@ -112,7 +112,7 @@ class EkomModels
      *      - attributes
      *      - attributesSelection, array of selected attribute items, each of which:
      *          - attribute_id
-     *          - name_label
+     *          - attribute_label
      *          - name
      *          - value
      *          - value_id
@@ -168,7 +168,7 @@ class EkomModels
      *      - productDetailsMap
      *      - productDetailsSelection
      *          - name
-     *          - name_label
+     *          - attribute_label
      *          - value
      *          - value_label
      *      - product_id
@@ -498,7 +498,7 @@ class EkomModels
      * - attributesSelection: array of selected attribute item:
      * ----- 0:
      * --------- attribute_id: string
-     * --------- name_label: string
+     * --------- attribute_label: string
      * --------- name: string
      * --------- value: string
      * --------- value_id: string
@@ -554,7 +554,7 @@ class EkomModels
      *              use to identify a product
      * - productDetailsSelection, array of item:
      *      - name
-     *      - name_label
+     *      - attribute_label
      *      - value
      *      - value_label
      * - product_id

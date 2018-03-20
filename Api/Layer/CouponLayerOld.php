@@ -42,7 +42,7 @@ class CouponLayerOld
     public static function getCouponInfo($id, $withCartDiscounts = false)
     {
 
-        EkomApi::inst()->initWebContext();
+
         $shopId = E::getShopId();
         $langId = E::getLangId();
         $iWithCartDiscounts = (int)$withCartDiscounts;
@@ -188,7 +188,7 @@ and l.lang_id=$langId
     public function testCouponConditionsByCode($code, array $data = [], &$errors = [])
     {
 
-        EkomApi::inst()->initWebContext();
+
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $code = FileSystemTool::noEscalating($code);
         $f = ApplicationParameters::get("app_dir") . "/data/Ekom/coupon-conditions/$shopId/$code.php";

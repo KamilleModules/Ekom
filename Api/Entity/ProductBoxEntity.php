@@ -144,9 +144,7 @@ class ProductBoxEntity
         $hash = ProductBoxEntityUtil::getHashByCacheContext($productBoxContext);
         $cardId = $nativeContext["product_card_id"];
         $productId = $nativeContext["product_id"];
-        $shopId = $productBoxContext['shop_id']; // exists by definition in ekom
-        $langId = $productBoxContext['lang_id'];
-        $cacheId = "Ekom/figure/productBox-$shopId-$langId-$cardId-$productId--$hash";
+        $cacheId = "Ekom/figure/productBox-$cardId-$productId--$hash";
 
 
         //--------------------------------------------
@@ -368,12 +366,10 @@ class ProductBoxEntity
         //
         $productId = $productBoxContext["product_id"];
         $cardId = (int)$productBoxContext["product_card_id"];
-        $shopId = E::getShopId($productBoxContext["shop_id"]);
-        $langId = E::getLangId($productBoxContext["lang_id"]);
         $productDetails = $productBoxContext["product_details"];
 
 
-        if (false !== ($row = ProductBoxEntityUtil::getProductCardInfoByCardId($cardId, $shopId, $langId))) {
+        if (false !== ($row = ProductBoxEntityUtil::getProductCardInfoByCardId($cardId))) {
 
             if ('1' === $row['active']) {
 
@@ -382,7 +378,7 @@ class ProductBoxEntity
                 /**
                  * Take the list of attributes
                  */
-                $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($cardId, $shopId, $langId);
+                $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($cardId);
 
                 if (count($productsInfo) > 0) {
 
@@ -436,29 +432,17 @@ class ProductBoxEntity
                     }
 
 
-                    if ('' !== $p['label']) {
-                        $label = $p['label'];
-                    } elseif ("" !== $row['label']) {
-                        $label = $row['label'];
-                    } else {
-                        $label = ("" !== $p['default_label']) ? $p['default_label'] : $row['default_label'];
-                    }
 
-
-                    if ('' !== $p['description']) {
-                        $description = $p['description'];
-                    } elseif ("" !== $row['description']) {
-                        $description = $row['description'];
-                    } else {
-                        $description = ("" !== $p['default_description']) ? $p['default_description'] : $row['default_description'];
-                    }
+                    $label = ('' !== $p['label']) ? $p['label'] : $row['label'];
+                    $description = ('' !== $p['description']) ? $p['description'] : $row['description'];
 
 
                     //--------------------------------------------
                     // BASE INFO
                     //--------------------------------------------
                     $productReference = $p['reference'];
-                    $cardSlug = ("" !== $row['slug']) ? $row['slug'] : $row['default_slug'];
+                    $cardSlug = $row['slug'];
+
                     $cardUri = E::link("Ekom_productCardRef", [
                         'slug' => $cardSlug,
                         'ref' => $productReference,
@@ -468,9 +452,9 @@ class ProductBoxEntity
                     //--------------------------------------------
                     // META
                     //--------------------------------------------
-                    $metaTitle = $this->getMetaTitle($p, $row, $label);
-                    $metaDescription = $this->getMetaDescription($p, $row, $label, $description);
-                    $metaKeywords = $this->getMetaKeywords($p, $row, $label, $description);
+                    $metaTitle = ('' !== $p['meta_title']) ? $p['meta_title'] : $row['meta_title'];
+                    $metaDescription = ('' !== $p['meta_description']) ? $p['meta_description'] : $row['meta_description'];
+                    $metaKeywords = ('' !== $p['meta_keywords']) ? $p['meta_keywords'] : $row['meta_keywords'];
 
 
                     //--------------------------------------------
@@ -497,7 +481,7 @@ class ProductBoxEntity
                     //--------------------------------------------
                     // RATING
                     //--------------------------------------------
-                    $ratingInfo = $api->commentLayer()->getRatingInfo($cardId, $shopId);
+                    $ratingInfo = $api->commentLayer()->getRatingInfo($cardId);
 
 
                     //--------------------------------------------
@@ -514,13 +498,13 @@ class ProductBoxEntity
                     //--------------------------------------------
                     // TAXES AND BASE PRICE
                     //--------------------------------------------
-                    $taxGroup = TaxLayer::getTaxGroupInfoByCardId($cardId, $shopId, $langId);
+                    $taxGroup = TaxLayer::getTaxGroupInfoByCardId($cardId);
 
 
                     //--------------------------------------------
                     // DISCOUNT
                     //--------------------------------------------
-                    $discount = $api->discountLayer()->getApplicableDiscountByProductId($p['product_id'], $shopId, $langId);
+                    $discount = $api->discountLayer()->getApplicableDiscountByProductId($p['product_id']);
                     /**
                      * Reminder: for now, only one discount per product is applied.
                      */
@@ -606,7 +590,7 @@ class ProductBoxEntity
                          * The product details representing the current state of the box.
                          * This must be fed by modules, each item contains the following:
                          * - name
-                         * - name_label
+                         * - attribute_label
                          * - value
                          * - value_label
                          */

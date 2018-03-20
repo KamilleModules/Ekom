@@ -69,16 +69,13 @@ select id, amount from ek_tax order by id asc
     }
 
 
-    public static function getTaxGroupInfoByName($name, $shopId = null, $langId = null)
+    public static function getTaxGroupInfoByName($name)
     {
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
-
-        return A::cache()->get("Ekom.TaxLayer.getTaxGroupInfoByName-$shopId.$langId.$name", function () use ($shopId, $langId, $name) {
+        return A::cache()->get("Ekom.TaxLayer.getTaxGroupInfoByName-$name", function () use ($name) {
 
             $rows = QuickPdo::fetchAll("
 select 
-l.label,
+t.label,
 t.id as tax_id,
 t.amount,
 h.order,
@@ -87,15 +84,11 @@ g.id as group_id,
 g.name as group_name,
 g.label as group_label
 
-from 
-ek_tax_lang l
-inner join ek_tax t on t.id=l.tax_id
+from ek_tax t
 inner join ek_tax_group_has_tax h on h.tax_id=t.id
 inner join ek_tax_group g on g.id=h.tax_group_id
 
-where l.lang_id=$langId
-and g.shop_id=$shopId
-and g.name=:name
+where g.name=:name
         
 order by h.order asc
         
@@ -112,18 +105,15 @@ order by h.order asc
      * Return the taxGroup model for the given cardId, or false array if the card
      * is not bound to any tax group.
      */
-    public static function getTaxGroupInfoByCardId($cardId, $shopId = null, $langId = null)
+    public static function getTaxGroupInfoByCardId($cardId)
     {
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
-
         $cardId = (int)$cardId;
 
-        return A::cache()->get("Ekom.TaxLayer.getTaxesByCardId-$shopId.$langId.$cardId", function () use ($shopId, $langId, $cardId) {
+        return A::cache()->get("Ekom.TaxLayer.getTaxesByCardId-$cardId", function () use ($cardId) {
 
             $rows = QuickPdo::fetchAll("
 select 
-l.label,
+t.label,
 t.id as tax_id,
 t.amount,
 h.order,
@@ -132,17 +122,12 @@ g.id as group_id,
 g.name as group_name,
 g.label as group_label
 
-from 
-ek_tax_lang l
-inner join ek_tax t on t.id=l.tax_id
+from ek_tax t 
 inner join ek_tax_group_has_tax h on h.tax_id=t.id
 inner join ek_tax_group g on g.id=h.tax_group_id
-inner join ek_shop_has_product_card hh on hh.shop_id=g.shop_id and hh.tax_group_id=g.id
+inner join ek_product_card c on c.tax_group_id=g.id
 
-where l.lang_id=$langId
-and g.shop_id=$shopId
-and hh.product_card_id=$cardId
-        
+where c.id=$cardId
 order by h.order asc
         
         ");
@@ -212,16 +197,14 @@ order by h.order asc
     /**
      * @return array of taxItem
      */
-    public function getTaxesByTaxGroupName($taxGroupName, $shopId = null, $langId = null)
+    public function getTaxesByTaxGroupName($taxGroupName)
     {
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
 
-        return A::cache()->get("Module.Ekom.Api.Layer.TaxLayer.getTaxesByTaxGroupName.$shopId.$langId.$taxGroupName", function () use ($shopId, $langId, $taxGroupName) {
+        return A::cache()->get("Module.Ekom.Api.Layer.TaxLayer.getTaxesByTaxGroupName.$taxGroupName", function () use ($taxGroupName) {
 
             return QuickPdo::fetchAll("
 select 
-l.label,
+t.label,
 t.id as tax_id,
 t.amount,
 h.order,
@@ -229,26 +212,18 @@ h.mode,
 g.label as group_label,
 g.condition
 
-from 
-ek_tax_lang l
-inner join ek_tax t on t.id=l.tax_id
+from ek_tax t 
 inner join ek_tax_group_has_tax h on h.tax_id=t.id
 inner join ek_tax_group g on g.id=h.tax_group_id
 
-where l.lang_id=$langId
-and g.shop_id=$shopId
-and g.name=:name
+where g.name=:name
         
 order by h.order asc
         
         ", [
                 'name' => $taxGroupName,
             ]);
-        }, [
-            "ek_tax",
-            "ek_tax_group_has_tax",
-            "ek_tax_group",
-        ]);
+        });
     }
 
 

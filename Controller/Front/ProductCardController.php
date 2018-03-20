@@ -32,7 +32,7 @@ class ProductCardController extends EkomFrontController
 //    public function render()
 //    {
 //
-//        EkomApi::inst()->initWebContext();
+//
 //
 //
 //        if (null !== ($slug = Z::getUrlParam('slug'))) {

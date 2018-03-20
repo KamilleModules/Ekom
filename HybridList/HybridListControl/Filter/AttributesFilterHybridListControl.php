@@ -32,7 +32,7 @@ class AttributesFilterHybridListControl extends HybridListControl implements Sum
         $this->_alreadyReacted = false;
         $categoryId = $context['category_id'];
         $pool = $list->getListParameters();
-        $this->attrNames = AttributeLayer::getAttributeNamesByShopId();
+        $this->attrNames = AttributeLayer::getAttributeNames();
 
 
         //--------------------------------------------
@@ -60,7 +60,7 @@ class AttributesFilterHybridListControl extends HybridListControl implements Sum
     {
         foreach ($this->attributes as $info) {
             if ($param === $info['name'] && $value === $info['value']) {
-                return $info["name_label"] . ": " . $info['value_label'];
+                return $info["attribute_label"] . ": " . $info['value_label'];
             }
         }
     }
@@ -179,7 +179,7 @@ inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id
 
             if (!array_key_exists($name, $model)) {
                 $model[$name] = [
-                    'title' => $attr['name_label'],
+                    'title' => $attr['attribute_label'],
                     'type' => "items",
                     'items' => [],
                 ];

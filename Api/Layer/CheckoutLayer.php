@@ -344,7 +344,7 @@ class CheckoutLayer
         $checkoutMode = E::conf("checkoutMode");
         if ('singleAddress' === $checkoutMode) {
 
-            EkomApi::inst()->initWebContext();
+            
 
             $userId = EkomApi::inst()->userLayer()->getUserId();
             $model = $this->getOrderModel();

@@ -64,7 +64,7 @@ from ek_product_comment where user_id=$userId
             $userId = E::getUserId();
         }
         if (null === $shopId) {
-            EkomApi::inst()->initWebContext();
+
             $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
         }
 
@@ -159,7 +159,7 @@ from ek_product_comment where user_id=$userId
     }
 
 
-    public function getCommentsByProductId($productId, $shopId = null, array $options = [])
+    public function getCommentsByProductId($productId, array $options = [])
     {
 
         $options = array_replace([
@@ -169,7 +169,6 @@ from ek_product_comment where user_id=$userId
         ], $options);
 
         $productId = (int)$productId;
-        $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
 
         $allowedSorts = [
             'date' => 'c.date',
@@ -206,8 +205,7 @@ u.pseudo
 from ek_product_comment c 
 inner join ek_user u on u.id=c.user_id
 where 
-c.shop_id=$shopId
-and c.product_id=$productId
+c.product_id=$productId
 and c.active=1
 ")
             ->getRows();

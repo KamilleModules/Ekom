@@ -129,7 +129,7 @@ class ItemsDescriptionRenderer extends BaseRenderer
             <?php if ($item['attributesSelection']): ?>
                 <?php foreach ($item['attributesSelection'] as $attrItem): ?>
                     <div class="product-property">
-                        <span class="name"><?php echo $attrItem['name_label']; ?>:</span>
+                        <span class="name"><?php echo $attrItem['attribute_label']; ?>:</span>
                         <span class="value"><?php echo $attrItem['value_label']; ?></span>
                     </div>
                 <?php endforeach; ?>
@@ -137,7 +137,7 @@ class ItemsDescriptionRenderer extends BaseRenderer
             <?php if ($item['productDetailsSelection']): ?>
                 <?php foreach ($item['productDetailsSelection'] as $detailItem): ?>
                     <div class="product-property">
-                        <span class="name"><?php echo $detailItem['name_label']; ?>:</span>
+                        <span class="name"><?php echo $detailItem['attribute_label']; ?>:</span>
                         <span class="value"><?php echo $detailItem['value_label']; ?></span>
                     </div>
                 <?php endforeach; ?>

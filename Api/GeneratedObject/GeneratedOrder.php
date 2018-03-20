@@ -37,8 +37,6 @@ class GeneratedOrder extends TableCrudObject
 			'amount' => '',
 			'coupon_saving' => '',
 			'cart_quantity' => 0,
-			'currency_iso_code' => '',
-			'lang_iso_code' => '',
 			'shipping_country_iso_code' => '',
 			'payment_method' => '',
 			'payment_method_extra' => '',

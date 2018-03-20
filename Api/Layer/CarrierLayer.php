@@ -35,9 +35,9 @@ class CarrierLayer
      * @return CarrierInterface[] (id => instance)
      * @throws \Exception
      */
-    public static function getCarrierInstancesByShop($shopId)
+    public static function getCarrierInstances()
     {
-        $rows = self::getCarriers($shopId);
+        $rows = self::getCarriers();
         $ret = [];
         /**
          * @var $coll CarrierCollection
@@ -60,10 +60,10 @@ class CarrierLayer
      * @return CarrierInterface
      * @throws EkomException
      */
-    public static function getCarrierInstanceById($carrierId, $shopId = null)
+    public static function getCarrierInstanceById($carrierId)
     {
         $carrierId = (int)$carrierId;
-        $rows = self::getCarriers($shopId);
+        $rows = self::getCarriers();
         /**
          * If the user SELECTED (in the checkout) a carrier, use this carrier
          */
@@ -83,19 +83,14 @@ class CarrierLayer
      * @param $shopId
      * @return array of carrier id => name
      */
-    public static function getCarriers($shopId = null)
+    public static function getCarriers()
     {
-        $shopId = E::getShopId($shopId);
-        return A::cache()->get("Ekom.CarrierLayer.getCarriers.$shopId", function () use ($shopId) {
+        return A::cache()->get("Ekom.CarrierLayer.getCarriers", function () {
             return QuickPdo::fetchAll("
 select c.id, c.name 
         
 from ek_carrier c 
-inner join ek_shop_has_carrier h on h.carrier_id=c.id
- 
-where h.shop_id=$shopId         
-
-order by h.priority asc        
+order by c.priority asc        
         
         ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
 
@@ -115,15 +110,15 @@ order by `name` asc
     }
 
 
-    public static function getShopDefaultCarrierId($shopId)
+    public static function getShopDefaultCarrierId()
     {
-        $carriers = self::getCarriers($shopId);
+        $carriers = self::getCarriers();
         if ($carriers) {
             foreach ($carriers as $id => $name) {
                 return $id;
             }
         }
-        throw new EkomException("The shop $shopId doesn't have any default carrier");
+        throw new EkomException("This shop doesn't have any carrier yet");
     }
 
     /**
@@ -212,7 +207,7 @@ order by `name` asc
         /**
          * We have to deal with the carriers choices that the shop has made
          */
-        EkomApi::inst()->initWebContext();
+        
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $rows = self::getCarriers($shopId);
 
@@ -265,7 +260,7 @@ order by `name` asc
     public function getAllCarriersShippingCost(array $productInfos, array $shippingAddress)
     {
         $shopId = E::getShopId();
-        $carriers = $this->getCarrierInstancesByShop($shopId);
+        $carriers = $this->getCarrierInstances($shopId);
         $shopAddress = EkomApi::inst()->shopLayer()->getShopPhysicalAddress();
         if (false === $shopAddress) {
             $msg = "[Ekom module] - CarrierLayer.getAllCarriersShippingCost: ekom config error, shop address is not defined";

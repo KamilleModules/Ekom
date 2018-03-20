@@ -136,7 +136,7 @@ class EOld
         if (null !== $shopId) {
             return (int)$shopId;
         }
-        EkomApi::inst()->initWebContext();
+        
         return (int)ApplicationRegistry::get("ekom.shop_id");
     }
 
@@ -145,7 +145,7 @@ class EOld
         if (null !== $langId) {
             return (int)$langId;
         }
-        EkomApi::inst()->initWebContext();
+        
         return (int)ApplicationRegistry::get("ekom.lang_id");
     }
 
@@ -154,19 +154,19 @@ class EOld
         if (null !== $currencyId) {
             return (int)$currencyId;
         }
-        EkomApi::inst()->initWebContext();
+        
         return (int)ApplicationRegistry::get("ekom.currency_id");
     }
 
     public static function getCurrencyIso()
     {
-        EkomApi::inst()->initWebContext();
+        
         return ApplicationRegistry::get("ekom.currency_iso");
     }
 
     public static function getLangIso()
     {
-        EkomApi::inst()->initWebContext();
+        
         return ApplicationRegistry::get("ekom.lang_iso");
     }
 
@@ -406,7 +406,7 @@ class EOld
     public static function conf($key, $default = null)
     {
 
-        EkomApi::inst()->initWebContext();
+        
         if (null === self::$conf) {
             self::$conf = [];
 

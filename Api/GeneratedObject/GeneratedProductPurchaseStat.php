@@ -33,7 +33,6 @@ class GeneratedProductPurchaseStat extends TableCrudObject
 			'id' => null,
 			'purchase_date' => '',
 			'user_id' => 0,
-			'currency_id' => 0,
 			'product_id' => 0,
 			'product_ref' => '',
 			'product_label' => '',

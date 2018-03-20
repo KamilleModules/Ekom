@@ -46,11 +46,10 @@ class DynamicProductListModel
             if (false !== ($info = CategoryLayer::getInfoBySlug($categorySlug))) {
 
                 $categoryId = $info['id'];
-                $shopId = $info['shop_id'];
+
 
                 $return = [];
-                $hybridList = HybridListFactory::getCategoryHybridList($categoryId, $pool, $return, $shopId);
-
+                $hybridList = HybridListFactory::getCategoryHybridList($categoryId, $pool, $return);
 
                 $info = $hybridList->execute();
 //                az(__FILE__, $sqlRequest->getSqlRequest());

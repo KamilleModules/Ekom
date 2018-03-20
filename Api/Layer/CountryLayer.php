@@ -22,42 +22,27 @@ select id, iso_code from ek_country order by iso_code asc
     }
 
 
-
     /**
      * return useful list for feeding html select tags
      */
-    public function getCountryList($langId = null, $isoCodeAsKey = false)
+    public function getCountryList($isoCodeAsKey = false)
     {
-        EkomApi::inst()->initWebContext();
-        $langId = (null === $langId) ? (int)ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
         $isoCodeAsKey = (int)$isoCodeAsKey;
-        return A::cache()->get("Ekom.CountryLayer.getCountryList.$langId.$isoCodeAsKey", function () use ($langId, $isoCodeAsKey) {
+        return A::cache()->get("Ekom.CountryLayer.getCountryList.$isoCodeAsKey", function () use ($isoCodeAsKey) {
 
 
+            $field = "iso_code";
             if (0 === $isoCodeAsKey) {
-                return EkomApi::inst()->countryLang()->readKeyValues("country_id", "label", [
-                    "where" => [
-                        ["lang_id", "=", $langId],
-                    ],
-                    "order" => [
-                        "label" => "asc",
-                    ],
-                ]);
-            } else {
-                return QuickPdo::fetchAll("
-select 
-c.iso_code,
-cl.label 
-from ek_country_lang cl 
-inner join ek_country c on c.id=cl.country_id  
-where cl.lang_id=$langId
-order by cl.label asc
-", [], \PDO::FETCH_UNIQUE | \PDO::FETCH_COLUMN);
+                $field = "id";
             }
-        }, [
-            "ek_country",
-            "ek_country_lang",
-        ]);
+            return QuickPdo::fetchAll("
+select 
+iso_code,
+label 
+from ek_country c   
+order by label asc
+", [], \PDO::FETCH_UNIQUE | \PDO::FETCH_COLUMN);
+        });
     }
 
 

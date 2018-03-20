@@ -124,9 +124,6 @@ class CheckoutProcess implements CheckoutProcessInterface
     {
 
         $this->initSteps(); // put steps in the order defined by position
-
-        $shopId = E::getShopId($this->shopId);
-        $langId = E::getLangId($this->langId);
         $currencyId = E::getCurrencyId($this->currencyId);
 
         $this->debug("CheckoutProcess:execute");
@@ -136,9 +133,6 @@ class CheckoutProcess implements CheckoutProcessInterface
                 $context = array_replace($_GET, $_POST, $_FILES);
             }
 
-            $context['shop_id'] = $shopId;
-            $context['lang_id'] = $langId;
-            $context['currency_id'] = $currencyId;
 
             $this->debug("Context: " . ArrayToStringTool::toPhpArray($context));
 

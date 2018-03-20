@@ -54,12 +54,12 @@ class ProductSelectionLayer
         ]);
     }
 
-    public function getBoxesByIds(array $ids, $shopId)
+    public function getBoxesByIds(array $ids)
     {
         $ret = [];
         $pLayer = EkomApi::inst()->productLayer();
         foreach ($ids as $id) {
-            $ret[] = $pLayer->getProductBoxModelByProductId($id, $shopId);
+            $ret[] = $pLayer->getProductBoxModelByProductId($id);
         }
         return $ret;
     }

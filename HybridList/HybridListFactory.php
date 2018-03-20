@@ -124,18 +124,13 @@ class HybridListFactory
      * @return HybridListInterface
      * @throws \Exception
      */
-    public static function getCategoryHybridList($categoryId, array $pool, array &$return = null, $shopId = null)
+    public static function getCategoryHybridList($categoryId, array $pool, array &$return = null)
     {
 
-        $shopId = E::getShopId($shopId);
-
         ApplicationRegistry::set("ekom.categoryId", $categoryId);
-
         $cardIds = ProductCardLayer::getProductCardIdsByCategoryId($categoryId);
 
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext([
-            'shop_id' => $shopId,
-        ]);
+        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext();
         $unfilteredBoxes = []; // required by some filters/sort HybridListControl
         foreach ($cardIds as $cardId) {
             $box = ProductBoxLayer::getProductBoxByCardId($cardId, null, [], $gpc);
@@ -143,6 +138,7 @@ class HybridListFactory
                 $unfilteredBoxes[$cardId] = ProductBoxLayer::getProductBoxByCardId($cardId);
             }
         }
+
         $sIds = implode(', ', $cardIds);
         //--------------------------------------------
         // HYBRID LIST
@@ -158,14 +154,12 @@ class HybridListFactory
                     ->addJoin("
 inner join ek_category c on c.id=chpc.category_id                            
 inner join ek_product p on p.product_card_id=chpc.product_card_id   
-inner join ek_shop_has_product_card shpc on shpc.shop_id=c.shop_id and shpc.product_card_id=p.product_card_id
-inner join ek_shop_has_product shp on shp.shop_id=c.shop_id and shp.product_id=p.id             
+inner join ek_product_card card on card.id=chpc.product_card_id   
                     ")
                     ->addWhere("
-$sSql
-and c.shop_id=$shopId             
-and shpc.active=1               
-and shp.active=1               
+$sSql 
+and card.active=1               
+and p.active=1               
                             ")
                 ));
 
@@ -193,7 +187,6 @@ and shp.active=1
             'unfilteredBoxes' => $unfilteredBoxes,
             'pool' => $pool,
             'summaryFilterControl' => $summaryFilterControl,
-            'shop_id' => $shopId,
         ];
         $hybridList->setControlsContext($context);
 

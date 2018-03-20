@@ -85,7 +85,7 @@ class CreateAccountController extends EkomFrontController
                     ], $model)
                 ) {
 
-                    EkomApi::inst()->initWebContext();
+                    
                     try {
 
 

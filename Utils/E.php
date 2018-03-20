@@ -150,31 +150,6 @@ class E
         return CaseTool::toDog($word);
     }
 
-    public static function getShopId($shopId = null)
-    {
-        if (null !== $shopId) {
-            return (int)$shopId;
-        }
-        if (false === E::isBackOffice()) {
-            EkomApi::inst()->initWebContext();
-            return (int)ApplicationRegistry::get("ekom.shop_id");
-        } else {
-            return EkomNullosUser::getEkomValue("shop_id");
-        }
-    }
-
-    public static function getLangId($langId = null)
-    {
-        if (null !== $langId) {
-            return (int)$langId;
-        }
-        if (false === E::isBackOffice()) {
-            EkomApi::inst()->initWebContext();
-            return (int)ApplicationRegistry::get("ekom.lang_id");
-        } else {
-            return EkomNullosUser::getEkomValue("lang_id");
-        }
-    }
 
     public static function getCurrencyId($currencyId = null)
     {
@@ -182,7 +157,7 @@ class E
             return (int)$currencyId;
         }
         if (false === E::isBackOffice()) {
-            EkomApi::inst()->initWebContext();
+
             return (int)ApplicationRegistry::get("ekom.currency_id");
         } else {
             return EkomNullosUser::getEkomValue("currency_id");
@@ -192,7 +167,7 @@ class E
     public static function getCurrencyIso()
     {
         if (false === E::isBackOffice()) {
-            EkomApi::inst()->initWebContext();
+
             return ApplicationRegistry::get("ekom.currency_iso");
         } else {
             return EkomNullosUser::getEkomValue("currency_iso_code");
@@ -202,7 +177,7 @@ class E
     public static function getLangIso()
     {
         if (false === E::isBackOffice()) {
-            EkomApi::inst()->initWebContext();
+
             return ApplicationRegistry::get("ekom.lang_iso");
         } else {
             return EkomNullosUser::getEkomValue("lang_iso_code");
@@ -373,11 +348,17 @@ class E
      */
     public static function price($number, $convertPrice = true)
     {
-        if (true === $convertPrice) {
-            $number = self::priceRealValue($number);
-        }
         $moneyFormatArgs = self::conf("moneyFormatArgs");
         return self::formatPrice($number, $moneyFormatArgs);
+    }
+
+
+    /**
+     * $currencyIsoCode: the currency iso code in which the price is defined
+     */
+    public static function priceFlat($number, $currencyIsoCode)
+    {
+        return number_format($number, 2, 2, " ") . " $currencyIsoCode";
     }
 
 
@@ -416,41 +397,14 @@ class E
     public static function conf($key, $default = null)
     {
 
-        EkomApi::inst()->initWebContext();
+
         if (null === self::$conf) {
-            self::$conf = [];
-
-            $host = ApplicationRegistry::get('ekom.host');
-            $ciso = strtolower(ApplicationRegistry::get('ekom.currency_iso'));
-            $shopId = ApplicationRegistry::get("ekom.shop_id");
-
-            // host contextual file
-            $f = ApplicationParameters::get("app_dir") . "/config/modules/Ekom/shop/$shopId.conf.php";
-            if (file_exists($f)) {
-                $conf = [];
-                include $f;
-                self::$conf = $conf;
-
-            } else {
-                $shopId = ApplicationRegistry::get("ekom.shop_id");
-                XLog::error("[Ekom module] - E: host contextual file not found: $f, for shop $shopId");
-            }
-
-            // host-currency contextual file
-            $f = ApplicationParameters::get("app_dir") . "/config/modules/Ekom/shop/$shopId/currency/$ciso.conf.php";
-            if (file_exists($f)) {
-                $conf = [];
-                include $f;
-                self::$conf = array_merge(self::$conf, $conf);
-
-            } else {
-                $shopId = ApplicationRegistry::get("ekom.shop_id");
-                XLog::error("[Ekom module] - E: host-currency contextual file not found: $f, for shop $shopId");
-            }
-
-            Hooks::call("Ekom_adaptContextualConfig", self::$conf);
-
-
+            self::$conf = [
+                'moneyFormatArgs' => XConfig::get("Ekom.moneyFormatArgs"),
+                'acceptOutOfStockOrders' => XConfig::get("Ekom.acceptOutOfStockOrders"),
+                'sessionTimeout' => XConfig::get("Ekom.sessionTimeout"),
+            ];
+//            Hooks::call("Ekom_adaptContextualConfig", self::$conf);
         }
 
 
@@ -519,14 +473,4 @@ class E
         return $ret;
     }
 
-    private static function priceRealValue($number)
-    {
-        if (E::isBackOffice()) {
-            $rate = EkomNullosUser::getEkomValue("currency_exchange_rate");
-        } else {
-            $rate = 1;
-            XLog::error("not implemented yet: exchange rate in front");
-        }
-        return round($number * $rate, 2);
-    }
 }

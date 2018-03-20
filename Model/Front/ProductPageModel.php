@@ -116,7 +116,7 @@ class ProductPageModel
             'sort' => $sort,
             'sort-dir' => $sortDir,
         ];
-        $comments = EkomApi::inst()->productCommentLayer()->getCommentsByProductId($head['product_id'], null, $options);
+        $comments = EkomApi::inst()->productCommentLayer()->getCommentsByProductId($head['product_id'], $options);
         $hash = "widget-product-comments";
 
         $nbComments = count($comments);

@@ -139,14 +139,7 @@ class HooksHelper
 
     public static function Ekom_ProductBox_collectGeneralContext(array &$data)
     {
-        $data["shop_id"] = E::getShopId();
-        $data["lang_id"] = E::getLangId();
-
-        /**
-         * @todo-ling: implement currency change in ekom !!
-         */
         $data["date"] = date('Y-m-d');
-        $data["currency_id"] = ApplicationRegistry::get("ekom.currency_id");
     }
 
 

@@ -14,10 +14,8 @@ class CommentLayer
 {
 
 
-    public function getRatingInfo($cardId, $shopId = null)
+    public function getRatingInfo($cardId)
     {
-        EkomApi::inst()->initWebContext();
-        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
 
         $cardId = (int)$cardId;
         $ids = QuickPdo::fetchAll("select id from ek_product where product_card_id=$cardId", [], \PDO::FETCH_COLUMN);
@@ -31,8 +29,7 @@ count(*) as count,
 avg(rating) as average
 from ek_product_comment 
 where 
-shop_id=$shopId            
-and product_id in ($sIds)
+product_id in ($sIds)
 and active=1
             
             
@@ -45,12 +42,11 @@ and active=1
     }
 
 
-    public function getProductCommentInfo($shopId = null)
+    public function getProductCommentInfo()
     {
 
-        $shopId = E::getShopId($shopId);
 
-        return A::cache()->get("Ekom.CommentLayer.getProductCommentInfo.$shopId", function () use ($shopId) {
+        return A::cache()->get("Ekom.CommentLayer.getProductCommentInfo", function ()  {
             return QuickPdo::fetchAll("
 select 
 
@@ -60,9 +56,6 @@ sum(rating) as sum,
 avg(rating) as average
 
 from ek_product_comment
-where 
-
-shop_id=$shopId
 
 group by product_id
         ");

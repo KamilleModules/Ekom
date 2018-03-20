@@ -23,7 +23,7 @@ class ProductCardLayerOld
      */
     public function getProductCardIdsByShop($shopId = null)
     {
-        EkomApi::inst()->initWebContext();
+        
         $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
 
         return QuickPdo::fetchAll("
@@ -35,7 +35,7 @@ where shop_id=$shopId
 
     public function getProductCardsByCategory($categoryId, $isB2b, ListModifierCircle $circle = null, $shopId = null, $langId = null, &$nbTotalItems = 0)
     {
-        EkomApi::inst()->initWebContext();
+        
         $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $langId = (null === $langId) ? (int)ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
         $categoryId = (int)$categoryId;
@@ -251,7 +251,7 @@ $sTheOrder
 
     public function setTaxGroup($cardId, $taxGroupId, $shopId = null)
     {
-        EkomApi::inst()->initWebContext();
+        
         $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         EkomApi::inst()->productCardHasTaxGroup()->create([
             "shop_id" => $shopId,

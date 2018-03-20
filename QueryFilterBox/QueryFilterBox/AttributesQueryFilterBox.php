@@ -54,7 +54,7 @@ class AttributesQueryFilterBox extends QueryFilterBox implements CollectableInte
         foreach ($this->_attributes as $info) {
             if ($param === $info['name'] && $value === $info['value']) {
                 return [
-                    'keyLabel' => $info['name_label'],
+                    'keyLabel' => $info['attribute_label'],
                     'valueLabel' => $info['value_label'],
                 ];
             }
@@ -85,7 +85,7 @@ class AttributesQueryFilterBox extends QueryFilterBox implements CollectableInte
 
             if (!array_key_exists($name, $model)) {
                 $model[$name] = [
-                    'title' => $attr['name_label'],
+                    'title' => $attr['attribute_label'],
                     'type' => "items",
                     'items' => [],
                 ];

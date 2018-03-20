@@ -100,7 +100,7 @@ order by `date` desc
     {
 
         if (null === $userId) {
-            EkomApi::inst()->initWebContext();
+
             $userId = E::getUserId();
         }
         $userId = (int)$userId;
@@ -189,7 +189,7 @@ order by `date` desc
     public static function getNbUserWishItems($userId = null, $type = 'current')
     {
         if (null === $userId) {
-            EkomApi::inst()->initWebContext();
+
             $userId = E::getUserId(null);
             if (null === $userId) {
                 return 0;

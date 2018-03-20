@@ -113,10 +113,9 @@ class UserAddressSokoForm
     //--------------------------------------------
     //
     //--------------------------------------------
-    private static function getCountryChoices($langId = null)
+    private static function getCountryChoices()
     {
-        $langId = E::getLangId($langId);
-        $list = EkomApi::inst()->countryLayer()->getCountryList($langId);
+        $list = EkomApi::inst()->countryLayer()->getCountryList();
         array_unshift($list, "Veuillez choisir un pays");
         return $list;
     }

@@ -26,7 +26,7 @@ class AttributeListModel implements \Iterator
     {
 
         if (null === $langId) {
-            EkomApi::inst()->initWebContext();
+
             $langId = ApplicationRegistry::get("ekom.lang_id");
         }
 
@@ -36,7 +36,7 @@ select
 
 a.id as name_id,
 a.name,
-al.name as name_label,
+al.name as attribute_label,
 
 v.id as value_id,
 v.value,
@@ -64,7 +64,7 @@ order by h.order asc
                 AttributeModel::create()
                     ->setNameId($row['name_id'])
                     ->setName($row['name'])
-                    ->setNameLabel($row['name_label'])
+                    ->setNameLabel($row['attribute_label'])
                     //
                     ->setValueId($row['value_id'])
                     ->setValue($row['value'])

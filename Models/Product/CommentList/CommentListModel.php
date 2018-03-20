@@ -20,7 +20,7 @@ class CommentListModel implements \Iterator
     {
         $productId = (int)$productId;
         if (null === $shopId) {
-            EkomApi::inst()->initWebContext();
+
             $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
         }
         $rows = QuickPdo::fetchAll("select id from ek_product_comment where 

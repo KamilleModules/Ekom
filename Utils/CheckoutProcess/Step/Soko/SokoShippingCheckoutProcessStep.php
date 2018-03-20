@@ -23,16 +23,12 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
 
 
     private $response;
-    private $shopId;
-    private $langId;
     private $firstAddressForm;
 
     public function __construct()
     {
         parent::__construct();
         $this->response = null;
-        $this->shopId = null;
-        $this->langId = null;
         $this->firstAddressForm = null;
 
     }
@@ -40,10 +36,6 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
 
     public function isPostedSuccessfully(CheckoutProcessInterface $cp, array $context)
     {
-        $this->shopId = $context['shop_id'];
-        $this->langId = $context['lang_id'];
-
-
         /**
          * If the firstAddress form is posted, we treat it.
          * Note however that it doesn't influence whether or not the shippingStep isPostedSuccessfully
@@ -104,7 +96,7 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
         if (true === E::userIsConnected()) {
 
             $userId = E::getUserId();
-            $addresses = UserAddressLayer::getUserAddresses($userId, $this->langId);
+            $addresses = UserAddressLayer::getUserAddresses($userId);
 
             $ret = [];
             $hasAddress = (count($addresses) > 0);
@@ -114,9 +106,9 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                 $billing_synced_with_shipping = (bool)CurrentCheckoutData::get("billing_synced_with_shipping", false);
                 $shippingComments = CurrentCheckoutData::get("shipping_comments", "");
 
-                $carrierOffers = CartUtil::getCarrierOffers($this->shopId, $this->langId);
+                $carrierOffers = CartUtil::getCarrierOffers();
                 if (0 === count($carrierOffers)) {
-                    throw new EkomUserMessageException("No carrier offer for this app, with shopId=" . $this->shopId . " and langId=" . $this->langId);
+                    throw new EkomUserMessageException("No carrier offer for this app");
                 }
                 $ret['carrierOffers'] = $carrierOffers;
                 /**
@@ -137,21 +129,21 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                 //
                 $selectedShopAddressId = CurrentCheckoutData::getShopAddressId();
                 if (null === $selectedShopAddressId) {
-                    $selectedShopAddress = ShopLayer::getDefaultShopAddress($this->langId);
+                    $selectedShopAddress = ShopLayer::getDefaultShopAddress();
                     $selectedShopAddressId = $selectedShopAddress['id'];
                 }
 
                 // which one is selected in the gui?
                 $selectedAddressId = CurrentCheckoutData::getShippingAddressId();
                 if (null === $selectedAddressId) {
-                    $selectedAddress = UserAddressLayer::getPreferredShippingAddress($userId, $this->langId);
+                    $selectedAddress = UserAddressLayer::getPreferredShippingAddress($userId);
                     $selectedAddressId = $selectedAddress['address_id'];
                 }
 
                 // which billing address?
                 $selectedBillingAddressId = CurrentCheckoutData::getBillingAddressId();
                 if (null === $selectedBillingAddressId) {
-                    $selectedBillingAddress = UserAddressLayer::getPreferredBillingAddress($userId, $this->langId);
+                    $selectedBillingAddress = UserAddressLayer::getPreferredBillingAddress($userId);
                     $selectedBillingAddressId = $selectedBillingAddress['address_id'];
                 }
 

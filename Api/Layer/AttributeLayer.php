@@ -26,25 +26,17 @@ where product_attribute_id=$attributeId
     }
 
 
-    public static function getAttributeNamesByShopId($shopId = null)
+    public static function getAttributeNames()
     {
-        $shopId = E::getShopId($shopId);
-
-
-        return A::cache()->get("", function () use ($shopId) {
+        return A::cache()->get("getAttributeNames", function ()  {
             return QuickPdo::fetchAll("
 select distinct a.name 
 from ek_product_attribute a
 inner join ek_product_has_product_attribute h on h.product_attribute_id=a.id 
-inner join ek_shop_has_product shp on shp.product_id=h.product_id 
-where shp.shop_id=$shopId
-and shp.active=1
+inner join ek_product p on p.id=h.product_id 
+and p.active=1
     ", [], \PDO::FETCH_COLUMN);
-        }, [
-            "ek_product_attribute",
-            "ek_product_has_product_attribute",
-            "ek_shop_has_product",
-        ]);
+        });
     }
 
 
@@ -69,21 +61,18 @@ and shp.active=1
      *
      *
      */
-    public static function getAvailableAttributeByCategoryId($categoryId, $shopId = null, $langId = null)
+    public static function getAvailableAttributeByCategoryId($categoryId)
     {
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
-
-        return A::cache()->get("Ekom.AttributeLayer.getAvailableAttributeByCategoryId.$shopId.$langId.$categoryId", function () use ($categoryId, $langId, $shopId) {
-            $catIds = CategoryLayer::getSelfAndChildrenIdsById($categoryId, $shopId, $langId);
+        return A::cache()->get("Ekom.AttributeLayer.getAvailableAttributeByCategoryId.$categoryId", function () use ($categoryId) {
+            $catIds = CategoryLayer::getSelfAndChildrenIdsById($categoryId);
 
             $rows = QuickPdo::fetchAll("
 select 
 #p.id as product_id,
 a.name,
-al.name as name_label,
+a.label as attribute_label,
 v.value,
-vl.value as value_label,
+v.label as value_label,
 a.id as attribute_id,
 v.id as value_id,
 count(distinct p.id) as count
@@ -93,19 +82,11 @@ inner join ek_product_card c on c.id=chc.product_card_id
 inner join ek_product p on p.product_card_id=c.id
 inner join ek_product_has_product_attribute h on h.product_id=p.id
 inner join ek_product_attribute a on a.id=h.product_attribute_id
-inner join ek_product_attribute_lang al on al.product_attribute_id=a.id
 inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id
-inner join ek_product_attribute_value_lang vl on vl.product_attribute_value_id=v.id
-
-inner join ek_shop_has_product_card shc on shc.product_card_id=c.id
-inner join ek_shop_has_product shp on shp.product_id=p.id
-
         
 where chc.category_id in(" . implode(', ', $catIds) . ")        
-and al.lang_id=$langId
-and shc.shop_id=$shopId        
-and shc.active=1        
-and shp.active=1        
+and c.active=1        
+and p.active=1        
 
 
 group by a.name, v.value
@@ -123,17 +104,7 @@ group by a.name, v.value
 //            }
 //            return $ret;
 
-        }, [
-            "ek_category_has_product_card",
-            "ek_product_card",
-            "ek_product",
-            "ek_product_has_product_attribute",
-            "ek_product_attribute",
-            "ek_product_attribute_lang",
-            "ek_product_attribute_value",
-            "ek_product_attribute_value_lang",
-            "ek_shop_has_product_card",
-        ]);
+        });
     }
 
 

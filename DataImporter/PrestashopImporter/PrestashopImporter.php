@@ -656,7 +656,7 @@ where a.id_attribute_group=$groupId
 
 
         if (null === $langId) {
-            EkomApi::inst()->initWebContext();
+            
             $langId = ApplicationRegistry::get("ekom.lang_id");
         }
         $langId = (int)$langId;
@@ -1303,13 +1303,13 @@ select id_image from $db.ps_image where id_product=$id_product
 
 
         if (null === $shopId) {
-            EkomApi::inst()->initWebContext();
+            
             $shopId = ApplicationRegistry::get("ekom.shop_id");
         }
         $shopId = (int)$shopId;
 
         if (null === $langId) {
-            EkomApi::inst()->initWebContext();
+            
             $langId = ApplicationRegistry::get("ekom.lang_id");
         }
         $langId = (int)$langId;

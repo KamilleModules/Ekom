@@ -26,7 +26,7 @@ class EkomProductListModifierListener implements DynamicWidgetBinderListenerInte
      *              Each attrInfo is an array with the following structure:
      *              - product_id
      *              - name
-     *              - name_label
+     *              - attribute_label
      *              - value
      *              - value_label
      *              - attribute_id

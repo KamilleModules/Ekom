@@ -149,7 +149,7 @@ where h.product_id=$productId
         if ('' === $name) {
             $name = 'default';
         }
-        EkomApi::inst()->initWebContext();
+
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
 
         $id = QuickPdo::fetch("select id from ek_product_type where name = :name and shop_id=$shopId", [
@@ -408,7 +408,7 @@ and p.product_card_id=$cardId
 select 
 h.product_id,
 al.product_attribute_id as attribute_id,
-al.name as name_label,
+al.name as attribute_label,
 a.name,
 v.value,
 vl.product_attribute_value_id as value_id,
@@ -905,7 +905,7 @@ order by h.order asc
     //--------------------------------------------
     public function getProductBoxModelByProductRef($productRef, $shopId = null, $langId = null, array $productDetails = [])
     {
-        EkomApi::inst()->initWebContext();
+
 
         $b2b = (int)E::isB2b();
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
@@ -939,18 +939,16 @@ order by h.order asc
     }
 
 
-    public function getProductBoxModelByProductId($productId, $shopId = null, $langId = null, array $productDetails = [])
+    public function getProductBoxModelByProductId($productId, array $productDetails = [])
     {
-        EkomApi::inst()->initWebContext();
+
 
         $productId = (int)$productId;
-        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
-        $langId = (null === $langId) ? ApplicationRegistry::get("ekom.lang_id") : (int)$langId;
         $sDetails = HashUtil::createHashByArray($productDetails);
         $b2b = (int)E::isB2b();
 
 
-        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$shopId.$langId.$productId.$sDetails.$b2b", function () use ($productId, $shopId, $langId, $productDetails) {
+        return A::cache()->get("Ekom.ProductLayer.getProductBoxModelByProductId.$productId.$sDetails.$b2b", function () use ($productId, $productDetails) {
             $productId = (int)$productId;
             try {
 
@@ -959,7 +957,7 @@ order by h.order asc
                     ["id", "=", $productId],
                 ]);
                 if (false !== $cardId) {
-                    return $this->getProductBoxModelByCardId($cardId, $shopId, $langId, $productId, $productDetails);
+                    return $this->getProductBoxModelByCardId($cardId, $productId, $productDetails);
                 }
                 $model['errorCode'] = "SqlRequestFailed";
                 $model['errorTitle'] = "sqlRequestFailed";
@@ -1034,7 +1032,7 @@ order by h.order asc
     //@deprecated with dynamic prices...
 //    public function getMinMaxSalePrice($categoryId, $shopId = null)
 //    {
-//        EkomApi::inst()->initWebContext();
+//
 //        $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
 //
 //

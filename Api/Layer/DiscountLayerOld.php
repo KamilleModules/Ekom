@@ -360,7 +360,7 @@ and h._discount_badge != ''
      */
     public function refreshDiscounts($shopId = null, array $slice = null, array $pIds = null)
     {
-        EkomApi::inst()->initWebContext();
+        
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $shopId = (int)$shopId;
 
@@ -546,7 +546,7 @@ where shop_id=$shopId
 
         // currency
         if (null !== $discount['currency_id']) {
-            EkomApi::inst()->initWebContext();
+            
             $currencyId = ApplicationRegistry::get("ekom.currency_id");
             if ((string)$currencyId !== (string)$discount['currency_id']) {
                 return false;
@@ -768,7 +768,7 @@ order by d.id desc
      */
     public function getDiscountsByProductId($productId, $shopId = null, $langId = null)
     {
-        EkomApi::inst()->initWebContext();
+        
 
         // get the discounts that apply to the product,
         // then get the discounts that apply to the product card,

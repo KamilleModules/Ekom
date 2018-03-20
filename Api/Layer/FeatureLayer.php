@@ -30,13 +30,11 @@ left join ek_feature_value_lang fl on fl.feature_value_id=f.id and fl.lang_id=' 
     }
 
 
-    public static function getItems($langId)
+    public static function getItems()
     {
-        $langId = (int)$langId;
         return QuickPdo::fetchAll('
-select f.id, concat (f.id, ". ", fl.name) as name 
-from ek_feature f 
-left join ek_feature_lang fl on fl.feature_id=f.id and fl.lang_id=' . $langId, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+select f.id, concat (f.id, ". ", f.name) as name 
+from ek_feature f', [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
 
     public static function getRepresentationById($featureId, $langId)
@@ -67,31 +65,23 @@ select value from ek_feature_value_lang where feature_value_id=$featureValueId a
     }
 
 
-    public static function getFeaturesModelByProductId($productId, $shopId = null, $langId = null)
+    public static function getFeaturesModelByProductId($productId)
     {
-        EkomApi::inst()->initWebContext();
-        $shopId = E::getShopId($shopId);
-        $langId = E::getShopId($langId);
-
         $productId = (int)$productId;
-        return A::cache()->get("Ekom.FeatureLayer.$shopId.$langId.$productId", function () use ($productId, $shopId, $langId) {
-
+        return A::cache()->get("Ekom.FeatureLayer.$productId", function () use ($productId) {
 
             return QuickPdo::fetchAll("
 select 
         
-fl.name,
-fvl.value,
+f.name,
+fv.value,
 h.technical_description
         
 from ek_product_has_feature h 
-inner join ek_feature_lang fl on fl.feature_id=h.feature_id
-inner join ek_feature_value_lang fvl on fvl.feature_value_id=h.feature_value_id     
+inner join ek_feature f on f.id=h.feature_id
+inner join ek_feature_value fv on fv.id=h.feature_value_id     
         
 where h.product_id=$productId        
-and h.shop_id=$shopId
-and fl.lang_id=$langId        
-and fvl.lang_id=$langId
         
 order by h.position asc        
         

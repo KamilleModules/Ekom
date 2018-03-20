@@ -31,8 +31,7 @@ class GeneratedAddress extends TableCrudObject
     {
         $base = [
 			'id' => null,
-			'first_name' => '',
-			'last_name' => '',
+			'libelle' => '',
 			'phone' => '',
 			'phone_prefix' => '',
 			'address' => '',

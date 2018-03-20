@@ -25,23 +25,20 @@ select name from ek_product_group where id=$id
 
 
 
-    public static function getAllGroupNames($shopId = null)
+    public static function getAllGroupNames()
     {
-        $shopId = E::getShopId($shopId);
         return QuickPdo::fetchAll("
-select name from ek_product_group where shop_id=$shopId        
+select name from ek_product_group        
         ", [], \PDO::FETCH_COLUMN);
     }
 
-    public static function getProductIdsByGroup($groupName, $shopId = null)
+    public static function getProductIdsByGroup($groupName)
     {
-        $shopId = E::getShopId($shopId);
-        return A::cache()->get("Ekom.ProductGroupLayer.getProductIdsByGroup.$shopId.$groupName", function () use ($groupName, $shopId) {
+        return A::cache()->get("Ekom.ProductGroupLayer.getProductIdsByGroup.$groupName", function () use ($groupName) {
             return QuickPdo::fetchAll("
 select h.product_id from ek_product_group_has_product h
 inner join ek_product_group pg on pg.id=h.product_group_id
 where pg.name=:name
-and pg.shop_id=$shopId
 ", [
                 'name' => $groupName,
             ], \PDO::FETCH_COLUMN);

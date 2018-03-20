@@ -105,7 +105,7 @@ order by h.`order` asc
 
     public function getProductIdsBySellerName($name, $shopId = null)
     {
-        EkomApi::inst()->initWebContext();
+        
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
 
 

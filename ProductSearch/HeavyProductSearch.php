@@ -24,7 +24,7 @@ class HeavyProductSearch extends AbstractProductSearch
     {
 
 
-        EkomApi::inst()->initWebContext();
+        
         $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
         $langId = (int)ApplicationRegistry::get("ekom.lang_id");
 

@@ -17,7 +17,7 @@ interface Attribute2TemplateAdaptorInterface
      *
      * - product_id: the product id
      * - name: the name of the attribute
-     * - name_label: the name of the attribute, in the lang of the application instance
+     * - attribute_label: the name of the attribute, in the lang of the application instance
      * - value: the value of the attribute
      * - value_label: the value of the attribute, in the lang of the application instance
      * - attribute_id: int, the id of the attribute

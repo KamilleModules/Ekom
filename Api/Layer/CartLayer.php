@@ -88,7 +88,6 @@ class CartLayer
     public function addItem($quantity, $productId, array $extraArgs = [])
     {
         $this->initSessionCart();
-        $shopId = E::getShopId();
 
         /**
          * The product details array (not productDetailsArgs)
@@ -112,25 +111,25 @@ class CartLayer
         //--------------------------------------------
         // UPDATE MODE
         //--------------------------------------------
-        foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
+        foreach ($_SESSION['ekom'][$this->sessionName]['items'] as $k => $item) {
             if ($item['token'] === $token) {
 
                 $isConfigurable = $this->isConfigurableProduct($productId, $details);
                 if (false === $isConfigurable) {
 
-                    $existingQuantity = $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'];
+                    $existingQuantity = $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'];
                     self::checkQuantityOverflow($productId, $existingQuantity, $quantity, $details);
 
-                    $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] += $quantity;
+                    $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'] += $quantity;
                     if ($isValidDetails) {
-                        $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['details'] = $details;
+                        $_SESSION['ekom'][$this->sessionName]['items'][$k]['details'] = $details;
                     }
                     $alreadyExists = true;
                     break;
                 } else {
                     self::checkQuantityOverflow($productId, 0, $quantity, $details);
-                    $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] = $quantity;
-                    $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['details'] = $details;
+                    $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'] = $quantity;
+                    $_SESSION['ekom'][$this->sessionName]['items'][$k]['details'] = $details;
                     $alreadyExists = true;
                     break;
                 }
@@ -162,7 +161,7 @@ class CartLayer
 
             // adding other args
             self::decorateWithExtraArgs($arr, $extraArgs);
-            $_SESSION['ekom'][$this->sessionName][$shopId]['items'][] = $arr;
+            $_SESSION['ekom'][$this->sessionName]['items'][] = $arr;
         }
 
         // modules might have change the session even if this method didn't add the item.
@@ -201,9 +200,9 @@ class CartLayer
         $this->initSessionCart();
         $shopId = E::getShopId();
         $token = (string)$token;
-        foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
+        foreach ($_SESSION['ekom'][$this->sessionName]['items'] as $k => $item) {
             if ($item['token'] === $token) {
-                unset($_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]);
+                unset($_SESSION['ekom'][$this->sessionName]['items'][$k]);
                 break;
             }
         }
@@ -228,7 +227,6 @@ class CartLayer
     {
         $this->initSessionCart();
         $token = (string)$token;
-        $shopId = E::getShopId();
         $productId = self::getProductIdByCartToken($token);
 
 
@@ -238,13 +236,13 @@ class CartLayer
         }
 
         $wasUpdated = false;
-        foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
+        foreach ($_SESSION['ekom'][$this->sessionName]['items'] as $k => $item) {
             if ($item['token'] === $token) {
-                $existingQty = $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'];
+                $existingQty = $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'];
                 $details = $this->getProductDetailsByToken($token);
                 self::checkQuantityOverflow($productId, $existingQty, $newQty, $details, true);
 
-                $_SESSION['ekom'][$this->sessionName][$shopId]['items'][$k]['quantity'] = $newQty;
+                $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'] = $newQty;
                 $wasUpdated = true;
                 break;
             }
@@ -260,31 +258,28 @@ class CartLayer
     public function addCoupon($couponId)
     {
         $this->initSessionCart();
-        $shopId = ApplicationRegistry::get("ekom.shop_id");
-        $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'] = [$couponId];
+        $_SESSION['ekom'][$this->sessionName]['coupons'] = [$couponId];
         $this->writeToLocalStore();
     }
 
     public function removeCoupon($code)
     {
         $this->initSessionCart();
-        $shopId = ApplicationRegistry::get("ekom.shop_id");
 
         $couponInfo = CouponLayer::getCouponInfoByCode($code);
         if (false !== $couponInfo) {
-            $index = array_search($couponInfo['id'], $_SESSION['ekom'][$this->sessionName][$shopId]['coupons']);
-            unset($_SESSION['ekom'][$this->sessionName][$shopId]['coupons'][$index]);
+            $index = array_search($couponInfo['id'], $_SESSION['ekom'][$this->sessionName]['coupons']);
+            unset($_SESSION['ekom'][$this->sessionName]['coupons'][$index]);
             $this->writeToLocalStore();
         }
         return $this;
     }
 
 
-    public function setCartContent(array $cart, $shopId = null)
+    public function setCartContent(array $cart)
     {
         $this->initSessionCart();
-        $shopId = E::getShopId($shopId);
-        $_SESSION['ekom'][$this->sessionName][$shopId] = $cart;
+        $_SESSION['ekom'][$this->sessionName] = $cart;
         $this->writeToLocalStore();
     }
 
@@ -307,10 +302,9 @@ class CartLayer
     {
         if (null === $this->_cartModel) {
             $this->initSessionCart();
-            $shopId = E::getShopId();
-            $items = $_SESSION['ekom'][$this->sessionName][$shopId]['items'];
-            $coupons = $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'];
-            $ret = self::deGetCartModel($items, $coupons);
+            $items = $_SESSION['ekom'][$this->sessionName]['items'];
+            $coupons = $_SESSION['ekom'][$this->sessionName]['coupons'];
+            $ret = self::doGetCartModel($items, $coupons);
             $this->_cartModel = $ret;
         }
         return $this->_cartModel;
@@ -320,8 +314,7 @@ class CartLayer
     public function getItems()
     {
         $this->initSessionCart();
-        $shopId = E::getShopId();
-        return $_SESSION['ekom'][$this->sessionName][$shopId]['items'];
+        return $_SESSION['ekom'][$this->sessionName]['items'];
     }
 
 
@@ -337,26 +330,23 @@ class CartLayer
     }
 
 
-    public function getCartContent($shopId = null)
+    public function getCartContent()
     {
         $this->initSessionCart();
-        $shopId = E::getShopId($shopId);
-        return $_SESSION['ekom'][$this->sessionName][$shopId];
+        return $_SESSION['ekom'][$this->sessionName];
     }
 
     public function getCouponBag()
     {
         $this->initSessionCart();
-        $shopId = E::getShopId();
-        return $_SESSION['ekom'][$this->sessionName][$shopId]['coupons'];
+        return $_SESSION['ekom'][$this->sessionName]['coupons'];
     }
 
 
     public function getContext()
     {
         $this->initSessionCart();
-        $shopId = E::getShopId();
-        return $_SESSION['ekom'][$this->sessionName][$shopId];
+        return $_SESSION['ekom'][$this->sessionName];
     }
 
 
@@ -364,9 +354,8 @@ class CartLayer
     {
         $this->initSessionCart();
         $token = (string)$token;
-        $shopId = E::getShopId();
 
-        foreach ($_SESSION['ekom'][$this->sessionName][$shopId]['items'] as $k => $item) {
+        foreach ($_SESSION['ekom'][$this->sessionName]['items'] as $k => $item) {
             if ($item['token'] === $token) {
                 return $item;
             }
@@ -380,28 +369,25 @@ class CartLayer
     //--------------------------------------------
     protected function writeToLocalStore($operationName = null)
     {
-        $shopId = E::getShopId();
         $userId = null;
         $cart = [];
 
 
         if (true === SessionUser::isConnected()) {
             if (null !== ($userId = SessionUser::getValue('id'))) {
-                if (array_key_exists($shopId, $_SESSION['ekom'][$this->sessionName])) {
-                    $cart = $_SESSION['ekom'][$this->sessionName][$shopId];
-                    $this->getCartLocalStore()->saveUserCart($userId, $shopId, $cart);
-                }
+
+                $cart = $_SESSION['ekom'][$this->sessionName];
+                $this->getCartLocalStore()->saveUserCart($userId, $cart);
+
             } else {
-                XLog::error("[$this->moduleName] - $this->className: in shop#$shopId, this user doesn't have an id: " . ArrayToStringTool::toPhpArray($_SESSION));
+                XLog::error("[$this->moduleName] - $this->className: this user doesn't have an id: " . ArrayToStringTool::toPhpArray($_SESSION));
             }
         } else {
-            if (array_key_exists($shopId, $_SESSION['ekom'][$this->sessionName])) {
-                $cart = $_SESSION['ekom'][$this->sessionName][$shopId];
-            }
+            $cart = $_SESSION['ekom'][$this->sessionName];
         }
 
 
-        Hooks::call("Ekom_onCartUpdate", $shopId, $userId, $cart, $operationName);
+        Hooks::call("Ekom_onCartUpdate", $userId, $cart, $operationName);
 
 
         /**
@@ -412,19 +398,14 @@ class CartLayer
 
     protected function initSessionCart()
     {
-        $shopId = E::getShopId();
         if (
             false === array_key_exists('ekom', $_SESSION) ||
             false === array_key_exists($this->sessionName, $_SESSION['ekom'])
         ) {
-            $_SESSION['ekom'][$this->sessionName] = [];
-        }
-        if (false === array_key_exists($shopId, $_SESSION['ekom'][$this->sessionName])) {
-            $defaultCart = [
+            $_SESSION['ekom'][$this->sessionName] = [
                 'items' => [],
                 'coupons' => [],
             ];
-            $_SESSION['ekom'][$this->sessionName][$shopId] = $defaultCart;
         }
     }
 
@@ -459,18 +440,8 @@ class CartLayer
      * @see EkomModels::cartModel()
      *
      */
-    private static function deGetCartModel(array $items, array $couponBag = [])
+    private static function doGetCartModel(array $items, array $couponBag = [])
     {
-
-        /**
-         * @todo-ling: lang should be taken from the gcp I believe, since
-         * gpc is what drives the display of products inside the cart.
-         * Often, it should be the same as E::getLangId (which I use temporarily below),
-         * but in the long term I believe langId should be taken from gpc directly.
-         */
-        $langId = E::getLangId();
-        $shopId = E::getShopId();
-
 
         $model = [];
         $modelItems = [];
@@ -537,7 +508,7 @@ class CartLayer
                 $modelItems[] = $boxModel;
             } else {
                 $className = self::getClassShortName();
-                XLog::error("[Ekom module] - $className.deGetCartModel: errorCode: " . $boxModel['errorCode'] . ", msg: " . $boxModel['errorMessage']);
+                XLog::error("[Ekom module] - $className.doGetCartModel: errorCode: " . $boxModel['errorCode'] . ", msg: " . $boxModel['errorMessage']);
             }
 
         }
@@ -574,7 +545,7 @@ class CartLayer
             /**
              * Is there a carrier available?
              */
-            $carrier = self::getCheckoutCarrier($shopId);
+            $carrier = self::getCheckoutCarrier();
 
 
             /**
@@ -641,7 +612,7 @@ class CartLayer
         // coupons
         //--------------------------------------------
 //        az(__FILE__, $couponBag);
-        $couponInfoItems = CouponLayer::getCouponInfoItemsByIds($couponBag, $langId);
+        $couponInfoItems = CouponLayer::getCouponInfoItemsByIds($couponBag);
         $couponsDetails = [];
         /**
          * @todo-ling, the coupons potentially can change ANYTHING in the model.
@@ -782,14 +753,14 @@ class CartLayer
         );
     }
 
-    private static function getCheckoutCarrier($shopId)
+    private static function getCheckoutCarrier()
     {
         $carrierId = CurrentCheckoutData::getCarrierId();
         if (null !== $carrierId) {
-            return CarrierLayer::getCarrierInstanceById($carrierId, $shopId);
+            return CarrierLayer::getCarrierInstanceById($carrierId);
         }
-        $carrierId = CarrierLayer::getShopDefaultCarrierId($shopId);
-        return CarrierLayer::getCarrierInstanceById($carrierId, $shopId);
+        $carrierId = CarrierLayer::getShopDefaultCarrierId();
+        return CarrierLayer::getCarrierInstanceById($carrierId);
     }
 
 

@@ -28,12 +28,11 @@ use QuickPdo\QuickPdo;
 class CouponLayer
 {
 
-    public static function getCouponInfoItemsByIds(array $ids, $langId = null)
+    public static function getCouponInfoItemsByIds(array $ids)
     {
 
 
         if ($ids) {
-            $langId = E::getLangId($langId);
             $ids = array_map('intval', $ids);
             $sIds = implode(', ', $ids);
             return QuickPdo::fetchAll("
@@ -45,11 +44,9 @@ c.procedure_type,
 c.procedure_operand, 
 c.target, 
 c.shop_id, 
-cl.label
-from ek_coupon c 
-inner join ek_coupon_lang cl on cl.coupon_id=c.id
+c.label
+from ek_coupon c
 where c.id in ($sIds)
-and cl.lang_id=$langId
 ");
         }
         return [];

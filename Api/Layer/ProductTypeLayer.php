@@ -41,7 +41,7 @@ order by name asc
 
     public function getProductIdsByProductType($productType, $shopId = null)
     {
-        EkomApi::inst()->initWebContext();
+        
         $shopId = E::getShopId($shopId);
 
 

@@ -120,11 +120,10 @@ select id from ek_product where product_card_id=$cardId
         ", [], \PDO::FETCH_COLUMN);
     }
 
-    public static function getProductCardIdsByCategoryId($categoryId, $shopId = null)
+    public static function getProductCardIdsByCategoryId($categoryId)
     {
-        $shopId = E::getShopId($shopId);
-        return A::cache()->get("Ekom.ProductCardLayer.getProductCardIdsByCategoryId.$shopId.$categoryId", function () use ($categoryId, $shopId) {
-            $catIds = CategoryLayer::getSelfAndChildrenIdsById($categoryId, $shopId);
+        return A::cache()->get("Ekom.ProductCardLayer.getProductCardIdsByCategoryId.$categoryId", function () use ($categoryId) {
+            $catIds = CategoryLayer::getSelfAndChildrenIdsById($categoryId);
             return self::getProductCardIdsByCategoryIds($catIds);
 
         });
@@ -204,7 +203,7 @@ and pcl.product_card_id=$id
      */
     public function getProductCardIdsByShop($shopId = null)
     {
-        EkomApi::inst()->initWebContext();
+
         $shopId = E::getShopId($shopId);
 
         return QuickPdo::fetchAll("
@@ -252,7 +251,7 @@ and l.lang_id=$langId
 
     public function setTaxGroup($cardId, $taxGroupId, $shopId = null)
     {
-        EkomApi::inst()->initWebContext();
+
         $shopId = (null === $shopId) ? (int)ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         EkomApi::inst()->productCardHasTaxGroup()->create([
             "shop_id" => $shopId,

@@ -150,11 +150,9 @@ class ProductBoxLayer
     public static function getProductBoxListByGroupName($groupName, array $gpc = null)
     {
         $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
-        $shopId = $gpc['shop_id'];
-        $langId = $gpc['lang_id'];
-        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getProductBoxListByGroupName.$shopId.$langId.$groupName");
-        return A::cache()->get($hashString, function () use ($groupName, $shopId, $gpc) {
-            $ids = ProductGroupLayer::getProductIdsByGroup($groupName, $shopId);
+        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getProductBoxListByGroupName.$groupName");
+        return A::cache()->get($hashString, function () use ($groupName, $gpc) {
+            $ids = ProductGroupLayer::getProductIdsByGroup($groupName);
             return self::getProductBoxListByProductIds($ids, $gpc);
         });
     }
@@ -167,11 +165,9 @@ class ProductBoxLayer
     public static function getRelatedProductBoxListByCardId($cardId, array $gpc = null)
     {
         $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
-        $shopId = $gpc['shop_id'];
-        $langId = $gpc['lang_id'];
-        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getRelatedProductBoxListByCardId.$shopId.$langId.$cardId");
-        return A::cache()->get($hashString, function () use ($cardId, $shopId, $gpc) {
-            $ids = RelatedProductLayer::getRelatedProductIds($cardId, $shopId);
+        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getRelatedProductBoxListByCardId.$cardId");
+        return A::cache()->get($hashString, function () use ($cardId, $gpc) {
+            $ids = RelatedProductLayer::getRelatedProductIds($cardId);
             return self::getProductBoxListByProductIds($ids, $gpc);
         });
     }

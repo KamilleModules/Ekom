@@ -39,38 +39,38 @@ class EkomFrontController extends ApplicationController
 //    }
 
 
-    protected function renderByViewId($viewId, LawsConfig $config = null, array $options = [])
-    {
-        /**
-         * From here we can configure all the common/implicit widgets.
-         * Those are the widgets specific to ekom module and common to all controllers.
-         */
-        if (null === $config) {
-            $config = LawsConfig::create();
-        }
-
-        $commonWidgets = [];
-        Hooks::call("Ekom_FrontController_decorateCommonWidgets", $commonWidgets);
-        $config->replace(([
-            "widgets" => $commonWidgets,
-        ]));
-
-
-        if (true === $this->setSessionReferer) {
-            EkomSession::set("referer", UriTool::uri(null, [], true, true));
-        }
-
-
-//        $configInfo = [
-//            $viewId,
-//            $config,
-//        ];
-//        Hooks::call("Ekom_decorate_LawsConfig", $configInfo);
-//        $conf = $configInfo[1];
-
-
-        return parent::renderByViewId($viewId, $config, $options);
-    }
+//    protected function renderByViewId($viewId, LawsConfig $config = null, array $options = [])
+//    {
+//        /**
+//         * From here we can configure all the common/implicit widgets.
+//         * Those are the widgets specific to ekom module and common to all controllers.
+//         */
+//        if (null === $config) {
+//            $config = LawsConfig::create();
+//        }
+//
+//        $commonWidgets = [];
+//        Hooks::call("Ekom_FrontController_decorateCommonWidgets", $commonWidgets);
+//        $config->replace(([
+//            "widgets" => $commonWidgets,
+//        ]));
+//
+//
+//        if (true === $this->setSessionReferer) {
+//            EkomSession::set("referer", UriTool::uri(null, [], true, true));
+//        }
+//
+//
+////        $configInfo = [
+////            $viewId,
+////            $config,
+////        ];
+////        Hooks::call("Ekom_decorate_LawsConfig", $configInfo);
+////        $conf = $configInfo[1];
+//
+//
+//        return parent::renderByViewId($viewId, $config, $options);
+//    }
 
 
     protected function requiresConnectedUser()

@@ -43,10 +43,9 @@ class BundleLayer
      *                  removedProductIds is an array of productId.
      *
      */
-    public function getBundleModelByProductId($productId, array $removedProductIds = [], $shopId = null)
+    public function getBundleModelByProductId($productId, array $removedProductIds = [])
     {
         $productId = (int)$productId;
-        $shopId = E::getShopId($shopId);
 
 
         $sIds = '';
@@ -57,11 +56,11 @@ class BundleLayer
         }
 
 
-        return A::cache()->get("Ekom.BundleLayer.getBundleModelByProductId.$shopId.$productId.$sIds", function () use ($productId, $shopId, $removedProductIds) {
+        return A::cache()->get("Ekom.BundleLayer.getBundleModelByProductId.$productId.$sIds", function () use ($productId, $removedProductIds) {
 
             $ret = [];
             $totalsWithTax = [];
-            $bundleIds = $this->getBundleIdsByProductId($productId, $shopId);
+            $bundleIds = $this->getBundleIdsByProductId($productId);
 
 
             if (count($bundleIds) > 0) {
@@ -78,7 +77,6 @@ from ek_product_bundle_has_product h
 inner join ek_product_bundle b on b.id=h.product_bundle_id
  
 where h.product_bundle_id in(" . implode(', ', $bundleIds) . ") 
-and b.shop_id=$shopId
 and b.active=1
         
         ");
@@ -148,35 +146,17 @@ and b.active=1
             }
 
             return $ret;
-        }, [
-            "ek_product_bundle_has_product",
-            "ek_product_bundle",
-
-            // box model
-            "ek_shop_has_product_card_lang",
-            "ek_shop_has_product_card",
-            "ek_product_card_lang",
-            "ek_product_card",
-            "ek_shop",
-            "ek_product_has_product_attribute",
-            "ek_product_attribute_lang",
-            "ek_product_attribute_value_lang",
-            "ek_product.delete",
-            "ek_product.update",
-            "ekomApi.image.product",
-            "ekomApi.image.productCard",
-        ]);
+        });
 
     }
 
-    public function getBundleIdsByProductId($productId, $shopId = null)
+    public function getBundleIdsByProductId($productId)
     {
-        EkomApi::inst()->initWebContext();
+
         $productId = (int)$productId;
-        $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
 
 
-        return A::cache()->get("Ekom.BundleLayer.getBundleIdsByProductId.$shopId.$productId", function () use ($shopId, $productId) {
+        return A::cache()->get("Ekom.BundleLayer.getBundleIdsByProductId.$productId", function () use ($productId) {
 
             return QuickPdo::fetchAll("
 select h.product_bundle_id
@@ -185,15 +165,11 @@ from ek_product_bundle_has_product h
 inner join ek_product_bundle b on b.id=h.product_bundle_id
  
 where h.product_id=$productId 
-and b.shop_id=$shopId
 and b.active=1
         
         ", [], \PDO::FETCH_COLUMN);
 
-        }, [
-            "ek_product_bundle_has_product",
-            "ek_product_bundle",
-        ]);
+        });
     }
 
 

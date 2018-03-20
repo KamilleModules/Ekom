@@ -39,18 +39,18 @@ class UserAddressLayer
      * @return null|array:addressModel
      * @see EkomModels::addressModel()
      */
-    public static function getPreferredShippingAddress($userId, $langId = null)
+    public static function getPreferredShippingAddress($userId)
     {
-        return self::getPreferredAddress($userId, 'shipping', $langId);
+        return self::getPreferredAddress($userId, 'shipping');
     }
 
     /**
      * @return null|array:addressModel
      * @see EkomModels::addressModel()
      */
-    public static function getPreferredBillingAddress($userId, $langId = null)
+    public static function getPreferredBillingAddress($userId)
     {
-        return self::getPreferredAddress($userId, 'billing', $langId);
+        return self::getPreferredAddress($userId, 'billing');
     }
 
     /**
@@ -58,16 +58,16 @@ class UserAddressLayer
      * @see EkomModels::addressModel()
      * @throws EkomException
      */
-    public static function getAddressById($userId, $addressId, $langId = null)
+    public static function getAddressById($userId, $addressId)
     {
         $addressId = (int)$addressId;
-        $addresses = self::getUserAddresses($userId, $langId);
+        $addresses = self::getUserAddresses($userId);
         foreach ($addresses as $addr) {
             if ($addressId === (int)$addr['address_id']) {
                 return $addr;
             }
         }
-        throw new EkomException("Address not found with userId: $userId, addressId: $addressId and langId: $langId");
+        throw new EkomException("Address not found with userId: $userId, addressId: $addressId");
     }
 
     /**
@@ -77,25 +77,23 @@ class UserAddressLayer
      * @see EkomModels::addressModel()
      *
      */
-    public static function getUserAddresses($userId, $langId = null)
+    public static function getUserAddresses($userId)
     {
-        $langId = E::getLangId($langId);
-        return A::cache()->get("Ekom.UserAddressLayer.getUserAddresses.$userId.$langId", function () use ($userId, $langId) {
+        return A::cache()->get("Ekom.UserAddressLayer.getUserAddresses.$userId", function () use ($userId) {
 
 
             $rows = QuickPdo::fetchAll("
 select 
 a.id as address_id,        
-a.first_name,        
-a.last_name,        
+a.libelle,          
 a.phone,        
 a.phone_prefix,        
 a.address,        
 a.city,        
 a.postcode,        
 a.supplement,        
-l.label as country,
-l.country_id,
+c.label as country,
+c.id as country_id,
 c.iso_code as country_iso_code,
 h.is_default_shipping_address,
 h.is_default_billing_address
@@ -104,13 +102,10 @@ h.is_default_billing_address
 from ek_user_has_address h 
 inner join ek_address a on a.id=h.address_id 
 inner join ek_country c on c.id=a.country_id
-inner join ek_country_lang l on l.country_id=a.country_id
 
 where 
 h.user_id=$userId 
 and a.active='1'
-and l.lang_id=$langId
-
 
 order by h.`order` asc 
         
@@ -253,8 +248,7 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
      *
      * The data should contain the following keys:
      *
-     * - first_name
-     * - last_name
+     * - libelle
      * - phone
      * - phone_prefix
      * - address
@@ -441,7 +435,7 @@ and `type`=:zetype
     private static function getFormattedNameAndAddress(array $row)
     {
         return [
-            $row['first_name'] . " " . $row['last_name'],
+            $row['libelle'],
             $row['address'] . ", " . $row['postcode'] . " " . $row['city'] . ". " . $row['country'],
         ];
     }
@@ -456,9 +450,9 @@ and `type`=:zetype
      *
      *
      */
-    private static function getPreferredAddress($userId, $type, $langId = null)
+    private static function getPreferredAddress($userId, $type)
     {
-        $userAddresses = self::getUserAddresses($userId, $langId);
+        $userAddresses = self::getUserAddresses($userId);
         if ($userAddresses) {
             foreach ($userAddresses as $userAddress) {
                 if ('1' === $userAddress['is_default_' . $type . '_address']) {

@@ -260,37 +260,20 @@ where shop_id=$shopId
             $allBadges = array_unique($allBadges);
             sort($allBadges);
             return $allBadges;
-        }, [
-            'ek_category',
-            'ek_category_has_product_card',
-            'ek_shop_has_product',
-            'ek_shop_has_product_lang',
-            'ek_seller',
-            'ek_product_type',
-            'ek_product',
-            'ek_product_lang',
-            'ek_product_has_discount',
-            'ek_product_card_has_discount',
-            'ek_shop_has_product_card',
-        ]);
+        });
     }
 
 
-    public function getProductsInfoHavingDiscount($shopId = null, $langId = null)
+    public function getProductsInfoHavingDiscount()
     {
-
-        $shopId = E::getLangId($shopId);
-        $langId = E::getLangId($langId);
-
-
-        return A::cache()->get("Ekom.DiscountLayer.getProductsInfoHavingDiscount.$shopId.$langId", function () use ($shopId, $langId) {
+        return A::cache()->get("Ekom.DiscountLayer.getProductsInfoHavingDiscount", function ()  {
 
 
             /**
              * Discounts are dispatched in products, cards and categories.
              * We want to return some presentational info.
              */
-            $getResults = function (array $options = [], $debug = false) use ($shopId, $langId) {
+            $getResults = function (array $options = [], $debug = false)  {
 
                 $join = (array_key_exists('join', $options)) ? $options['join'] : '';
                 $where = (array_key_exists('where', $options)) ? $options['where'] : '';
@@ -301,30 +284,25 @@ distinct
 p.id,
 p.product_card_id, 
 p.reference, 
-COALESCE(NULLIF('', shpl.label), pl.label) as label,        
-COALESCE(NULLIF('', shpl.description), pl.description) as label,        
-shp.quantity,
-shp.active,
-shp._sale_price_without_tax,
-shp._sale_price_with_tax,
-shp._discount_badge,
+p.label,        
+p.description,        
+p.quantity,
+p.active,
+p._sale_price_without_tax,
+p._sale_price_with_tax,
+p._discount_badge,
 s.name as seller,
 pt.name as product_type
 
 
-from ek_shop_has_product shp 
-inner join ek_shop_has_product_lang shpl on shpl.shop_id=shp.shop_id and shpl.product_id=shp.product_id
+from ek_product p
 inner join ek_seller s on s.id=shp.seller_id 
 inner join ek_product_type pt on pt.id=shp.product_type_id
-inner join ek_product p on p.id=shp.product_id
-inner join ek_product_lang pl on pl.product_id=shp.product_id and pl.lang_id=shpl.lang_id
 $join
 
 
 
-where
-shp.shop_id=$shopId 
-and shpl.lang_id=$langId
+where 1
 $where
 
         
@@ -347,16 +325,16 @@ $where
             $cardRows = $getResults([
                 'join' => "            
 inner join ek_product_card_has_discount pchd on pchd.product_card_id=p.product_card_id
-inner join ek_shop_has_product_card shpc on shpc.shop_id=shpl.shop_id and shpc.product_card_id=p.product_card_id
+inner join ek_product_card c on c.id=p.product_card_id
 ",
                 'where' => "
 and pchd.active=1
-and shpc.active=1
+and c.active=1
             ",
             ]);
 
 
-            $catsContainingDiscounts = $this->getCategoriesInfoHavingDiscount($shopId, $langId);
+            $catsContainingDiscounts = $this->getCategoriesInfoHavingDiscount();
             $catIds = [];
             $allSubCatIds = [];
             foreach ($catsContainingDiscounts as $info) {
@@ -370,11 +348,11 @@ and shpc.active=1
             $sCardIds = implode(', ', $allCardIds);
             $catRows = $getResults([
                 'join' => "                      
-inner join ek_shop_has_product_card shpc on shpc.shop_id=shpl.shop_id and shpc.product_card_id=p.product_card_id
+inner join ek_product_card c on c.id=p.product_card_id
 ",
                 'where' => "
 and p.product_card_id in ($sCardIds)
-and shpc.active=1
+and c.active=1
 
             ",
             ]);
@@ -392,41 +370,23 @@ and shpc.active=1
             });
             return $all;
 
-        }, [
-            'ek_shop_has_product',
-            'ek_shop_has_product_lang',
-            'ek_seller',
-            'ek_product_type',
-            'ek_product',
-            'ek_product_lang',
-            'ek_product_has_discount',
-            'ek_product_card_has_discount',
-            'ek_shop_has_product_card',
-        ]);
+        });
     }
 
-    public function getCategoriesInfoHavingDiscount($shopId = null, $langId = null)
+    public function getCategoriesInfoHavingDiscount()
     {
-
-        $shopId = E::getLangId($shopId);
-        $langId = E::getLangId($langId);
 
         return QuickPdo::fetchAll("
 select   
 c.id,      
 c.name,      
-cl.label,
-cl.slug
+c.label,
+c.slug
 
-from ek_category c 
-inner join ek_category_lang cl on cl.category_id=c.id
+from ek_category c
 inner join ek_category_has_discount chd on chd.category_id=c.id
 
-where 
-
-c.shop_id=$shopId 
-and cl.lang_id=$langId 
-and chd.active=1
+where chd.active=1
 
 
         ");
@@ -434,9 +394,8 @@ and chd.active=1
     }
 
 
-    public function getDiscountBadgesByCategoryId($categoryId, $shopId = null)
+    public function getDiscountBadgesByCategoryId($categoryId)
     {
-        $shopId = E::getShopId($shopId);
         $categoryId = (int)$categoryId;
 
         $catIds = EkomApi::inst()->categoryLayer()->getDescendantCategoryIdTree($categoryId);
@@ -446,18 +405,17 @@ and chd.active=1
         return QuickPdo::fetchAll("
 select distinct
 
-h._discount_badge
+p._discount_badge
 
-from ek_shop_has_product h 
-inner join ek_shop_has_product_card hpc on hpc.shop_id=h.shop_id and hpc.product_id=h.product_id
-inner join ek_category_has_product_card chpc on chpc.product_card_id=hpc.product_card_id
+from ek_product p
+inner join ek_product_card c on c.product_id=p.product_id
+inner join ek_category_has_product_card chpc on chpc.product_card_id=c.id
 
 
-where h.shop_id=$shopId
-and h.active=1 
-and hpc.active=1
+where p.active=1 
+and c.active=1
 and chpc.category_id in ($sCatIds)
-and h._discount_badge != ''
+and p._discount_badge != ''
 
         ", [], \PDO::FETCH_COLUMN);
 
@@ -480,7 +438,7 @@ and h._discount_badge != ''
      */
     public function refreshDiscounts($shopId = null, array $slice = null, array $pIds = null)
     {
-        EkomApi::inst()->initWebContext();
+
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
         $shopId = (int)$shopId;
 
@@ -675,7 +633,7 @@ where shop_id=$shopId
 
         // currency
         if (null !== $discount['currency_id']) {
-            EkomApi::inst()->initWebContext();
+
             $currencyId = ApplicationRegistry::get("ekom.currency_id");
             if ((string)$currencyId !== (string)$discount['currency_id']) {
                 return false;
@@ -725,15 +683,13 @@ where shop_id=$shopId
      * The returned discount if any looks like the discount item described at the top of this class.
      *
      */
-    public function getApplicableDiscountByProductId($productId, $shopId = null, $langId = null)
+    public function getApplicableDiscountByProductId($productId)
     {
 
 
         $productId = (int)$productId;
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
 
-        return A::cache()->get("Module.Ekom.Api.Layer.DiscountLayer.getDiscountByProductId.$shopId.$langId.$productId", function () use ($shopId, $langId, $productId) {
+        return A::cache()->get("Module.Ekom.Api.Layer.DiscountLayer.getDiscountByProductId.$productId", function () use ($productId) {
 
 
             /**
@@ -745,18 +701,15 @@ d.id as discount_id,
 d.type,        
 d.operand,        
 d.target,
-l.label,
+d.label,
 h.conditions
         
 from         
 ek_discount d 
-inner join ek_product_has_discount h on h.discount_id=d.id
-inner join ek_discount_lang l on l.discount_id=d.id 
+inner join ek_product_has_discount h on h.discount_id=d.id 
 
 where h.product_id=$productId
-and h.active=1
-and d.shop_id=$shopId        
-and l.lang_id=$langId        
+and h.active=1    
 
 order by d.id desc 
         
@@ -777,19 +730,16 @@ d.id as discount_id,
 d.type,        
 d.operand,        
 d.target,
-l.label,
+d.label,
 h.conditions
         
 from         
 ek_discount d 
-inner join ek_product_card_has_discount h on h.discount_id=d.id
-inner join ek_discount_lang l on l.discount_id=d.id 
+inner join ek_product_card_has_discount h on h.discount_id=d.id 
 inner join ek_product p on p.product_card_id=h.product_card_id
 
 where p.id=$productId
 and h.active=1
-and d.shop_id=$shopId        
-and l.lang_id=$langId
         
 order by d.id desc         
         
@@ -820,19 +770,15 @@ d.id as discount_id,
 d.type,        
 d.operand,        
 d.target,
-l.label,
+d.label,
 h.conditions
         
 from         
 ek_discount d 
-inner join ek_category_has_discount h on h.discount_id=d.id
-inner join ek_discount_lang l on l.discount_id=d.id 
+inner join ek_category_has_discount h on h.discount_id=d.id 
 
 where h.category_id in ($sCats) 
-and h.active=1
-and d.shop_id=$shopId        
-and l.lang_id=$langId        
-        
+and h.active=1    
 order by d.id desc        
         
         ");
@@ -856,16 +802,7 @@ order by d.id desc
             }
             return $discount;
 
-        }, [
-            "ek_product",
-            'ek_product_card',
-            'ek_category',
-            'ek_discount',
-            'ek_discount_lang',
-            'ek_product_has_discount',
-            'ek_product_card_has_discount',
-            'ek_category_has_discount',
-        ]);
+        });
     }
 
 
@@ -897,7 +834,7 @@ order by d.id desc
      */
     public function getDiscountsByProductId($productId, $shopId = null, $langId = null)
     {
-        EkomApi::inst()->initWebContext();
+
 
         // get the discounts that apply to the product,
         // then get the discounts that apply to the product card,

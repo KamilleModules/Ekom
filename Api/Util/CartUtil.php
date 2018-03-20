@@ -83,15 +83,13 @@ class CartUtil
      * @throws \Exception
      *
      */
-    public static function getCarrierOffers($shopId = null, $langId = null)
+    public static function getCarrierOffers()
     {
         $carrierOffers = [];
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
 
         $cartModel = CheckoutUtil::getCurrentCartLayer()->getCartModel();
 
-        $context = CartUtil::getCarrierShippingInfoContext($cartModel, $shopId, $langId);
+        $context = CartUtil::getCarrierShippingInfoContext($cartModel);
         $cart = $cartModel;
 
         $carrierId = CurrentCheckoutData::getCarrierId();
@@ -104,7 +102,7 @@ class CartUtil
         $carrierId = (int)$carrierId;
 
 
-        $carriers = CarrierLayer::getCarrierInstancesByShop($shopId);
+        $carriers = CarrierLayer::getCarrierInstances();
         foreach ($carriers as $id => $carrier) {
             $shippingInfo = $carrier->getShippingInfo($context);
             if (false !== $shippingInfo) {
@@ -124,7 +122,7 @@ class CartUtil
                 ksort($arr);
                 $carrierOffers[$id] = $arr;
             } else {
-                XLog::error("[Ekom module] - CartUtil.getCarrierOffers: why does this shippingInfo call fail? carrierId: $id, shopId: $shopId, langId: $langId");
+                XLog::error("[Ekom module] - CartUtil.getCarrierOffers: why does this shippingInfo call fail? carrierId: $id");
             }
         }
         return $carrierOffers;
@@ -134,18 +132,13 @@ class CartUtil
     /**
      * @see EkomModels::shippingContextModel()
      */
-    public static function getCarrierShippingInfoContext(array $primitiveCartModel, $shopId = null, $langId = null)
+    public static function getCarrierShippingInfoContext(array $primitiveCartModel)
     {
-
-
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
-
         /**
          * Can the carrier calculate the shippingInfo?
          */
-        $shippingAddress = self::getCurrentShippingAddress($langId);
-        $shopAddress = self::getCurrentShopAddress($shopId, $langId, $shippingAddress);
+        $shippingAddress = self::getCurrentShippingAddress();
+        $shopAddress = self::getCurrentShopAddress($shippingAddress);
         return [
             "cartItems" => $primitiveCartModel['items'],
             "cartWeight" => $primitiveCartModel['cartTotalWeight'],
@@ -509,7 +502,7 @@ class CartUtil
      * @see EkomModels::addressModel()
      * @throws EkomException
      */
-    private static function getCurrentShippingAddress($langId = null)
+    private static function getCurrentShippingAddress()
     {
         /**
          * If the user is not connected and/or disconnect,
@@ -534,7 +527,7 @@ class CartUtil
              */
             try {
 
-                return UserAddressLayer::getAddressById($userId, $addressId, $langId);
+                return UserAddressLayer::getAddressById($userId, $addressId);
             } catch (\Exception $e) {
                 // well, the last statement at the bottom of this method seems to do the trick
             }
@@ -543,7 +536,7 @@ class CartUtil
         /**
          * Otherwise, does the user have a preferred address?
          */
-        return UserAddressLayer::getPreferredShippingAddress($userId, $langId);
+        return UserAddressLayer::getPreferredShippingAddress($userId);
     }
 
 
@@ -554,21 +547,21 @@ class CartUtil
      * @see EkomModels::shopPhysicalAddress()
      * @throws EkomException
      */
-    private static function getCurrentShopAddress($shopId, $langId, array $shippingAddress = null)
+    private static function getCurrentShopAddress(array $shippingAddress = null)
     {
         /**
          * If the shop address was already SELECTED (by ekom), then use this address
          */
         $addressId = CurrentCheckoutData::getShopAddressId();
         if (null !== $addressId) {
-            return ShopLayer::getPhysicalAddressById($addressId, $shopId, $langId);
+            return ShopLayer::getPhysicalAddressById($addressId);
         }
 
         /**
          * Otherwise, we return the warehouse address closest to the user's shipping address.
          * Note: that does apply only if the shop has multiple warehouse addresses.
          */
-        $addresses = ShopLayer::getPhysicalAddresses(null, $shopId, $langId);
+        $addresses = ShopLayer::getPhysicalAddresses();
         if ($addresses) {
             if (null !== $shippingAddress && count($addresses) > 1) { // multiple addresses, we choose the closest
                 return CartUtil::getClosestPhysicalAddress($shippingAddress, $addresses);
