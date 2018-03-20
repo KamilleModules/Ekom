@@ -20,5 +20,9 @@
   * [Concepts pour le développement](developer/developer-concepts.md)
      
   
+* Développement Front office
+  * [Tunnel de paiement](developer/front/payment_tunnel.md)
+     
+  
 * FAQ
   * [Les questions les plus fréquentes](faq.md)

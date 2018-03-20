@@ -23,16 +23,12 @@ class SokoPaymentCheckoutProcessStep extends BaseCheckoutProcessStep
 
 
     private $response;
-    private $shopId;
-    private $langId;
     private $firstAddressForm;
 
     public function __construct()
     {
         parent::__construct();
         $this->response = null;
-        $this->shopId = null;
-        $this->langId = null;
         $this->firstAddressForm = null;
 
     }
@@ -40,7 +36,6 @@ class SokoPaymentCheckoutProcessStep extends BaseCheckoutProcessStep
 
     public function isPostedSuccessfully(CheckoutProcessInterface $cp, array $context)
     {
-        $this->shopId = $context['shop_id'];
         /**
          * This step will never be valid.
          * Instead, use an ajax service to place the order.
@@ -87,7 +82,7 @@ class SokoPaymentCheckoutProcessStep extends BaseCheckoutProcessStep
 
         $paymentMethodId = CurrentCheckoutData::getPaymentMethodId();
         if (null === $paymentMethodId) {
-            $paymentMethodId = PaymentLayer::getPreferredPaymentMethodId($this->shopId);
+            $paymentMethodId = PaymentLayer::getPreferredPaymentMethodId();
         }
 
         /**
@@ -96,7 +91,7 @@ class SokoPaymentCheckoutProcessStep extends BaseCheckoutProcessStep
         CurrentCheckoutData::setPaymentMethodId($paymentMethodId);
 
         return [
-            "paymentMethodItems" => PaymentLayer::getPaymentMethodHandlersItems($this->shopId, $paymentMethodId),
+            "paymentMethodItems" => PaymentLayer::getPaymentMethodHandlersItems($paymentMethodId),
             "uriPaymentThankYou" => E::link("Ekom_checkoutOnePageThankYou"),
             "paymentMethodId" => $paymentMethodId,
         ];

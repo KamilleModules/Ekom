@@ -30,11 +30,10 @@ order by name asc
         ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
 
-    public static function getIdByName($name, $shopId = null)
+    public static function getIdByName($name)
     {
-        $shopId = E::getShopId($shopId);
-        $id = A::cache()->get("Ekom.SellerLayer.getIdByName.$shopId.$name", function () use ($name, $shopId) {
-            return QuickPdo::fetch("select id from ek_seller where name=:name and shop_id=$shopId", ['name' => $name], \PDO::FETCH_COLUMN);
+        $id = A::cache()->get("Ekom.SellerLayer.getIdByName.$name", function () use ($name) {
+            return QuickPdo::fetch("select id from ek_seller where name=:name", ['name' => $name], \PDO::FETCH_COLUMN);
         });
         if (false === $id) {
             throw new EkomException("Seller not found with name $name");
@@ -50,12 +49,8 @@ order by name asc
         });
     }
 
-    public static function getDefaultSellerAddressByName($seller, $shopId = null, $langId = null)
+    public static function getDefaultSellerAddressByName($seller)
     {
-        $shopId = E::getShopId($shopId);
-        $langId = E::getLangId($langId);
-
-
         /**
          * Some sellers are just virtual and dynamically created.
          * This was the case for our company:
@@ -70,24 +65,21 @@ order by name asc
          */
 
 
-        $sellerAddress = A::cache()->get("Ekom.SellerLayer.getDefaultSellerAddress.$seller.$shopId.$langId", function () use ($seller, $langId, $shopId) {
+        $sellerAddress = A::cache()->get("Ekom.SellerLayer.getDefaultSellerAddress.$seller", function () use ($seller) {
 
             $q = "
             select 
 a.*,
 c.iso_code as country_iso_code,
-l.label as country
+c.label as country
 
 from ek_seller_has_address h
 inner join ek_seller s on s.id=h.seller_id 
 inner join ek_address a on a.id=h.address_id 
-inner join ek_country c on c.id=a.country_id 
-inner join ek_country_lang l on l.country_id=c.id 
+inner join ek_country c on c.id=a.country_id  
 
 where s.name=:seller
-and s.shop_id=$shopId
 and a.active=1
-and l.lang_id=$langId
 
 order by h.`order` asc
             ";

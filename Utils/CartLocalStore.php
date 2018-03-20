@@ -25,9 +25,9 @@ class CartLocalStore
         return $this;
     }
 
-    public function getUserCart($userId, $shopId)
+    public function getUserCart($userId)
     {
-        $f = $this->dir . "/" . $this->hash($userId) . "-$shopId.php";
+        $f = $this->dir . "/" . $this->hash($userId) . ".php";
         if (file_exists($f)) {
             $ret = unserialize(file_get_contents($f));
         } else {
@@ -36,9 +36,9 @@ class CartLocalStore
         return $ret;
     }
 
-    public function saveUserCart($userId, $shopId, array $cart)
+    public function saveUserCart($userId, array $cart)
     {
-        $f = $this->dir . "/" . $this->hash($userId) . "-$shopId.php";
+        $f = $this->dir . "/" . $this->hash($userId) . ".php";
         FileSystemTool::mkfile($f, serialize($cart));
     }
 

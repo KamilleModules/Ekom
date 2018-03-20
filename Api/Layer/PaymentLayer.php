@@ -75,9 +75,9 @@ class PaymentLayer
      *      - selected: bool, whether this payment method item has focus
      * @throws \Exception
      */
-    public static function getPaymentMethodHandlersItems($shopId = null, $currentPaymentMethodId = null)
+    public static function getPaymentMethodHandlersItems($currentPaymentMethodId = null)
     {
-        $methods = self::getShopPaymentMethods($shopId);
+        $methods = self::getShopPaymentMethods();
         $ret = [];
         /**
          * @var $collection PaymentMethodHandlerCollectionInterface
@@ -109,9 +109,9 @@ class PaymentLayer
      * @return int
      * @throws EkomException
      */
-    public static function getPreferredPaymentMethodId($shopId = null)
+    public static function getPreferredPaymentMethodId()
     {
-        $allMethods = self::getShopPaymentMethods($shopId);
+        $allMethods = self::getShopPaymentMethods();
         if (count($allMethods) > 0) {
             $row = array_shift($allMethods);
             return (int)$row['id'];
@@ -130,22 +130,18 @@ class PaymentLayer
      * - name: string
      * - configuration: array
      */
-    private static function getShopPaymentMethods($shopId = null)
+    private static function getShopPaymentMethods()
     {
-        $shopId = E::getShopId($shopId);
-        return A::cache()->get("Ekom.PaymentLayer.getShopPaymentMethods.$shopId", function () use ($shopId) {
+        return A::cache()->get("Ekom.PaymentLayer.getShopPaymentMethods", function ()  {
 
             $ret = QuickPdo::fetchAll("
 select
-m.id, 
-m.name,
-h.configuration
+id, 
+name,
+configuration
 
-from ek_shop_has_payment_method h 
-inner join ek_payment_method m on m.id=h.payment_method_id 
-
-where h.shop_id=$shopId
-order by h.`order` asc 
+from ek_payment_method  
+order by `order` asc 
         ");
 
             foreach ($ret as $k => $item) {
@@ -171,9 +167,9 @@ order by h.`order` asc
      * @see PaymentLayer
      * @throws EkomException if something wrong happens
      */
-    public static function getDefaultPaymentMethod($shopId = null)
+    public static function getDefaultPaymentMethod()
     {
-        $allMethods = self::getShopPaymentMethods($shopId);
+        $allMethods = self::getShopPaymentMethods();
         if (count($allMethods) > 0) {
             $row = array_shift($allMethods);
             return [
@@ -202,25 +198,7 @@ order by h.`order` asc
         return $handler->getPaymentDetails($userMethodOptions);
     }
 
-    public function shopHasPaymentMethod($shopId, $id)
-    {
-        $shopId = (int)$shopId;
-        $id = (int)$id;
-        if (false !== QuickPdo::fetch("
-select shop_id 
-from ek_shop_has_payment_method
-where shop_id=$shopId and payment_method_id=$id
-        ")) {
-            return true;
-        }
-        return false;
-    }
 
-
-    public function getPaymentMethods($shopId = null)
-    {
-        return self::getShopPaymentMethods($shopId);
-    }
 
 
     private static function getPaymentMethodName2Ids($shopId = null)

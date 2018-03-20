@@ -431,10 +431,9 @@ order by date asc
     }
 
 
-    public static function addOrderStatusByCode($orderId, $code, $shopId = null)
+    public static function addOrderStatusByCode($orderId, $code)
     {
-        $shopId = E::getShopId($shopId);
-        $code2Ids = self::getCode2Ids($shopId);
+        $code2Ids = self::getCode2Ids();
         if (array_key_exists($code, $code2Ids)) {
             $orderStatusId = $code2Ids[$code];
             return EkomApi::inst()->orderHasOrderStatus()->create([
@@ -446,14 +445,10 @@ order by date asc
         throw new EkomException("Unknown code: $code");
     }
 
-    public static function getCode2Ids($shopId)
+    public static function getCode2Ids()
     {
-        return A::cache()->get("Ekom.OrderLayer.$shopId", function () use ($shopId) {
-            return EkomApi::inst()->orderStatus()->readKeyValues("code", "id", [
-                "where" => [
-                    ["shop_id", "=", $shopId],
-                ],
-            ]);
+        return A::cache()->get("Ekom.OrderLayer", function () {
+            return QuickPdo::fetchAll("select code, id from ek_order_status", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
         });
     }
 

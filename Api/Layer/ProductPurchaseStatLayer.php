@@ -15,7 +15,7 @@ use QuickPdo\QuickPdoStmtTool;
 class ProductPurchaseStatLayer
 {
 
-    public static function insertStatsByCart(array $cart, $shopId, $userId, $currencyId)
+    public static function insertStatsByCart(array $cart, $userId)
     {
         foreach ($cart['items'] as $box) {
 
@@ -23,9 +23,7 @@ class ProductPurchaseStatLayer
 
             EkomApi::inst()->productPurchaseStat()->create([
                 "purchase_date" => date("Y-m-d H:i:s"),
-                "shop_id" => $shopId,
                 "user_id" => $userId,
-                "currency_id" => $currencyId,
                 "product_id" => $box['product_id'],
                 "product_ref" => $box['ref'],
                 "product_label" => $box['label'],

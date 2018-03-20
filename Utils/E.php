@@ -400,6 +400,7 @@ class E
 
         if (null === self::$conf) {
             self::$conf = [
+                'currencyIsoCode' => XConfig::get("Ekom.currencyIsoCode"),
                 'moneyFormatArgs' => XConfig::get("Ekom.moneyFormatArgs"),
                 'acceptOutOfStockOrders' => XConfig::get("Ekom.acceptOutOfStockOrders"),
                 'sessionTimeout' => XConfig::get("Ekom.sessionTimeout"),

@@ -140,9 +140,9 @@ class CheckoutOrderUtil
 
         $importantKeys = [
             'user_id',
-            'shop_id',
-            'lang_id',
-            'currency_id',
+//            'shop_id',
+//            'lang_id',
+//            'currency_id',
             'billing_address_id',
             'payment_method_id',
         ];
@@ -195,8 +195,6 @@ class CheckoutOrderUtil
 
             //  we start with special objects
             //--------------------------------------------
-            $shopId = $data['shop_id'];
-            $langId = $data['lang_id'];
             $billingAddressId = $data['billing_address_id'];
 
             // carrier
@@ -207,7 +205,7 @@ class CheckoutOrderUtil
             $carrierId = null;
             if (array_key_exists("carrier_id", $data)) {
                 $carrierId = $data['carrier_id'];
-                $carrier = CarrierLayer::getCarrierInstanceById($carrierId, $shopId);
+                $carrier = CarrierLayer::getCarrierInstanceById($carrierId);
                 $carrier->placeOrder($orderModel, $cartModel, $data);
             }
 
@@ -236,14 +234,11 @@ class CheckoutOrderUtil
             }
 
 
-            $shopInfo = ShopLayer::getShopInfoById($shopId);
-            if (false === $shopInfo) {
-                $this->devError("Yikes: shop info not found: $shopId");
-            }
+            $shopInfo = [];
 
             $shopAddressId = (array_key_exists("shop_address_id", $data)) ? $data['shop_address_id'] : null;
             if (null !== $shopAddressId) {
-                $shopAddress = ShopLayer::getPhysicalAddressById($shopAddressId, $shopId, $langId);
+                $shopAddress = ShopLayer::getPhysicalAddressById($shopAddressId);
             } else {
                 $shopAddress = ShopLayer::getDefaultShopAddress();
             }
@@ -251,11 +246,11 @@ class CheckoutOrderUtil
 
             $shippingAddressId = (array_key_exists("shipping_address_id", $data)) ? $data['shipping_address_id'] : null;
             if (null !== $shippingAddressId) {
-                $shippingAddress = UserAddressLayer::getAddressById($userId, $shippingAddressId, $langId);
+                $shippingAddress = UserAddressLayer::getAddressById($userId, $shippingAddressId);
             } else {
                 $shippingAddress = false;
             }
-            $billingAddress = UserAddressLayer::getAddressById($userId, $billingAddressId, $langId);
+            $billingAddress = UserAddressLayer::getAddressById($userId, $billingAddressId);
 
 
             $_cartModel = $cartModel;
@@ -293,32 +288,14 @@ class CheckoutOrderUtil
             Hooks::call("Ekom_CheckoutOrderUtil_decorateOrderDetails", $orderDetails, $data);
 
 
-            // ?
-//            unset($orderDetails['cartModel']['itemsGroupedBySeller']);
-
-
-            $currencyIsoCode = CurrencyLayer::getIsoCodeById($data['currency_id']);
-            $langIsoCode = LangLayer::getIsoCodeById($data['lang_id']);
-
-            if (false === $currencyIsoCode) {
-                $this->devError("Inconsistent data: currency " . $data['currency_id'] . " was not found");
-            }
-
-            if (false === $langIsoCode) {
-                $this->devError("Inconsistent data: lang " . $data['lang_id'] . " was not found");
-            }
-
 
             // I let this model in non serialized form for debugging
             $orderModel = array_replace($orderModel, [
-                "shop_id" => $shopId,
                 "user_id" => $userId,
                 "date" => date('Y-m-d H:i:s'),
                 "amount" => $cartModel['priceOrderGrandTotalRaw'],
                 "coupon_saving" => $cartModel['couponSavingRaw'],
                 "cart_quantity" => $cartModel['cartTotalQuantity'],
-                "currency_iso_code" => $currencyIsoCode,
-                "lang_iso_code" => $langIsoCode,
                 "tracking_number" => $trackingNumber,
                 "user_info" => $userInfo,
                 "shop_info" => $shopInfo,
@@ -331,7 +308,7 @@ class CheckoutOrderUtil
             //--------------------------------------------
             // INSERT IN DATABASE
             //--------------------------------------------
-            return $this->placeOrderModel($orderModel, $shopId);
+            return $this->placeOrderModel($orderModel);
 
 
         } else {
@@ -386,7 +363,6 @@ class CheckoutOrderUtil
 
         // by default, we create one invoice per seller
         $userId = $orderModel['user_id'];
-        $shopId = $orderModel['shop_id'];
         $type = "invoice";
         $date = date("Y-m-d H:i:s");
 
@@ -394,11 +370,6 @@ class CheckoutOrderUtil
          * @var $invoiceNumberProvider InvoiceNumberProviderInterface
          */
         $invoiceNumberProvider = X::get("Ekom_getInvoiceNumberProvider");
-        $currencyIsoCode = $orderModel['currency_iso_code'];
-        $langIsoCode = $orderModel['lang_iso_code'];
-        $langId = LangLayer::getLangIdByIso($langIsoCode);
-        $shopItem = ShopLayer::getShopItemById($orderModel['shop_id']);
-        $shopHost = $shopItem['host'];
         $userInfo = $orderModel['user_info'];
         $shippingAddress = $orderModel['shipping_address'];
         $billingAddress = $orderModel['billing_address'];
@@ -518,12 +489,11 @@ class CheckoutOrderUtil
             $sellerDirectives = $sellerInfo[$seller];
 
 
-            $sellerAddress = SellerLayer::getDefaultSellerAddressByName($seller, $shopId, $langId);
-            $sellerId = SellerLayer::getIdByName($seller, $shopId);
+            $sellerAddress = SellerLayer::getDefaultSellerAddressByName($seller);
+            $sellerId = SellerLayer::getIdByName($seller);
 
             // base properties
             $invoice = [];
-            $invoice['shop_id'] = $shopId;
             $invoice['user_id'] = $userId;
             $invoice['order_id'] = $orderId;
             $invoice['seller_id'] = $sellerId;
@@ -532,9 +502,6 @@ class CheckoutOrderUtil
             $invoice['invoice_number_alt'] = "";
             $invoice['invoice_date'] = $date;
             $invoice['payment_method'] = $paymentMethod;
-            $invoice['currency_iso_code'] = $currencyIsoCode;
-            $invoice['lang_iso_code'] = $langIsoCode;
-            $invoice['shop_host'] = $shopHost;
             $invoice['track_identifier'] = ""; // shall be set later?
 
 
@@ -640,11 +607,11 @@ class CheckoutOrderUtil
     //
     //--------------------------------------------
 
-    private function placeOrderModel(array $orderModel, $shopId)
+    private function placeOrderModel(array $orderModel)
     {
         $orderId = null;
         $exception = null;
-        QuickPdo::transaction(function () use ($orderModel, $shopId, &$orderId) {
+        QuickPdo::transaction(function () use ($orderModel,  &$orderId) {
 
             $paymentMethod = $orderModel['order_details']["payment_method_name"];
             $paymentMethodDetails = $orderModel['order_details']["payment_method_details"];
@@ -656,15 +623,12 @@ class CheckoutOrderUtil
             }
 
             $_orderId = EkomApi::inst()->order()->create([
-                'shop_id' => $orderModel['shop_id'],
                 'user_id' => $orderModel['user_id'],
                 'reference' => $orderModel['reference'],
                 'date' => $orderModel['date'],
                 'amount' => $orderModel['amount'],
                 'coupon_saving' => $orderModel['coupon_saving'],
                 'cart_quantity' => $orderModel['cart_quantity'],
-                'currency_iso_code' => $orderModel['currency_iso_code'],
-                'lang_iso_code' => $orderModel['lang_iso_code'],
                 'payment_method' => $paymentMethod,
                 'payment_method_extra' => $paymentMethodExtra,
                 'user_info' => serialize($orderModel['user_info']),
@@ -708,19 +672,16 @@ class CheckoutOrderUtil
             //--------------------------------------------
             // PRODUCT STATS
             //--------------------------------------------
-            $currencyId = CurrencyLayer::getIdByIsoCode($orderModel['currency_iso_code']);
             ProductPurchaseStatLayer::insertStatsByCart(
                 $orderModel['order_details']['cartModel'],
-                $orderModel['shop_id'],
-                $orderModel['user_id'],
-                $currencyId
+                $orderModel['user_id']
             );
 
 
             //--------------------------------------------
             // FINALIZING THE ORDER PROCESS
             //--------------------------------------------
-            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT, $shopId);
+            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT);
             Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
 
 
@@ -770,15 +731,14 @@ class CheckoutOrderUtil
     private function checkDataConsistency(array $data, $cartModel)
     {
         $userId = (int)$data['user_id'];
-        $shopId = (int)$data['shop_id'];
         $billingAddressId = (int)$data['billing_address_id'];
         $paymentMethodId = (int)$data['payment_method_id'];
 
 
         // the user belongs to the shop
-        $res = QuickPdo::fetch("select id from ek_user where id=$userId and shop_id=$shopId");
+        $res = QuickPdo::fetch("select id from ek_user where id=$userId");
         if (false === $res) {
-            $this->devError("Inconsistent data: the user $userId does not belong to the shop $shopId");
+            $this->devError("Inconsistent data: user $userId not found");
         }
 
         // the user owns the billing address
@@ -801,23 +761,23 @@ class CheckoutOrderUtil
             }
 
             // the carrier belongs to the shop
-            $res = QuickPdo::fetch("select shop_id from ek_shop_has_carrier where shop_id=$shopId and carrier_id=$carrierId");
+            $res = QuickPdo::fetch("select id from ek_carrier where id=$carrierId");
             if (false === $res) {
-                $this->devError("Inconsistent data: the carrier $carrierId does not belong to the shop $shopId");
+                $this->devError("Inconsistent data: carrier not found $carrierId");
             }
 
             // the shop address really belongs to the shop
-            $res = QuickPdo::fetch("select id from ek_shop_has_address where shop_id=$shopId and address_id=$shopAddressId");
+            $res = QuickPdo::fetch("select id from ek_store where address_id=$shopAddressId");
             if (false === $res) {
-                $this->devError("Inconsistent data: the shop address $shopAddressId does not belong to the shop $shopId");
+                $this->devError("Inconsistent data: address $shopAddressId is not a store address");
             }
         }
 
 
         // the shop owns the payment method id
-        $res = QuickPdo::fetch("select shop_id from ek_shop_has_payment_method where shop_id=$shopId and payment_method_id=$paymentMethodId");
+        $res = QuickPdo::fetch("select id from ek_payment_method where id=$paymentMethodId");
         if (false === $res) {
-            $this->devError("Inconsistent data: the shop $shopId does not own the payment method $paymentMethodId");
+            $this->devError("Inconsistent data: payment method $paymentMethodId not found");
         }
 
 
