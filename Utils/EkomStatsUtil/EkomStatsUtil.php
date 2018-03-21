@@ -20,8 +20,6 @@ class EkomStatsUtil implements EkomStatsUtilInterface
 {
     protected $dateStart;
     protected $dateEnd;
-    protected $currency;
-    protected $shopId;
     protected $_ipByDate;
     protected $_orderByDate;
 
@@ -30,8 +28,6 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     {
         $this->dateStart = null;
         $this->dateEnd = null;
-        $this->currency = null;
-        $this->shopId = null;
         $this->_ipByDate = null;
         $this->_orderByDate = null;
         $this->_dateToNbOrder = null;
@@ -46,15 +42,13 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     public function prepare($dateStart = null, $dateEnd = null, array $options = [])
     {
         $options = array_replace([
-            "currency" => E::getCurrencyIso(),
-            "shopId" => null,
+//            "currency" => E::currencyIsoCode(),
+//            "shopId" => null,
         ], $options);
 
 
         $this->dateStart = $dateStart;
         $this->dateEnd = $dateEnd;
-        $this->currency = $options['currency'];
-        $this->shopId = $options['shopId'];
 
         return $this;
     }
@@ -94,8 +88,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
      */
     public function getRevenues(array $options = [])
     {
-        $options['shopId'] = $this->shopId;
-        return OrderLayer::getOrdersAmountAndCount($this->dateStart, $this->dateEnd, $this->currency, $options);
+        return OrderLayer::getOrdersAmountAndCount($this->dateStart, $this->dateEnd, $options);
     }
 
 
@@ -147,7 +140,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
 
     public function getNetProfit()
     {
-        $date2Wholesale = ProductPurchaseStatLayer::getDate2WholeSalePrice($this->dateStart, $this->dateEnd, $this->shopId);
+        $date2Wholesale = ProductPurchaseStatLayer::getDate2WholeSalePrice($this->dateStart, $this->dateEnd);
         $wholesaleTotal = array_sum($date2Wholesale);
         $rev = $this->getRevenues();
         $orderTotal = $rev[0];
@@ -161,28 +154,28 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     {
         return OrderLayer::getNbOrderWithStatuses([
             EkomOrderStatus::STATUS_PREPARING_ORDER,
-        ], $this->dateStart, $this->dateEnd, $this->shopId);
+        ], $this->dateStart, $this->dateEnd);
     }
 
     public function getNbAbandonedCarts()
     {
-        return EkomCartTrackerCartLayer::getNbAbandonedCarts($this->dateStart, $this->dateEnd, $this->shopId);
+        return EkomCartTrackerCartLayer::getNbAbandonedCarts($this->dateStart, $this->dateEnd);
     }
 
     public function getNbNewCustomers()
     {
-        return UserLayer::getNbNewUsers($this->dateStart, $this->dateEnd, $this->shopId);
+        return UserLayer::getNbNewUsers($this->dateStart, $this->dateEnd);
     }
 
 
     public function getNbNewNewsletterSubscribers()
     {
-        return NewsletterLayer::getNbNewSubscribers($this->dateStart, $this->dateEnd, $this->shopId);
+        return NewsletterLayer::getNbNewSubscribers($this->dateStart, $this->dateEnd);
     }
 
     public function getNbTotalNewsletterSubscribers()
     {
-        return NewsletterLayer::getNbTotalSubscribers($this->dateStart, $this->dateEnd, $this->shopId);
+        return NewsletterLayer::getNbTotalSubscribers($this->dateStart, $this->dateEnd);
     }
 
 
@@ -221,7 +214,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     protected function getOrderByDate()
     {
         if (null === $this->_orderByDate) {
-            $this->_orderByDate = OrderLayer::getOrdersAmountAndCountByDate($this->dateStart, $this->dateEnd, $this->shopId);
+            $this->_orderByDate = OrderLayer::getOrdersAmountAndCountByDate($this->dateStart, $this->dateEnd);
             $this->_dateToNbOrder = [];
             foreach ($this->_orderByDate as $item) {
                 $this->_dateToNbOrder[$item['date']] = $item['count'];
@@ -235,14 +228,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     protected function getIpByDate()
     {
         if (null === $this->_ipByDate) {
-            $host = null;
-            if (null !== $this->shopId && 0!== $this->shopId) {
-                $host = ShopLayer::getHostById($this->shopId);
-                if (false === $host) {
-                    throw new EkomException("This shop is not available anymore: " . $this->shopId);
-                }
-            }
-            $this->_ipByDate = UserTrackerLayer::getIpInfo($this->dateStart, $this->dateEnd, $host);
+            $this->_ipByDate = UserTrackerLayer::getIpInfo($this->dateStart, $this->dateEnd);
         }
         return $this->_ipByDate;
     }
@@ -251,8 +237,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     protected function getRevenueGraph()
     {
         $ret = [];
-        $options['shopId'] = $this->shopId;
-        $rows = OrderLayer::getOrdersAmountAndCountGraph($this->dateStart, $this->dateEnd, $this->currency, $options);
+        $rows = OrderLayer::getOrdersAmountAndCountGraph($this->dateStart, $this->dateEnd);
         foreach ($rows as $date => $item) {
             $ret[$date] = (float)$item["sum"];
         }
@@ -262,8 +247,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     protected function getNbOrderGraph()
     {
         $ret = [];
-        $options['shopId'] = $this->shopId;
-        $rows = OrderLayer::getOrdersAmountAndCountGraph($this->dateStart, $this->dateEnd, $this->currency, $options);
+        $rows = OrderLayer::getOrdersAmountAndCountGraph($this->dateStart, $this->dateEnd);
         foreach ($rows as $date => $item) {
             $ret[$date] = (int)$item["count"];
         }
@@ -273,8 +257,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     protected function getAverageCartGraph()
     {
         $ret = [];
-        $options['shopId'] = $this->shopId;
-        $rows = OrderLayer::getOrdersAmountAndCountGraph($this->dateStart, $this->dateEnd, $this->currency, $options);
+        $rows = OrderLayer::getOrdersAmountAndCountGraph($this->dateStart, $this->dateEnd);
         foreach ($rows as $date => $item) {
             $count = (int)$item['count'];
             if (0 === $count) {
@@ -343,7 +326,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
     public function getNetProfitGraph()
     {
         $ret = [];
-        $date2Wholesale = ProductPurchaseStatLayer::getDate2WholeSalePrice($this->dateStart, $this->dateEnd, $this->shopId);
+        $date2Wholesale = ProductPurchaseStatLayer::getDate2WholeSalePrice($this->dateStart, $this->dateEnd);
 
         $date2NetProfit = $this->getRevenueGraph();
 

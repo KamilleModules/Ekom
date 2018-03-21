@@ -600,7 +600,7 @@ class CheckoutOrderUtil
         /**
          * Hooks might want to add other info (like pei_direct_debit, ...)
          */
-//        Hooks::call("Ekom_CheckoutOrderUtil_processInvoiceAfter", $invoiceId, $invoice);
+        Hooks::call("Ekom_CheckoutOrderUtil_processInvoiceAfter", $invoiceId, $invoice, $orderModel);
     }
 
     //--------------------------------------------

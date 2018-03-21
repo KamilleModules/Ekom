@@ -43,6 +43,22 @@ class E
         return ApplicationRegistry::get("isBackoffice", false);
     }
 
+    /**
+     * Return the front office lang iso code (eng, fra, ...)
+     */
+    public static function langIsoCode()
+    {
+        return E::conf("langIsoCode");
+    }
+
+    /**
+     * Return the front office currency iso code (EUR, USD, ...)
+     */
+    public static function currencyIsoCode()
+    {
+        return E::conf("currencyIsoCode");
+    }
+
 
     public static function uriSite()
     {
@@ -150,39 +166,6 @@ class E
         return CaseTool::toDog($word);
     }
 
-
-    public static function getCurrencyId($currencyId = null)
-    {
-        if (null !== $currencyId) {
-            return (int)$currencyId;
-        }
-        if (false === E::isBackOffice()) {
-
-            return (int)ApplicationRegistry::get("ekom.currency_id");
-        } else {
-            return EkomNullosUser::getEkomValue("currency_id");
-        }
-    }
-
-    public static function getCurrencyIso()
-    {
-        if (false === E::isBackOffice()) {
-
-            return ApplicationRegistry::get("ekom.currency_iso");
-        } else {
-            return EkomNullosUser::getEkomValue("currency_iso_code");
-        }
-    }
-
-    public static function getLangIso()
-    {
-        if (false === E::isBackOffice()) {
-
-            return ApplicationRegistry::get("ekom.lang_iso");
-        } else {
-            return EkomNullosUser::getEkomValue("lang_iso_code");
-        }
-    }
 
     /**
      * This should be the only method used to check whether or not the ekom customer
@@ -400,6 +383,7 @@ class E
 
         if (null === self::$conf) {
             self::$conf = [
+                'langIsoCode' => XConfig::get("Ekom.langIsoCode"),
                 'currencyIsoCode' => XConfig::get("Ekom.currencyIsoCode"),
                 'moneyFormatArgs' => XConfig::get("Ekom.moneyFormatArgs"),
                 'acceptOutOfStockOrders' => XConfig::get("Ekom.acceptOutOfStockOrders"),

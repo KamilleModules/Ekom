@@ -13,13 +13,13 @@ use XiaoApi\Object\TableCrudObject;
  *
  * You are supposed to extend this object.
  */
-class GeneratedSeller extends TableCrudObject
+class GeneratedTimezone extends TableCrudObject
 {
 
     public function __construct()
     {
         parent::__construct();
-        $this->table = "ek_seller";
+        $this->table = "ek_timezone";
         $this->primaryKey = ['id'];
     }
 
@@ -32,7 +32,6 @@ class GeneratedSeller extends TableCrudObject
         $base = [
 			'id' => null,
 			'name' => '',
-			'label' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

@@ -198,7 +198,6 @@ class CartLayer
     public function removeItem($token)
     {
         $this->initSessionCart();
-        $shopId = E::getShopId();
         $token = (string)$token;
         foreach ($_SESSION['ekom'][$this->sessionName]['items'] as $k => $item) {
             if ($item['token'] === $token) {
@@ -289,8 +288,12 @@ class CartLayer
          * Source is being set to "checkout" by CheckoutOrderUtil
          * when it cleans the cart after placing the order
          */
-        $_SESSION['ekom'][$this->sessionName] = [];
+        $_SESSION['ekom'][$this->sessionName] = [
+            "items" => [],
+            'coupons' => [],
+        ];
         $this->writeToLocalStore($source);
+        return $this;
     }
 
 
@@ -398,6 +401,7 @@ class CartLayer
 
     protected function initSessionCart()
     {
+
         if (
             false === array_key_exists('ekom', $_SESSION) ||
             false === array_key_exists($this->sessionName, $_SESSION['ekom'])

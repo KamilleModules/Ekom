@@ -47,8 +47,7 @@ class DefaultDashboardModel
 
         $info = $o->getRevenues();
         list($amount, $count) = $info;
-        $avgCart = (0 === $count) ? 0 : $amount / $count;
-
+        $avgCart = (0 === (int)$count) ? 0 : $amount / $count;
 
 
         $ajaxRet = [

@@ -20,14 +20,10 @@ class OrderLayer
 {
 
 
-    public static function getOrdersAmountAndCountByDate($dateStart = null, $dateEnd = null, $shopId = null)
+    public static function getOrdersAmountAndCountByDate($dateStart = null, $dateEnd = null)
     {
         $markers = [];
-        $q = "select date(date) as date, currency_iso_code, sum(amount) as sum, count(*) as count  from ek_order where 1";
-        if (null !== $shopId) {
-            $q .= " and shop_id=" . (int)$shopId;
-        }
-
+        $q = "select date(date) as date, sum(amount) as sum, count(*) as count  from ek_order where 1";
 
         QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "date");
         $q .= " group by date(date)";
@@ -39,126 +35,59 @@ class OrderLayer
     /**
      * @param null $dateStart
      * @param null $dateEnd
-     * @param null|false|string $currencyIso
-     *          if false, return an array
-     *
-     * @return array, depends on the value of currencyIso:
-     *          if currencyIso is false, then return an array of currencyIsoCode => amount
-     *          else,
-     *              return the total amount for the date range in the given currency iso code
-     *
+     * @return array, return the total amount for the date range in the given currency iso code
      */
-    public static function getOrdersAmountAndCount($dateStart = null, $dateEnd = null, $currencyIso = null, array $options = [])
+    public static function getOrdersAmountAndCount($dateStart = null, $dateEnd = null, array $options = [])
     {
 
         $options = array_replace([
             'queryWhereExtra' => '',
             'queryWhereExtraMarkers' => [],
-            'shopId' => null,
         ], $options);
 
-        $qExtra = $options['queryWhereExtra'];
+
         $qExtraMarkers = $options['queryWhereExtraMarkers'];
-        $shopId = $options['shopId'];
 
 
-        $q = "select currency_iso_code, sum(amount) as sum, count(*) as count  from ek_order where 1";
-        if (null !== $shopId) {
-            $q .= " and shop_id=" . (int)$shopId;
-        }
+        $q = "select sum(amount) as sum, count(*) as count  from ek_order where 1";
 
         $markers = $qExtraMarkers;
         QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "date");
-        if ($qExtra) {
-            $q .= $qExtra;
-        }
-        $q .= " group by currency_iso_code";
+        $res = QuickPdo::fetch($q, $markers);
 
-
-        $all = QuickPdo::fetchAll($q, $markers);
-
-
-        $defaultCurrencyIso = E::getCurrencyIso();
-        if (null === $currencyIso) {
-            $currencyIso = $defaultCurrencyIso;
-        }
-
-
-        /**
-         * Flattening the currency
-         * ---------------------------
-         * The difficulty with this method is that the order table contains orders in
-         * potentially different currencies, so we need to transpose all order amounts
-         * into ONE currency before processing the data;
-         */
-
-        $total = 0;
-        $countTotal = 0;
-        foreach ($all as $item) {
-
-            $currency = $item['currency_iso_code'];
-            $amount = $item['sum'];
-            $count = $item['count'];
-
-
-            // count
-            $countTotal += $count;
-
-            // sum
-            if ($currencyIso === $currency) {
-                $total += $amount;
-            } else {
-                if ("" === $currency) {
-                    $currency = $defaultCurrencyIso;
-                }
-                if ($currencyIso !== $currency) {
-                    $amount = CurrencyUtil::convertAmount($amount, $currency, $currencyIso);
-                }
-                $total += $amount;
-            }
-        }
         return [
-            $total, // sum
-            $countTotal, // count
+            $res['sum'],
+            $res['count'],
         ];
 
     }
 
 
-    public static function getOrdersAmountAndCountGraph($dateStart = null, $dateEnd = null, $currencyIso = null, array $options = [])
+    public static function getOrdersAmountAndCountGraph($dateStart = null, $dateEnd = null, array $options = [])
     {
 
         $options = array_replace([
             'queryWhereExtra' => '',
             'queryWhereExtraMarkers' => [],
-            'shopId' => null,
         ], $options);
 
         $qExtra = $options['queryWhereExtra'];
         $qExtraMarkers = $options['queryWhereExtraMarkers'];
-        $shopId = $options['shopId'];
 
 
-        $q = "select date(date) as date, currency_iso_code, sum(amount) as sum, count(*) as count  from ek_order where 1";
-        if (null !== $shopId) {
-            $q .= " and shop_id=" . (int)$shopId;
-        }
+        $q = "select date(date) as date, sum(amount) as sum, count(*) as count  from ek_order where 1";
+
 
         $markers = $qExtraMarkers;
         QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "date");
         if ($qExtra) {
             $q .= $qExtra;
         }
-        $q .= " group by date(date), currency_iso_code";
+        $q .= " group by date(date)";
 
 
         $all = QuickPdo::fetchAll($q, $markers);
 
-
-        $defaultCurrencyIso = E::getCurrencyIso();
-        if (null === $currencyIso) {
-            $currencyIso = $defaultCurrencyIso;
-        }
 
 
         /**
@@ -173,19 +102,8 @@ class OrderLayer
         foreach ($all as $item) {
 
             $date = $item['date'];
-            $currency = $item['currency_iso_code'];
             $amount = $item['sum'];
             $count = $item['count'];
-
-            // converting amount into the right currency
-            if ($currencyIso !== $currency) {
-                if ("" === $currency) {
-                    $currency = $defaultCurrencyIso;
-                }
-                if ($currencyIso !== $currency) {
-                    $amount = CurrencyUtil::convertAmount($amount, $currency, $currencyIso);
-                }
-            }
 
 
             if (array_key_exists($date, $ret)) {
@@ -214,10 +132,6 @@ max(date(o.date)) as max
 from ek_order o
 where 1
             ";
-
-            if (null !== $shopId) {
-                $q .= " and shop_id=" . (int)$shopId;
-            }
 
 
             if ($qExtra) {
@@ -355,7 +269,7 @@ order by date asc
     }
 
 
-    public static function getNbOrderWithStatuses($status, $dateStart = null, $dateEnd = null, $shopId = null)
+    public static function getNbOrderWithStatuses($status, $dateStart = null, $dateEnd = null)
     {
 
         if (!is_array($status)) {
@@ -377,15 +291,6 @@ from ek_order o
 where 1
         ";
 
-        if (null !== $shopId) {
-            /**
-             *  https://stackoverflow.com/questions/49028189/mysql-nested-query-not-working-with-an-and-condition
-             */
-            $shopId = (int)$shopId;
-            $q .= "
-AND EXISTS (SELECT 1 FROM ek_order WHERE shop_id=$shopId)            
-            ";
-        }
 
         QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "date");
 
@@ -409,23 +314,21 @@ and
     }
 
 
-    public static function getOrderHistoryById($orderId, $langId = null)
+    public static function getOrderHistoryById($orderId)
     {
-        $langId = E::getLangId($langId);
         $orderId = (int)$orderId;
         return QuickPdo::fetchAll("
 select 
 s.code,
 s.color,
-l.label
+s.label
 
 from ek_order_status s 
 inner join ek_order_has_order_status h on h.order_status_id=s.id
-inner join ek_order_status_lang l on l.order_status_id=s.id
+
  
 
 where h.order_id=$orderId
-and l.lang_id=$langId
 order by date asc         
         ");
     }

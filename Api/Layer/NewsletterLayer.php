@@ -13,7 +13,7 @@ class NewsletterLayer
 {
 
 
-    public static function getNbNewSubscribers($dateStart = null, $dateEnd = null, $shopId = null)
+    public static function getNbNewSubscribers($dateStart = null, $dateEnd = null)
     {
 
         $q = "
@@ -22,11 +22,6 @@ from ek_newsletter
 where unsubscribe_date is null
         ";
 
-        if (null !== $shopId) {
-            $shopId = (int)$shopId;
-            $q .= " and shop_id=$shopId";
-        }
-
         $markers = [];
         QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "subscribe_date");
 
@@ -34,9 +29,9 @@ where unsubscribe_date is null
     }
 
 
-    public static function getNbTotalSubscribers($dateStart = null, $dateEnd = null, $shopId = null)
+    public static function getNbTotalSubscribers($dateStart = null, $dateEnd = null)
     {
-        return self::getNbNewSubscribers(null, $dateEnd, $shopId);
+        return self::getNbNewSubscribers(null, $dateEnd);
     }
 
 
@@ -55,9 +50,7 @@ where email=:email
 
     public static function registerEmail($email)
     {
-        $shopId = E::getShopId();
         return EkomApi::inst()->newsletter()->create([
-            "shop_id" => $shopId,
             "email" => $email,
             "subscribe_date" => date("Y-m-d H:i:s"),
             "unsubscribe_date" => null,

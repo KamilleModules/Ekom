@@ -4,6 +4,7 @@
 namespace Module\Ekom\Api;
 
 use Module\Ekom\Api\Object\Address;
+use Module\Ekom\Api\Object\BackofficeUser;
 use Module\Ekom\Api\Object\Carrier;
 use Module\Ekom\Api\Object\Cart;
 use Module\Ekom\Api\Object\Category;
@@ -11,11 +12,12 @@ use Module\Ekom\Api\Object\CategoryHasDiscount;
 use Module\Ekom\Api\Object\CategoryHasProductCard;
 use Module\Ekom\Api\Object\Country;
 use Module\Ekom\Api\Object\Coupon;
-use Module\Ekom\Api\Object\DirectDebit;
+use Module\Ekom\Api\Object\Currency;
 use Module\Ekom\Api\Object\Discount;
 use Module\Ekom\Api\Object\Feature;
 use Module\Ekom\Api\Object\FeatureValue;
 use Module\Ekom\Api\Object\Invoice;
+use Module\Ekom\Api\Object\Lang;
 use Module\Ekom\Api\Object\Manufacturer;
 use Module\Ekom\Api\Object\Newsletter;
 use Module\Ekom\Api\Object\Order;
@@ -51,6 +53,7 @@ use Module\Ekom\Api\Object\Tag;
 use Module\Ekom\Api\Object\Tax;
 use Module\Ekom\Api\Object\TaxGroup;
 use Module\Ekom\Api\Object\TaxGroupHasTax;
+use Module\Ekom\Api\Object\Timezone;
 use Module\Ekom\Api\Object\User;
 use Module\Ekom\Api\Object\UserGroup;
 use Module\Ekom\Api\Object\UserHasAddress;
@@ -90,6 +93,13 @@ class GeneratedEkomApi extends XiaoApi
     public function address()
     {
         return $this->getObject('address');
+    }
+    /**
+     * @return BackofficeUser
+     */
+    public function backofficeUser()
+    {
+        return $this->getObject('backofficeUser');
     }
     /**
      * @return Carrier
@@ -141,11 +151,11 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('coupon');
     }
     /**
-     * @return DirectDebit
+     * @return Currency
      */
-    public function directDebit()
+    public function currency()
     {
-        return $this->getObject('directDebit');
+        return $this->getObject('currency');
     }
     /**
      * @return Discount
@@ -174,6 +184,13 @@ class GeneratedEkomApi extends XiaoApi
     public function invoice()
     {
         return $this->getObject('invoice');
+    }
+    /**
+     * @return Lang
+     */
+    public function lang()
+    {
+        return $this->getObject('lang');
     }
     /**
      * @return Manufacturer
@@ -419,6 +436,13 @@ class GeneratedEkomApi extends XiaoApi
     public function taxGroupHasTax()
     {
         return $this->getObject('taxGroupHasTax');
+    }
+    /**
+     * @return Timezone
+     */
+    public function timezone()
+    {
+        return $this->getObject('timezone');
     }
     /**
      * @return User

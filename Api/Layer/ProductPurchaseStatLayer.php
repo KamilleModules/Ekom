@@ -61,16 +61,10 @@ where user_id=$userId
     }
 
 
-    public static function getDate2WholeSalePrice($dateStart = null, $dateEnd = null, $shopId = null)
+    public static function getDate2WholeSalePrice($dateStart = null, $dateEnd = null)
     {
         $q = "select date(purchase_date) as date, sum(wholesale_price) as wholesale_price_sum from ek_product_purchase_stat where 1";
         $markers = [];
-
-
-        if (null !== $shopId) {
-            $q .= " and shop_id=" . (int)$shopId;
-        }
-
 
         QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "purchase_date");
         $q .= " group by date(purchase_date)";

@@ -82,9 +82,12 @@ class RepaymentScheduleHelper
         ];
     }
 
-    public static function getMensualRepaymentSchedule(array $payments, $startDate = null, array $itemMerge = [])
+    public static function getMensualRepaymentSchedule(array $payments, $startDate = null, array $itemMerge = [], $seller = null)
     {
 
+        if (null === $seller) {
+            $seller = 'unknown';
+        }
         $nbPayments = count($payments);
         if (null === $startDate) {
             $startDate = date('Y-m-d');
@@ -95,16 +98,44 @@ class RepaymentScheduleHelper
         $items = [];
         $i = 1;
         $total = 0;
-        foreach ($payments as $payment) {
-            $label = "Versement $i/$nbPayments";
-            $items[] = array_replace($itemMerge, [
-                "time" => DateTool::getSameDayNextMonth($time, $i - 1),
-                "label" => $label,
-                "priceRaw" => $payment,
-                "price" => E::price($payment),
-            ]);
-            $i++;
-            $total += $payment;
+
+
+        if (is_array($seller)) {
+            if (count($seller) === count($payments)) {
+
+                foreach ($payments as $payment) {
+                    $label = "Versement $i/$nbPayments";
+
+                    $recipients = array_shift($seller);
+
+                    $items[] = array_replace($itemMerge, [
+                        "time" => DateTool::getSameDayNextMonth($time, $i - 1),
+                        "label" => $label,
+                        "priceRaw" => $payment,
+                        "price" => E::price($payment),
+                        "recipients" => $recipients,
+                    ]);
+                    $i++;
+                    $total += $payment;
+                }
+            } else {
+                throw new \Exception("The numbers of recipient items is not equal to the numbers of payments");
+            }
+        } else {
+            foreach ($payments as $payment) {
+                $label = "Versement $i/$nbPayments";
+                $items[] = array_replace($itemMerge, [
+                    "time" => DateTool::getSameDayNextMonth($time, $i - 1),
+                    "label" => $label,
+                    "priceRaw" => $payment,
+                    "price" => E::price($payment),
+                    "recipients" => [
+                        $seller => $payment,
+                    ],
+                ]);
+                $i++;
+                $total += $payment;
+            }
         }
 
         return [

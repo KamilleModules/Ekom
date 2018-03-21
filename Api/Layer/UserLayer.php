@@ -52,7 +52,7 @@ use QuickPdo\QuickPdoStmtTool;
 class UserLayer
 {
 
-    public static function getNbNewUsers($dateStart = null, $dateEnd = null, $shopId = null)
+    public static function getNbNewUsers($dateStart = null, $dateEnd = null)
     {
 
         $q = "
@@ -60,11 +60,6 @@ select count(*) as count
 from ek_user
 where 1         
         ";
-
-        if (null !== $shopId) {
-            $shopId = (int)$shopId;
-            $q .= " and shop_id=$shopId";
-        }
 
         $markers = [];
         QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "date_creation");
