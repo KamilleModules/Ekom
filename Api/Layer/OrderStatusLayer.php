@@ -12,6 +12,24 @@ use QuickPdo\QuickPdo;
  */
 class OrderStatusLayer
 {
+
+    public static function getOrderStatusInfoByOrderId($id)
+    {
+        $id = (int)$id;
+        return QuickPdo::fetchAll("
+select 
+h.*,        
+s.*
+
+from ek_order_has_order_status h 
+inner join ek_order_status s on s.id=h.order_status_id
+
+where h.order_id=$id
+order by h.date desc
+        
+        ");
+    }
+
     public static function getSuccessfulStatusIds()
     {
         $statuses = [

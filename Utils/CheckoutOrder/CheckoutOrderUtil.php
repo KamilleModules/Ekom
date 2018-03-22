@@ -658,7 +658,6 @@ class CheckoutOrderUtil
                 $this->processInvoice($invoice, $orderModel);
             }
 
-
             //--------------------------------------------
             // SEND EMAIL TO THE USER
             //--------------------------------------------

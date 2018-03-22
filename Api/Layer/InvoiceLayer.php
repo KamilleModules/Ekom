@@ -13,6 +13,15 @@ class InvoiceLayer
 {
 
 
+    public static function getInvoiceIdsByOrderId($orderId)
+    {
+        $orderId = (int)$orderId;
+        return QuickPdo::fetchAll("
+select id from ek_invoice where order_id=$orderId
+        ", [], \PDO::FETCH_COLUMN);
+    }
+
+
     public static function getNbInvoicesByUserId($userId)
     {
         $userId = (int)$userId;

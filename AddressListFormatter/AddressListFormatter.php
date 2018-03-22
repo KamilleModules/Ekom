@@ -36,7 +36,8 @@ class AddressListFormatter implements AddressListFormatterInterface
         // note, rows are ordered by "order asc" per definition
         foreach ($rows as $row) {
 
-            $row['title'] = ucfirst($row['first_name']) . " " . ucfirst($row['last_name']);
+//            $row['title'] = ucfirst($row['first_name']) . " " . ucfirst($row['last_name']);
+            $row['title'] = ucfirst($row['libelle']);
             $row['address_line_1'] = $row['address'];
             $row['address_line_2'] = ucfirst($row['city']) . ', ' . $row['postcode'];
             $row['address_line_3'] = $row['country'];

@@ -35,6 +35,7 @@ class UserAddressSokoForm
         $countryChoices = self::getCountryChoices();
 
 
+
         $isDefaultShippingChoice = [
             "1" => "En faire mon adresse de livraison par défaut",
         ];
@@ -44,13 +45,17 @@ class UserAddressSokoForm
 
         $form = EkomSokoForm::create()
             ->setName($name)
+//            ->addControl(SokoInputControl::create()
+//                ->setName("first_name")
+//                ->setLabel('Prénom')
+//            )
+//            ->addControl(SokoInputControl::create()
+//                ->setName("last_name")
+//                ->setLabel('Nom')
+//            )
             ->addControl(SokoInputControl::create()
-                ->setName("first_name")
-                ->setLabel('Prénom')
-            )
-            ->addControl(SokoInputControl::create()
-                ->setName("last_name")
-                ->setLabel('Nom')
+                ->setLabel("Libellé")
+                ->setName("libelle")
             )
             ->addControl(SokoInputControl::create()
                 ->setLabel("Préfixe téléphonique")
@@ -94,8 +99,9 @@ class UserAddressSokoForm
 
 
         $form
-            ->addValidationRule("first_name", SokoNotEmptyValidationRule::create())
-            ->addValidationRule("last_name", SokoNotEmptyValidationRule::create())
+//            ->addValidationRule("first_name", SokoNotEmptyValidationRule::create())
+//            ->addValidationRule("last_name", SokoNotEmptyValidationRule::create())
+            ->addValidationRule("libelle", SokoNotEmptyValidationRule::create())
             ->addValidationRule("address", SokoNotEmptyValidationRule::create())
             ->addValidationRule("city", SokoNotEmptyValidationRule::create())
             ->addValidationRule("postcode", SokoNotEmptyValidationRule::create())

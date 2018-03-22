@@ -310,6 +310,7 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
     //--------------------------------------------
     public function updateAddress($userId, $addressId, array $data)
     {
+
         return QuickPdo::transaction(function () use ($userId, $data, $addressId) {
             $userId = (int)$userId;
 

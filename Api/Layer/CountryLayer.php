@@ -37,7 +37,7 @@ select id, iso_code from ek_country order by iso_code asc
             }
             return QuickPdo::fetchAll("
 select 
-iso_code,
+$field,
 label 
 from ek_country c   
 order by label asc

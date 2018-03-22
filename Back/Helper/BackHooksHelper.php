@@ -158,8 +158,15 @@ class BackHooksHelper
                     ->setActive(true)
                     ->setName("cache-util")
                     ->setLabel("Cache")
-                    ->setIcon("fa fa-spinner")
+//                    ->setIcon("fa fa-spinner")
                     ->setLink(N::link("Ekom_Back_Utils_CacheManager"))
+                )
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("cron_log")
+                    ->setLabel("Cron logs")
+//                    ->setIcon("fa fa-spinner")
+                    ->setLink(N::link("Ekom_Back_Utils_CronLog"))
                 )
             );
 

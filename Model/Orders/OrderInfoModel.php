@@ -59,7 +59,7 @@ class OrderInfoModel
             $ret['billing_address'] = self::formatAddress($ret['billing_address']);
             $ret['shipping_address'] = self::formatAddress($ret['shipping_address']);
             $ret['sellerName2Label'] = SellerLayer::getName2LabelList();
-
+            $ret['tracker_identifiers'] = OrderLayer::getTrackerIdentifiersByOrderId($id);
 
         }
         return $ret;

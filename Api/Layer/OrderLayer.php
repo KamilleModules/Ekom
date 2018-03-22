@@ -20,6 +20,18 @@ class OrderLayer
 {
 
 
+    public static function getTrackerIdentifiersByOrderId($id)
+    {
+        $id = (int)$id;
+        return QuickPdo::fetchAll("
+select track_identifier 
+from ek_invoice 
+where order_id=$id
+and track_identifier != ''        
+        ", [], \PDO::FETCH_COLUMN);
+    }
+
+
     public static function getOrdersAmountAndCountByDate($dateStart = null, $dateEnd = null)
     {
         $markers = [];
@@ -87,7 +99,6 @@ class OrderLayer
 
 
         $all = QuickPdo::fetchAll($q, $markers);
-
 
 
         /**

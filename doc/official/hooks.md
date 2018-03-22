@@ -1,4 +1,4 @@
-Hooks
+Hooks utilisés par Ekom
 ===========
 2018-03-06
 
@@ -20,4 +20,16 @@ Ce hook est utilisé par le controller de base de NullosAdmin (class-controllers
 qui encode les éléments communs à toutes les pages du backoffice.
     
     
-    
+
+
+
+Hooks proposés par Ekom
+===========================
+2018-03-22
+
+
+
+TODO: convention de nommage: Ekom_Back_Controller (indique un hook de type claws), et Orders_OrderInfoController est l'identifiant
+du controller...
+
+- Ekom_Back_Controller_Orders_OrderInfoController    
