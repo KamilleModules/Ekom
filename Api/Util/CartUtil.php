@@ -230,6 +230,7 @@ class CartUtil
 
 
                 $ret[$seller] = [
+                    'label' => [],
                     /**
                      * taxHint is a number indicating
                      * the type of visual hint to display next to the price totals
@@ -269,6 +270,7 @@ class CartUtil
 
 
         foreach ($ret as $seller => $item) {
+            $ret[$seller]['label'] = $item['items'][0]['seller_label'];
             $ret[$seller]['total'] = E::price($item['totalRaw']);
             $ret[$seller]['taxAmountTotal'] = E::price($item['taxAmountTotalRaw']);
 

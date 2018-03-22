@@ -22,16 +22,12 @@ class SokoBillingCheckoutProcessStep extends BaseCheckoutProcessStep
 
 
     private $response;
-    private $shopId;
-    private $langId;
     private $firstAddressForm;
 
     public function __construct()
     {
         parent::__construct();
         $this->response = null;
-        $this->shopId = null;
-        $this->langId = null;
         $this->firstAddressForm = null;
 
     }
@@ -39,8 +35,6 @@ class SokoBillingCheckoutProcessStep extends BaseCheckoutProcessStep
 
     public function isPostedSuccessfully(CheckoutProcessInterface $cp, array $context)
     {
-        $this->shopId = $context['shop_id'];
-        $this->langId = $context['lang_id'];
 
         /**
          * If the firstAddress form is posted, we treat it.
@@ -89,7 +83,7 @@ class SokoBillingCheckoutProcessStep extends BaseCheckoutProcessStep
         if (true === E::userIsConnected()) {
 
             $userId = E::getUserId();
-            $addresses = UserAddressLayer::getUserAddresses($userId, $this->langId);
+            $addresses = UserAddressLayer::getUserAddresses($userId);
 
             $ret = [];
             $hasAddress = (count($addresses) > 0);
@@ -100,7 +94,7 @@ class SokoBillingCheckoutProcessStep extends BaseCheckoutProcessStep
                 $selectedBillingAddressId = CurrentCheckoutData::getBillingAddressId();
                 // which billing address?
                 if (null === $selectedBillingAddressId) {
-                    $selectedBillingAddress = UserAddressLayer::getPreferredBillingAddress($userId, $this->langId);
+                    $selectedBillingAddress = UserAddressLayer::getPreferredBillingAddress($userId);
                     $selectedBillingAddressId = $selectedBillingAddress['address_id'];
                 }
 

@@ -182,6 +182,7 @@ p._popularity,
 
 p.wholesale_price,
 se.name as seller,
+se.label as seller_label,
 
 p.label,
 p.description,

@@ -7,4 +7,9 @@ Tunnel de paiement
 
 
 
-Les objets importants: class-modules/Ekom/Utils/CheckoutOrder/CheckoutOrderUtil.php
+
+Les objets importants: 
+
+
+- le checkout process (affichage, gestion des steps) est géré par: \Module\Ekom\Utils\CheckoutProcess\EkomCheckoutProcess
+- la gestion du paiement de la commande (avec ingenico): class-modules/Ekom/Utils/CheckoutOrder/CheckoutOrderUtil.php

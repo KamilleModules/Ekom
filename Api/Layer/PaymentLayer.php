@@ -66,6 +66,12 @@ class PaymentLayer
         return QuickPdo::fetch("select name from ek_payment_method where id=$id", [], \PDO::FETCH_COLUMN);
     }
 
+    public static function getPaymentMethodNameAndLabelById($id)
+    {
+        $id = (int)$id;
+        return QuickPdo::fetch("select name, label from ek_payment_method where id=$id");
+    }
+
     /**
      * @return array of id => item, each of which:
      *      - id: the id of the handler

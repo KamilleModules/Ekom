@@ -539,6 +539,7 @@ class ProductBoxEntity
                         "label" => $label,
                         "label_flat" => strtolower(StringTool::removeAccents($label)), // use this for dynamic sorting
                         "seller" => $p['seller'],
+                        "seller_label" => $p['seller_label'],
 
 
                         "ref" => $p['reference'],
@@ -620,7 +621,7 @@ class ProductBoxEntity
              */
             $model['errorCode'] = "noAssociation";
             $model['errorTitle'] = "Product card not associated";
-            $model['errorMessage'] = "This product card is not associated with this shop, sorry (cardId: $cardId, shopId: $shopId, langId: $langId)";
+            $model['errorMessage'] = "This product card is not associated with this shop, sorry (cardId: $cardId)";
         }
 
         $isErroneous = (array_key_exists('errorCode', $model));

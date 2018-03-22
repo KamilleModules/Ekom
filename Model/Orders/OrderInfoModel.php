@@ -5,6 +5,7 @@ namespace Module\Ekom\Model\Orders;
 
 
 use Module\Ekom\Api\Layer\OrderLayer;
+use Module\Ekom\Api\Layer\SellerLayer;
 
 class OrderInfoModel
 {
@@ -14,6 +15,8 @@ class OrderInfoModel
     {
         $ret = OrderLayer::getOrderInfo($id);
         if (false !== $ret) {
+
+
 
 
             //--------------------------------------------
@@ -55,6 +58,7 @@ class OrderInfoModel
             $ret['page_title'] = "Commande " . $ret['reference'] . " de $userRepr";
             $ret['billing_address'] = self::formatAddress($ret['billing_address']);
             $ret['shipping_address'] = self::formatAddress($ret['shipping_address']);
+            $ret['sellerName2Label'] = SellerLayer::getName2LabelList();
 
 
         }
@@ -65,7 +69,7 @@ class OrderInfoModel
     //--------------------------------------------
     //
     //--------------------------------------------
-    private static function formatAddress(array $address)
+    protected static function formatAddress(array $address)
     {
 
         if (

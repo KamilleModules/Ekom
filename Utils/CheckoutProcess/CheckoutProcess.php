@@ -124,7 +124,6 @@ class CheckoutProcess implements CheckoutProcessInterface
     {
 
         $this->initSteps(); // put steps in the order defined by position
-        $currencyId = E::getCurrencyId($this->currencyId);
 
         $this->debug("CheckoutProcess:execute");
         if ($this->steps) {

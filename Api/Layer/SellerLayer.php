@@ -14,6 +14,11 @@ use QuickPdo\QuickPdo;
 class SellerLayer
 {
 
+    public static function getName2LabelList(){
+        return QuickPdo::fetchAll("
+select name, label from ek_seller        
+        ", [], \PDO::FETCH_COLUMN|\PDO::FETCH_UNIQUE);
+    }
 
     public static function getRowAvatar($sellerId)
     {

@@ -254,14 +254,15 @@ class CheckoutOrderUtil
 
 
             $_cartModel = $cartModel;
-            $paymentMethodName = PaymentLayer::getPaymentMethodNameById($paymentMethodId);
-            if (false === $paymentMethodName) {
+            $paymentMethodNameAndLabel = PaymentLayer::getPaymentMethodNameAndLabelById($paymentMethodId);
+            if (false === $paymentMethodNameAndLabel) {
                 $this->devError("Inconsistent data: payment method name not found with id $paymentMethodId");
             }
             $orderDetails = [
                 "cartModel" => $_cartModel,
                 "payment_method_id" => $paymentMethodId,
-                "payment_method_name" => $paymentMethodName,
+                "payment_method_name" => $paymentMethodNameAndLabel['name'],
+                "payment_method_label" => $paymentMethodNameAndLabel['label'],
                 "payment_method_details" => $paymentMethodDetails,
             ];
             if (null !== $carrierId) { // did we use a carrier for this order?
@@ -497,7 +498,7 @@ class CheckoutOrderUtil
             $invoice['user_id'] = $userId;
             $invoice['order_id'] = $orderId;
             $invoice['seller_id'] = $sellerId;
-            $invoice['label'] = "";
+            $invoice['label'] = $item['label'];
             $invoice['invoice_number'] = $invoiceNumberProvider->getNumber($type);
             $invoice['invoice_number_alt'] = "";
             $invoice['invoice_date'] = $date;
