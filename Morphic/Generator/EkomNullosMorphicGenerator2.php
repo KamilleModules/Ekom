@@ -4,7 +4,7 @@
 namespace Module\Ekom\Morphic\Generator;
 
 
-use Module\Ekom\Back\Helper\BackHooksHelper;
+use Module\Application\Back\Helper\ApplicationBackHooksHelper;
 use Module\NullosAdmin\Morphic\Generator\NullosMorphicGenerator2;
 use PhpFile\PhpFile;
 
@@ -19,8 +19,8 @@ class EkomNullosMorphicGenerator2 extends NullosMorphicGenerator2
 
     protected function onGenerateAfter() // override me
     {
-        $generatedItemFile = BackHooksHelper::getGeneratedMenuLocation();
-        $generatedRouteFile = BackHooksHelper::getGeneratedRoutesLocation();
+        $generatedItemFile = ApplicationBackHooksHelper::getGeneratedMenuLocation();
+        $generatedRouteFile = ApplicationBackHooksHelper::getGeneratedRoutesLocation();
         $menu = PhpFile::create();
         $route = PhpFile::create();
         $menu->addUseStatement(<<<EEE
@@ -61,7 +61,7 @@ EEE
                 //--------------------------------------------
                 $path = 'Controller\Ekom\Back\\Generated\\' . $tableInfo['camel'] . '\\' . $tableInfo['camel'] . 'ListController';
                 $route->addBodyStatement(<<<EEE
-\$routes["$tableInfo[route]"] = ["/ekom/generated/$tableInfo[table]/list", null, null, "$path:render"];
+\$routes["$tableInfo[route]"] = ["/application/generated/$tableInfo[table]/list", null, null, "$path:render"];
 EEE
                 );
             }
@@ -210,7 +210,7 @@ EEE;
     protected function getTableRouteByTable($table)
     {
         $camel = $this->getCamelByTable($table);
-        return "Ekom_Back_Generated_" . $camel . "_List";
+        return "Ekom_Generated_" . $camel . "_List";
     }
 
 

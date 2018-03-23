@@ -9,7 +9,7 @@ use Bat\StringTool;
 use QuickPdo\QuickPdoInfoTool;
 
 
-class LingFrenchEkomNullosMorphicGenerator2 extends EkomNullosMorphicGenerator2
+class LingFrenchMorphicGenerator2 extends EkomNullosMorphicGenerator2
 {
     protected $handledPrefixes;
 
@@ -972,8 +972,7 @@ EEE;
 
         if ('le' === $article || 'la' === $article) {
             $label = $article . " " . $label;
-        }
-        else{
+        } else {
             $label = $article . "" . $label;
         }
 

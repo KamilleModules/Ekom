@@ -29,7 +29,7 @@ Hooks proposés par Ekom
 
 
 
-TODO: convention de nommage: Ekom_Back_Controller (indique un hook de type claws), et Orders_OrderInfoController est l'identifiant
+TODO: convention de nommage: Ekom_Controller (indique un hook de type claws), et Orders_OrderInfoController est l'identifiant
 du controller...
 
-- Ekom_Back_Controller_Orders_OrderInfoController    
+- Ekom_Controller_Orders_OrderInfoController    
