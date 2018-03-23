@@ -26,11 +26,14 @@ use QuickPdo\QuickPdo;
 class CategoryLayer
 {
 
+    public static function getLabelBySlug(string $slug)
+    {
+        return QuickPdo::fetch("select label from ek_category where slug=:slug", ['slug' => $slug], \PDO::FETCH_COLUMN);
+    }
+
 
     public static function reorderCategories()
     {
-
-
         $o = new CategoryLayer();
         $cats = $o->getSubCategoriesByName("home", 0, "", true);
         self::reorderChildren($cats);

@@ -20,6 +20,7 @@ class ProductCardLayer
 {
 
 
+
     public static function setDefaultProduct($cardId, $productId)
     {
         $cardId = (int)$cardId;

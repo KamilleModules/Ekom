@@ -31,6 +31,17 @@ class ProductLayer
 {
 
 
+    public static function getLabelByProductRef(string $ref)
+    {
+        return QuickPdo::fetch("select label from ek_product where reference=:ref", ['ref' => $ref], \PDO::FETCH_COLUMN);
+    }
+
+    public static function getLabelByProductId(int $id)
+    {
+        return QuickPdo::fetch("select label from ek_product where id=$id", [], \PDO::FETCH_COLUMN);
+    }
+
+
     public static function getAvatarById($id)
     {
         $id = (int)$id;

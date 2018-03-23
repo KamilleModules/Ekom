@@ -19,6 +19,10 @@ use XiaoApi\Helper\QuickPdoStmtHelper\QuickPdoStmtHelper;
 class OrderLayer
 {
 
+    public static function getUserIdByOrderId(int $orderId)
+    {
+        return QuickPdo::fetch("select user_id from ek_order where id=$orderId", [], \PDO::FETCH_COLUMN);
+    }
 
     public static function getTrackerIdentifiersByOrderId($id)
     {
