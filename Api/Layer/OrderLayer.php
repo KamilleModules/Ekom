@@ -359,6 +359,18 @@ order by date asc
         throw new EkomException("Unknown code: $code");
     }
 
+
+    public static function addOrderStatusById($orderId, $statusId, array $options = [])
+    {
+        $extra = $options['extra'] ?? null;
+        return EkomApi::inst()->orderHasOrderStatus()->create([
+            "order_id" => $orderId,
+            "order_status_id" => $statusId,
+            "date" => date("Y-m-d H:i:s"),
+            "extra" => $extra,
+        ]);
+    }
+
     public static function getCode2Ids()
     {
         return A::cache()->get("Ekom.OrderLayer", function () {

@@ -4,9 +4,7 @@
 namespace Module\Ekom\Model\Orders;
 
 
-use Bat\HashTool;
-use Bat\RandomTool;
-use Bat\StringTool;
+use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\OrderStatusLayer;
 
 class OrderStatusModel
@@ -19,9 +17,9 @@ class OrderStatusModel
         $key = "id-form-order-status-update";
         $submitStatus = $_POST[$key] ?? null;
 
-a($_POST);
-        if ($submitStatus) {
-            az(__FILE__, "here");
+        if ($submitStatus && array_key_exists('status', $_POST)) {
+            $status = $_POST['status'];
+            OrderLayer::addOrderStatusById($id, $status, ['extra' => 'manual']);
         }
 
 
