@@ -1,0 +1,333 @@
+<?xml version='1.0' standalone='yes'?>
+<infos>
+    <item table="ek_address">
+        <label>adresse</label>
+        <labelPlural>adresses</labelPlural>
+        <genre>f</genre>
+        <article>l'</article>
+    </item>
+    <item table="ek_backoffice_user">
+        <label>utilisateur du backoffice</label>
+        <labelPlural>utilisateurs du backoffice</labelPlural>
+        <genre>m</genre>
+        <article>l'</article>
+    </item>
+    <item table="ek_carrier">
+        <label>transporteur</label>
+        <labelPlural>transporteurs</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_cart">
+        <label>panier</label>
+        <labelPlural>paniers</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_category">
+        <label>catégorie</label>
+        <labelPlural>catégories</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_category_has_discount">
+        <label>liaison catégorie/réduction</label>
+        <labelPlural>liaisons catégorie/réduction</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_category_has_product_card">
+        <label>liaison catégorie/carte</label>
+        <labelPlural>liaisons catégorie/carte</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_country">
+        <label>pays</label>
+        <labelPlural>pays</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_coupon">
+        <label>coupon</label>
+        <labelPlural>coupons</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_currency">
+        <label>devise</label>
+        <labelPlural>devises</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_discount">
+        <label>réduction</label>
+        <labelPlural>réductions</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_feature">
+        <label>caractéristique de produit</label>
+        <labelPlural>caractéristiques de produit</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_feature_value">
+        <label>valeur de caractéristique</label>
+        <labelPlural>valeurs de caractéristique</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_invoice">
+        <label>facture</label>
+        <labelPlural>factures</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_manufacturer">
+        <label>fabricant</label>
+        <labelPlural>fabricants</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_newsletter">
+        <label>entrée newsletter</label>
+        <labelPlural>entrées newsletter</labelPlural>
+        <genre>f</genre>
+        <article>l'</article>
+    </item>
+    <item table="ek_order">
+        <label>commande</label>
+        <labelPlural>commandes</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_order_has_order_status">
+        <label>liaison commande/statut de commande</label>
+        <labelPlural>liaisons commande/statut de commande</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_order_status">
+        <label>statut de commande</label>
+        <labelPlural>statuts de commande</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_password_recovery_request">
+        <label>entrée "renvoi de mot de passe"</label>
+        <labelPlural>entrées "renvoi de mot de passe"</labelPlural>
+        <genre>f</genre>
+        <article>l'</article>
+    </item>
+    <item table="ek_payment_method">
+        <label>méthode de paiement</label>
+        <labelPlural>méthodes de paiement</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_product">
+        <label>produit</label>
+        <labelPlural>produits</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_product_attribute">
+        <label>attribut de produit</label>
+        <labelPlural>attributs de produit</labelPlural>
+        <genre>m</genre>
+        <article>l'</article>
+    </item>
+    <item table="ek_product_attribute_value">
+        <label>valeur d'attribut de produit</label>
+        <labelPlural>valeurs d'attribut de produit</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_product_bundle">
+        <label>pack</label>
+        <labelPlural>packs</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_product_bundle_has_product">
+        <label>liaison pack/produit</label>
+        <labelPlural>liaisons pack/produit</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_product_card">
+        <label>carte</label>
+        <labelPlural>cartes</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_product_card_has_discount">
+        <label>liaison carte/réduction</label>
+        <labelPlural>liaisons carte/réduction</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_product_card_has_product_attribute">
+        <label>liaison carte/attribut de produit</label>
+        <labelPlural>liaisons carte/attribut de produit</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_product_card_image">
+        <label>image</label>
+        <labelPlural>images</labelPlural>
+        <genre>f</genre>
+        <article>l'</article>
+    </item>
+    <item table="ek_product_comment">
+        <label>commentaire de produit</label>
+        <labelPlural>commentaires de produit</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_product_group">
+        <label>groupe de produit</label>
+        <labelPlural>groupes de produit</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_product_group_has_product">
+        <label>liaison groupe de produit/produit</label>
+        <labelPlural>liaisons groupe de produit/produit</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_product_has_discount">
+        <label>liaison produit/réduction</label>
+        <labelPlural>liaisons produit/réduction</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_product_has_feature">
+        <label>liaison produit/caractéristique de produit</label>
+        <labelPlural>liaisons produit/caractéristique de produit</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_product_has_product_attribute">
+        <label>liaison produit/attribut de produit</label>
+        <labelPlural>liaisons produit/attribut de produit</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_product_has_provider">
+        <label>liaison produit/fournisseur</label>
+        <labelPlural>liaisons produit/fournisseur</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_product_has_tag">
+        <label>liaison produit/tag</label>
+        <labelPlural>liaisons produit/tag</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_product_purchase_stat">
+        <label>statistique d'achat</label>
+        <labelPlural>statistiques d'achat</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_product_type">
+        <label>type de produit</label>
+        <labelPlural>types de produit</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_provider">
+        <label>fournisseur</label>
+        <labelPlural>fournisseurs</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_seller">
+        <label>vendeur</label>
+        <labelPlural>vendeurs</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_seller_has_address">
+        <label>liaison vendeur/adresse</label>
+        <labelPlural>liaisons vendeur/adresse</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_shop_configuration">
+        <label>configuration de la boutique virtuelle</label>
+        <labelPlural>configurations de la boutique virtuelle</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_store">
+        <label>magasin</label>
+        <labelPlural>magasins</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_tag">
+        <label>tag</label>
+        <labelPlural>tags</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_tax">
+        <label>taxe</label>
+        <labelPlural>taxes</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_tax_group">
+        <label>groupe de taxe</label>
+        <labelPlural>groupes de taxe</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_tax_group_has_tax">
+        <label>liaison groupe de taxe/taxe</label>
+        <labelPlural>liaisons groupe de taxe/taxe</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_timezone">
+        <label>fuseau horaire</label>
+        <labelPlural>fuseaux horaire</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_user">
+        <label>utilisateur</label>
+        <labelPlural>utilisateurs</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_user_group">
+        <label>groupe d'utilisateurs</label>
+        <labelPlural>groupes d'utilisateurs</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
+    <item table="ek_user_has_address">
+        <label>liaison utilisateur/adresse</label>
+        <labelPlural>liaisons utilisateur/adresse</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_user_has_product">
+        <label>liaison utilisateur/produit</label>
+        <labelPlural>liaisons utilisateur/produit</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_user_has_user_group">
+        <label>liaison utilisateur/groupe d'utilisateurs</label>
+        <labelPlural>liaisons utilisateur/groupe d'utilisateurs</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+</infos>

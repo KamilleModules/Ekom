@@ -1,0 +1,544 @@
+<?xml version='1.0' standalone='yes'?>
+<cols>
+    <item>
+        <name>_discount_badge</name>
+        <value>badge réduction</value>
+    </item>
+    <item>
+        <name>_popularity</name>
+        <value>popularité</value>
+    </item>
+    <item>
+        <name>active</name>
+        <value>actif</value>
+    </item>
+    <item>
+        <name>active_hash</name>
+        <value>hash actif</value>
+    </item>
+    <item>
+        <name>address</name>
+        <value>adresse</value>
+    </item>
+    <item>
+        <name>address_id</name>
+        <value>adresse</value>
+    </item>
+    <item>
+        <name>amount</name>
+        <value>montant</value>
+    </item>
+    <item>
+        <name>attribute_selection</name>
+        <value>sélection d'attributs</value>
+    </item>
+    <item>
+        <name>billing_address</name>
+        <value>adresse de facturation</value>
+    </item>
+    <item>
+        <name>birthday</name>
+        <value>date d'anniversaire</value>
+    </item>
+    <item>
+        <name>bo_active</name>
+        <value>actif dans le backoffice</value>
+    </item>
+    <item>
+        <name>cart_quantity</name>
+        <value>quantité panier</value>
+    </item>
+    <item>
+        <name>category_id</name>
+        <value>catégorie</value>
+    </item>
+    <item>
+        <name>city</name>
+        <value>ville</value>
+    </item>
+    <item>
+        <name>code</name>
+        <value>code</value>
+    </item>
+    <item>
+        <name>codes</name>
+        <value>codes</value>
+    </item>
+    <item>
+        <name>color</name>
+        <value>couleur</value>
+    </item>
+    <item>
+        <name>comment</name>
+        <value>commentaire</value>
+    </item>
+    <item>
+        <name>conditions</name>
+        <value>conditions</value>
+    </item>
+    <item>
+        <name>configuration</name>
+        <value>configuration</value>
+    </item>
+    <item>
+        <name>country_id</name>
+        <value>pays</value>
+    </item>
+    <item>
+        <name>coupon_saving</name>
+        <value>montant économisé sur le coupon</value>
+    </item>
+    <item>
+        <name>currency_id</name>
+        <value>devise</value>
+    </item>
+    <item>
+        <name>currency_iso_code</name>
+        <value>code iso de la devise</value>
+    </item>
+    <item>
+        <name>date</name>
+        <value>date</value>
+    </item>
+    <item>
+        <name>date_created</name>
+        <value>créé le</value>
+    </item>
+    <item>
+        <name>date_creation</name>
+        <value>date de création</value>
+    </item>
+    <item>
+        <name>date_used</name>
+        <value>utilisé(e) le</value>
+    </item>
+    <item>
+        <name>deleted_date</name>
+        <value>supprimé(e) le</value>
+    </item>
+    <item>
+        <name>depth</name>
+        <value>profondeur</value>
+    </item>
+    <item>
+        <name>description</name>
+        <value>description</value>
+    </item>
+    <item>
+        <name>discount_id</name>
+        <value>réduction</value>
+    </item>
+    <item>
+        <name>ean</name>
+        <value>ean</value>
+    </item>
+    <item>
+        <name>email</name>
+        <value>email</value>
+    </item>
+    <item>
+        <name>exchange_rate</name>
+        <value>taux de conversion</value>
+    </item>
+    <item>
+        <name>extra</name>
+        <value>extra</value>
+    </item>
+    <item>
+        <name>feature_id</name>
+        <value>caractéristique</value>
+    </item>
+    <item>
+        <name>feature_value_id</name>
+        <value>valeur de caractéristique</value>
+    </item>
+    <item>
+        <name>feedback_details</name>
+        <value>retours</value>
+    </item>
+    <item>
+        <name>first_name</name>
+        <value>prénom</value>
+    </item>
+    <item>
+        <name>gender</name>
+        <value>genre</value>
+    </item>
+    <item>
+        <name>height</name>
+        <value>hauteur</value>
+    </item>
+    <item>
+        <name>id</name>
+        <value>id</value>
+    </item>
+    <item>
+        <name>invoice_date</name>
+        <value>date de facturation</value>
+    </item>
+    <item>
+        <name>invoice_details</name>
+        <value>détails de la facture</value>
+    </item>
+    <item>
+        <name>invoice_id</name>
+        <value>facture</value>
+    </item>
+    <item>
+        <name>invoice_number</name>
+        <value>numéro de facture</value>
+    </item>
+    <item>
+        <name>invoice_number_alt</name>
+        <value>numéro de facture alternatif</value>
+    </item>
+    <item>
+        <name>ip</name>
+        <value>ip</value>
+    </item>
+    <item>
+        <name>is_default</name>
+        <value>par défaut</value>
+    </item>
+    <item>
+        <name>is_default_billing_address</name>
+        <value>adresse de facturation par défaut</value>
+    </item>
+    <item>
+        <name>is_default_shipping_address</name>
+        <value>adresse de livraison par défaut</value>
+    </item>
+    <item>
+        <name>iso_code</name>
+        <value>code iso</value>
+    </item>
+    <item>
+        <name>items</name>
+        <value>éléments</value>
+    </item>
+    <item>
+        <name>key</name>
+        <value>clé</value>
+    </item>
+    <item>
+        <name>label</name>
+        <value>label</value>
+    </item>
+    <item>
+        <name>lang_iso_code</name>
+        <value>langue (code iso)</value>
+    </item>
+    <item>
+        <name>last_name</name>
+        <value>nom</value>
+    </item>
+    <item>
+        <name>legend</name>
+        <value>légende</value>
+    </item>
+    <item>
+        <name>manufacturer_id</name>
+        <value>fabricant</value>
+    </item>
+    <item>
+        <name>meta_description</name>
+        <value>meta description</value>
+    </item>
+    <item>
+        <name>meta_keywords</name>
+        <value>meta keywords</value>
+    </item>
+    <item>
+        <name>meta_title</name>
+        <value>balise titre</value>
+    </item>
+    <item>
+        <name>mobile</name>
+        <value>mobile</value>
+    </item>
+    <item>
+        <name>mode</name>
+        <value>mode</value>
+    </item>
+    <item>
+        <name>name</name>
+        <value>nom</value>
+    </item>
+    <item>
+        <name>newsletter</name>
+        <value>newsletter</value>
+    </item>
+    <item>
+        <name>operand</name>
+        <value>opérande</value>
+    </item>
+    <item>
+        <name>order</name>
+        <value>ordre</value>
+    </item>
+    <item>
+        <name>order_date</name>
+        <value>date de la commande</value>
+    </item>
+    <item>
+        <name>order_details</name>
+        <value>détails de la commande</value>
+    </item>
+    <item>
+        <name>order_id</name>
+        <value>commande</value>
+    </item>
+    <item>
+        <name>order_status_id</name>
+        <value>statut de commande</value>
+    </item>
+    <item>
+        <name>out_of_stock_text</name>
+        <value>message à afficher en cas de rupture de stock</value>
+    </item>
+    <item>
+        <name>paid</name>
+        <value>payé</value>
+    </item>
+    <item>
+        <name>pass</name>
+        <value>mot de passe</value>
+    </item>
+    <item>
+        <name>payment_method</name>
+        <value>méthode de paiement</value>
+    </item>
+    <item>
+        <name>payment_method_extra</name>
+        <value>méthode de paiement extra</value>
+    </item>
+    <item>
+        <name>phone</name>
+        <value>téléphone</value>
+    </item>
+    <item>
+        <name>phone_prefix</name>
+        <value>préfixe téléphonique</value>
+    </item>
+    <item>
+        <name>php_sess_id</name>
+        <value>identifiant de session php</value>
+    </item>
+    <item>
+        <name>position</name>
+        <value>position</value>
+    </item>
+    <item>
+        <name>postcode</name>
+        <value>code postal</value>
+    </item>
+    <item>
+        <name>price</name>
+        <value>prix</value>
+    </item>
+    <item>
+        <name>price_without_tax</name>
+        <value>prix sans taxe</value>
+    </item>
+    <item>
+        <name>priority</name>
+        <value>priorité</value>
+    </item>
+    <item>
+        <name>procedure_operand</name>
+        <value>opérande</value>
+    </item>
+    <item>
+        <name>procedure_type</name>
+        <value>type</value>
+    </item>
+    <item>
+        <name>product_attribute_id</name>
+        <value>attribut de produit</value>
+    </item>
+    <item>
+        <name>product_attribute_value_id</name>
+        <value>valeur d'attribut de produit</value>
+    </item>
+    <item>
+        <name>product_bundle_id</name>
+        <value>pack</value>
+    </item>
+    <item>
+        <name>product_card_id</name>
+        <value>carte</value>
+    </item>
+    <item>
+        <name>product_details</name>
+        <value>détails du produit</value>
+    </item>
+    <item>
+        <name>product_details_selection</name>
+        <value>détails de la selection de produit</value>
+    </item>
+    <item>
+        <name>product_group_id</name>
+        <value>groupe de produit</value>
+    </item>
+    <item>
+        <name>product_id</name>
+        <value>produit</value>
+    </item>
+    <item>
+        <name>product_label</name>
+        <value>label</value>
+    </item>
+    <item>
+        <name>product_ref</name>
+        <value>référence</value>
+    </item>
+    <item>
+        <name>product_type_id</name>
+        <value>type de produit</value>
+    </item>
+    <item>
+        <name>provider_id</name>
+        <value>fournisseur</value>
+    </item>
+    <item>
+        <name>pseudo</name>
+        <value>pseudo</value>
+    </item>
+    <item>
+        <name>purchase_date</name>
+        <value>date d'achat</value>
+    </item>
+    <item>
+        <name>quantity</name>
+        <value>quantité</value>
+    </item>
+    <item>
+        <name>rating</name>
+        <value>vote</value>
+    </item>
+    <item>
+        <name>reference</name>
+        <value>référence</value>
+    </item>
+    <item>
+        <name>seller</name>
+        <value>vendeur</value>
+    </item>
+    <item>
+        <name>seller_address</name>
+        <value>adresse du vendeur</value>
+    </item>
+    <item>
+        <name>seller_id</name>
+        <value>vendeur</value>
+    </item>
+    <item>
+        <name>shipping_address</name>
+        <value>addresse de livraison</value>
+    </item>
+    <item>
+        <name>shop_host</name>
+        <value>nom de domaine de la boutique virtuelle</value>
+    </item>
+    <item>
+        <name>shop_info</name>
+        <value>informations de la boutique virtuelle</value>
+    </item>
+    <item>
+        <name>slug</name>
+        <value>slug</value>
+    </item>
+    <item>
+        <name>subscribe_date</name>
+        <value>date de souscription</value>
+    </item>
+    <item>
+        <name>supplement</name>
+        <value>supplément</value>
+    </item>
+    <item>
+        <name>symbol</name>
+        <value>symbole</value>
+    </item>
+    <item>
+        <name>tag_id</name>
+        <value>tag</value>
+    </item>
+    <item>
+        <name>target</name>
+        <value>cible</value>
+    </item>
+    <item>
+        <name>tax_group_id</name>
+        <value>groupe de taxe</value>
+    </item>
+    <item>
+        <name>tax_id</name>
+        <value>taxe</value>
+    </item>
+    <item>
+        <name>technical_description</name>
+        <value>description technique</value>
+    </item>
+    <item>
+        <name>title</name>
+        <value>titre</value>
+    </item>
+    <item>
+        <name>total</name>
+        <value>total</value>
+    </item>
+    <item>
+        <name>total_without_tax</name>
+        <value>total sans taxe</value>
+    </item>
+    <item>
+        <name>track_identifier</name>
+        <value>identifiant de tracking</value>
+    </item>
+    <item>
+        <name>type</name>
+        <value>type</value>
+    </item>
+    <item>
+        <name>unsubscribe_date</name>
+        <value>date de désinscription</value>
+    </item>
+    <item>
+        <name>url</name>
+        <value>url</value>
+    </item>
+    <item>
+        <name>useful_counter</name>
+        <value>compteur d'utilité</value>
+    </item>
+    <item>
+        <name>user_group_id</name>
+        <value>groupe d'utilisateurs</value>
+    </item>
+    <item>
+        <name>user_id</name>
+        <value>utilisateur</value>
+    </item>
+    <item>
+        <name>user_info</name>
+        <value>info utilisateurs</value>
+    </item>
+    <item>
+        <name>value</name>
+        <value>valeur</value>
+    </item>
+    <item>
+        <name>weight</name>
+        <value>poids</value>
+    </item>
+    <item>
+        <name>wholesale_price</name>
+        <value>prix d'achat</value>
+    </item>
+    <item>
+        <name>width</name>
+        <value>largeur</value>
+    </item>
+
+</cols>

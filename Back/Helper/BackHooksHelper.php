@@ -25,12 +25,24 @@ class BackHooksHelper
 {
 
 
+    public static function ApplicationMorphicGenerator_getMorphicGeneratorTranslationFiles(array &$info)
+    {
+        $lang = $info['lang'];
+        switch ($lang) {
+            case "fra":
+                $info['tables']["ek_"] = __DIR__ . "/../../assets/morphic/fra/ekom-morphic-tables.xml";
+                $info['cols']["ek_"] = __DIR__ . "/../../assets/morphic/fra/ekom-morphic-cols.xml";
+                break;
+            default:
+                break;
+        }
+    }
+
+
     public static function NullosAdmin_Back_getElementAvatar(&$avatar, $table, array $context = [])
     {
 
     }
-
-
 
 
     public static function NullosAdmin_layout_sideBarMenuModelObject(LeeAdminSidebarMenuModel $sideBarMenuModel)
@@ -155,7 +167,6 @@ class BackHooksHelper
 
         $section
             ->addItem($utilsItem);
-
 
 
         $menuItems = [

@@ -99,7 +99,7 @@ You don't want to disrupt the existing harmony, because this harmony is what mak
 You see, there is a flow between the js api and the service api, they use the same method signatures
 for the most part, which makes it easy for the developer to use one of them, or even both of them.
 
-Now inside your ecp service, it's important to understand the interaction with the js layer too:
+Now inside your ecp service, it's important to understand the interaction with the js layer tool:
 here is what you should be aware of:
 
 - throwing an EkomInvalidArgumentException will console.log the error.
