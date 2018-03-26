@@ -59,6 +59,14 @@ class E
         return E::conf("currencyIsoCode");
     }
 
+    /**
+     * Return the front office currency symbol
+     */
+    public static function currencySymbol()
+    {
+        return E::conf("currencySymbol");
+    }
+
 
     public static function uriSite()
     {
@@ -384,6 +392,7 @@ class E
         if (null === self::$conf) {
             self::$conf = [
                 'langIsoCode' => XConfig::get("Ekom.langIsoCode"),
+                'currencySymbol' => XConfig::get("Ekom.currencySymbol"),
                 'currencyIsoCode' => XConfig::get("Ekom.currencyIsoCode"),
                 'moneyFormatArgs' => XConfig::get("Ekom.moneyFormatArgs"),
                 'acceptOutOfStockOrders' => XConfig::get("Ekom.acceptOutOfStockOrders"),

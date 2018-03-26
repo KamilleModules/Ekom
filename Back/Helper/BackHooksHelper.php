@@ -3,6 +3,7 @@
 
 namespace Module\Ekom\Back\Helper;
 
+use Core\Services\A;
 use Core\Services\Hooks;
 use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Utils\Claws\ClawsInterface;
@@ -71,7 +72,7 @@ class BackHooksHelper
                     ->setName("catalog_products")
                     ->setLabel("Cartes et produits")
 //                    ->setIcon("fa fa-dot-circle-o")
-                    ->setLink(N::link("Ekom_Catalog_Product_List"))
+                    ->setLink(A::link("Ekom_Catalog_Product_List"))
                 )
                 ->addItem(Item::create()
                     ->setActive(true)
@@ -84,51 +85,51 @@ class BackHooksHelper
                         ->setName("catalog_categories_list")
                         ->setLabel("Liste des catégories")
 //                    ->setIcon("fa fa-dot-circle-o")
-                        ->setLink(N::link("Ekom_Catalog_Category_List"))
+                        ->setLink(A::link("Ekom_Catalog_Category_List"))
                     )
                     ->addItem(Item::create()
                         ->setActive(true)
                         ->setName("catalog_categories_tree")
                         ->setLabel("Arbre des catégories")
 //                    ->setIcon("fa fa-dot-circle-o")
-                        ->setLink(N::link("Ekom_Catalog_CategoryTree_List"))
+                        ->setLink(A::link("Ekom_Catalog_CategoryTree_List"))
                     )
                 )
                 ->addItem(Item::create()
                     ->setActive(true)
                     ->setName("catalog_bundles")
                     ->setLabel("Packs")
-                    ->setLink(N::link("Ekom_Catalog_Bundle_List"))
+                    ->setLink(A::link("Ekom_Catalog_Bundle_List"))
                 )
                 ->addItem(Item::create()
                     ->setActive(true)
                     ->setName("catalog_product_groups")
                     ->setLabel("Groupes de produit")
-                    ->setLink(N::link("Ekom_Catalog_ProductGroup_List"))
+                    ->setLink(A::link("Ekom_Catalog_ProductGroup_List"))
                 )
                 ->addItem(Item::create()
                     ->setActive(true)
                     ->setName("catalog_attributes")
                     ->setLabel("Attributs")
-                    ->setLink(N::link("Ekom_Catalog_ProductAttribute_List"))
+                    ->setLink(A::link("Ekom_Catalog_ProductAttribute_List"))
                 )
                 ->addItem(Item::create()
                     ->setActive(true)
                     ->setName("catalog_manufacturers")
                     ->setLabel("Fabricants")
-                    ->setLink(N::link("Ekom_Catalog_Manufacturer_List"))
+                    ->setLink(A::link("Ekom_Catalog_Manufacturer_List"))
                 )
                 ->addItem(Item::create()
                     ->setActive(true)
                     ->setName("catalog_providers")
                     ->setLabel("Fournisseurs")
-                    ->setLink(N::link("Ekom_Catalog_Provider_List"))
+                    ->setLink(A::link("Ekom_Catalog_Provider_List"))
                 )
                 ->addItem(Item::create()
                     ->setActive(true)
                     ->setName("catalog_tags")
                     ->setLabel("Tags")
-                    ->setLink(N::link("Ekom_Catalog_Tag_List"))
+                    ->setLink(A::link("Ekom_Catalog_Tag_List"))
                 )
             )
             //--------------------------------------------
@@ -145,7 +146,14 @@ class BackHooksHelper
                     ->setName("orders_orders")
                     ->setLabel("Commandes")
 //                    ->setIcon("fa fa-dot-circle-o")
-                    ->setLink(N::link("Ekom_Orders_Order_List"))
+                    ->setLink(A::link("Ekom_Orders_Order_List"))
+                )
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("orders_order_statuses")
+                    ->setLabel("Statuts de commande")
+//                    ->setIcon("fa fa-dot-circle-o")
+                    ->setLink(A::link("Ekom_Orders_OrderStatus_List"))
                 )
             );
 
@@ -161,15 +169,33 @@ class BackHooksHelper
                 ->setName("cache-util")
                 ->setLabel("Cache")
 //                    ->setIcon("fa fa-spinner")
-                ->setLink(N::link("Ekom_Utils_CacheManager"))
+                ->setLink(A::link("Ekom_Utils_CacheManager"))
+            );
+
+
+
+        $usersItem = Item::create()
+            ->setActive(true)
+            ->setName("users")
+            ->setLabel("Clients")
+            ->setIcon("fa fa-child")
+            ->setLink("#")
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("users_user")
+                ->setLabel("Clients")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Users_User_List"))
             );
 
 
         $section
-            ->addItem($utilsItem);
+            ->addItem($utilsItem)
+            ->addItem($usersItem);
 
 
         $menuItems = [
+            'Ekom.section' => $section,
             'Ekom.utils' => $utilsItem,
         ];
         Hooks::call("Ekom_decorateLeftMenu", $menuItems);

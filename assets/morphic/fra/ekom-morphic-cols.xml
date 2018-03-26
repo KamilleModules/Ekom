@@ -33,6 +33,10 @@
         <value>sélection d'attributs</value>
     </item>
     <item>
+        <name>bg_color</name>
+        <value>couleur de fond</value>
+    </item>
+    <item>
         <name>billing_address</name>
         <value>adresse de facturation</value>
     </item>
@@ -73,6 +77,10 @@
         <value>commentaire</value>
     </item>
     <item>
+        <name>company</name>
+        <value>société</value>
+    </item>
+    <item>
         <name>conditions</name>
         <value>conditions</value>
     </item>
@@ -109,6 +117,10 @@
         <value>date de création</value>
     </item>
     <item>
+        <name>date_last_connection</name>
+        <value>date de la dernière connexion</value>
+    </item>
+    <item>
         <name>date_used</name>
         <value>utilisé(e) le</value>
     </item>
@@ -137,6 +149,10 @@
         <value>email</value>
     </item>
     <item>
+        <name>email_template</name>
+        <value>template de l'email</value>
+    </item>
+    <item>
         <name>exchange_rate</name>
         <value>taux de conversion</value>
     </item>
@@ -162,6 +178,10 @@
     </item>
     <item>
         <name>gender</name>
+        <value>genre</value>
+    </item>
+    <item>
+        <name>gender_id</name>
         <value>genre</value>
     </item>
     <item>
@@ -423,6 +443,10 @@
     <item>
         <name>seller</name>
         <value>vendeur</value>
+    </item>
+    <item>
+        <name>send_email</name>
+        <value>envoyer l'email</value>
     </item>
     <item>
         <name>seller_address</name>

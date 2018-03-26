@@ -35,6 +35,8 @@ class GeneratedOrderStatus extends TableCrudObject
 			'color' => '',
 			'bg_color' => '',
 			'label' => '',
+			'send_email' => 0,
+			'email_template' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

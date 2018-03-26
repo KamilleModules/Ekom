@@ -16,8 +16,8 @@ use Module\Ekom\Api\Object\Currency;
 use Module\Ekom\Api\Object\Discount;
 use Module\Ekom\Api\Object\Feature;
 use Module\Ekom\Api\Object\FeatureValue;
+use Module\Ekom\Api\Object\Gender;
 use Module\Ekom\Api\Object\Invoice;
-use Module\Ekom\Api\Object\Lang;
 use Module\Ekom\Api\Object\Manufacturer;
 use Module\Ekom\Api\Object\Newsletter;
 use Module\Ekom\Api\Object\Order;
@@ -58,7 +58,6 @@ use Module\Ekom\Api\Object\User;
 use Module\Ekom\Api\Object\UserGroup;
 use Module\Ekom\Api\Object\UserHasAddress;
 use Module\Ekom\Api\Object\UserHasProduct;
-use Module\Ekom\Api\Object\UserHasUserGroup;
 
 use XiaoApi\Api\XiaoApi;
 
@@ -179,18 +178,18 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('featureValue');
     }
     /**
+     * @return Gender
+     */
+    public function gender()
+    {
+        return $this->getObject('gender');
+    }
+    /**
      * @return Invoice
      */
     public function invoice()
     {
         return $this->getObject('invoice');
-    }
-    /**
-     * @return Lang
-     */
-    public function lang()
-    {
-        return $this->getObject('lang');
     }
     /**
      * @return Manufacturer
@@ -471,12 +470,5 @@ class GeneratedEkomApi extends XiaoApi
     public function userHasProduct()
     {
         return $this->getObject('userHasProduct');
-    }
-    /**
-     * @return UserHasUserGroup
-     */
-    public function userHasUserGroup()
-    {
-        return $this->getObject('userHasUserGroup');
     }
 }
