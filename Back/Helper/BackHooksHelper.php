@@ -18,6 +18,7 @@ use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Back\Util\QuickStartWizard\QuickStartWizard;
 use Module\Ekom\Back\WidgetModel\ContextBar\ContextBarWidgetModel;
 use Module\Ekom\Back\WidgetModel\Dashboard\DefaultDashboardModel;
+use Module\Ekom\Utils\E;
 use Module\NullosAdmin\Helper\NullosGuiEnvironment;
 use Module\NullosAdmin\Utils\N;
 use QuickPdo\QuickPdo;
@@ -25,6 +26,23 @@ use QuickPdo\QuickPdo;
 class BackHooksHelper
 {
 
+
+    public static function NullosAdmin_MorphicHelper_StandardColTransformer(callable &$func = null, $name, array $options = [])
+    {
+        switch ($name) {
+            case "Ekom.price":
+                $func = function ($value, array $row) use ($options) {
+                    if ($value) {
+                        return '<div class="badge" style="background:#3577da">' . E::price($value) . '</div>';
+                    }
+
+                };
+                break;
+                break;
+            default:
+                break;
+        }
+    }
 
     public static function ApplicationMorphicGenerator_getMorphicGeneratorTranslationFiles(array &$info)
     {
@@ -171,7 +189,6 @@ class BackHooksHelper
 //                    ->setIcon("fa fa-spinner")
                 ->setLink(A::link("Ekom_Utils_CacheManager"))
             );
-
 
 
         $usersItem = Item::create()

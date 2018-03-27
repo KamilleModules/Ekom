@@ -13,6 +13,14 @@ class UserGroupLayer
 
 
 
+    public static function getListItems()
+    {
+        return QuickPdo::fetchAll('
+select id, label
+from ek_user_group
+', [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
     public static function getEntries()
     {
         return QuickPdo::fetchAll('

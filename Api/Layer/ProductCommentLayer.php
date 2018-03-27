@@ -23,7 +23,6 @@ class ProductCommentLayer
         $rows = QuickPdo::fetchAll("
 select  
 
-shop_id,
 product_id,
 `date`,
 rating,
