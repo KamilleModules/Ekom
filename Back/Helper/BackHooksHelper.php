@@ -38,7 +38,6 @@ class BackHooksHelper
 
                 };
                 break;
-                break;
             default:
                 break;
         }

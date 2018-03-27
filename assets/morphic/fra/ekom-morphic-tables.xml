@@ -304,7 +304,7 @@
         <label>utilisateur</label>
         <labelPlural>utilisateurs</labelPlural>
         <genre>m</genre>
-        <article>le</article>
+        <article>l'</article>
     </item>
     <item table="ek_user_group">
         <label>groupe d'utilisateurs</label>
