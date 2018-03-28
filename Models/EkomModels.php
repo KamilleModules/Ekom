@@ -560,6 +560,7 @@ class EkomModels
      * - product_id
      * - product_reference
      * - product_type
+     * - product_type_id
      * - quantityInStock
      * - quantityStock
      * - rating_amount

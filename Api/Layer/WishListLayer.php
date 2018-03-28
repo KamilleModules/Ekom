@@ -36,15 +36,16 @@ and deleted_date is not null
             ";
         }
 
+        $q .= "
+order by `date` desc        
+        ";
+
         if (null !== $limit) {
             $limit = (int)$limit;
             $q .= "
 limit 0, $limit
             ";
         }
-        $q .= "
-order by `date` desc        
-        ";
 
         $rows = QuickPdo::fetchAll($q);
         foreach ($rows as $k => $row) {

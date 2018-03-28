@@ -523,6 +523,7 @@ class ProductBoxEntity
                         "product_id" => (int)$productId,
                         "product_reference" => $productReference,
                         "product_type" => $p['product_type'],
+                        "product_type_id" => $p['product_type_id'],
                         "quantityStock" => (int)$quantity,
                         "quantityInStock" => $isInStock,
                         "images" => $images,

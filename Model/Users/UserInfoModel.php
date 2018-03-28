@@ -5,6 +5,8 @@ namespace Module\Ekom\Model\Users;
 
 
 use Core\Services\Hooks;
+use Models\InfoTable\InfoTableHelper;
+use Module\Ekom\Api\Layer\WishListLayer;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\OrderStats\OrderStatsUtil;
 use Module\NullosAdmin\Morphic\Helper\NullosMorphicHelper;
@@ -13,6 +15,92 @@ use SqlQuery\SqlQuery;
 
 class UserInfoModel
 {
+
+
+    public static function getLastBookmarksByUserId(int $userId)
+    {
+        $fullRows = WishListLayer::getWishListItemsByUserId($userId, 5);
+
+
+        $rows = [];
+        foreach ($fullRows as $row) {
+            $rows[] = [
+                'ref' => $row['ref'],
+                'label' => $row['label'],
+                'photo' => $row['imageThumb'],
+                'sale_price' => $row['priceSale'],
+                'date' => $row['wishlist_date'],
+                'action' => '',
+                // hidden
+                'product_type_id' => $row['product_type_id'],
+                'card_id' => $row['card_id'],
+                'product_id' => $row['product_id'],
+            ];
+        }
+
+        //--------------------------------------------
+        // LAST BOOKMARKS
+        //--------------------------------------------
+        $linkFmt = E::link("Ekom_Catalog_Product_Form") . "?form=1&t=products&t2=product&product_type=%s&id=%s&product_id=%s";
+        $infoTable = [
+            'headers' => [
+                "Réf",
+                "Libellé",
+                "Photo",
+                "Prix de vente",
+                "Date ajout favori",
+                "", // actions
+            ],
+            'rows' => $rows,
+            'hidden' => [
+                "product_type_id",
+                "card_id",
+                "product_id",
+            ],
+            'colTransformers' => [
+                'photo' => NullosMorphicHelper::getStandardColTransformer("image"),
+                'action' => function ($value, $row) use ($linkFmt) {
+                    $link = sprintf($linkFmt, $row['product_type_id'], $row['card_id'], $row['product_id']);
+                    return <<<EEE
+<a href="$link" class="btn btn-default btn-xs">Voir le produit</a>
+EEE;
+
+                },
+            ],
+        ];
+        return $infoTable;
+    }
+
+
+    public static function getWishStatsByUserId(int $userId)
+    {
+
+        $nbFavoritesCurrent = WishListLayer::getNbUserWishItems($userId);
+        $nbFavorisDeleted = WishListLayer::getNbUserWishItems($userId, 'deleted');
+        $nbFavoritesTotal = $nbFavorisDeleted + $nbFavoritesCurrent;
+        $oldestFavoriteDate = "N/A";
+        $oldestFavorite = WishListLayer::getFirstFavoriteAddedDateByUserId($userId);
+        if (false !== $oldestFavorite) {
+            $oldestFavoriteDate = $oldestFavorite;
+        }
+
+        $ret = [
+            'nb_total_bookmarks' => $nbFavoritesTotal,
+            'nb_current_bookmarks' => $nbFavoritesCurrent,
+            'nb_deleted_bookmarks' => $nbFavorisDeleted,
+            'first_bookmark_date' => $oldestFavoriteDate,
+        ];
+
+        $translations = [
+            "Nombre de favoris total",
+            "Nombre de favoris en cours",
+            "Nombre de favoris dans la poubelle",
+            "Date du premier favori ajouté",
+        ];
+
+        return array_combine($translations, $ret);
+    }
+
 
     public static function getOrderStatsByUserId(int $id)
     {
@@ -56,7 +144,8 @@ if(
    
 ) as last_status,
 o.cart_quantity as nb_products,
-o.amount
+o.amount,
+'' as action 
 
 
 from ek_order o
@@ -72,6 +161,7 @@ limit 0,$nbMaxOrders
         //--------------------------------------------
         // LAST ORDERS
         //--------------------------------------------
+        $linkFmt = E::link("Ekom_Orders_Order_Info") . "?form&id=%s";
         $infoTable = [
             'headers' => [
                 "Id",
@@ -85,6 +175,13 @@ limit 0,$nbMaxOrders
             'rows' => $rows,
             'colTransformers' => [
                 'amount' => NullosMorphicHelper::getStandardColTransformer("Ekom.price"),
+                'action' => function ($value, $row) use ($linkFmt) {
+                    $link = sprintf($linkFmt, $row['id']);
+                    return <<<EEE
+<a href="$link" class="btn btn-default btn-xs">Voir la commande</a>
+EEE;
+
+                },
             ],
         ];
         return $infoTable;
