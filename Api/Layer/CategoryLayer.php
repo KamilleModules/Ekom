@@ -11,6 +11,7 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Object\CategoryHasProductCard;
+use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
@@ -25,6 +26,14 @@ use QuickPdo\QuickPdo;
  */
 class CategoryLayer
 {
+
+    public static function getTopCategoryInfoById(int $categoryId)
+    {
+        $catInfos = CategoryCoreLayer::create()->getSelfAndParentsByCategoryId($categoryId);
+        array_pop($catInfos); // getting rid of the root category
+        $topCatInfo = array_pop($catInfos);
+        return $topCatInfo;
+    }
 
     public static function getLabelBySlug(string $slug)
     {
@@ -349,13 +358,22 @@ and `name`=:name
         return $ids;
     }
 
+
+    /**
+     * @param $slug
+     * @return array|false
+     *
+     * @see EkomModels::categoryModel()
+     *
+     */
     public static function getInfoBySlug($slug)
     {
         return QuickPdo::fetch("
 select
 c.id, 
 c.name, 
-c.label
+c.label,
+c.slug
  
 from ek_category c  
 where c.slug=:slug         

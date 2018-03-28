@@ -260,6 +260,22 @@ class EkomModels
 
 
     /**
+     * categoryModel
+     * =================
+     * - id:
+     * - name:
+     * - label:
+     * - slug:
+     *
+     *
+     */
+    private function categoryModel()
+    {
+        return [];
+    }
+
+
+    /**
      * couponDetailsItem
      * ===============
      * - code: coupon code

@@ -42,7 +42,7 @@ class ConnexionLayer
 
     public static function getConnexionDataByUserId($userId)
     {
-        $userGroupNames = EkomApi::inst()->userLayer()->getUserGroupNames($userId);
+
         $shippingAddress = UserAddressLayer::getPreferredShippingAddress($userId);
         $userShippingCountry = false;
         if (null !== $shippingAddress) {
@@ -50,14 +50,18 @@ class ConnexionLayer
         }
 
 
+        $userInfo = UserLayer::getUserInfoById($userId);
+
+
         $userConnexionData = [
             'id' => $userId,
+            'email' => $userInfo['email'],
             'userBrowserCountry' => Http4AllHeader::getUserPreferredCountry("FR"),
             'userShippingCountry' => $userShippingCountry, // false|string
             /**
              * array of groupId => groupName
              */
-            'userGroups' => $userGroupNames,
+            'userGroup' => $userInfo['group_name'],
         ];
 
         Hooks::call("Ekom_Connexion_decorateUserConnexionData", $userConnexionData);

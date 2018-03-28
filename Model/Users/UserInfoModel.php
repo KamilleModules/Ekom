@@ -9,12 +9,16 @@ use Models\InfoTable\InfoTableHelper;
 use Module\Ekom\Api\Layer\WishListLayer;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\OrderStats\OrderStatsUtil;
+use Module\EkomUserTracker\Api\Layer\UserTrackerLayer;
 use Module\NullosAdmin\Morphic\Helper\NullosMorphicHelper;
 use QuickPdo\QuickPdo;
 use SqlQuery\SqlQuery;
 
 class UserInfoModel
 {
+
+
+
 
 
     public static function getLastBookmarksByUserId(int $userId)

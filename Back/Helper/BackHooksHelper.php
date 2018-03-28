@@ -8,6 +8,7 @@ use Core\Services\Hooks;
 use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Utils\Claws\ClawsInterface;
 use Kamille\Utils\Claws\ClawsWidget;
+use Kamille\Utils\Morphic\Generator2\Helper\LingFrenchMorphicGeneratorHelper;
 use Models\AdminSidebarMenu\Lee\LeeAdminSidebarMenuModel;
 use Models\AdminSidebarMenu\Lee\Objects\Item;
 use Models\AdminSidebarMenu\Lee\Objects\Section;
@@ -45,15 +46,7 @@ class BackHooksHelper
 
     public static function ApplicationMorphicGenerator_getMorphicGeneratorTranslationFiles(array &$info)
     {
-        $lang = $info['lang'];
-        switch ($lang) {
-            case "fra":
-                $info['tables']["ek_"] = __DIR__ . "/../../assets/morphic/fra/ekom-morphic-tables.xml";
-                $info['cols']["ek_"] = __DIR__ . "/../../assets/morphic/fra/ekom-morphic-cols.xml";
-                break;
-            default:
-                break;
-        }
+        LingFrenchMorphicGeneratorHelper::injectTranslations($info, "ek_", "Ekom");
     }
 
 

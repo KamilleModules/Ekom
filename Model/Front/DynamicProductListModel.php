@@ -9,6 +9,7 @@ use HybridList\HybridListControl\HybridListControlInterface;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\HybridList\HybridListFactory;
+use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\E;
 
 
@@ -34,7 +35,15 @@ class DynamicProductListModel
     }
 
 
-    public static function getModelByCategorySlug($categorySlug)
+    /**
+     * @param $categorySlug
+     * @param array $categoryModel ,
+     * @see EkomModels::categoryModel()
+     * @return array
+     * @throws \Exception
+     * @throws \HybridList\Exception\HybridListException
+     */
+    public static function getModelByCategorySlug($categorySlug, array &$categoryModel = [])
     {
 
         $model = [];
@@ -44,7 +53,7 @@ class DynamicProductListModel
         if (null !== $categorySlug) {
 
             if (false !== ($info = CategoryLayer::getInfoBySlug($categorySlug))) {
-
+                $categoryModel = $info;
                 $categoryId = $info['id'];
 
 
@@ -56,7 +65,6 @@ class DynamicProductListModel
 
                 $dotKey2Control = $return['dotKey2Control'];
                 $context = $return['context'];
-
 
 
                 $model['bundle'] = [

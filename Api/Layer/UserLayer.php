@@ -123,12 +123,9 @@ where 1
          * @todo-ling: caching?
          */
         $userId = (int)$userId;
-        $row = QuickPdo::fetch("select * from ek_user where id=$userId");
-        if (false !== $row) {
-            $userGroups = UserGroupLayer::getUserGroups($userId);
-            $row['groups'] = implode(",", $userGroups);
-        }
-        return $row;
+        return QuickPdo::fetch("select u.*, g.name as group_name from ek_user u 
+inner join ek_user_group g on g.id=u.user_group_id  
+where u.id=$userId");
     }
 
     public static function getUserInfoByEmail($email)
