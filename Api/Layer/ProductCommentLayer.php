@@ -17,6 +17,16 @@ use RowsGenerator\QuickPdoRowsGenerator;
 class ProductCommentLayer
 {
 
+    public static function updateActiveById(int $commentId, $isActive)
+    {
+        $isActive = (int)$isActive;
+        QuickPdo::update("ek_product_comment", [
+            'active' => $isActive,
+        ], [
+            ['id', "=", $commentId],
+        ]);
+    }
+
     public static function getCommentsByUserId($userId, $fetchProduct = false, int $limit = null)
     {
         $userId = (int)$userId;

@@ -4,6 +4,7 @@
 namespace Module\Ekom\Model\Users;
 
 
+use Core\Services\A;
 use Core\Services\Hooks;
 use Models\InfoTable\InfoTableHelper;
 use Module\Ekom\Api\Layer\ProductCommentLayer;
@@ -44,8 +45,8 @@ class UserInfoModel
         //--------------------------------------------
         // LAST BOOKMARKS
         //--------------------------------------------
-        $productLinkFmt = E::link("Ekom_Catalog_Product_Form") . "?form=1&t=products&t2=product&product_type=%s&id=%s&product_id=%s";
-        $commentLinkFmt = E::link("Ekom_Catalog_ProductCommentList") . "?id=%s";
+        $productLinkFmt = A::link("Ekom_Catalog_Product_Form") . "?form=1&t=products&t2=product&product_type=%s&id=%s&product_id=%s";
+        $commentLinkFmt = A::link("Ekom_Catalog_ProductCommentList") . "?form&id=%s";
         $infoTable = [
             'headers' => [
                 "Date",
@@ -72,13 +73,24 @@ class UserInfoModel
                 }]),
                 'action' => NullosMorphicHelper::getStandardColTransformer("dropdown", [
                     'callback' => function ($value, array $row) use ($productLinkFmt, $commentLinkFmt) {
+
+                        $isActive = (bool)$row['active'];
+                        $word = (true === $isActive) ? "invisible" : "visible";
+
                         return [
                             "label" => "Actions",
                             "openingSide" => "left", // left|right
                             "items" => [
                                 [
-                                    "label" => "Rendre invisible sur le site",
+                                    "label" => "Rendre $word sur le site",
                                     "link" => "#",
+                                    "class" => "bionic-btn",
+                                    "attributes" => [
+                                        "data-action" => "ecp:Ekom:back.updateProductCommentActive",
+                                        "data-param-id" => $row['id'],
+                                        "data-param-is_active" => (int)!$isActive,
+                                        "data-directive-reload" => 1,
+                                    ],
                                 ],
                                 [
                                     "label" => "Modifier le produit",
