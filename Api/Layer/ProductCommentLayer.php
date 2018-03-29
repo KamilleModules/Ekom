@@ -17,12 +17,13 @@ use RowsGenerator\QuickPdoRowsGenerator;
 class ProductCommentLayer
 {
 
-    public static function getCommentsByUserId($userId, $fetchProduct = false)
+    public static function getCommentsByUserId($userId, $fetchProduct = false, int $limit = null)
     {
         $userId = (int)$userId;
-        $rows = QuickPdo::fetchAll("
+        $q = "
 select  
 
+id,
 product_id,
 `date`,
 rating,
@@ -32,9 +33,13 @@ comment,
 active
 
 from ek_product_comment where user_id=$userId
+        ";
 
-        
-        ");
+        if (null !== $limit) {
+            $q .= " limit 0, $limit";
+        }
+
+        $rows = QuickPdo::fetchAll($q);
 
 
         if (true === $fetchProduct) {
@@ -46,6 +51,7 @@ from ek_product_comment where user_id=$userId
                 $box['comment_title'] = $row['title'];
                 $box['comment_comment'] = $row['comment'];
                 $box['comment_active'] = $row['active'];
+                $box['comment_id'] = $row['id'];
                 $rows[$k] = $box;
             }
         }

@@ -6,6 +6,7 @@ namespace Module\Ekom\Model\Users;
 
 use Core\Services\Hooks;
 use Models\InfoTable\InfoTableHelper;
+use Module\Ekom\Api\Layer\ProductCommentLayer;
 use Module\Ekom\Api\Layer\WishListLayer;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\OrderStats\OrderStatsUtil;
@@ -18,7 +19,83 @@ class UserInfoModel
 {
 
 
+    public static function getLastCommentsByUserId(int $userId)
+    {
+        $comments = ProductCommentLayer::getCommentsByUserId($userId, true, 5);
+        $rows = [];
 
+        foreach ($comments as $row) {
+            $rows[] = [
+                'id' => $row['comment_id'],
+                'product_type_id' => $row['product_type_id'],
+                'product_id' => $row['product_id'],
+                'card_id' => $row['card_id'],
+                'date' => $row['comment_date'],
+                'ref' => $row['ref'],
+                'label' => $row['label'],
+                'photo' => $row['imageThumb'],
+                'comment' => $row['comment_comment'],
+                'rating' => $row['comment_rating'], // rating up to 100
+                'active' => $row['comment_active'],
+                'action' => '',
+            ];
+        }
+
+        //--------------------------------------------
+        // LAST BOOKMARKS
+        //--------------------------------------------
+        $productLinkFmt = E::link("Ekom_Catalog_Product_Form") . "?form=1&t=products&t2=product&product_type=%s&id=%s&product_id=%s";
+        $commentLinkFmt = E::link("Ekom_Catalog_ProductCommentList") . "?id=%s";
+        $infoTable = [
+            'headers' => [
+                "Date",
+                "Libellé",
+                "Photo",
+                "Commentaire",
+                "Note",
+                "Présent sur le site",
+                "", // actions
+            ],
+            'rows' => $rows,
+            'hidden' => [
+                'id',
+                'ref',
+                'product_id',
+                'product_type_id',
+                'card_id',
+            ],
+            'colTransformers' => [
+                'active' => NullosMorphicHelper::getStandardColTransformer("active"),
+                'rating' => NullosMorphicHelper::getStandardColTransformer("rating"),
+                'photo' => NullosMorphicHelper::getStandardColTransformer("image", ['title' => function ($row) {
+                    return $row['ref'];
+                }]),
+                'action' => NullosMorphicHelper::getStandardColTransformer("dropdown", [
+                    'callback' => function ($value, array $row) use ($productLinkFmt, $commentLinkFmt) {
+                        return [
+                            "label" => "Actions",
+                            "openingSide" => "left", // left|right
+                            "items" => [
+                                [
+                                    "label" => "Rendre invisible sur le site",
+                                    "link" => "#",
+                                ],
+                                [
+                                    "label" => "Modifier le produit",
+                                    "link" => sprintf($productLinkFmt, $row['product_type_id'], $row['product_id'], $row['card_id']),
+                                ],
+                                [
+                                    "label" => "Modifier le commentaire",
+                                    "link" => sprintf($commentLinkFmt, $row['id']),
+                                ],
+                            ],
+                        ];
+                    }
+                ]),
+            ],
+        ];
+        return $infoTable;
+    }
 
 
     public static function getLastBookmarksByUserId(int $userId)

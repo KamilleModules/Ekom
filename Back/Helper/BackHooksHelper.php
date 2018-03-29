@@ -141,6 +141,12 @@ class BackHooksHelper
                     ->setLabel("Tags")
                     ->setLink(A::link("Ekom_Catalog_Tag_List"))
                 )
+                ->addItem(Item::create()
+                    ->setActive(true)
+                    ->setName("catalog_comments")
+                    ->setLabel("Commentaires produits")
+                    ->setLink(A::link("Ekom_Catalog_ProductCommentList"))
+                )
             )
             //--------------------------------------------
             // ORDERS
