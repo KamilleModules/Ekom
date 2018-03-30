@@ -301,10 +301,10 @@
         <article>le</article>
     </item>
     <item table="ek_user">
-        <label>utilisateur</label>
-        <labelPlural>utilisateurs</labelPlural>
+        <label>client</label>
+        <labelPlural>clients</labelPlural>
         <genre>m</genre>
-        <article>l'</article>
+        <article>le</article>
     </item>
     <item table="ek_user_group">
         <label>groupe d'utilisateurs</label>
