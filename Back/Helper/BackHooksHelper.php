@@ -3,25 +3,18 @@
 
 namespace Module\Ekom\Back\Helper;
 
+use Controller\NullosAdmin\Back\NullosStandardPageController;
 use Core\Services\A;
 use Core\Services\Hooks;
-use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Utils\Claws\ClawsInterface;
 use Kamille\Utils\Claws\ClawsWidget;
 use Kamille\Utils\Morphic\Generator2\Helper\LingFrenchMorphicGeneratorHelper;
 use Models\AdminSidebarMenu\Lee\LeeAdminSidebarMenuModel;
 use Models\AdminSidebarMenu\Lee\Objects\Item;
 use Models\AdminSidebarMenu\Lee\Objects\Section;
-use Module\Ekom\Api\Layer\CurrencyLayer;
-use Module\Ekom\Api\Layer\LangLayer;
-use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Back\User\EkomNullosUser;
-use Module\Ekom\Back\Util\QuickStartWizard\QuickStartWizard;
-use Module\Ekom\Back\WidgetModel\ContextBar\ContextBarWidgetModel;
 use Module\Ekom\Back\WidgetModel\Dashboard\DefaultDashboardModel;
 use Module\Ekom\Utils\E;
-use Module\NullosAdmin\Helper\NullosGuiEnvironment;
-use Module\NullosAdmin\Utils\N;
 use QuickPdo\QuickPdo;
 
 class BackHooksHelper
@@ -217,30 +210,9 @@ class BackHooksHelper
 
     }
 
-    public static function NullosAdmin_prepareClaws(ClawsInterface $claws, $type = null)
+    public static function NullosAdmin_prepareClaws(ClawsInterface $claws, $type = null, NullosStandardPageController $controller)
     {
 
-
-        if (false === "old") {
-
-            //--------------------------------------------
-            // ENSURE THAT CONTEXT VARS ARE PROPERLY SET
-            //--------------------------------------------
-            /**
-             * The currency, lang, and shop must be defined
-             * prior to any other actions.
-             */
-            $message = null;
-            if (false === QuickStartWizard::checkApp($message)) {
-                NullosGuiEnvironment::addNotification($message, "error");
-            }
-//        $model = ContextBarWidgetModel::getModel();
-//        $claws
-//            ->setWidget("topbar_right.ekomContextBar", ClawsWidget::create()
-//                ->setTemplate('NullosAdmin/TopBar/EkomContextBar/default')
-//                ->setConf($model), "last"
-//            );
-        }
 
 
         //--------------------------------------------
@@ -249,23 +221,16 @@ class BackHooksHelper
         if ('home' === $type) {
 
             $claws->removeWidget("maincontent.body");
-
             $model = DefaultDashboardModel::getModel();
+
+
+
+            $pageTop = $controller->pageTop();
+            $pageTop->breadcrumbs()->addLink("dashboard");
+            $pageTop->setTitle("Tableau de bord");
+
+
             $claws
-                ->setWidget("maincontent.pageTop", ClawsWidget::create()
-                    ->setTemplate('NullosAdmin/Main/PageTop/default')
-                    ->setConf([
-                        "breadcrumbs" => [
-                            [
-                                'label' => 'dashboard',
-                                'link' => '',
-                            ]
-                        ],
-                        "title" => "Tableau de bord",
-                        "buttons" => [],
-                        "buttonsList" => [],
-                    ])
-                )
                 //--------------------------------------------
                 // MAIN
                 //--------------------------------------------

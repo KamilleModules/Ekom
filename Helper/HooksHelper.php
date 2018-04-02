@@ -5,6 +5,7 @@ namespace Module\Ekom\Helper;
 
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
+use Kamille\Services\XConfig;
 use Module\Ekom\Api\Layer\InvoiceLayer;
 use Module\Ekom\Back\Util\ApplicationSanityCheck\ApplicationSanityCheckUtil;
 use Module\Ekom\Exception\EkomUserMessageException;
@@ -15,55 +16,55 @@ use QuickPdo\Helper\QuickPdoHelper;
 
 class HooksHelper
 {
-    public static function NullosAdmin_layout_topNotifications(array &$topNotifications)
+
+
+    public static function FishMailer_collectVariables(array &$pool, string $template, string $mode)
     {
-        $errors = ApplicationSanityCheckUtil::getSessionErrors();
-        foreach ($errors as $token => $params) {
-            $msg = "";
-            switch ($token) {
-                case "a":
-                    $msg = "The following countries require (at least one) translation: {codes}.<br>
-                Go to the \"Super Admin > Country > Country translation\" page to fix this problem.
-                ";
+
+        $p = explode("/", $template);
+        if ('Ekom' === $p[0]) {
+
+            $lang = $p[1];
+            $templateName = array_pop($p);
+            $vars = XConfig::get("Ekom.fishMailerVars");
+            $siteName = $vars['site_name'];
+
+
+            switch ($templateName) {
+                case "customer.new":
+                    $name = $pool['name'] ?? null;
+                    $subject = "Bienvenue sur $siteName";
+                    if ($name) {
+                        $subject .= ", " . $name;
+                    }
                     break;
-                case "b":
-                case "c":
-                case "d":
-                case "e":
-                case "f":
-                case "g":
-                case "h":
-                case "i":
-                case "j":
-                case "k":
-                case "l":
-                case "m":
-                case "n":
-                    $msg = "You need to add at least one {word} ({table})";
+                case "customer.new.validation":
+                    $subject = "Votre inscription sur $siteName";
                     break;
-                case "o":
-                    $msg = "The following categories require (at least one) translation: {codes}.<br>
-                Go to the \"Shop > Category\" page to fix this problem.
-                ";
+                case "customer.resend_password":
+                    $subject = "Réinitialisation de votre mot de passe";
+                    break;
+                case "order.new":
+                    $subject = "Votre commande sur $siteName";
+                    break;
+                case "order.new.alert":
+                    $subject = "Nouvelle commande sur $siteName";
+                    break;
+                case "estimate.new":
+                    $subject = "Votre devis sur $siteName";
+                    break;
+                case "estimate.new.alert":
+                    $subject = "Nouveau devis sur $siteName";
                     break;
                 default:
+                    $subject = "Informations";
                     break;
             }
-            $tags = [];
-            foreach ($params as $k => $v) {
-                $tags['{' . $k . '}'] = $v;
-            }
-            /**
-             * default translation system
-             * @todo-ling: translate in other languages (i.e. add a real translation system)
-             */
-            $msg = str_replace(array_keys($tags), array_values($tags), $msg);
-            $topNotifications[] = [
-                "type" => "warning",
-                "type" => "error",
-                "title" => "Sanity Check Error:",
-                "msg" => $msg,
-            ];
+            $pool['owner'] = "Ekom";
+            $pool['category'] = "all";
+            $pool['subject'] = $subject;
+            $pool['site_name'] = $siteName;
+            $pool['SITE_NAME'] = strtoupper($siteName);
         }
     }
 
