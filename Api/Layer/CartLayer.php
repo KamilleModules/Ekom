@@ -314,6 +314,20 @@ class CartLayer
     }
 
 
+    /**
+     *
+     * This method is useful if you have stored the cart in the database, and now you want to redisplay it.
+     *
+     * @param array $items
+     * @param array $coupons
+     * @return array
+     */
+    public static function getCartModelByItemsAndCoupons(array $items, array $coupons = [])
+    {
+        return self::doGetCartModel($items, $coupons);
+    }
+
+
     public function getItems()
     {
         $this->initSessionCart();

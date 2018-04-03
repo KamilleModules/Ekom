@@ -78,6 +78,12 @@
         <genre>f</genre>
         <article>la</article>
     </item>
+    <item table="ek_gender">
+        <label>titre de civilité</label>
+        <labelPlural>titres de civilité</labelPlural>
+        <genre>m</genre>
+        <article>le</article>
+    </item>
     <item table="ek_invoice">
         <label>facture</label>
         <labelPlural>factures</labelPlural>

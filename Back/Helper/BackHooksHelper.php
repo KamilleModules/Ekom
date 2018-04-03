@@ -194,7 +194,29 @@ class BackHooksHelper
                 ->setLabel("Clients")
 //                    ->setIcon("fa fa-spinner")
                 ->setLink(A::link("Ekom_Users_User_List"))
-            );
+            )
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("users_address")
+                ->setLabel("Adresses")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Users_Address_List"))
+            )
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("users_group")
+                ->setLabel("Groupes")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Users_Group_List"))
+            )
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("users_gender")
+                ->setLabel("Titres de civilité")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Users_Gender_List"))
+            )
+        ;
 
 
         $section
@@ -205,6 +227,7 @@ class BackHooksHelper
         $menuItems = [
             'Ekom.section' => $section,
             'Ekom.utils' => $utilsItem,
+            'Ekom.users' => $usersItem,
         ];
         Hooks::call("Ekom_decorateLeftMenu", $menuItems);
 

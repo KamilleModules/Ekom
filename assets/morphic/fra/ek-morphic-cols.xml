@@ -257,6 +257,10 @@
         <value>légende</value>
     </item>
     <item>
+        <name>libelle</name>
+        <value>libellé</value>
+    </item>
+    <item>
         <name>manufacturer_id</name>
         <value>fabricant</value>
     </item>

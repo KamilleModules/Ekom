@@ -12,8 +12,7 @@ class UserGroupLayer
 {
 
 
-
-    public static function getListItems()
+    public static function getListItems($useNameAsKey = false)
     {
         return QuickPdo::fetchAll('
 select id, label

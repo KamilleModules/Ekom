@@ -25,7 +25,7 @@ select id, iso_code from ek_country order by iso_code asc
     /**
      * return useful list for feeding html select tags
      */
-    public function getCountryList($isoCodeAsKey = false)
+    public static function getCountryList($isoCodeAsKey = false)
     {
         $isoCodeAsKey = (int)$isoCodeAsKey;
         return A::cache()->get("Ekom.CountryLayer.getCountryList.$isoCodeAsKey", function () use ($isoCodeAsKey) {
