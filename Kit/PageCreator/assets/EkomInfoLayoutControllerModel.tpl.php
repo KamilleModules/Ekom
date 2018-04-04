@@ -23,16 +23,10 @@ class _controllerClassname_ extends NullosMorphicController
 //            $orderModel = OrderInfoModel::getModelByOrderId($orderId);
 
 
+            $pageTop = $this->pageTop();
+            $pageTop->setTitle("Informations sur le client XXX");
+            $pageTop->breadcrumbs()->addLink("ek_order");
 
-
-            $this->pageTop([
-                "title" => "Informations sur le client XXX",
-                "breadcrumbs" => [
-                    [
-                        "label" => "ek_order",
-                    ]
-                ],
-            ]);
 
 //            $this->topStats(function (TopStatObject $topStat) use($model){
 //                $topStat->addElement([
@@ -89,9 +83,7 @@ class _controllerClassname_ extends NullosMorphicController
                     ->setConf([
                         'title' => "Colonne dans bottom",
                     ])
-                )
-            ;
-
+                );
 
 
 //            $params= [

@@ -55,6 +55,15 @@ use QuickPdo\QuickPdo;
 class DiscountLayer
 {
 
+
+    public static function getDiscountTypes()
+    {
+        return [
+            "f" => "Réduction fixe",
+            "p" => "Réduction proportionnelle",
+        ];
+    }
+
     public static function getItemsByShopId($shopId, $langId)
     {
         $shopId = (int)$shopId;
@@ -70,8 +79,6 @@ and l.lang_id=$langId
     }
 
 
-
-
     public static function countDiscountByShopId($shopId)
     {
         $shopId = (int)$shopId;
@@ -81,7 +88,6 @@ from ek_discount
 where shop_id=$shopId        
         ", [], \PDO::FETCH_COLUMN);
     }
-
 
 
     public static function getHumanIdentifier($discountId)
@@ -96,7 +102,7 @@ where shop_id=$shopId
                     break;
                 case "amount":
                     // we want symbolic representation here
-                    $s = E::price($row['operand'], false) .  " (" . $row['target'] . ")";
+                    $s = E::price($row['operand'], false) . " (" . $row['target'] . ")";
                     break;
                 default:
                     throw new \Exception("Unknown discount type: $type");
@@ -266,14 +272,14 @@ where shop_id=$shopId
 
     public function getProductsInfoHavingDiscount()
     {
-        return A::cache()->get("Ekom.DiscountLayer.getProductsInfoHavingDiscount", function ()  {
+        return A::cache()->get("Ekom.DiscountLayer.getProductsInfoHavingDiscount", function () {
 
 
             /**
              * Discounts are dispatched in products, cards and categories.
              * We want to return some presentational info.
              */
-            $getResults = function (array $options = [], $debug = false)  {
+            $getResults = function (array $options = [], $debug = false) {
 
                 $join = (array_key_exists('join', $options)) ? $options['join'] : '';
                 $where = (array_key_exists('where', $options)) ? $options['where'] : '';

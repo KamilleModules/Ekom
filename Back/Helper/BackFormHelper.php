@@ -23,6 +23,20 @@ class BackFormHelper
     }
 
 
+    public static function getSokoAutocompleteMultipleDefaultOptions(array $options = [])
+    {
+        return array_replace([
+            "addBtnText" => "Ajouter cet élément à la sélection",
+            "removeBtnText" => "Supprimer",
+            "emptyValueTitle" => "Attention!",
+            "emptyValueText" => "La valeur ne peut pas être vide",
+            "acceptDuplicate" => false,
+            "duplicateValueTitle" => "Attention!",
+            "duplicateValueText" => "Cette valeur a déjà été ajoutée",
+        ], $options);
+    }
+
+
 
 
 

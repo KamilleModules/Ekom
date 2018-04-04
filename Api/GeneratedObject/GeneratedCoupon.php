@@ -31,15 +31,60 @@ class GeneratedCoupon extends TableCrudObject
     {
         $base = [
 			'id' => null,
-			'code' => '',
 			'label' => '',
+			'code' => '',
+			'description' => '',
+			'highlight' => 0,
+			'priority' => 0,
 			'active' => 0,
-			'procedure_type' => '',
-			'procedure_operand' => '',
-			'target' => '',
+			'cond_user_id' => null,
+			'cond_date_start' => null,
+			'cond_date_end' => null,
+			'cond_minimum_amount' => null,
+			'cond_country_id' => null,
+			'cond_user_group_id' => null,
+			'cond_cumulable_with_coupon_id' => null,
+			'cond_rules' => null,
+			'quantity' => null,
+			'quantity_per_user' => null,
+			'action_free_shipping' => 0,
+			'action_type' => null,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
+        if (0 === (int)$ret["cond_user_id"]) {
+            $ret["cond_user_id"] = null;
+        }
+        if (0 === (int)$ret["cond_date_start"]) {
+            $ret["cond_date_start"] = null;
+        }
+        if (0 === (int)$ret["cond_date_end"]) {
+            $ret["cond_date_end"] = null;
+        }
+        if (0 === (int)$ret["cond_minimum_amount"]) {
+            $ret["cond_minimum_amount"] = null;
+        }
+        if (0 === (int)$ret["cond_country_id"]) {
+            $ret["cond_country_id"] = null;
+        }
+        if (0 === (int)$ret["cond_user_group_id"]) {
+            $ret["cond_user_group_id"] = null;
+        }
+        if (0 === (int)$ret["cond_cumulable_with_coupon_id"]) {
+            $ret["cond_cumulable_with_coupon_id"] = null;
+        }
+        if (0 === (int)$ret["cond_rules"]) {
+            $ret["cond_rules"] = null;
+        }
+        if (0 === (int)$ret["quantity"]) {
+            $ret["quantity"] = null;
+        }
+        if (0 === (int)$ret["quantity_per_user"]) {
+            $ret["quantity_per_user"] = null;
+        }
+        if (0 === (int)$ret["action_type"]) {
+            $ret["action_type"] = null;
+        }
 
 
         return $ret;

@@ -14,6 +14,7 @@ use Models\AdminSidebarMenu\Lee\Objects\Item;
 use Models\AdminSidebarMenu\Lee\Objects\Section;
 use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Back\WidgetModel\Dashboard\DefaultDashboardModel;
+use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
@@ -215,8 +216,7 @@ class BackHooksHelper
                 ->setLabel("Titres de civilité")
 //                    ->setIcon("fa fa-spinner")
                 ->setLink(A::link("Ekom_Users_Gender_List"))
-            )
-        ;
+            );
 
 
         $discountItem = Item::create()
@@ -232,14 +232,20 @@ class BackHooksHelper
 //                    ->setIcon("fa fa-spinner")
                 ->setLink(A::link("Ekom_Discounts_Discount_List"))
             )
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("discounts_coupon")
+                ->setLabel("Coupons")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Discounts_Coupon_List"))
+            )
         ;
 
 
         $section
             ->addItem($utilsItem)
             ->addItem($usersItem)
-            ->addItem($discountItem)
-        ;
+            ->addItem($discountItem);
 
 
         $menuItems = [
@@ -255,7 +261,6 @@ class BackHooksHelper
     {
 
 
-
         //--------------------------------------------
         // HOME SPECIFIC
         //--------------------------------------------
@@ -263,7 +268,6 @@ class BackHooksHelper
 
             $claws->removeWidget("maincontent.body");
             $model = DefaultDashboardModel::getModel();
-
 
 
             $pageTop = $controller->pageTop();
@@ -290,6 +294,74 @@ class BackHooksHelper
     }
 
 
+    public static function NullosAdmin_SokoForm_NullosBootstrapRenderer_AutocompleteInitialValueMultiple(array &$value2Labels, $action, array $values)
+    {
+        if ($values) {
+
+            $query = "";
+            switch ($action) {
+                case "auto.address":
+                    $sValues = "'" . implode("', '", $values) . "'";
+                    $query = "
+select
+a.id,                     
+concat(
+  a.id, 
+  '. ',
+  a.libelle, 
+  ' ',
+  a.address, 
+  ' ',
+  a.postcode, 
+  ' ',
+  a.city, 
+  ' ',
+  UPPER(c.label)
+  ) as label
+from ek_address a 
+inner join ek_country c on c.id=a.country_id
+where a.id in ($sValues)
+             
+                    ";
+                    break;
+                case "auto.product":
+                    $sValues = "'" . implode("', '", $values) . "'";
+                    $query = "
+select
+id,
+concat( 
+  label, 
+  concat (' ref=', reference)
+) as label
+
+from ek_product 
+
+where 
+id in ($sValues)
+             
+                    ";
+
+                    break;
+                case "auto.product_card":
+                    $sValues = "'" . implode("', '", $values) . "'";
+                    $query = "
+select 
+id,
+concat (id, '. ', label) as label
+from ek_product_card  
+where 
+id in ($sValues)";
+                    break;
+                default:
+                    throw new EkomException("Unknown action $action");
+                    break;
+
+            }
+
+            $value2Labels = QuickPdo::fetchAll($query, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+        }
+    }
+
     public static function NullosAdmin_SokoForm_NullosBootstrapRenderer_AutocompleteInitialValue(&$label, $action, $value)
     {
         if ($value) {
@@ -304,9 +376,7 @@ class BackHooksHelper
 concat(
   a.id, 
   '. ',
-  a.first_name, 
-  ' ',
-  a.last_name, 
+  a.libelle, 
   ' ',
   a.address, 
   ' ',

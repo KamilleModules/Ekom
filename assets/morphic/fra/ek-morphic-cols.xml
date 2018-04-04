@@ -9,6 +9,14 @@
         <value>popularité</value>
     </item>
     <item>
+        <name>action_free_shipping</name>
+        <value>frais de port offerts</value>
+    </item>
+    <item>
+        <name>action_type</name>
+        <value>type d'action</value>
+    </item>
+    <item>
         <name>active</name>
         <value>actif</value>
     </item>
@@ -27,6 +35,18 @@
     <item>
         <name>amount</name>
         <value>montant</value>
+    </item>
+    <item>
+        <name>apply_card_ids</name>
+        <value>sélection des cartes</value>
+    </item>
+    <item>
+        <name>apply_category_ids</name>
+        <value>sélection des catégories</value>
+    </item>
+    <item>
+        <name>apply_product_ids</name>
+        <value>sélection des produits</value>
     </item>
     <item>
         <name>attribute_selection</name>
@@ -81,6 +101,14 @@
         <value>société</value>
     </item>
     <item>
+        <name>cond_country_id</name>
+        <value>pays</value>
+    </item>
+    <item>
+        <name>cond_cumulable_with_coupon_id</name>
+        <value>compatibilité avec les autres coupons</value>
+    </item>
+    <item>
         <name>cond_date_start</name>
         <value>date de début</value>
     </item>
@@ -89,8 +117,16 @@
         <value>date de fin</value>
     </item>
     <item>
+        <name>cond_minimum_amount</name>
+        <value>montant minimum</value>
+    </item>
+    <item>
         <name>cond_user_group_id</name>
         <value>groupe de client</value>
+    </item>
+    <item>
+        <name>cond_user_id</name>
+        <value>client</value>
     </item>
     <item>
         <name>cond_extra1</name>
@@ -203,6 +239,10 @@
     <item>
         <name>height</name>
         <value>hauteur</value>
+    </item>
+    <item>
+        <name>highlight</name>
+        <value>mise en avant</value>
     </item>
     <item>
         <name>id</name>
@@ -453,12 +493,20 @@
         <value>quantité</value>
     </item>
     <item>
+        <name>quantity_per_user</name>
+        <value>quantité par utilisateur</value>
+    </item>
+    <item>
         <name>rating</name>
         <value>vote</value>
     </item>
     <item>
         <name>reference</name>
         <value>référence</value>
+    </item>
+    <item>
+        <name>rules</name>
+        <value>règles</value>
     </item>
     <item>
         <name>seller</name>
