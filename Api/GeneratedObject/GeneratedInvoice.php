@@ -39,6 +39,7 @@ class GeneratedInvoice extends TableCrudObject
 			'invoice_number_alt' => null,
 			'invoice_date' => '',
 			'payment_method' => '',
+			'shop_host' => '',
 			'track_identifier' => '',
 			'amount' => '',
 			'seller' => '',

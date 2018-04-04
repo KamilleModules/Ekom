@@ -219,9 +219,27 @@ class BackHooksHelper
         ;
 
 
+        $discountItem = Item::create()
+            ->setActive(true)
+            ->setName("discounts")
+            ->setLabel("Promotions")
+            ->setIcon("fa fa-tag")
+            ->setLink("#")
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("discounts_discount")
+                ->setLabel("Réductions produit")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Discounts_Discount_List"))
+            )
+        ;
+
+
         $section
             ->addItem($utilsItem)
-            ->addItem($usersItem);
+            ->addItem($usersItem)
+            ->addItem($discountItem)
+        ;
 
 
         $menuItems = [

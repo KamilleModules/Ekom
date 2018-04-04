@@ -8,7 +8,6 @@ use Module\Ekom\Api\Object\BackofficeUser;
 use Module\Ekom\Api\Object\Carrier;
 use Module\Ekom\Api\Object\Cart;
 use Module\Ekom\Api\Object\Category;
-use Module\Ekom\Api\Object\CategoryHasDiscount;
 use Module\Ekom\Api\Object\CategoryHasProductCard;
 use Module\Ekom\Api\Object\Country;
 use Module\Ekom\Api\Object\Coupon;
@@ -18,7 +17,6 @@ use Module\Ekom\Api\Object\Feature;
 use Module\Ekom\Api\Object\FeatureValue;
 use Module\Ekom\Api\Object\Gender;
 use Module\Ekom\Api\Object\Invoice;
-use Module\Ekom\Api\Object\Lang;
 use Module\Ekom\Api\Object\Manufacturer;
 use Module\Ekom\Api\Object\Newsletter;
 use Module\Ekom\Api\Object\Order;
@@ -32,7 +30,6 @@ use Module\Ekom\Api\Object\ProductAttributeValue;
 use Module\Ekom\Api\Object\ProductBundle;
 use Module\Ekom\Api\Object\ProductBundleHasProduct;
 use Module\Ekom\Api\Object\ProductCard;
-use Module\Ekom\Api\Object\ProductCardHasDiscount;
 use Module\Ekom\Api\Object\ProductCardHasProductAttribute;
 use Module\Ekom\Api\Object\ProductCardImage;
 use Module\Ekom\Api\Object\ProductComment;
@@ -52,14 +49,13 @@ use Module\Ekom\Api\Object\ShopConfiguration;
 use Module\Ekom\Api\Object\Store;
 use Module\Ekom\Api\Object\Tag;
 use Module\Ekom\Api\Object\Tax;
-use Module\Ekom\Api\Object\TaxGroup;
-use Module\Ekom\Api\Object\TaxGroupHasTax;
+use Module\Ekom\Api\Object\TaxRule;
+use Module\Ekom\Api\Object\TaxRuleHasTax;
 use Module\Ekom\Api\Object\Timezone;
 use Module\Ekom\Api\Object\User;
 use Module\Ekom\Api\Object\UserGroup;
 use Module\Ekom\Api\Object\UserHasAddress;
 use Module\Ekom\Api\Object\UserHasProduct;
-use Module\Ekom\Api\Object\UserHasUserGroup;
 
 use XiaoApi\Api\XiaoApi;
 
@@ -124,13 +120,6 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('category');
     }
     /**
-     * @return CategoryHasDiscount
-     */
-    public function categoryHasDiscount()
-    {
-        return $this->getObject('categoryHasDiscount');
-    }
-    /**
      * @return CategoryHasProductCard
      */
     public function categoryHasProductCard()
@@ -192,13 +181,6 @@ class GeneratedEkomApi extends XiaoApi
     public function invoice()
     {
         return $this->getObject('invoice');
-    }
-    /**
-     * @return Lang
-     */
-    public function lang()
-    {
-        return $this->getObject('lang');
     }
     /**
      * @return Manufacturer
@@ -290,13 +272,6 @@ class GeneratedEkomApi extends XiaoApi
     public function productCard()
     {
         return $this->getObject('productCard');
-    }
-    /**
-     * @return ProductCardHasDiscount
-     */
-    public function productCardHasDiscount()
-    {
-        return $this->getObject('productCardHasDiscount');
     }
     /**
      * @return ProductCardHasProductAttribute
@@ -432,18 +407,18 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('tax');
     }
     /**
-     * @return TaxGroup
+     * @return TaxRule
      */
-    public function taxGroup()
+    public function taxRule()
     {
-        return $this->getObject('taxGroup');
+        return $this->getObject('taxRule');
     }
     /**
-     * @return TaxGroupHasTax
+     * @return TaxRuleHasTax
      */
-    public function taxGroupHasTax()
+    public function taxRuleHasTax()
     {
-        return $this->getObject('taxGroupHasTax');
+        return $this->getObject('taxRuleHasTax');
     }
     /**
      * @return Timezone
@@ -479,12 +454,5 @@ class GeneratedEkomApi extends XiaoApi
     public function userHasProduct()
     {
         return $this->getObject('userHasProduct');
-    }
-    /**
-     * @return UserHasUserGroup
-     */
-    public function userHasUserGroup()
-    {
-        return $this->getObject('userHasUserGroup');
     }
 }

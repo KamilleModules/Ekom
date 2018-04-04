@@ -13,13 +13,13 @@ use XiaoApi\Object\TableCrudObject;
  *
  * You are supposed to extend this object.
  */
-class GeneratedCart extends TableCrudObject
+class GeneratedTaxRule extends TableCrudObject
 {
 
     public function __construct()
     {
         parent::__construct();
-        $this->table = "ek_cart";
+        $this->table = "ek_tax_rule";
         $this->primaryKey = ['id'];
     }
 
@@ -31,19 +31,10 @@ class GeneratedCart extends TableCrudObject
     {
         $base = [
 			'id' => null,
-			'user_id' => 0,
-			'date' => '',
-			'items' => '',
-			'order_date' => null,
-			'order_id' => 0,
-			'ip' => '',
-			'php_sess_id' => '',
+			'label' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
-        if (0 === (int)$ret["order_date"]) {
-            $ret["order_date"] = null;
-        }
 
 
         return $ret;

@@ -81,6 +81,22 @@
         <value>société</value>
     </item>
     <item>
+        <name>cond_date_start</name>
+        <value>date de début</value>
+    </item>
+    <item>
+        <name>cond_date_end</name>
+        <value>date de fin</value>
+    </item>
+    <item>
+        <name>cond_user_group_id</name>
+        <value>groupe de client</value>
+    </item>
+    <item>
+        <name>cond_extra1</name>
+        <value>Extra 1</value>
+    </item>
+    <item>
         <name>conditions</name>
         <value>conditions</value>
     </item>
