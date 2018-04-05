@@ -19,7 +19,15 @@ use RowsGenerator\ArrayRowsGenerator;
 class ProductCardLayer
 {
 
-
+    public static function getItemsList(array $options = [])
+    {
+        $alphaSort = $options['alphaSort'] ?? false;
+        $q = "select id, label from ek_product_card";
+        if ($alphaSort) {
+            $q .= " order by label asc";
+        }
+        return QuickPdo::fetchAll($q, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
 
     public static function setDefaultProduct($cardId, $productId)
     {

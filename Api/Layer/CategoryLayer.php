@@ -27,6 +27,19 @@ use QuickPdo\QuickPdo;
 class CategoryLayer
 {
 
+
+    public static function getItemsList(array $options = [])
+    {
+        $alphaSort = $options['alphaSort'] ?? false;
+        $q = "select id, label from ek_category";
+        if ($alphaSort) {
+            $q .= " order by label asc";
+        }
+        return QuickPdo::fetchAll($q, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
+
     public static function getTopCategoryInfoById(int $categoryId)
     {
         $catInfos = CategoryCoreLayer::create()->getSelfAndParentsByCategoryId($categoryId);
@@ -298,21 +311,22 @@ where c.name in ('" . implode("','", $names) . "')
         return self::getCardIdsByCategoryId($categoryId, $recursive);
     }
 
-    public static function getCardIdsByCategoryId($categoryId, $shopId = null, $recursive = true)
+
+
+    public static function getCardIdsByCategoryId($categoryId, $recursive = true)
     {
-        $shopId = E::getShopId($shopId);
-        return A::cache()->get("Ekom/CategoryLayer/getCardIdsByCategoryId-$categoryId-$shopId-$recursive", function () use ($categoryId, $shopId, $recursive) {
+        return A::cache()->get("Ekom/CategoryLayer/getCardIdsByCategoryId-$categoryId-$recursive", function () use ($categoryId, $recursive) {
 
             $ret = [];
             if (true === $recursive) {
-                $catInfos = CategoryCoreLayer::create()->getSelfAndChildrenByCategoryId($categoryId, -1, $shopId);
+                $catInfos = CategoryCoreLayer::create()->getSelfAndChildrenByCategoryId($categoryId, -1);
                 foreach ($catInfos as $info) {
                     $categoryId = $info['id'];
-                    $cardIds = self::doGetCardIdsByCategoryId($categoryId, $shopId);
+                    $cardIds = self::doGetCardIdsByCategoryId($categoryId);
                     $ret = array_merge($ret, $cardIds);
                 }
             } else {
-                $ret = self::doGetCardIdsByCategoryId($categoryId, $shopId);
+                $ret = self::doGetCardIdsByCategoryId($categoryId);
             }
             $ret = array_unique($ret);
             sort($ret);
@@ -1075,15 +1089,13 @@ and id != $categoryId
     //
     //--------------------------------------------
 
-    private static function doGetCardIdsByCategoryId($categoryId, $shopId = null)
+    private static function doGetCardIdsByCategoryId($categoryId)
     {
         $categoryId = (int)$categoryId;
-        $shopId = E::getShopId($shopId);
         return QuickPdo::fetchAll("
 select h.product_card_id
 from ek_category c 
 inner join ek_category_has_product_card h on h.category_id=c.id
-where c.shop_id=$shopId      
 and c.id=$categoryId
       ", [], \PDO::FETCH_COLUMN);
     }

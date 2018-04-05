@@ -14,6 +14,16 @@ use QuickPdo\QuickPdo;
 class AttributeLayer
 {
 
+    public static function getItemsList(array $options = [])
+    {
+        $alphaSort = $options['alphaSort'] ?? false;
+        $q = "select id, label from ek_product_attribute";
+        if ($alphaSort) {
+            $q .= " order by label asc";
+        }
+        return QuickPdo::fetchAll($q, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
 
     public static function getAttributeValueItemsById($attributeId)
     {

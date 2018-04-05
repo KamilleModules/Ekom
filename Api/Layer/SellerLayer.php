@@ -14,6 +14,20 @@ use QuickPdo\QuickPdo;
 class SellerLayer
 {
 
+
+    public static function getItemsList(array $options = [])
+    {
+        $alphaSort = $options['alphaSort'] ?? false;
+        $q = "select id, label from ek_seller";
+        if ($alphaSort) {
+            $q .= " order by label asc";
+        }
+        return QuickPdo::fetchAll($q, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
+
+
     public static function getName2LabelList(){
         return QuickPdo::fetchAll("
 select name, label from ek_seller        

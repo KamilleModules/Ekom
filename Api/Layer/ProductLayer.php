@@ -30,6 +30,26 @@ use QuickPdo\QuickPdo;
 class ProductLayer
 {
 
+    public static function getItemsList(array $options = [])
+    {
+        $alphaSort = $options['alphaSort'] ?? false;
+        $includeRef = $options['includeRef'] ?? false;
+
+        $label = "";
+        if (false === $includeRef) {
+            $label = "label";
+        }
+        else{
+            $label = "concat (label, ' (ref=', reference, ')') ";
+        }
+
+        $q = "select id, $label from ek_product";
+        if ($alphaSort) {
+            $q .= " order by label asc";
+        }
+        return QuickPdo::fetchAll($q, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
 
     public static function getLabelByProductRef(string $ref)
     {

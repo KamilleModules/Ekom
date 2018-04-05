@@ -13,6 +13,19 @@ class ManufacturerLayer
 
 
 
+
+    public static function getItemsList(array $options = [])
+    {
+        $alphaSort = $options['alphaSort'] ?? false;
+        $q = "select id, name from ek_manufacturer";
+        if ($alphaSort) {
+            $q .= " order by name asc";
+        }
+        return QuickPdo::fetchAll($q, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
+
     public static function getItems($shopId)
     {
         return QuickPdo::fetchAll("
