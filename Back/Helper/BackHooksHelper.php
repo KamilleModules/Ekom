@@ -22,6 +22,18 @@ class BackHooksHelper
 {
 
 
+    public static function NullosAdmin_SokoFormRenderer_getRenderIdentifier(&$identifier, $className)
+    {
+        $ret = null;
+        switch ($className) {
+            case "SokoCouponRulesFreeHtmlControl":
+                $identifier = "free";
+                break;
+        }
+    }
+
+
+
     public static function NullosAdmin_MorphicHelper_StandardColTransformer(callable &$func = null, $name, array $options = [])
     {
         switch ($name) {

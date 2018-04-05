@@ -17,6 +17,10 @@
         <value>type d'action</value>
     </item>
     <item>
+        <name>action_value</name>
+        <value>valeur</value>
+    </item>
+    <item>
         <name>active</name>
         <value>actif</value>
     </item>
