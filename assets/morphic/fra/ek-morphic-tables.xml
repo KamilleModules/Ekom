@@ -288,15 +288,15 @@
         <genre>f</genre>
         <article>la</article>
     </item>
-    <item table="ek_tax_group">
-        <label>groupe de taxe</label>
-        <labelPlural>groupes de taxe</labelPlural>
-        <genre>m</genre>
-        <article>le</article>
+    <item table="ek_tax_rule">
+        <label>règle de taxe</label>
+        <labelPlural>règles de taxe</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
     </item>
-    <item table="ek_tax_group_has_tax">
-        <label>liaison groupe de taxe/taxe</label>
-        <labelPlural>liaisons groupe de taxe/taxe</labelPlural>
+    <item table="ek_tax_rule_has_tax">
+        <label>liaison règle de taxe/taxe</label>
+        <labelPlural>liaisons règle de taxe/taxe</labelPlural>
         <genre>f</genre>
         <article>la</article>
     </item>

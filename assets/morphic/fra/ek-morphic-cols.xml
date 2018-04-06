@@ -125,6 +125,10 @@
         <value>montant minimum</value>
     </item>
     <item>
+        <name>cond_product_type_id</name>
+        <value>type de produit</value>
+    </item>
+    <item>
         <name>cond_user_group_id</name>
         <value>groupe de client</value>
     </item>
@@ -135,6 +139,18 @@
     <item>
         <name>cond_extra1</name>
         <value>Extra 1</value>
+    </item>
+    <item>
+        <name>cond_extra2</name>
+        <value>Extra 2</value>
+    </item>
+    <item>
+        <name>cond_extra3</name>
+        <value>Extra 3</value>
+    </item>
+    <item>
+        <name>cond_extra4</name>
+        <value>Extra 4</value>
     </item>
     <item>
         <name>conditions</name>
@@ -571,6 +587,10 @@
     <item>
         <name>tax_id</name>
         <value>taxe</value>
+    </item>
+    <item>
+        <name>tax_rule_id</name>
+        <value>règle de taxe</value>
     </item>
     <item>
         <name>technical_description</name>

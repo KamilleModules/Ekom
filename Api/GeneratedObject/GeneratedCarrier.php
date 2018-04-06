@@ -34,6 +34,7 @@ class GeneratedCarrier extends TableCrudObject
 			'name' => '',
 			'label' => '',
 			'priority' => 0,
+			'active' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

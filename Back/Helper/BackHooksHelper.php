@@ -33,7 +33,6 @@ class BackHooksHelper
     }
 
 
-
     public static function NullosAdmin_MorphicHelper_StandardColTransformer(callable &$func = null, $name, array $options = [])
     {
         switch ($name) {
@@ -42,7 +41,6 @@ class BackHooksHelper
                     if ($value) {
                         return '<div class="badge" style="background:#3577da">' . E::price($value) . '</div>';
                     }
-
                 };
                 break;
             default:
@@ -250,6 +248,65 @@ class BackHooksHelper
                 ->setLabel("Coupons")
 //                    ->setIcon("fa fa-spinner")
                 ->setLink(A::link("Ekom_Discounts_Coupon_List"))
+            );
+
+        $carrierItem = Item::create()
+            ->setActive(true)
+            ->setName("carriers")
+            ->setLabel("Transporteurs")
+            ->setIcon("fa fa-truck")
+            ->setLink("#")
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("carriers_carrier")
+                ->setLabel("Transporteurs")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Carriers_Carrier_List"))
+            );
+
+
+        $localizationItem = Item::create()
+            ->setActive(true)
+            ->setName("localization")
+            ->setLabel("Localisation")
+            ->setIcon("fa fa-globe")
+            ->setLink("#")
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("localization_country")
+                ->setLabel("Pays")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Localization_Country_List"))
+            )
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("localization_taxrule")
+                ->setLabel("Règles de taxe")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Localization_TaxRule_List"))
+            )
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("localization_tax")
+                ->setLabel("Taxes")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Localization_Tax_List"))
+            )
+        ;
+
+
+        $statItem = Item::create()
+            ->setActive(true)
+            ->setName("stats")
+            ->setLabel("Statistiques")
+            ->setIcon("fa fa-bar-chart")
+            ->setLink("#")
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("stats_statistics")
+                ->setLabel("Statistiques")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Stats_Statistics_Dashboard"))
             )
         ;
 
@@ -257,14 +314,22 @@ class BackHooksHelper
         $section
             ->addItem($utilsItem)
             ->addItem($usersItem)
-            ->addItem($discountItem);
+            ->addItem($discountItem)
+            ->addItem($carrierItem)
+            ->addItem($localizationItem)
+            ->addItem($statItem)
+        ;
 
 
         $menuItems = [
             'Ekom.section' => $section,
             'Ekom.utils' => $utilsItem,
             'Ekom.users' => $usersItem,
+            'Ekom.carriers' => $carrierItem,
+            'Ekom.localization' => $localizationItem,
+            'Ekom.stats' => $statItem,
         ];
+
         Hooks::call("Ekom_decorateLeftMenu", $menuItems);
 
     }

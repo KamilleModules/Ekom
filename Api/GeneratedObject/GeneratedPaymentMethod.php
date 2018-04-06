@@ -35,6 +35,7 @@ class GeneratedPaymentMethod extends TableCrudObject
 			'label' => '',
 			'configuration' => '',
 			'order' => 0,
+			'active' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
