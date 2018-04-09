@@ -673,6 +673,7 @@ class CheckoutOrderUtil
             // PRODUCT STATS
             //--------------------------------------------
             ProductPurchaseStatLayer::insertStatsByCart(
+                $orderId,
                 $orderModel['order_details']['cartModel'],
                 $orderModel['user_id']
             );

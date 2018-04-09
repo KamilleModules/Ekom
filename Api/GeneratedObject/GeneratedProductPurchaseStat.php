@@ -32,6 +32,7 @@ class GeneratedProductPurchaseStat extends TableCrudObject
         $base = [
 			'id' => null,
 			'purchase_date' => '',
+			'order_id' => 0,
 			'user_id' => 0,
 			'product_id' => 0,
 			'product_ref' => '',

@@ -18,6 +18,7 @@
 * Développement
   * [Backoffice](developer/back/back.md)
   * [Concepts pour le développement](developer/developer-concepts.md)
+  * [Catégories](developer/categories.md)
      
   
 * Développement Front office
