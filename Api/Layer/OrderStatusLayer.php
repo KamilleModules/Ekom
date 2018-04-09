@@ -53,4 +53,9 @@ select id from ek_order_status where `code` in ($sStatuses)
         return QuickPdo::fetchAll("select code, label from ek_order_status", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
 
+    public static function getOrderStatusLabel2BgColor()
+    {
+        return QuickPdo::fetchAll("select label, bg_color from ek_order_status", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
 }

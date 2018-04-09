@@ -24,4 +24,24 @@ class EkomOrderStatus
 
     const STATUS_CANCELED = 'canceled';
     const STATUS_REIMBURSED = 'reimbursed';
+
+
+    public static function getAll(){
+        return [
+            self::STATUS_PAYMENT_SENT,
+            self::STATUS_PAYMENT_ACCEPTED,
+            self::STATUS_PAYMENT_VERIFIED,
+            self::STATUS_PREPARING_ORDER,
+            self::STATUS_ORDER_SHIPPED,
+            self::STATUS_ORDER_DELIVERED,
+
+            self::STATUS_PAYMENT_ERROR,
+            self::STATUS_PREPARING_ORDER_ERROR,
+            self::STATUS_SHIPPING_ERROR,
+            self::STATUS_ORDER_DELIVERED_ERROR,
+
+            self::STATUS_CANCELED,
+            self::STATUS_REIMBURSED,
+        ];
+    }
 }

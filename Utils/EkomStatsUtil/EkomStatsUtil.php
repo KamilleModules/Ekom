@@ -15,7 +15,13 @@ use Module\Ekom\Status\EkomOrderStatus;
 use Module\Ekom\Utils\E;
 use Module\EkomCartTracker\Api\Layer\EkomCartTrackerCartLayer;
 use Module\EkomUserTracker\Api\Layer\UserTrackerLayer;
+use QuickPdo\QuickPdo;
+use QuickPdo\QuickPdoStmtTool;
 
+
+/**
+ * Various stats for a given date range...
+ */
 class EkomStatsUtil implements EkomStatsUtilInterface
 {
     protected $dateStart;
@@ -157,6 +163,42 @@ class EkomStatsUtil implements EkomStatsUtilInterface
         ], $this->dateStart, $this->dateEnd);
     }
 
+    /**
+     * Return the number of customers having ordered at least once in the next 24 hours after their account was created.
+     */
+    public function getNbNewCustomerOrderingFirstDay()
+    {
+        $markers = [];
+        $qInner = "
+    select 
+    if (
+      count(o.id) > 0,
+      '1',
+      '0'
+    ) as hasOrdered
+    from ek_user u  
+    left join ek_order o on o.user_id=u.id and date(u.date_creation) >= date_sub(date(o.date), interval 1 day) 
+    
+        
+        ";
+
+        QuickPdoStmtTool::addDateRangeToQuery($qInner, $markers, $this->dateStart, $this->dateEnd, "date(u.date_creation)");
+        $qInner .= "
+group by u.email        
+        ";
+
+
+        $q = "
+
+select count(*) as count from (
+$qInner
+) as tt
+
+        
+        ";
+        return QuickPdo::fetch($q, $markers, \PDO::FETCH_COLUMN);
+    }
+
     public function getNbAbandonedCarts()
     {
         return EkomCartTrackerCartLayer::getNbAbandonedCarts($this->dateStart, $this->dateEnd);
@@ -188,6 +230,9 @@ class EkomStatsUtil implements EkomStatsUtilInterface
             case "nbOrders":
                 return $this->getNbOrderGraph();
                 break;
+            case "nbOrdersAndNbProductsAndNetProfit":
+                return $this->getNbOrderAndNbProductAndNetProfitGraph();
+                break;
             case "avgCart":
                 return $this->getAverageCartGraph();
                 break;
@@ -199,6 +244,9 @@ class EkomStatsUtil implements EkomStatsUtilInterface
                 break;
             case "netProfit":
                 return $this->getNetProfitGraph();
+                break;
+            case "newCustomers":
+                return $this->getNewCustomersGraph();
                 break;
             default:
                 throw new EkomException("Unknown type: $type");
@@ -254,6 +302,49 @@ class EkomStatsUtil implements EkomStatsUtilInterface
         return $ret;
     }
 
+    protected function getNewCustomersGraph()
+    {
+        $ret = [];
+        $markers = [];
+
+        $q = "
+select 
+date(date_creation) as date,
+count(*) as nb
+from ek_user
+
+        ";
+
+        QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $this->dateStart, $this->dateEnd, "date_creation");
+
+
+        $q .= "
+        
+group by date        
+order by date_creation asc
+
+";
+
+        $rows = QuickPdo::fetchAll($q, $markers, \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+
+
+        // now, filling the holes
+        DateTool::foreachDateRange($this->dateStart, $this->dateEnd, function ($curDate) use (&$ret, $rows) {
+            if (false === array_key_exists($curDate, $rows)) {
+                $ret[$curDate] = "0";
+            } else {
+                $ret[$curDate] = $rows[$curDate];
+            }
+        });
+
+        return $ret;
+    }
+
+    protected function getNbOrderAndNbProductAndNetProfitGraph()
+    {
+        return OrderLayer::getOrdersAmountAndCountGraph($this->dateStart, $this->dateEnd);
+    }
+
     protected function getAverageCartGraph()
     {
         $ret = [];
@@ -277,7 +368,7 @@ class EkomStatsUtil implements EkomStatsUtilInterface
         $rows = $this->getIpByDate();
 
         $date2NbTotal = [];
-        foreach($rows as $row){
+        foreach ($rows as $row) {
             $date2NbTotal[$row["date"]] = $row['nb_total'];
         }
 

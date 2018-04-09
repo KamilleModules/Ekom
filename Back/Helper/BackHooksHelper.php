@@ -15,11 +15,28 @@ use Models\AdminSidebarMenu\Lee\Objects\Section;
 use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Back\WidgetModel\Dashboard\DefaultDashboardModel;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Helper\Stats\Modules\CustomerAccountsControllerModule;
+use Module\Ekom\Helper\Stats\Modules\OrdersAndProfitControllerModule;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 class BackHooksHelper
 {
+
+
+    public static function Ekom_Stats_Dashboard_getModuleHandler(&$moduleHandler, $currentModule)
+    {
+        switch ($currentModule) {
+            case "orders_and_profit":
+                $moduleHandler = OrdersAndProfitControllerModule::getModuleHandler();
+                break;
+            case "customer_accounts":
+                $moduleHandler = CustomerAccountsControllerModule::getModuleHandler();
+                break;
+            default:
+                break;
+        }
+    }
 
 
     public static function NullosAdmin_SokoFormRenderer_getRenderIdentifier(&$identifier, $className)
@@ -291,8 +308,7 @@ class BackHooksHelper
                 ->setLabel("Taxes")
 //                    ->setIcon("fa fa-spinner")
                 ->setLink(A::link("Ekom_Localization_Tax_List"))
-            )
-        ;
+            );
 
 
         $statItem = Item::create()
@@ -307,8 +323,7 @@ class BackHooksHelper
                 ->setLabel("Statistiques")
 //                    ->setIcon("fa fa-spinner")
                 ->setLink(A::link("Ekom_Stats_Statistics_Dashboard"))
-            )
-        ;
+            );
 
 
         $section
@@ -317,8 +332,7 @@ class BackHooksHelper
             ->addItem($discountItem)
             ->addItem($carrierItem)
             ->addItem($localizationItem)
-            ->addItem($statItem)
-        ;
+            ->addItem($statItem);
 
 
         $menuItems = [

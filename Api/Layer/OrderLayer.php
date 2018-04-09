@@ -19,6 +19,7 @@ use XiaoApi\Helper\QuickPdoStmtHelper\QuickPdoStmtHelper;
 class OrderLayer
 {
 
+
     public static function getUserIdByOrderId(int $orderId)
     {
         return QuickPdo::fetch("select user_id from ek_order where id=$orderId", [], \PDO::FETCH_COLUMN);
@@ -91,7 +92,7 @@ and track_identifier != ''
         $qExtraMarkers = $options['queryWhereExtraMarkers'];
 
 
-        $q = "select date(date) as date, sum(amount) as sum, count(*) as count  from ek_order where 1";
+        $q = "select date(date) as date, sum(amount) as sum, count(*) as count, sum(cart_quantity) as sum_nbItems  from ek_order where 1";
 
 
         $markers = $qExtraMarkers;
@@ -104,8 +105,8 @@ and track_identifier != ''
 
         $all = QuickPdo::fetchAll($q, $markers);
 
-
         /**
+         * @deprecated
          * Flattening the currency
          * ---------------------------
          * The difficulty with this method is that the order table contains orders in
@@ -119,16 +120,20 @@ and track_identifier != ''
             $date = $item['date'];
             $amount = $item['sum'];
             $count = $item['count'];
+            $sumNbItems = $item['sum_nbItems'];
 
 
-            if (array_key_exists($date, $ret)) {
-                $count += $ret[$date]['count'];
-                $amount += $ret[$date]['sum'];
-            }
+//            if (array_key_exists($date, $ret)) {
+//                $count += $ret[$date]['count'];
+//                $amount += $ret[$date]['sum'];
+//                $amount += $ret[$date]['sum'];
+//                $sumNbItems += $ret[$date]['sumNbItems'];
+//            }
 
             $ret[$date] = [
                 'count' => $count,
                 'sum' => $amount,
+                'sumNbItems' => $sumNbItems,
             ];
         }
 
@@ -172,6 +177,7 @@ where 1
                 $ret[$curDate] = [
                     "count" => 0,
                     "sum" => 0,
+                    "sumNbItems" => 0,
                 ];
             }
         });
@@ -326,6 +332,56 @@ and
 ) in ($sStatus)
         ";
         return QuickPdo::fetch($q, $markers, \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
+    public static function getOrdersDistributionByRange($dateStart = null, $dateEnd = null)
+    {
+        $markers = [];
+
+        $q = "
+
+select 
+label,
+count(label) as nb_code 
+from (
+
+    select 
+    o.id as order_id,
+    (
+      select
+      s.label
+      from ek_order_status s
+      inner join ek_order_has_order_status h on h.order_status_id=s.id
+      inner join ek_order f on f.id=h.order_id
+      where order_id=o.id
+      order by h.date DESC
+      limit 0,1
+    
+    ) as label
+    
+    from ek_order o
+    inner join ek_order_has_order_status hh on hh.order_id=o.id 
+    inner join ek_order_status ss on ss.id=hh.order_status_id        
+    where 1
+        ";
+
+
+        QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "o.date");
+
+        $q .= '
+group by o.id
+
+';
+
+
+        $q .= "
+) as any_table 
+group by label
+
+        ";
+
+        return QuickPdo::fetchAll($q, $markers, \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
 
 
