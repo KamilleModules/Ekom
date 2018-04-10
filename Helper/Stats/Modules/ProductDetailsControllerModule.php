@@ -7,6 +7,9 @@ namespace Module\Ekom\Helper\Stats\Modules;
 use Bat\UriTool;
 use Core\Services\A;
 use Module\Ekom\Api\Layer\CategoryLayer;
+use Module\Ekom\Api\Layer\CrossSellingLayer;
+use Module\Ekom\Api\Layer\ProductLayer;
+use Module\EkomUserTracker\Api\Layer\EkomProductTrackerLayer;
 use SokoForm\Control\SokoChoiceControl;
 use SokoForm\Form\SokoForm;
 
@@ -26,8 +29,77 @@ class ProductDetailsControllerModule
             //--------------------------------------------
             if ($productId) {
 
+                $productLabel = ProductLayer::getLabelByProductId($productId);
+
+                $generalInfo = [];
+                $graph1 = EkomProductTrackerLayer::getProductsRentabilityGraphByProductId($productId, $dateStart, $dateEnd, $generalInfo);
+                $myGeneralInfo = [
+                    "Nombre total de produits vendus" => $generalInfo['nbSales'],
+                    "Nombre total de visites" => $generalInfo['nbVisits'],
+                    "Montant total vendu (prix payé par le client)" => $generalInfo['salesAmount'] . " €",
+                    "Taux de transformation" => $generalInfo['conversionRate'] . "%",
+                ];
+                $serie1 = [];
+                $serie2 = [];
+                foreach ($graph1 as $date => $item) {
+                    $serie1[] = [$date, $item['visits']];
+                    $serie2[] = [$date, $item['purchases']];
+                }
+
+
+                $chart1 = [
+                    "title" => $productLabel,
+                    "series" => [
+                        "Popularité" => $serie1,
+                        "Nombre de produits vendus" => $serie2,
+                    ],
+                ];
+
+
+                //--------------------------------------------
+                // SALES
+                //--------------------------------------------
+                $moduleName = "Ekom";
+                $viewId = "back/stats/product_details_item";
+                $context = [
+                    "product_id" => $productId,
+                ];
+                $listSales = A::getMorphicListConfig($moduleName, $viewId, $context);
+
+
+                //--------------------------------------------
+                // CROSS SALES
+                //--------------------------------------------
+                $crossSellsIds = CrossSellingLayer::getCrossSellProductIdsByProductId($productId);
+                if ($crossSellsIds) {
+
+                    $moduleName = "Ekom";
+                    $viewId = "back/stats/product_details_item_cross_sales";
+                    $context = [
+                        "crossSellsIds" => $crossSellsIds,
+                    ];
+                    $listCrossSales = A::getMorphicListConfig($moduleName, $viewId, $context);
+                } else {
+                    $listCrossSales = [];
+                }
+
+
                 $template = "Ekom/All/Stats/OrdersAndGeneralStats/product_details_item";
-                $conf = [];
+                $conf = [
+                    "chart1" => $chart1,
+                    "generalInfo" => $myGeneralInfo,
+                    "alert" => [
+                        "title" => "",
+                        "text" => <<<EEE
+Le taux de transformation est: (nombre de produits vendus / nombre de visites sur ce produit x 100)   
+EEE
+                        ,
+                        "icon" => "fa fa-exclamation-circle",
+                        "type" => "warning",
+                    ],
+                    "listSales" => $listSales,
+                    "listCrossSales" => $listCrossSales,
+                ];
                 return [
                     $template,
                     $conf,

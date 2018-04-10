@@ -52,6 +52,11 @@ use QuickPdo\QuickPdoStmtTool;
 class UserLayer
 {
 
+    public static function getEarliestAccountCreationDate()
+    {
+        return QuickPdo::fetch("select min(date(date_creation)) from ek_user where date_creation != '0000-00-00 00:00:00'", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
     public static function getNbNewUsers($dateStart = null, $dateEnd = null)
     {
 

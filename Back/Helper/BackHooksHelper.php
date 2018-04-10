@@ -16,6 +16,7 @@ use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Back\WidgetModel\Dashboard\DefaultDashboardModel;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Helper\Stats\Modules\CustomerAccountsControllerModule;
+use Module\Ekom\Helper\Stats\Modules\CustomerInfoControllerModule;
 use Module\Ekom\Helper\Stats\Modules\OrdersAndProfitControllerModule;
 use Module\Ekom\Helper\Stats\Modules\ProductDetailsControllerModule;
 use Module\Ekom\Utils\E;
@@ -36,6 +37,9 @@ class BackHooksHelper
                 break;
             case "product_details":
                 $moduleHandler = ProductDetailsControllerModule::getModuleHandler();
+                break;
+            case "customer_info":
+                $moduleHandler = CustomerInfoControllerModule::getModuleHandler();
                 break;
             default:
                 break;

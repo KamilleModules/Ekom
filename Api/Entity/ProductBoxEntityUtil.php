@@ -42,7 +42,6 @@ class ProductBoxEntityUtil
     }
 
 
-
     public static function setProductBoxGeneralContext(array $gpc)
     {
         ApplicationRegistry::set("ekom.gpc", $gpc);
@@ -146,8 +145,9 @@ p.id as product_id,
 p.reference,
 p.weight,
 p.price,
-t.name as product_type,
-t.id as product_type_id,
+t.name as product_card_type_name,
+t.label as product_card_type_label,
+t.id as product_card_type_id,
 p.quantity,
 p.active,
 p.codes,
@@ -167,7 +167,8 @@ p.out_of_stock_text
 
 
 from ek_product p 
-inner join ek_product_type t on t.id=p.product_type_id
+inner join ek_product_card c on c.id=p.product_card_id
+inner join ek_product_card_type t on t.id=c.product_card_type_id
 inner join ek_seller se on se.id=p.seller_id
 
 where 

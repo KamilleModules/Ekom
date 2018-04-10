@@ -35,6 +35,7 @@ use Module\Ekom\Api\Object\ProductCard;
 use Module\Ekom\Api\Object\ProductCardHasDiscount;
 use Module\Ekom\Api\Object\ProductCardHasProductAttribute;
 use Module\Ekom\Api\Object\ProductCardImage;
+use Module\Ekom\Api\Object\ProductCardType;
 use Module\Ekom\Api\Object\ProductComment;
 use Module\Ekom\Api\Object\ProductGroup;
 use Module\Ekom\Api\Object\ProductGroupHasProduct;
@@ -44,7 +45,6 @@ use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductHasProvider;
 use Module\Ekom\Api\Object\ProductHasTag;
 use Module\Ekom\Api\Object\ProductPurchaseStat;
-use Module\Ekom\Api\Object\ProductType;
 use Module\Ekom\Api\Object\Provider;
 use Module\Ekom\Api\Object\Seller;
 use Module\Ekom\Api\Object\SellerHasAddress;
@@ -313,6 +313,13 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('productCardImage');
     }
     /**
+     * @return ProductCardType
+     */
+    public function productCardType()
+    {
+        return $this->getObject('productCardType');
+    }
+    /**
      * @return ProductComment
      */
     public function productComment()
@@ -374,13 +381,6 @@ class GeneratedEkomApi extends XiaoApi
     public function productPurchaseStat()
     {
         return $this->getObject('productPurchaseStat');
-    }
-    /**
-     * @return ProductType
-     */
-    public function productType()
-    {
-        return $this->getObject('productType');
     }
     /**
      * @return Provider
