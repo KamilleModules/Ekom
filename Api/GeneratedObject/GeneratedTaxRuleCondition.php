@@ -13,13 +13,13 @@ use XiaoApi\Object\TableCrudObject;
  *
  * You are supposed to extend this object.
  */
-class GeneratedDiscount extends TableCrudObject
+class GeneratedTaxRuleCondition extends TableCrudObject
 {
 
     public function __construct()
     {
         parent::__construct();
-        $this->table = "ek_discount";
+        $this->table = "ek_tax_rule_condition";
         $this->primaryKey = ['id'];
     }
 
@@ -31,33 +31,30 @@ class GeneratedDiscount extends TableCrudObject
     {
         $base = [
 			'id' => null,
-			'label' => '',
-			'code' => '',
-			'type' => '',
-			'value' => '',
-			'apply_product_ids' => '',
-			'apply_card_ids' => '',
-			'apply_category_ids' => '',
-			'priority' => 0,
-			'active' => 0,
-			'cond_date_start' => null,
-			'cond_date_end' => null,
+			'tax_rule_id' => 0,
+			'ratio' => '',
 			'cond_user_group_id' => null,
 			'cond_extra1' => null,
+			'cond_extra2' => null,
+			'cond_extra3' => null,
+			'cond_extra4' => null,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
-        if (0 === (int)$ret["cond_date_start"]) {
-            $ret["cond_date_start"] = null;
-        }
-        if (0 === (int)$ret["cond_date_end"]) {
-            $ret["cond_date_end"] = null;
-        }
         if (0 === (int)$ret["cond_user_group_id"]) {
             $ret["cond_user_group_id"] = null;
         }
         if (0 === (int)$ret["cond_extra1"]) {
             $ret["cond_extra1"] = null;
+        }
+        if (0 === (int)$ret["cond_extra2"]) {
+            $ret["cond_extra2"] = null;
+        }
+        if (0 === (int)$ret["cond_extra3"]) {
+            $ret["cond_extra3"] = null;
+        }
+        if (0 === (int)$ret["cond_extra4"]) {
+            $ret["cond_extra4"] = null;
         }
 
 

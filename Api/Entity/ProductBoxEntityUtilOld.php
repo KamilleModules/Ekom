@@ -10,7 +10,7 @@ use Core\Services\Hooks;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use QuickPdo\QuickPdo;
 
-class ProductBoxEntityUtil
+class ProductBoxEntityUtilOld
 {
 
 
@@ -41,7 +41,25 @@ class ProductBoxEntityUtil
         return HashTool::getHashByArray($context);
     }
 
+    /**
+     * @param array =null $gpc,
+     *              if defined, will be merged to the gpc returned by this call (but not subsequent call)
+     * @return array, return general product context, used by lists of product boxes and product boxes.
+     */
+    public static function getProductBoxGeneralContext(array $gpc = null)
+    {
+        $thisGpc = ApplicationRegistry::get("ekom.gpc");
+        if (null === $thisGpc) {
+            $thisGpc = [];
+            Hooks::call("Ekom_ProductBox_collectGeneralContext", $thisGpc);
+            ApplicationRegistry::set("ekom.gpc", $thisGpc);
+        }
 
+        if (null !== $gpc) {
+            $thisGpc = array_replace($thisGpc, $gpc);
+        }
+        return $thisGpc;
+    }
 
     public static function setProductBoxGeneralContext(array $gpc)
     {
@@ -58,7 +76,17 @@ class ProductBoxEntityUtil
              * First get the product card info
              */
             if (false !== ($row = QuickPdo::fetch("
-select *
+select
+ 
+label,
+slug,
+description,
+meta_title,
+meta_description,
+meta_keywords,
+product_id,
+active
+
 from ek_product_card 
 where id=$cardId  
 "))

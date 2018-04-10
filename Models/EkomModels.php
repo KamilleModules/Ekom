@@ -124,14 +124,7 @@ class EkomModels
      *      - codes
      *      - defaultImage
      *      - description
-     *      - discount:
-     *          - discount_id
-     *          - type
-     *          - operand
-     *          - target
-     *          - label
-     *          - conditions
-     *          - level
+     *      - discount: (see discountItem in this class)
      *      - ?discountBadge: only if discount is not empty
      *      - discountHasDiscount
      *      - discountLabel
@@ -309,8 +302,8 @@ class EkomModels
      * ================
      * - code: string, the code of the coupon
      * - active: 1|0, whether or not the coupon code is considered active when added to the coupon bag
-     * - procedure_type: string (see discountItem at the top of DiscountLayer class)
-     * - procedure_operand: string (see discountItem at the top of DiscountLayer class)
+     * - procedure_type: string (see discountItem in this class)
+     * - procedure_operand: string (see discountItem in this class)
      * - target: string, the target of the coupon (see database.md for more info)
      * - label: string, the coupon label
      *
@@ -345,6 +338,21 @@ class EkomModels
         return [];
     }
 
+
+    /**
+     * - id: int, the discount id
+     * - label: string, the discount label
+     * - code: string, the discount code (symbolic name)
+     * - type: the discount type, can be one of:
+     *      - p: percentage
+     *      - f: fixed discount
+     * - value: numeric, the discount amount (works along with the type)
+     *
+     */
+    private function discountItem()
+    {
+
+    }
 
     /**
      * invoiceModel
@@ -689,9 +697,9 @@ class EkomModels
     /**
      * taxGroup
      * --------------
-     * - name
-     * - label
-     * - id
+     * - rule_id
+     * - rule_label
+     * - ratio
      * - taxes:
      *      - 0:
      *          - id

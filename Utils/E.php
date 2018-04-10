@@ -21,6 +21,7 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Helper\DateSegmentHelper;
 use Module\Ekom\JsApiLoader\EkomJsApiLoader;
 use Module\Ekom\Notifier\EkomNotifier;
 use Module\Ekom\Session\EkomSession;
@@ -35,6 +36,27 @@ class E
 {
 
     private static $conf = null;
+
+
+    public static function getTaxContext()
+    {
+        if (false === self::isBackOffice()) {
+            throw new \Exception("Not implemented yet");
+        } else {
+            return [];
+        }
+    }
+
+    public static function getDiscountContext()
+    {
+        if (false === self::isBackOffice()) {
+            throw new \Exception("Not implemented yet");
+        } else {
+            return [
+                "date_segment" => DateSegmentHelper::getCurrentDateSegment()
+            ];
+        }
+    }
 
 
     public static function isBackOffice()

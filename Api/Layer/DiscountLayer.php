@@ -10,7 +10,8 @@ use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
-use Module\Ekom\Back\User\EkomNullosUser;
+use Module\Ekom\Helper\DateSegmentHelper;
+use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
@@ -20,19 +21,7 @@ use QuickPdo\QuickPdo;
  *
  * discountItem
  * ======================
- * - discount_id: int
- * - label: string
- * - type: the procedure type (percentage|fixed)
- * - operand: numeric, the procedure operand
- * - target: string representing the target to which the procedure should be applied
- * - level: string, the level at which the discount was applied, can be one of:
- *          - product
- *          - card
- *          - category
- *
- * - conditions: string, text of conditions deciding whether or not the discount applies to the product
- *
- *
+ * @see EkomModels::discountItem()
  *
  * Badge syntax
  * ==================
@@ -683,131 +672,56 @@ where shop_id=$shopId
 
 
     /**
-     * @return array|false, the applicable discount for a given product, or false the product has no
+     * @return array|false, discountItem, the applicable discount for a given product, or false the product has no
      * applicable discount bound to it.
      *
-     * The returned discount if any looks like the discount item described at the top of this class.
+     * @see EkomModels::discountItem()
      *
      */
-    public function getApplicableDiscountByProductId($productId)
+    public function getApplicableDiscountByProductId(int $productId, array $discountContext)
     {
 
+        $hash = HashTool::getHashByArray($discountContext);
 
-        $productId = (int)$productId;
-
-        return A::cache()->get("Module.Ekom.Api.Layer.DiscountLayer.getDiscountByProductId.$productId", function () use ($productId) {
+        return A::cache()->get("Module.Ekom.Api.Layer.DiscountLayer.getDiscountByProductId.$productId.$hash", function () use ($productId, $discountContext) {
 
 
             /**
              * Discount applying at the product level is the most specific.
              */
-            $discount = QuickPdo::fetch("
+
+            $q = "
 select 
-d.id as discount_id,  
+d.id,  
+d.label,        
+d.code,        
 d.type,        
-d.operand,        
-d.target,
-d.label,
-h.conditions
+d.value
         
 from         
 ek_discount d 
 inner join ek_product_has_discount h on h.discount_id=d.id 
 
 where h.product_id=$productId
-and h.active=1    
-
-order by d.id desc 
+and d.active=1
+    
         
         
-        ");
+        ";
 
+            $markers = [];
+            self::decorateQueryWithDiscountConditionsByDiscountContext($q, $markers, $discountContext);
 
-            $level = null;
-            if (false === $discount) {
+            /**
+             * As for now in ekom, we a given product can only be applied ONE discount at the time (i.e. discounts are not cumulable yet).
+             * Note: this might change in the future as the need for cumulable discounts appear...
+             */
+            $q .= "
+order by d.priority desc 
+limit 1
+";
 
-                /**
-                 * No discount set at the product level?
-                 * Maybe there is one at the card level?
-                 */
-                $discount = QuickPdo::fetch("
-select 
-d.id as discount_id,
-d.type,        
-d.operand,        
-d.target,
-d.label,
-h.conditions
-        
-from         
-ek_discount d 
-inner join ek_product_card_has_discount h on h.discount_id=d.id 
-inner join ek_product p on p.product_card_id=h.product_card_id
-
-where p.id=$productId
-and h.active=1
-        
-order by d.id desc         
-        
-        ");
-
-                if (false === $discount) {
-
-                    /**
-                     * No discount set at the card level?
-                     * Maybe there is one at the category level?
-                     *
-                     */
-                    /**
-                     * Cats is the category of the product, or a category above (parent)
-                     */
-                    $cats = EkomApi::inst()->categoryLayer()->getCategoryIdTreeByProductId($productId);
-                    if (0 === count($cats)) {
-                        XLog::error("[Ekom module] - DiscountLayer.getDiscountsByProductId: no categories found for product $productId");
-                    }
-
-                    if ($cats) {
-
-                        $sCats = implode(', ', $cats);
-                        // get the discounts that apply to the product,
-                        $discount = QuickPdo::fetch("
-select 
-d.id as discount_id,
-d.type,        
-d.operand,        
-d.target,
-d.label,
-h.conditions
-        
-from         
-ek_discount d 
-inner join ek_category_has_discount h on h.discount_id=d.id 
-
-where h.category_id in ($sCats) 
-and h.active=1    
-order by d.id desc        
-        
-        ");
-                        if (false !== $discount) {
-                            $level = "category";
-                        }
-
-                    }
-
-                } else {
-                    $level = "card";
-                }
-
-            } else {
-                $level = 'product';
-            }
-
-
-            if (false !== $discount) {
-                $discount['level'] = $level;
-            }
-            return $discount;
-
+            return QuickPdo::fetch($q, $markers);
         });
     }
 
@@ -1006,4 +920,31 @@ and l.lang_id=$langId
     }
 
 
+    private static function decorateQueryWithDiscountConditionsByDiscountContext(&$q, array &$markers, array $discountContext)
+    {
+        /**
+         * Assuming the "where 1" is already set...
+         */
+
+        if (array_key_exists("date_segment", $discountContext)) {
+            $datetime = DateSegmentHelper::resolveDateSegment($discountContext['date_segment']);
+            $q .= " and (
+(cond_date_start is null and cond_date_end is null) or        
+(cond_date_start is null and cond_date_end is not null and '$datetime' <= cond_date_end ) or
+(cond_date_start is not null and cond_date_end is null and '$datetime' >= cond_date_start ) or
+(cond_date_start is not null and cond_date_end is not null and '$datetime' >= cond_date_start and '$datetime' <= cond_date_end) 
+        )";
+        }
+
+        for ($i = 1; $i <= 1; $i++) {
+            $name = "extra" . $i;
+            if (array_key_exists($name, $discountContext)) {
+                $marker = "discountmarker$i";
+                $q .= " and cond_$name = :$marker";
+                $markers[$marker] = $discountContext[$name];
+            } else {
+                $q .= "and cond_$name is null";
+            }
+        }
+    }
 }

@@ -5,14 +5,17 @@ namespace Module\Ekom\Api\Layer;
 
 
 use ArrayToString\ArrayToStringTool;
+use Bat\HashTool;
 use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
+use SqlQuery\SqlQuery;
 
 
 /**
@@ -69,71 +72,71 @@ select id, amount from ek_tax order by id asc
     }
 
 
-    public static function getTaxGroupInfoByName($name)
+    /**
+     *
+     * Return the taxGroup model that applies to the given cardId, or false array if the card doesnt' have any
+     * tax applied to it.
+     *
+     * @see EkomModels::taxGroup()
+     *
+     */
+    public static function getTaxGroupModelByTaxRuleId($taxRuleId, array $taxContext)
     {
-        return A::cache()->get("Ekom.TaxLayer.getTaxGroupInfoByName-$name", function () use ($name) {
+        if (null === $taxRuleId) {
+            return false;
+        }
+        $taxRuleId = (int)$taxRuleId;
 
-            $rows = QuickPdo::fetchAll("
+        $hash = HashTool::getHashByArray($taxContext);
+        return A::cache()->get("Ekom.TaxLayer.getTaxGroupModelByTaxRuleId-$taxRuleId-$hash", function () use ($taxRuleId, $taxContext) {
+
+            // first get the matching condition if any
+            $q = "
 select 
-t.label,
-t.id as tax_id,
-t.amount,
-h.order,
-h.mode,
-g.id as group_id,
-g.name as group_name,
-g.label as group_label
+c.id as condition_id,
+c.ratio,
+r.id as rule_id,
+r.label as rule_label
 
-from ek_tax t
-inner join ek_tax_group_has_tax h on h.tax_id=t.id
-inner join ek_tax_group g on g.id=h.tax_group_id
+from ek_tax_rule_condition c 
+inner join ek_tax_rule r on r.id=c.tax_rule_id
+ 
+            ";
 
-where g.name=:name
-        
-order by h.order asc
-        
-        ", [
-                "name" => $name,
-            ]);
 
-            return self::getTaxGroupInfoByRows($rows);
+            $markers = [];
+            self::decorateQueryWithRuleConditionByTaxContext($q, $markers, $taxContext);
+
+            $row = QuickPdo::fetch($q, $markers);
+            if ($row) {
+                $taxes = self::getTaxesByTaxRuleConditionId($row['condition_id']);
+
+                return [
+                    "rule_id" => $row['rule_id'],
+                    "rule_label" => $row['rule_label'],
+                    "ratio" => $row['ratio'],
+                    "taxes" => $taxes,
+                ];
+            } else {
+                return false;
+            }
         });
     }
 
 
-    /**
-     * Return the taxGroup model for the given cardId, or false array if the card
-     * is not bound to any tax group.
-     */
-    public static function getTaxGroupInfoByCardId($cardId)
+    private static function getTaxesByTaxRuleConditionId(int $conditionId)
     {
-        $cardId = (int)$cardId;
-
-        return A::cache()->get("Ekom.TaxLayer.getTaxesByCardId-$cardId", function () use ($cardId) {
-
-            $rows = QuickPdo::fetchAll("
+        return QuickPdo::fetchAll("
 select 
-t.label,
-t.id as tax_id,
-t.amount,
-h.order,
-h.mode,
-g.id as group_id,
-g.name as group_name,
-g.label as group_label
-
+id, 
+label, 
+amount,
+mode, 
+order 
 from ek_tax t 
-inner join ek_tax_group_has_tax h on h.tax_id=t.id
-inner join ek_tax_group g on g.id=h.tax_group_id
-inner join ek_product_card c on c.tax_group_id=g.id
-
-where c.id=$cardId
-order by h.order asc
-        
+inner join ek_tax_rule_condition_has_tax h on h.tax_id=t.id 
+where h.tax_rule_condition=$conditionId
         ");
-
-            return self::getTaxGroupInfoByRows($rows);
-        });
     }
 
 
@@ -317,6 +320,29 @@ order by h.order asc
             $ret["taxes"] = $taxes;
         }
         return $ret;
+    }
+
+
+    private static function decorateQueryWithRuleConditionByTaxContext(string &$q, array &$markers, array $taxContext)
+    {
+        /**
+         * Assuming the "where 1" is already set...
+         */
+        if (array_key_exists("user_group_id", $taxContext)) {
+            $q .= " and cond_user_group_id = " . (int)$taxContext['user_group_id'];
+        } else {
+            $q .= "and cond_user_group_id is null";
+        }
+        for ($i = 1; $i <= 4; $i++) {
+            $name = "extra" . $i;
+            if (array_key_exists($name, $taxContext)) {
+                $marker = "taxmarker$i";
+                $q .= " and cond_$name = :$marker";
+                $markers[$marker] = $taxContext[$name];
+            } else {
+                $q .= "and cond_$name is null";
+            }
+        }
     }
 
 

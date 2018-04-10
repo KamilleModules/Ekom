@@ -52,10 +52,9 @@ use Module\Ekom\Api\Object\ShopConfiguration;
 use Module\Ekom\Api\Object\Store;
 use Module\Ekom\Api\Object\Tag;
 use Module\Ekom\Api\Object\Tax;
-use Module\Ekom\Api\Object\TaxGroup;
-use Module\Ekom\Api\Object\TaxGroupHasTax;
 use Module\Ekom\Api\Object\TaxRule;
-use Module\Ekom\Api\Object\TaxRuleHasTax;
+use Module\Ekom\Api\Object\TaxRuleCondition;
+use Module\Ekom\Api\Object\TaxRuleConditionHasTax;
 use Module\Ekom\Api\Object\Timezone;
 use Module\Ekom\Api\Object\User;
 use Module\Ekom\Api\Object\UserGroup;
@@ -433,20 +432,6 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('tax');
     }
     /**
-     * @return TaxGroup
-     */
-    public function taxGroup()
-    {
-        return $this->getObject('taxGroup');
-    }
-    /**
-     * @return TaxGroupHasTax
-     */
-    public function taxGroupHasTax()
-    {
-        return $this->getObject('taxGroupHasTax');
-    }
-    /**
      * @return TaxRule
      */
     public function taxRule()
@@ -454,11 +439,18 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('taxRule');
     }
     /**
-     * @return TaxRuleHasTax
+     * @return TaxRuleCondition
      */
-    public function taxRuleHasTax()
+    public function taxRuleCondition()
     {
-        return $this->getObject('taxRuleHasTax');
+        return $this->getObject('taxRuleCondition');
+    }
+    /**
+     * @return TaxRuleConditionHasTax
+     */
+    public function taxRuleConditionHasTax()
+    {
+        return $this->getObject('taxRuleConditionHasTax');
     }
     /**
      * @return Timezone

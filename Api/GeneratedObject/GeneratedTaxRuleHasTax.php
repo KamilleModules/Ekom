@@ -32,8 +32,9 @@ class GeneratedTaxRuleHasTax extends TableCrudObject
         $base = [
 			'tax_rule_id' => 0,
 			'tax_id' => 0,
+			'order' => 0,
+			'mode' => 0,
 			'cond_user_group_id' => null,
-			'cond_product_type_id' => null,
 			'cond_extra1' => null,
 			'cond_extra2' => null,
 			'cond_extra3' => null,
@@ -43,9 +44,6 @@ class GeneratedTaxRuleHasTax extends TableCrudObject
 
         if (0 === (int)$ret["cond_user_group_id"]) {
             $ret["cond_user_group_id"] = null;
-        }
-        if (0 === (int)$ret["cond_product_type_id"]) {
-            $ret["cond_product_type_id"] = null;
         }
         if (0 === (int)$ret["cond_extra1"]) {
             $ret["cond_extra1"] = null;

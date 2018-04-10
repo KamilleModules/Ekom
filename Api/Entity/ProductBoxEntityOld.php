@@ -24,13 +24,12 @@ use Module\Ekom\Utils\E;
  * @see EkomModels::productBoxModel()
  *
  */
-class ProductBoxEntity
+class ProductBoxEntityOld
 {
-
-
-    private $taxContext;
-    private $discountContext;
-
+    /**
+     * @var null|array
+     */
+    private $generalContext;
     /**
      * @var null|array
      */
@@ -48,8 +47,7 @@ class ProductBoxEntity
     public function __construct()
     {
         // hybrid system, see documentation for more info (doc/my/ekom-product-box-implementation.md)
-        $this->taxContext = null;
-        $this->discountContext = null;
+        $this->generalContext = null;
         $this->cacheDeleteIdentifiers = null;
         $this->_nativeContext = null;
     }
@@ -59,21 +57,31 @@ class ProductBoxEntity
         return new static();
     }
 
-    public function setTaxContext(array $taxContext)
-    {
-        $this->taxContext = $taxContext;
-        return $this;
-    }
-
-    public function setDiscountContext(array $discountContext)
-    {
-        $this->discountContext = $discountContext;
-        return $this;
-    }
-
     //--------------------------------------------
     //
     //--------------------------------------------
+    public function setGeneralContextValue($key, $value)
+    {
+        if (null === $this->generalContext) {
+            $this->generalContext = [];
+        }
+        $this->generalContext[$key] = $value;
+        return $this;
+    }
+
+    public function setGeneralContext(array $context)
+    {
+        $this->generalContext = $context;
+        return $this;
+    }
+
+    public function getGeneralContext()
+    {
+        if (null === $this->generalContext) {
+            $this->generalContext = [];
+        }
+        return $this->generalContext;
+    }
 
 
     public function setProductCardId($cardId)
@@ -119,17 +127,22 @@ class ProductBoxEntity
         }
 
 
-        if (null === $this->taxContext) {
-            $this->taxContext = E::getTaxContext();
+        /**
+         * @deprecated, use E::getTaxContext and E::getDiscountContext instead
+         */
+        $generalContext = $this->generalContext;
+
+
+        /**
+         * If the developer didn't set the generalContext manually, we create it automatically.
+         */
+//        az(__FILE__, $generalContext);
+        if (null === $generalContext) {
+            $generalContext = ProductBoxEntityUtil::getProductBoxGeneralContext();
         }
 
-        if (null === $this->discountContext) {
-            $this->discountContext = E::getDiscountContext();
-        }
 
-
-        $productBoxContext = array_replace($nativeContext, $this->taxContext, $this->discountContext);
-
+        $productBoxContext = array_replace($nativeContext, $generalContext);
 
         $hash = ProductBoxEntityUtil::getHashByCacheContext($productBoxContext);
         $cardId = $nativeContext["product_card_id"];
@@ -365,9 +378,6 @@ class ProductBoxEntity
 
                 $api = EkomApi::inst();
 
-
-
-
                 /**
                  * Take the list of attributes
                  */
@@ -423,6 +433,7 @@ class ProductBoxEntity
                     if (null === $p) {
                         $p = $productsInfo[0];
                     }
+
 
 
                     $label = ('' !== $p['label']) ? $p['label'] : $row['label'];
@@ -490,14 +501,13 @@ class ProductBoxEntity
                     //--------------------------------------------
                     // TAXES AND BASE PRICE
                     //--------------------------------------------
-                    $taxRuleId=  $row['tax_rule_id'];
-                    $taxGroup = TaxLayer::getTaxGroupModelByTaxRuleId($taxRuleId, $this->taxContext);
+                    $taxGroup = TaxLayer::getTaxGroupInfoByCardId($cardId);
 
 
                     //--------------------------------------------
                     // DISCOUNT
                     //--------------------------------------------
-                    $discount = $api->discountLayer()->getApplicableDiscountByProductId($p['product_id'], $this->discountContext);
+                    $discount = $api->discountLayer()->getApplicableDiscountByProductId($p['product_id']);
                     /**
                      * Reminder: for now, only one discount per product is applied.
                      */

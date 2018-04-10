@@ -6,7 +6,6 @@ namespace Module\Ekom\Model\Users;
 
 use Core\Services\A;
 use Core\Services\Hooks;
-use Models\InfoTable\InfoTableHelper;
 use Module\Ekom\Api\Layer\ProductCommentLayer;
 use Module\Ekom\Api\Layer\WishListLayer;
 use Module\Ekom\Utils\E;
@@ -113,7 +112,6 @@ class UserInfoModel
     public static function getLastBookmarksByUserId(int $userId)
     {
         $fullRows = WishListLayer::getWishListItemsByUserId($userId, 5);
-
 
         $rows = [];
         foreach ($fullRows as $row) {

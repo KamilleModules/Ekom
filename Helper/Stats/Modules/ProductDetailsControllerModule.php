@@ -15,48 +15,71 @@ class ProductDetailsControllerModule
 
     public static function getModuleHandler()
     {
-        return function ($dateStart, $dateEnd) {
 
-            $template = "Ekom/All/Stats/OrdersAndGeneralStats/product_details";
-            $conf = [];
+        $productId = $_GET['product_id'] ?? null;
+
+        return function ($dateStart, $dateEnd) use ($productId) {
+
+
+            //--------------------------------------------
+            // PRODUCT DETAIL
+            //--------------------------------------------
+            if ($productId) {
+
+                $template = "Ekom/All/Stats/OrdersAndGeneralStats/product_details_item";
+                $conf = [];
+                return [
+                    $template,
+                    $conf,
+                ];
+            }
+            //--------------------------------------------
+            // PRODUCT LIST
+            //--------------------------------------------
+            else {
+
+
+                $template = "Ekom/All/Stats/OrdersAndGeneralStats/product_details";
+                $conf = [];
 
 
 //            $catsByName = CategoryCoreLayer::create()->getSelfAndChildren("equipement");
 //            $catsById = CategoryCoreLayer::create()->getSelfAndChildrenByCategoryId(1);
 //            $cardIds = CategoryLayer::getCardIdsByCategoryId(6);
 
-            $categoryId = $_GET['category_id'] ?? null;
+                $categoryId = $_GET['category_id'] ?? null;
 
 
-            $cardIds = [];
-            if ($categoryId) {
-                $cardIds = CategoryLayer::getCardIdsByCategoryId($categoryId);
-            }
-            $context = [
-                "cardIds" => $cardIds,
-            ];
-            $listConfig = A::getMorphicListConfig("Ekom", "back/stats/product_details", $context);
+                $cardIds = [];
+                if ($categoryId) {
+                    $cardIds = CategoryLayer::getCardIdsByCategoryId($categoryId);
+                }
+                $context = [
+                    "cardIds" => $cardIds,
+                ];
+                $listConfig = A::getMorphicListConfig("Ekom", "back/stats/product_details", $context);
 
 
-            $conf['form'] = self::getCategoryForm($categoryId);
+                $conf['form'] = self::getCategoryForm($categoryId);
 
-            $conf['list'] = $listConfig;
-            $conf['title'] = "Some title";
-            $conf['alert'] = [
-                "title" => "Nombre d'achats comparé au nombre de vues",
-                "text" => <<<EEE
+                $conf['list'] = $listConfig;
+                $conf['title'] = "Some title";
+                $conf['alert'] = [
+                    "title" => "Nombre d'achats comparé au nombre de vues",
+                    "text" => <<<EEE
 La liste ci-dessous indique le rapport, pour chaque produit, entre le nombre d'achats de ce produit et le nombre 
 de visites de ce produit, pour la période donnée. 
 EEE
-                ,
-                "icon" => "fa fa-exclamation-circle",
-                "type" => "warning",
-            ];
+                    ,
+                    "icon" => "fa fa-exclamation-circle",
+                    "type" => "warning",
+                ];
 
-            return [
-                $template,
-                $conf,
-            ];
+                return [
+                    $template,
+                    $conf,
+                ];
+            }
         };
     }
 
