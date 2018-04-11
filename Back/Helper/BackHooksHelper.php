@@ -147,8 +147,20 @@ class BackHooksHelper
                 ->addItem(Item::create()
                     ->setActive(true)
                     ->setName("catalog_product_groups")
-                    ->setLabel("Groupes de produit")
-                    ->setLink(A::link("Ekom_Catalog_ProductGroup_List"))
+                    ->setLabel("Groupes de produits")
+                    ->setLink("#")
+                    ->addItem(Item::create()
+//                        ->setActive(true)
+                        ->setName("catalog_product_groups_default")
+                        ->setLabel("Groupes basiques")
+                        ->setLink(A::link("Ekom_Catalog_ProductGroup_List"))
+                    )
+                    ->addItem(Item::create()
+//                        ->setActive(true)
+                        ->setName("catalog_product_groups_related")
+                        ->setLabel("Groupes liés à une carte")
+                        ->setLink(A::link("Ekom_Catalog_RelatedCardProductGroup_List"))
+                    )
                 )
                 ->addItem(Item::create()
                     ->setActive(true)
@@ -374,7 +386,7 @@ class BackHooksHelper
 
 
             $pageTop = $controller->pageTop();
-            $pageTop->breadcrumbs()->addLink("dashboard");
+            $pageTop->breadcrumbs()->addLink("Tableau de bord");
             $pageTop->setTitle("Tableau de bord");
 
 

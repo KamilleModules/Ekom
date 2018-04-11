@@ -16,7 +16,6 @@ class DefaultDashboardModel
 
     public static function getModel($dateStart = null, $dateEnd = null, array $options = [])
     {
-
         $options = array_replace([
             "mode" => 'default', // default||ajax
             "graph" => "revenue",

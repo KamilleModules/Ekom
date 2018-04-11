@@ -19,6 +19,12 @@ use RowsGenerator\ArrayRowsGenerator;
 class ProductCardLayer
 {
 
+
+    public static function getLabelByCardId(int $cardId)
+    {
+        return QuickPdo::fetch("select label from ek_product_card where id=$cardId", [], \PDO::FETCH_COLUMN);
+    }
+
     public static function getItemsList(array $options = [])
     {
         $alphaSort = $options['alphaSort'] ?? false;

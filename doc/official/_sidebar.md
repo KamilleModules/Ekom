@@ -25,6 +25,9 @@
 * Développement Front office
   * [Tunnel de paiement](developer/front/payment_tunnel.md)
      
+* Glossaire
+  * [Glossaire des listes du backoffice](glossary/back-formlists-glossary.md)
+     
   
 * FAQ
   * [Les questions les plus fréquentes](faq.md)

@@ -58,6 +58,11 @@ class E
         }
     }
 
+    public static function getFrontTheme()
+    {
+        return XConfig::get("Core.themeFront");
+    }
+
 
     public static function isBackOffice()
     {
