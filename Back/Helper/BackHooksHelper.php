@@ -15,6 +15,7 @@ use Models\AdminSidebarMenu\Lee\Objects\Section;
 use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Back\WidgetModel\Dashboard\DefaultDashboardModel;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Helper\Stats\Modules\BestCategoriesControllerModule;
 use Module\Ekom\Helper\Stats\Modules\CustomerAccountsControllerModule;
 use Module\Ekom\Helper\Stats\Modules\CustomerInfoControllerModule;
 use Module\Ekom\Helper\Stats\Modules\OrdersAndProfitControllerModule;
@@ -40,6 +41,9 @@ class BackHooksHelper
                 break;
             case "customer_info":
                 $moduleHandler = CustomerInfoControllerModule::getModuleHandler();
+                break;
+            case "best_categories":
+                $moduleHandler = BestCategoriesControllerModule::getModuleHandler();
                 break;
             default:
                 break;

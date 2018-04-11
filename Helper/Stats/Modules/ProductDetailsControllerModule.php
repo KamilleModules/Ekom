@@ -63,6 +63,8 @@ class ProductDetailsControllerModule
                 $viewId = "back/stats/product_details_item";
                 $context = [
                     "product_id" => $productId,
+                    "date_start" => $dateStart,
+                    "date_end" => $dateEnd,
                 ];
                 $listSales = A::getMorphicListConfig($moduleName, $viewId, $context);
 
@@ -77,6 +79,8 @@ class ProductDetailsControllerModule
                     $viewId = "back/stats/product_details_item_cross_sales";
                     $context = [
                         "crossSellsIds" => $crossSellsIds,
+                        "date_start" => $dateStart,
+                        "date_end" => $dateEnd,
                     ];
                     $listCrossSales = A::getMorphicListConfig($moduleName, $viewId, $context);
                 } else {
