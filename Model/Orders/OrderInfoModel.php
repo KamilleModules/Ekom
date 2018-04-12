@@ -4,8 +4,10 @@
 namespace Module\Ekom\Model\Orders;
 
 
+use Core\Services\A;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\SellerLayer;
+use Module\Ekom\Exception\EkomException;
 
 class OrderInfoModel
 {
@@ -17,8 +19,6 @@ class OrderInfoModel
         if (false !== $ret) {
 
 
-
-
             //--------------------------------------------
             // PAGE TITLE
             //--------------------------------------------
@@ -26,6 +26,10 @@ class OrderInfoModel
             $userRepr = '';
 
             $userInfo = $ret['user_info'];
+            if (false === $userInfo) {
+                throw new EkomException("Commande invalide");
+            }
+            $ret['user_link'] = A::link("Ekom_Users_User_Info") . "?id=" . $userInfo['id'];
             $firstName = ucfirst(strtolower($userInfo['first_name']));
             $lastName = ucfirst(strtolower($userInfo['last_name']));
             $company = (array_key_exists("company", $userInfo) && $userInfo['company']) ? ucfirst(strtolower($userInfo['company'])) : '';
@@ -54,12 +58,14 @@ class OrderInfoModel
                     $userRepr .= ')';
                 }
             }
+            $ret['userInfo'] = $userInfo;
             $ret['user_representation'] = $userRepr;
             $ret['page_title'] = "Commande " . $ret['reference'] . " de $userRepr";
             $ret['billing_address'] = self::formatAddress($ret['billing_address']);
             $ret['shipping_address'] = self::formatAddress($ret['shipping_address']);
             $ret['sellerName2Label'] = SellerLayer::getName2LabelList();
             $ret['tracker_identifiers'] = OrderLayer::getTrackerIdentifiersByOrderId($id);
+
 
         }
         return $ret;

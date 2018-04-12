@@ -24,7 +24,9 @@ class Discount extends GeneratedDiscount
     {
         parent::__construct();
         $this->addListener(['createAfter', "updateAfter"], function ($eventName, $table, $data, $third) {
+
             $discount_id = self::getIdFromCreateUpdate(func_get_args());
+
 
 
             //--------------------------------------------
@@ -34,8 +36,9 @@ class Discount extends GeneratedDiscount
             //--------------------------------------------
             QuickPdo::transaction(function () use ($discount_id, $data) {
 
+
                 QuickPdo::delete("ek_product_has_discount", [
-                    "id" => $discount_id,
+                    ["discount_id", "=", $discount_id],
                 ]);
 
                 $productIds = StringTool::unserializeAsArray($data['apply_product_ids']);
@@ -72,6 +75,7 @@ class Discount extends GeneratedDiscount
 
 
             });
+
         });
     }
 

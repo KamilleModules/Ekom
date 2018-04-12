@@ -44,7 +44,7 @@ class UserInfoModel
         //--------------------------------------------
         // LAST BOOKMARKS
         //--------------------------------------------
-        $productLinkFmt = A::link("Ekom_Catalog_Product_Form") . "?form=1&t=products&t2=product&product_type=%s&id=%s&product_id=%s";
+        $productLinkFmt = A::link("Ekom_Catalog_Product_Form") . "?product_id=%s";
         $commentLinkFmt = A::link("Ekom_Catalog_ProductCommentList") . "?form&id=%s";
         $infoTable = [
             'headers' => [
@@ -75,6 +75,7 @@ class UserInfoModel
 
                         $isActive = (bool)$row['active'];
                         $word = (true === $isActive) ? "invisible" : "visible";
+                        $eyeSuffix = (true === $isActive) ? "-slash" : "";
 
                         return [
                             "label" => "Actions",
@@ -84,6 +85,7 @@ class UserInfoModel
                                     "label" => "Rendre $word sur le site",
                                     "link" => "#",
                                     "class" => "bionic-btn",
+                                    "icon" => "fa fa-eye$eyeSuffix",
                                     "attributes" => [
                                         "data-action" => "ecp:Ekom:back.updateProductCommentActive",
                                         "data-param-id" => $row['id'],
@@ -92,12 +94,14 @@ class UserInfoModel
                                     ],
                                 ],
                                 [
-                                    "label" => "Modifier le produit",
-                                    "link" => sprintf($productLinkFmt, $row['product_type_id'], $row['product_id'], $row['card_id']),
+                                    "label" => "Voir la fiche produit",
+                                    "link" => sprintf($productLinkFmt, $row['product_id']),
+                                    "icon" => "fa fa-book",
                                 ],
                                 [
                                     "label" => "Modifier le commentaire",
                                     "link" => sprintf($commentLinkFmt, $row['id']),
+                                    "icon" => "fa fa-edit",
                                 ],
                             ],
                         ];
@@ -132,7 +136,7 @@ class UserInfoModel
         //--------------------------------------------
         // LAST BOOKMARKS
         //--------------------------------------------
-        $linkFmt = E::link("Ekom_Catalog_Product_Form") . "?form=1&t=products&t2=product&product_type=%s&id=%s&product_id=%s";
+        $linkFmt = E::link("Ekom_Catalog_Product_Form") . "?product_id=%s";
         $infoTable = [
             'headers' => [
                 "Réf",
@@ -151,7 +155,7 @@ class UserInfoModel
             'colTransformers' => [
                 'photo' => NullosMorphicHelper::getStandardColTransformer("image"),
                 'action' => function ($value, $row) use ($linkFmt) {
-                    $link = sprintf($linkFmt, $row['product_type_id'], $row['card_id'], $row['product_id']);
+                    $link = sprintf($linkFmt, $row['product_id']);
                     return <<<EEE
 <a href="$link" class="btn btn-default btn-xs">Voir le produit</a>
 EEE;
@@ -304,6 +308,7 @@ inner join ek_user_group gr on gr.id=u.user_group_id
 
         $markers = $userQuery->getMarkers();
 
+//        a($userQuery);
         $row = QuickPdo::fetch($userQuery, $markers);
         if ($row) {
 

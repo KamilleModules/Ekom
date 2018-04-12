@@ -23,7 +23,6 @@ class ProductDetailsControllerModule
 
         return function ($dateStart, $dateEnd) use ($productId) {
 
-
             //--------------------------------------------
             // PRODUCT DETAIL
             //--------------------------------------------
@@ -67,6 +66,7 @@ class ProductDetailsControllerModule
                     "date_end" => $dateEnd,
                 ];
                 $listSales = A::getMorphicListConfig($moduleName, $viewId, $context);
+
 
 
                 //--------------------------------------------
@@ -132,6 +132,8 @@ EEE
                 }
                 $context = [
                     "cardIds" => $cardIds,
+                    "date_start" => $dateStart,
+                    "date_end" => $dateEnd,
                 ];
                 $listConfig = A::getMorphicListConfig("Ekom", "back/stats/product_details", $context);
 
