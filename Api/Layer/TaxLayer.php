@@ -39,6 +39,14 @@ class TaxLayer
 {
 
 
+    public static function getListItems()
+    {
+        return QuickPdo::fetchAll("
+select id, label from ek_tax order by id asc        
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
     public static function getTaxAmountById($taxId)
     {
         $taxId = (int)$taxId;

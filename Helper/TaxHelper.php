@@ -3,6 +3,9 @@
 
 namespace Module\Ekom\Helper;
 
+use Module\Ekom\Api\Object\TaxRuleConditionHasTax;
+use QuickPdo\QuickPdo;
+
 class TaxHelper
 {
 
@@ -41,6 +44,27 @@ class TaxHelper
             }
         }
         return $ret;
+    }
+
+
+    public static function recreateTaxRuleConditionHasTaxBindings(int $taxRuleConditionId, array $taxIds, array $options = [])
+    {
+        $mode = $options['mode'] ?? "";
+        QuickPdo::delete("ek_tax_rule_condition_has_tax", [
+            ["tax_rule_condition_id", "=", $taxRuleConditionId],
+        ]);
+
+        $order = 0;
+        foreach ($taxIds as $taxId) {
+            TaxRuleConditionHasTax::getInst()->create([
+                "tax_rule_condition_id" => $taxRuleConditionId,
+                "tax_id" => $taxId,
+                "mode" => $mode,
+                "order" => $order,
+            ]);
+            $order++;
+        }
+
     }
 
 }

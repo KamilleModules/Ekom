@@ -32,6 +32,7 @@ class GeneratedProductHasTag extends TableCrudObject
         $base = [
 			'product_id' => 0,
 			'tag_id' => 0,
+			'order' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

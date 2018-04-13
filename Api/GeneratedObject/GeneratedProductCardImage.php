@@ -37,9 +37,14 @@ class GeneratedProductCardImage extends TableCrudObject
 			'position' => 0,
 			'active' => 0,
 			'is_default' => 0,
+			'product_id' => null,
+			'product_image_is_always_visible' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
+        if (0 === (int)$ret["product_id"]) {
+            $ret["product_id"] = null;
+        }
 
 
         return $ret;

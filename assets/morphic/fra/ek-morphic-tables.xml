@@ -294,9 +294,15 @@
         <genre>f</genre>
         <article>la</article>
     </item>
-    <item table="ek_tax_rule_has_tax">
-        <label>liaison règle de taxe/taxe</label>
-        <labelPlural>liaisons règle de taxe/taxe</labelPlural>
+    <item table="ek_tax_rule_condition">
+        <label>condition de règle de taxe</label>
+        <labelPlural>conditions de règles de taxe</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
+    <item table="ek_tax_rule_condition_has_tax">
+        <label>liaison condition de règle de taxe/taxe</label>
+        <labelPlural>liaisons conditions de règles de taxe/taxe</labelPlural>
         <genre>f</genre>
         <article>la</article>
     </item>

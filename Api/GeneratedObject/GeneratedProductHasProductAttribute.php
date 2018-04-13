@@ -33,7 +33,6 @@ class GeneratedProductHasProductAttribute extends TableCrudObject
 			'product_id' => 0,
 			'product_attribute_id' => 0,
 			'product_attribute_value_id' => 0,
-			'order' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
