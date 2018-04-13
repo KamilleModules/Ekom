@@ -415,6 +415,35 @@ class EkomModels
 
 
     /**
+     * miniBoxModel
+     * -------------
+     * - id
+     * - reference
+     * - label
+     * - slug (will be useful for generating link to the product page)
+     * - card_slug
+     * - discount_type: null|p|f
+     * - discount_value:
+     * - sale_price: the computed sale price
+     * - codes: if contain letter n, means new...
+     *
+     *
+     * (used for internal computation, but left over for debug purposes)
+     * - price: the original price, used for internal
+     * - tax_ratio: 0 if not applicable
+     *
+     *
+     *
+     *
+     * @return array
+     */
+    private function miniBoxModel()
+    {
+        return [];
+    }
+
+
+    /**
      * orderDataModel
      * -------------
      * - user_id

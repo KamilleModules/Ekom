@@ -26,4 +26,9 @@ class DecimalValueHelper
             $data[$field] = str_replace(',', '.', $data[$field]);
         }
     }
+
+    public static function toPrice($value)
+    {
+        return str_replace(',', '.', $value);
+    }
 }

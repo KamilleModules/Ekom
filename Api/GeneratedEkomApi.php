@@ -47,6 +47,7 @@ use Module\Ekom\Api\Object\ProductHasTag;
 use Module\Ekom\Api\Object\ProductPurchaseStat;
 use Module\Ekom\Api\Object\ProductPurchaseStatCategory;
 use Module\Ekom\Api\Object\ProductType;
+use Module\Ekom\Api\Object\ProductVariation;
 use Module\Ekom\Api\Object\Provider;
 use Module\Ekom\Api\Object\Seller;
 use Module\Ekom\Api\Object\SellerHasAddress;
@@ -397,6 +398,13 @@ class GeneratedEkomApi extends XiaoApi
     public function productType()
     {
         return $this->getObject('productType');
+    }
+    /**
+     * @return ProductVariation
+     */
+    public function productVariation()
+    {
+        return $this->getObject('productVariation');
     }
     /**
      * @return Provider

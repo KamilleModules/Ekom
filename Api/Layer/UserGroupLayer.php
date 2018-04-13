@@ -14,8 +14,12 @@ class UserGroupLayer
 
     public static function getListItems($useNameAsKey = false)
     {
+        $word = "id";
+        if (true === $useNameAsKey) {
+            $word = "name";
+        }
         return QuickPdo::fetchAll('
-select id, label
+select ' . $word . ', label
 from ek_user_group
 ', [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }

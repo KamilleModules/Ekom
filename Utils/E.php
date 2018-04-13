@@ -7,6 +7,7 @@ namespace Module\Ekom\Utils;
 use ArrayToString\ArrayToStringTool;
 use Authenticate\SessionUser\SessionUser;
 use Bat\CaseTool;
+use Bat\HashTool;
 use Bat\SessionTool;
 use Bat\UriTool;
 use Core\Services\A;
@@ -37,6 +38,21 @@ class E
 
     private static $conf = null;
 
+
+    public static function getProductBoxContext()
+    {
+        $pbc = ApplicationRegistry::get("Ekom.productBoxContext");
+        if (null === $pbc) {
+            $pbc = [];
+            Hooks::call("Ekom_collectProductBoxContext", $pbc);
+        }
+        return $pbc;
+    }
+
+    public static function getProductBoxContextHash()
+    {
+        HashTool::getHashByArray(self::getProductBoxContext());
+    }
 
     public static function getTaxContext()
     {
