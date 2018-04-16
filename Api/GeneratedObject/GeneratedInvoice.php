@@ -57,7 +57,7 @@ class GeneratedInvoice extends TableCrudObject
         if (0 === (int)$ret["seller_id"]) {
             $ret["seller_id"] = null;
         }
-        if (0 === (int)$ret["invoice_number_alt"]) {
+        if ("" === $ret["invoice_number_alt"]) {
             $ret["invoice_number_alt"] = null;
         }
 

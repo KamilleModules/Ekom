@@ -38,7 +38,7 @@ class GeneratedPasswordRecoveryRequest extends TableCrudObject
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
-        if (0 === (int)$ret["date_used"]) {
+        if ("" === $ret["date_used"]) {
             $ret["date_used"] = null;
         }
 

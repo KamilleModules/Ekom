@@ -41,7 +41,7 @@ class GeneratedCart extends TableCrudObject
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
-        if (0 === (int)$ret["order_date"]) {
+        if ("" === $ret["order_date"]) {
             $ret["order_date"] = null;
         }
 

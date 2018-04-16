@@ -39,7 +39,7 @@ class GeneratedUserHasProduct extends TableCrudObject
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
-        if (0 === (int)$ret["deleted_date"]) {
+        if ("" === $ret["deleted_date"]) {
             $ret["deleted_date"] = null;
         }
 

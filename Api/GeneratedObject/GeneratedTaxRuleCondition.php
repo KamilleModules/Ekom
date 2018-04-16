@@ -44,16 +44,16 @@ class GeneratedTaxRuleCondition extends TableCrudObject
         if (0 === (int)$ret["cond_user_group_id"]) {
             $ret["cond_user_group_id"] = null;
         }
-        if (0 === (int)$ret["cond_extra1"]) {
+        if ("" === $ret["cond_extra1"]) {
             $ret["cond_extra1"] = null;
         }
-        if (0 === (int)$ret["cond_extra2"]) {
+        if ("" === $ret["cond_extra2"]) {
             $ret["cond_extra2"] = null;
         }
-        if (0 === (int)$ret["cond_extra3"]) {
+        if ("" === $ret["cond_extra3"]) {
             $ret["cond_extra3"] = null;
         }
-        if (0 === (int)$ret["cond_extra4"]) {
+        if ("" === $ret["cond_extra4"]) {
             $ret["cond_extra4"] = null;
         }
 

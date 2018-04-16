@@ -47,16 +47,16 @@ class GeneratedDiscount extends TableCrudObject
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
-        if (0 === (int)$ret["cond_date_start"]) {
-            $ret["cond_date_start"] = null;
-        }
-        if (0 === (int)$ret["cond_date_end"]) {
-            $ret["cond_date_end"] = null;
-        }
         if (0 === (int)$ret["cond_user_group_id"]) {
             $ret["cond_user_group_id"] = null;
         }
-        if (0 === (int)$ret["cond_extra1"]) {
+        if ("" === $ret["cond_date_start"]) {
+            $ret["cond_date_start"] = null;
+        }
+        if ("" === $ret["cond_date_end"]) {
+            $ret["cond_date_end"] = null;
+        }
+        if ("" === $ret["cond_extra1"]) {
             $ret["cond_extra1"] = null;
         }
 

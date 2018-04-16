@@ -59,38 +59,98 @@ class E
     }
 
 
-    public static function getProductBoxContext()
+    public static function getUserContext()
     {
-        $pbc = ApplicationRegistry::get("Ekom.productBoxContext");
-        if (null === $pbc) {
-            $pbc = [];
-            Hooks::call("Ekom_collectProductBoxContext", $pbc);
-        }
-        return $pbc;
+        return [
+            "user_id" => null,
+            "user_group_id" => null,
+            "origin_country" => null,
+            "shipping_country" => null,
+            "billing_country" => null,
+        ];
     }
 
-    public static function getProductBoxContextHash()
-    {
-        HashTool::getHashByArray(self::getProductBoxContext());
-    }
+//    public static function getProductBoxContext()
+//    {
+//        $pbc = ApplicationRegistry::get("Ekom.productBoxContext");
+//        if (null === $pbc) {
+//            $pbc = [];
+//            Hooks::call("Ekom_collectProductBoxContext", $pbc);
+//        }
+//        return $pbc;
+//    }
 
-    public static function getTaxContext()
+//    public static function getProductBoxContextHash()
+//    {
+//        HashTool::getHashByArray(self::getProductBoxContext());
+//    }
+
+    public static function getTaxContext(array $userContext = null)
     {
         if (false === self::isBackOffice()) {
             throw new \Exception("Not implemented yet");
         } else {
-            return [];
-        }
-    }
 
-    public static function getDiscountContext()
-    {
-        if (false === self::isBackOffice()) {
-            throw new \Exception("Not implemented yet");
-        } else {
-            return [
-                "date_segment" => DateSegmentHelper::getCurrentDateSegment()
+            if (null === $userContext) {
+                $userContext = E::getUserContext();
+            }
+
+            $taxContext = [
+                "cond_user_group_id" => $userContext['user_group_id'],
+                "cond_extra1" => null,
+                "cond_extra2" => null,
+                "cond_extra3" => null,
+                "cond_extra4" => null,
             ];
+            Hooks::call("Ekom_decorateTaxContext", $taxContext, $userContext);
+            return $taxContext;
+        }
+    }
+
+    public static function getPriceContext(array $userContext = null)
+    {
+        if (false === self::isBackOffice()) {
+            throw new \Exception("Not implemented yet");
+        } else {
+
+            if (null === $userContext) {
+                $userContext = E::getUserContext();
+            }
+
+            $priceContext = [
+                "cond_identifier" => null,
+            ];
+            Hooks::call("Ekom_decoratePriceContext", $priceContext, $userContext);
+            return $priceContext;
+        }
+    }
+
+    public static function getDiscountContext(array $userContext = null)
+    {
+        if (false === self::isBackOffice()) {
+            throw new \Exception("Not implemented yet");
+        } else {
+
+            if (null === $userContext) {
+                $userContext = E::getUserContext();
+            }
+
+            $priceContext = [
+                /**
+                 * Note for datetime,
+                 * depending on your caching strategy you might want to create
+                 * datetime segment (for instance two date segments per day).
+                 *
+                 * The bottom line is that you have to provide a datetime here anyway,
+                 * so for instance if you implement a 2 date segments per day,
+                 * you would return 2018-04-16 00:00:00 and 2018-04-16 12:00:00.
+                 */
+                "datetime" => date('Y-m-d H:i:s'), // here I'm using a fluid no cache strategy for now...
+                "cond_user_group_id" => null,
+                "cond_extra1" => null,
+            ];
+            Hooks::call("Ekom_decoratePriceContext", $priceContext, $userContext);
+            return $priceContext;
         }
     }
 

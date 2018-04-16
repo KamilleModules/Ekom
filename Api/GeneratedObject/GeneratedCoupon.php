@@ -56,37 +56,37 @@ class GeneratedCoupon extends TableCrudObject
         if (0 === (int)$ret["cond_user_id"]) {
             $ret["cond_user_id"] = null;
         }
-        if (0 === (int)$ret["cond_date_start"]) {
-            $ret["cond_date_start"] = null;
-        }
-        if (0 === (int)$ret["cond_date_end"]) {
-            $ret["cond_date_end"] = null;
-        }
-        if (0 === (int)$ret["cond_minimum_amount"]) {
-            $ret["cond_minimum_amount"] = null;
-        }
-        if (0 === (int)$ret["cond_country_id"]) {
-            $ret["cond_country_id"] = null;
-        }
-        if (0 === (int)$ret["cond_user_group_id"]) {
-            $ret["cond_user_group_id"] = null;
-        }
-        if (0 === (int)$ret["cond_cumulable_with_coupon_id"]) {
-            $ret["cond_cumulable_with_coupon_id"] = null;
-        }
-        if (0 === (int)$ret["cond_rules"]) {
-            $ret["cond_rules"] = null;
-        }
         if (0 === (int)$ret["quantity"]) {
             $ret["quantity"] = null;
         }
         if (0 === (int)$ret["quantity_per_user"]) {
             $ret["quantity_per_user"] = null;
         }
-        if (0 === (int)$ret["action_type"]) {
+        if ("" === $ret["cond_date_start"]) {
+            $ret["cond_date_start"] = null;
+        }
+        if ("" === $ret["cond_date_end"]) {
+            $ret["cond_date_end"] = null;
+        }
+        if ("" === $ret["cond_minimum_amount"]) {
+            $ret["cond_minimum_amount"] = null;
+        }
+        if ("" === $ret["cond_country_id"]) {
+            $ret["cond_country_id"] = null;
+        }
+        if ("" === $ret["cond_user_group_id"]) {
+            $ret["cond_user_group_id"] = null;
+        }
+        if ("" === $ret["cond_cumulable_with_coupon_id"]) {
+            $ret["cond_cumulable_with_coupon_id"] = null;
+        }
+        if ("" === $ret["cond_rules"]) {
+            $ret["cond_rules"] = null;
+        }
+        if ("" === $ret["action_type"]) {
             $ret["action_type"] = null;
         }
-        if (0 === (int)$ret["action_value"]) {
+        if ("" === $ret["action_value"]) {
             $ret["action_value"] = null;
         }
 

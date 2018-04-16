@@ -60,13 +60,13 @@ class GeneratedProduct extends TableCrudObject
         if (0 === (int)$ret["manufacturer_id"]) {
             $ret["manufacturer_id"] = null;
         }
-        if (0 === (int)$ret["height"]) {
+        if ("" === $ret["height"]) {
             $ret["height"] = null;
         }
-        if (0 === (int)$ret["depth"]) {
+        if ("" === $ret["depth"]) {
             $ret["depth"] = null;
         }
-        if (0 === (int)$ret["width"]) {
+        if ("" === $ret["width"]) {
             $ret["width"] = null;
         }
 

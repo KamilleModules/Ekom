@@ -51,14 +51,14 @@ class GeneratedUser extends TableCrudObject
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
-        if (0 === (int)$ret["date_last_connection"]) {
-            $ret["date_last_connection"] = null;
-        }
-        if (0 === (int)$ret["birthday"]) {
-            $ret["birthday"] = null;
-        }
         if (0 === (int)$ret["gender_id"]) {
             $ret["gender_id"] = null;
+        }
+        if ("" === $ret["date_last_connection"]) {
+            $ret["date_last_connection"] = null;
+        }
+        if ("" === $ret["birthday"]) {
+            $ret["birthday"] = null;
         }
 
 

@@ -38,7 +38,7 @@ class GeneratedNewsletter extends TableCrudObject
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
-        if (0 === (int)$ret["unsubscribe_date"]) {
+        if ("" === $ret["unsubscribe_date"]) {
             $ret["unsubscribe_date"] = null;
         }
 

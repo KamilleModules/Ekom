@@ -32,11 +32,14 @@ class GeneratedProductVariation extends TableCrudObject
         $base = [
 			'id' => null,
 			'product_id' => 0,
-			'cond_identifier' => '',
+			'cond_identifier' => null,
 			'price' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
+        if ("" === $ret["cond_identifier"]) {
+            $ret["cond_identifier"] = null;
+        }
 
 
         return $ret;
