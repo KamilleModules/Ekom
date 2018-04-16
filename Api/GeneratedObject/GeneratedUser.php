@@ -43,12 +43,11 @@ class GeneratedUser extends TableCrudObject
 			'phone' => '',
 			'phone_prefix' => '',
 			'newsletter' => 0,
-			'gender' => 0,
 			'birthday' => null,
 			'active_hash' => '',
 			'active' => 0,
 			'user_group_id' => 0,
-			'gender_id' => 0,
+			'gender_id' => null,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
@@ -57,6 +56,9 @@ class GeneratedUser extends TableCrudObject
         }
         if (0 === (int)$ret["birthday"]) {
             $ret["birthday"] = null;
+        }
+        if (0 === (int)$ret["gender_id"]) {
+            $ret["gender_id"] = null;
         }
 
 

@@ -21,12 +21,22 @@ use SqlQuery\SqlQuery;
 class TaxRuleConditionLayer
 {
 
-    public static function getTaxesIdList(int $taxRuleConditionId){
-        return  QuickPdo::fetchAll("
+    public static function getTaxesIdList(int $taxRuleConditionId)
+    {
+        return QuickPdo::fetchAll("
 select tax_id 
 from ek_tax_rule_condition_has_tax   
 where tax_rule_condition_id=$taxRuleConditionId 
 order by `order` asc
 ", [], \PDO::FETCH_COLUMN);
+    }
+
+    public static function updateRatioById(int $taxRuleConditionId, $ratio)
+    {
+        QuickPdo::update("ek_tax_rule_condition", [
+            "ratio" => $ratio,
+        ], [
+            ["id", "=", $taxRuleConditionId],
+        ]);
     }
 }

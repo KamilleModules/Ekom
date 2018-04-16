@@ -46,7 +46,6 @@ use Module\Ekom\Api\Object\ProductHasProvider;
 use Module\Ekom\Api\Object\ProductHasTag;
 use Module\Ekom\Api\Object\ProductPurchaseStat;
 use Module\Ekom\Api\Object\ProductPurchaseStatCategory;
-use Module\Ekom\Api\Object\ProductType;
 use Module\Ekom\Api\Object\ProductVariation;
 use Module\Ekom\Api\Object\Provider;
 use Module\Ekom\Api\Object\Seller;
@@ -391,13 +390,6 @@ class GeneratedEkomApi extends XiaoApi
     public function productPurchaseStatCategory()
     {
         return $this->getObject('productPurchaseStatCategory');
-    }
-    /**
-     * @return ProductType
-     */
-    public function productType()
-    {
-        return $this->getObject('productType');
     }
     /**
      * @return ProductVariation

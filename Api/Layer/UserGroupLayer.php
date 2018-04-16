@@ -5,12 +5,38 @@ namespace Module\Ekom\Api\Layer;
 
 
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 class UserGroupLayer
 {
 
+
+    public static function getDefaultGroupId()
+    {
+        $q = "select id from ek_user_group where name=:name";
+        $groupId = QuickPdo::fetch($q, [
+            "name" => "default",
+        ], \PDO::FETCH_COLUMN);
+        if (false !== $groupId) {
+            return $groupId;
+        }
+
+        $groupId = QuickPdo::fetch($q, [
+            "name" => "visiteur",
+        ], \PDO::FETCH_COLUMN);
+        if (false !== $groupId) {
+            return $groupId;
+        }
+
+        $groupId = QuickPdo::fetch("select id from ek_user_group order by id asc", [], \PDO::FETCH_COLUMN);
+        if (false !== $groupId) {
+            return $groupId;
+        }
+
+        throw new EkomApiException("No group found");
+    }
 
     public static function getListItems($useNameAsKey = false)
     {

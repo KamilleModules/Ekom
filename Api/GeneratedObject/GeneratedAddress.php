@@ -33,7 +33,6 @@ class GeneratedAddress extends TableCrudObject
 			'id' => null,
 			'libelle' => '',
 			'phone' => '',
-			'phone_prefix' => '',
 			'address' => '',
 			'city' => '',
 			'postcode' => '',

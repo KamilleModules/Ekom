@@ -9,6 +9,12 @@ use QuickPdo\QuickPdo;
 
 class ProductCardTypeLayer
 {
+    public static function getIdByName(string $name)
+    {
+        return QuickPdo::fetch("select id from ek_product_card_type where name=:name", [
+            "name" => $name,
+        ], \PDO::FETCH_COLUMN);
+    }
 
     public static function getListItems()
     {

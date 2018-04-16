@@ -33,6 +33,7 @@ class GeneratedCountry extends TableCrudObject
 			'id' => null,
 			'iso_code' => '',
 			'label' => '',
+			'phone_prefix' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

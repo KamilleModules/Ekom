@@ -20,6 +20,7 @@ use Kamille\Services\XConfig;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
+use Module\Ekom\Api\Layer\ImageLayer;
 use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Helper\DateSegmentHelper;
@@ -37,6 +38,25 @@ class E
 {
 
     private static $conf = null;
+
+
+    /**
+     *
+     * @see ImageLayer::createImageCopy()
+     * @return string
+     */
+    public static function getCardImgUriByImgId(int $imageId, $type = null)
+    {
+        /**
+         * @todo-ling: create seo service...
+         */
+        if (null === $type) {
+            $type = "medium";
+        }
+        $imageNumbers = str_split((string)$imageId);
+        $hash = implode("/", $imageNumbers);
+        return E::getImgBaseUri() . "/cp/$hash/$imageId-$type.jpg";
+    }
 
 
     public static function getProductBoxContext()

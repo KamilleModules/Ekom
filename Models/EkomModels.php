@@ -518,6 +518,7 @@ class EkomModels
      * ----- cartModel without itemsGroupedBySeller -- @see EkomModels::cartModel()
      * ----- payment_method_id: the payment method id
      * ----- payment_method_name: the payment method name
+     * ----- payment_method_label: the payment method label
      * ----- payment_method_details: array, depends on the chosen payment method handler
      * ----- ?carrier_id: (only if a carrier was used)
      * ----- ?carrier_name:
@@ -739,6 +740,18 @@ class EkomModels
      *      - ...
      */
     private function taxGroup()
+    {
+
+    }
+
+
+    /**
+     * userInfoModel
+     * --------------
+     * - ek_user.*
+     * - ek_user_group.name as group_name
+     */
+    private function userInfoModel()
     {
 
     }

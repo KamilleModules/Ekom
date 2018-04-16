@@ -3,6 +3,8 @@
 
 namespace Module\Ekom\Helper;
 
+use Module\Ekom\Api\Layer\TaxLayer;
+use Module\Ekom\Api\Layer\TaxRuleConditionLayer;
 use Module\Ekom\Api\Object\TaxRuleConditionHasTax;
 use QuickPdo\QuickPdo;
 
@@ -47,12 +49,17 @@ class TaxHelper
     }
 
 
-    public static function recreateTaxRuleConditionHasTaxBindings(int $taxRuleConditionId, array $taxIds, array $options = [])
+    public static function recreateTaxRuleConditionHasTaxBindingsAndUpdateRatio(int $taxRuleConditionId, array $taxIds, array $options = [])
     {
         $mode = $options['mode'] ?? "";
         QuickPdo::delete("ek_tax_rule_condition_has_tax", [
             ["tax_rule_condition_id", "=", $taxRuleConditionId],
         ]);
+
+        /**
+         * We will also recompute the ratio
+         */
+        $fakeValue = 1;
 
         $order = 0;
         foreach ($taxIds as $taxId) {
@@ -62,8 +69,19 @@ class TaxHelper
                 "mode" => $mode,
                 "order" => $order,
             ]);
+
+
+            // note: normally it should depend on the mode...,
+            // I'm just adding taxes one after the other for now
+            $percent = TaxLayer::getTaxAmountById($taxId);
+            $fakeValue += $fakeValue * $percent / 100;
+
+
             $order++;
         }
+
+        $ratio = $fakeValue;
+        TaxRuleConditionLayer::updateRatioById($taxRuleConditionId, $ratio);
 
     }
 

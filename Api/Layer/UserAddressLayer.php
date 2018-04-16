@@ -86,8 +86,7 @@ class UserAddressLayer
 select 
 a.id as address_id,        
 a.libelle,          
-a.phone,        
-a.phone_prefix,        
+a.phone,              
 a.address,        
 a.city,        
 a.postcode,        

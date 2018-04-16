@@ -260,6 +260,12 @@ from $db.ps_manufacturer m
      *      - id_lang
      *      - name
      *
+     * ps_product_tag
+     *      - id_product
+     *      - id_tag
+     *
+     *
+     *
      * ek_tag
      *
      *

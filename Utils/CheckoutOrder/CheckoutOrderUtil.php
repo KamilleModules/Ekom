@@ -234,15 +234,11 @@ class CheckoutOrderUtil
             }
 
 
-            $shopInfo = [];
+
 
             $shopAddressId = (array_key_exists("shop_address_id", $data)) ? $data['shop_address_id'] : null;
-            if (null !== $shopAddressId) {
-                $shopAddress = ShopLayer::getPhysicalAddressById($shopAddressId);
-            } else {
-                $shopAddress = ShopLayer::getDefaultShopAddress();
-            }
-            $shopInfo['address'] = $shopAddress;
+            $shopInfo = ShopLayer::getShopInfoModel($shopAddressId);
+
 
             $shippingAddressId = (array_key_exists("shipping_address_id", $data)) ? $data['shipping_address_id'] : null;
             if (null !== $shippingAddressId) {

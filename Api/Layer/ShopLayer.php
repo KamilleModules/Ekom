@@ -29,6 +29,17 @@ class ShopLayer
 {
 
 
+    public static function getShopInfoModel($shopAddressId = null)
+    {
+        $shopInfo = [];
+        if (null !== $shopAddressId) {
+            $shopAddress = ShopLayer::getPhysicalAddressById($shopAddressId);
+        } else {
+            $shopAddress = ShopLayer::getDefaultShopAddress();
+        }
+        $shopInfo['address'] = $shopAddress;
+        return $shopInfo;
+    }
 
 
 
@@ -65,7 +76,6 @@ select * from ek_shop where id=$shopId
         $shopId = (int)$shopId;
         return QuickPdo::fetch("select host from ek_shop where id=$shopId", [], \PDO::FETCH_COLUMN);
     }
-
 
 
     public static function getShopEntries()
@@ -114,7 +124,7 @@ select * from ek_shop order by id asc
     public static function getPhysicalAddresses()
     {
 
-        return A::cache()->get("Ekom.ShopLayer.getPhysicalAddresses", function ()  {
+        return A::cache()->get("Ekom.ShopLayer.getPhysicalAddresses", function () {
 
 
             $markers = [];
@@ -140,7 +150,7 @@ where a.active=1";
 
     public function getShopPhysicalAddress()
     {
-        return A::cache()->get("Ekom.ShopLayer.getShopPhysicalAddress", function ()  {
+        return A::cache()->get("Ekom.ShopLayer.getShopPhysicalAddress", function () {
 
             return QuickPdo::fetch(" 
 select 
@@ -159,5 +169,6 @@ where a.active=1
 
         });
     }
+
 
 }

@@ -2,6 +2,7 @@
 
 
 namespace Module\Ekom\Api\Layer;
+use QuickPdo\QuickPdo;
 
 
 /**
@@ -49,19 +50,67 @@ namespace Module\Ekom\Api\Layer;
 class MiniProductBoxLayer
 {
 
+    /**
+     * - id
+     * - reference
+     * - label
+     * - slug (will be useful for generating link to the product page)
+     * - card_slug
+     * - discount_type: null|p|f
+     * - discount_value:
+     * - sale_price: the computed sale price
+     * - codes: if contain letter n, means new...
+     * - image: the medium size image uri
+     *
+     *
+     * (used for internal computation, but left over for debug purposes)
+     * - price: the original price, used for internal
+     * - tax_ratio: 0 if not applicable
+     *
+     */
+    public static function getBoxesByProductGroupName(string $productGroupName)
+    {
 
-    public static function getBoxesByProductGroupName(string $productGroupName){
+        $userContext = [
+            "user_id" => null,
+            "user_group_id" => null,
+            "origin_country" => null,
+            "shipping_country" => null,
+            "billing_country" => null,
+        ];
+
+        $date = date("Y-m-d");
+
+
+        $markers = [];
         $q = "
 select 
 p.id,
 p.reference,
 p.price, # todo 
 p.slug,
-c.slug as card_slug
+c.slug as card_slug,
+c.label
 
+from ek_product_card c 
+inner join ek_product p on p.id=c.product_id
 
-        
         ";
+
+
+
+
+        // specific to groups
+        $q .= "
+where c.id in (9,10,11)        
+        ";
+
+
+
+
+        $rows = QuickPdo::fetchAll($q, $markers);
+        a($rows);
+
     }
 
 }

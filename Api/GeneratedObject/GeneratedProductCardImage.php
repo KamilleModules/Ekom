@@ -32,7 +32,6 @@ class GeneratedProductCardImage extends TableCrudObject
         $base = [
 			'id' => null,
 			'product_card_id' => 0,
-			'url' => '',
 			'legend' => '',
 			'position' => 0,
 			'active' => 0,
