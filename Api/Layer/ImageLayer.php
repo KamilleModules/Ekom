@@ -25,9 +25,9 @@ class ImageLayer
      *      - thumb: 80x80
      *      - original: 1000x1000
      */
-    public function createImageCopy(string $imgPath, int $imageId)
+    public static function createImageCardCollection(string $imgPath, string $baseDir, int $cardId, $productId = null)
     {
-        $imgDir = E::getImgBaseUri() . "/cp";
+        
 
     }
 
