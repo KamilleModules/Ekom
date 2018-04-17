@@ -33,6 +33,7 @@ class ProductPageModel
      */
     public static function getModelByProductReference($reference)
     {
+
         $head = []; // product box model
         $tail = []; // tail box model
 
@@ -40,6 +41,7 @@ class ProductPageModel
         if (false !== ($productId = ProductLayer::getProductIdByRef($reference))) {
             $productDetails = ProductBoxEntityUtil::filterProductDetails($_GET);
             $head = ProductBoxLayer::getProductBoxByProductId($productId, $productDetails);
+
 //            az($head);
             //--------------------------------------------
             // PREPARING TAIL

@@ -50,6 +50,7 @@ class ProductQueryBuilderUtil
      *      - price: the real price (original price with ek_product_variation applied to it)
      *      - base_price: the price, with taxes applied to it
      *      - sale_price: the base price, with discounts applied to it
+     *      - discount_id: null means no discount applied
      *      - discount_label: null means no discount applied
      *      - discount_type: f|p|null
      *      - discount_value: number
@@ -121,7 +122,7 @@ where phd.product_id=p.id and
              */
             "cond_identifier" => "b2b",
         ];
-        self::applyContext($priceContext, $qPriceSubquery, $markers);
+        self::applyContext($priceContext, $qPriceSubquery, $markers, 'price');
         $qPriceSubquery .= " limit 0,1";
 
 
@@ -136,7 +137,7 @@ where phd.product_id=p.id and
             "cond_extra3" => null,
             "cond_extra4" => null,
         ];
-        self::applyContext($taxContext, $qTaxSubquery, $markers);
+        self::applyContext($taxContext, $qTaxSubquery, $markers, 'tax');
 
 
         //--------------------------------------------
@@ -146,7 +147,7 @@ where phd.product_id=p.id and
         $discountContext = [
             "datetime" => date('Y-m-d H:i:s'),
             "cond_user_group_id" => null,
-            "cond_extra1" => "doo",
+            "cond_extra1" => null,
         ];
 
         $datetime = $discountContext['datetime'];
@@ -154,12 +155,20 @@ where phd.product_id=p.id and
 
         $qDiscountSubquery .= " 
         active = 1 
-        and (cond_date_start is null or cond_date_start >= '$datetime')
-        and (cond_date_end is null or cond_date_end <= '$datetime')
+        and (cond_date_start is null or cond_date_start <= '$datetime')
+        and (cond_date_end is null or cond_date_end >= '$datetime')
         and
         ";
-        self::applyContext($discountContext, $qDiscountSubquery, $markers);
+        self::applyContext($discountContext, $qDiscountSubquery, $markers, 'discount');
 
+        /**
+         * As I said earlier, the limit of this system is if we have multiple discounts applied to a given product.
+         * Here, we resolve such a case by ignoring all discounts but the one with the highest discount amount (basically
+         * helping the customer here).
+         */
+        $qDiscountSubquery .= " order by d.value desc limit 0,1";
+
+        $qDiscountSubqueryId = str_replace("WHAT", "id", $qDiscountSubquery);
         $qDiscountSubqueryLabel = str_replace("WHAT", "label", $qDiscountSubquery);
         $qDiscountSubqueryType = str_replace("WHAT", "type", $qDiscountSubquery);
         $qDiscountSubqueryValue = str_replace("WHAT", "value", $qDiscountSubquery);
@@ -180,33 +189,38 @@ c.slug as card_slug,
 @taxRatio := coalesce (($qTaxSubquery), '1.00') as tax_ratio,
 
 
+
+
+p.codes,
+p._popularity as popularity,
+
+
+
+($qDiscountSubqueryId) as discount_id,
+($qDiscountSubqueryLabel) as discount_label,
+@discountType := ($qDiscountSubqueryType) as discount_type,
+@discountVal := ($qDiscountSubqueryValue) as discount_value,
+
+
 p.price as original_price,
 @price:= coalesce(
   ($qPriceSubquery),
   p.price
 ) as price, 
 @basePrice := (ROUND(@price * @taxRatio, 2)) as base_price,
-(
-  case 
-  when @discountType = 'f'
-    then @basePrice - @discountVal
-  when @discountType = 'p'
-    then round(@basePrice - (@basePrice * @discountVal / 100), 2)
-  when @discountType is null
-    then @basePrice 
-  end    
-) as sale_price,
-
-p.codes,
-
-
-
-($qDiscountSubqueryLabel) as discount_label,
-@discountType := ($qDiscountSubqueryType) as discount_type,
-@discountVal := ($qDiscountSubqueryValue) as discount_value
-
-
-
+@salePrice := CAST(
+    (
+      case 
+      when @discountType = 'f'
+        then @basePrice - @discountVal
+      when @discountType = 'p'
+        then round(@basePrice - (@basePrice * @discountVal / 100), 2)
+      when @discountType is null
+        then @basePrice 
+      end    
+    ) as decimal(10,2)
+ )
+ as sale_price
         ";
 
 
@@ -215,6 +229,16 @@ p.codes,
             ->setTable("ek_product_card c")
             ->addJoin("inner join ek_product p on p.id=c.product_id")
             ->addWhere(" and p.active=1 and c.active=1")
+            /**
+             * Note about group by,
+             * it basically enabled to use aliases in the "having" clause (i.e. from my tests, having sale_price < 100
+             * was only possible if the group by clause was present in the request).
+             *
+             *
+             * See this topic: https://dba.stackexchange.com/questions/50391/why-does-mysql-allow-having-to-use-select-aliases
+             *
+             */
+            ->addGroupBy('p.id')
             ->addMarkers($markers);
 
         return $sqlQuery;
@@ -227,7 +251,7 @@ p.codes,
     //--------------------------------------------
     //
     //--------------------------------------------
-    private static function applyContext(array $context, string &$q, array &$markers)
+    private static function applyContext(array $context, string &$q, array &$markers, string $markerPrefix)
     {
         // apply context, assuming the where is already written in the given query
         $c = 0;
@@ -238,7 +262,7 @@ p.codes,
             if (null === $value) {
                 $q .= "$col is null";
             } else {
-                $markerName = "tax" . $c;
+                $markerName = $markerPrefix . $c;
                 $markers[$markerName] = $value;
                 $q .= "$col = :$markerName";
             }

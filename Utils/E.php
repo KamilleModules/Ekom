@@ -87,8 +87,8 @@ class E
 
     public static function getTaxContext(array $userContext = null)
     {
-        if (false === self::isBackOffice()) {
-            throw new \Exception("Not implemented yet");
+        if (true === self::isBackOffice()) {
+            return [];
         } else {
 
             if (null === $userContext) {
@@ -109,8 +109,10 @@ class E
 
     public static function getPriceContext(array $userContext = null)
     {
-        if (false === self::isBackOffice()) {
-            throw new \Exception("Not implemented yet");
+        if (true === self::isBackOffice()) {
+            return [
+
+            ];
         } else {
 
             if (null === $userContext) {
@@ -127,8 +129,8 @@ class E
 
     public static function getDiscountContext(array $userContext = null)
     {
-        if (false === self::isBackOffice()) {
-            throw new \Exception("Not implemented yet");
+        if (true === self::isBackOffice()) {
+            return [];
         } else {
 
             if (null === $userContext) {

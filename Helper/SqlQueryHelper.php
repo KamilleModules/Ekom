@@ -14,29 +14,16 @@ use SqlQuery\SqlQueryInterface;
 
 class SqlQueryHelper
 {
-    public static function getCategoryWithFiltersSqlQueryByCategoryId(int $categoryId, ListStaticParamsInterface $listParams = null): SqlQueryInterface
+    public static function getCategoryWithFiltersSqlQueryByCategoryId(int $categoryId): SqlQueryInterface
     {
 
-        if (null === $listParams) {
-            $listParams = EkomListStaticParams::create();
-        }
-
         $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
-
-
         $cardIds = ProductCardLayer::getProductCardIdsByCategoryId($categoryId);
         $sCardIds = implode(', ', $cardIds);
         $sqlQuery->addWhere(" and c.id in ($sCardIds)");
 
 
-        $currentSort;
-        if("price_asc" === $currentSort){
-            $sqlQuery->addOrderBy("sale_price", 'asc');
-        }
-
-
-
-        self::decorateSqlQueryWithListStaticParams($sqlQuery, $listParams);
+//        self::decorateSqlQueryWithListStaticParams($sqlQuery, $listParams);
         return $sqlQuery;
     }
 

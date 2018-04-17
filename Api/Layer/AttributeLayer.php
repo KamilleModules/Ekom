@@ -78,7 +78,6 @@ and p.active=1
 
             $rows = QuickPdo::fetchAll("
 select 
-#p.id as product_id,
 a.name,
 a.label as attribute_label,
 v.value,
