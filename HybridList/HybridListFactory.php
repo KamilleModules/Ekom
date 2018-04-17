@@ -130,7 +130,7 @@ class HybridListFactory
         ApplicationRegistry::set("ekom.categoryId", $categoryId);
         $cardIds = ProductCardLayer::getProductCardIdsByCategoryId($categoryId);
 
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext();
+        $gpc = [];;
         $unfilteredBoxes = []; // required by some filters/sort HybridListControl
         foreach ($cardIds as $cardId) {
             $box = ProductBoxLayer::getProductBoxByCardId($cardId, null, [], $gpc);

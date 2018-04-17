@@ -3,6 +3,7 @@
 
 namespace Module\Ekom\Api\Layer;
 
+use Core\Services\A;
 use Core\Services\Hooks;
 use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
 use QuickPdo\QuickPdo;
@@ -46,8 +47,39 @@ use QuickPdo\QuickPdo;
  *
  *
  *
- * Oh, I forgot, before we code we need to define what's inside the miniBox model.
- * @see EkomModels::miniBoxModel()
+ *
+ * We will provide the following miniBoxModel for templates:
+ *
+ * miniBoxModel
+ * -------------
+ *      - product_id,
+ *      - card_id,
+ *      - reference,
+ *      - label: the card label
+ *      - product_slug,
+ *      - card_slug,
+ *      - image_id,
+ *      - image_legend, the legend for the image (can be empty)
+ *      - tax_ratio: number, 1 means no tax applied
+ *      - original_price: the original price
+ *      - price: the real price (original price with ek_product_variation applied to it)
+ *      - base_price: the price, with taxes applied to it
+ *      - sale_price: the base price, with discounts applied to it
+ *      - discount_label: null means no discount applied
+ *      - discount_type: f|p|null
+ *      - discount_value: number
+ *      - codes: string containing codes. n means novelty
+ *
+ *      (above comes straight from the query, below is sugar for templates)
+ *
+ *      - has_tax: bool
+ *      - is_novelty: bool, whether or not the product card has been marked as novelty
+ *      - product_link: link to the product page
+ *      - image: uri of the image (size medium)
+ *      - image_alt: alt attribute of the image
+ *      - image_title: title attribute of the image (like legend, but defaults to the label if empty)
+ *      - has_discount: bool
+ *
  *
  */
 class MiniProductBoxLayer
@@ -58,20 +90,70 @@ class MiniProductBoxLayer
     {
 
         $cardIds = ProductGroupLayer::getRelatedCardIdByGroupName($productGroupName);
-        az($cardIds);
+        if ($cardIds) {
 
-        $markers = [];
-        $q = ProductQueryBuilderUtil::getBaseQuery( $markers);
+            $sCardIds = implode(', ', $cardIds);
 
-        // specific to groups
-        $q .= "
-where c.id in (9,10,11)        
-        ";
+            $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
+
+            // specific to groups
+            $sqlQuery->addWhere("
+and c.id in ($sCardIds)        
+        ");
 
 
-        $rows = QuickPdo::fetchAll($q, $markers);
-        a($rows);
-
+            $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
+            self::sugarifyRows($rows);
+            return $rows;
+        }
+        return [];
     }
 
+
+    /**
+     * quick tool for internal development,
+     * like lorem ipsum for text...
+     */
+    public static function getNBoxes(int $nbBoxes = 5)
+    {
+
+        $cardIds = QuickPdo::fetchAll("select id from ek_product_card limit 0,$nbBoxes", [], \PDO::FETCH_COLUMN);
+        if ($cardIds) {
+
+            $sCardIds = implode(', ', $cardIds);
+            $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
+            $sqlQuery->addWhere("and c.id in ($sCardIds)");
+            $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
+
+            self::sugarifyRows($rows);
+            return $rows;
+        }
+        return [];
+    }
+
+
+    public static function sugarify(array &$row)
+    {
+        $row['has_tax'] = ('1.00' === $row['tax_ratio']);
+        $row['is_novelty'] = (false !== strpos($row['codes'], 'n'));
+        $row['product_link'] = A::link("Ekom_productCardRef", [
+            "slug" => $row['card_slug'],
+            "ref" => $row['reference'],
+        ]);
+        $row['image'] = ImageLayer::getCardProductImageUriByImageId($row['image_id']);
+        $row['image_title'] = (!empty($row['image_legend']) ? $row["image_legend"] : $row['label']);
+        $row['image_alt'] = $row["label"];
+        $row['has_discount'] = (null !== $row['discount_type']);
+    }
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    private static function sugarifyRows(array &$rows)
+    {
+        foreach ($rows as $k => $row) {
+            self::sugarify($row);
+            $rows[$k] = $row;
+        }
+    }
 }

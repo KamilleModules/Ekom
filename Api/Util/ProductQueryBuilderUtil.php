@@ -24,47 +24,51 @@ use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\DistanceEstimator\DistanceEstimatorInterface;
 use Module\Ekom\Utils\E;
 use Module\ThisApp\ThisAppConfig;
+use SqlQuery\SqlQuery;
+use SqlQuery\SqlQueryInterface;
 
 
-/**
- *
- *
- * miniBoxModel
- * --------------------
- *
- *
- * - id
- * - reference
- * - label
- * - slug (will be useful for generating link to the product page)
- * - card_slug
- * - discount_label:
- * - discount_type: null|p|f
- * - discount_value:
- * - sale_price: the computed sale price (the base_price with discount applied to it)
- * - codes: if contain letter n, means new...
- * - image: the medium size image uri
- *
- *
- * (used for internal computation, but left over for debug purposes)
- * - original_price: the original price
- * - price: the original price, with product_variation applied to it (if any)
- * - base_price: the price with tax applied to it
- * - tax_ratio: number|null if not applicable
- *
- */
 class ProductQueryBuilderUtil
 {
 
 
-    public static function getBaseQuery(array &$markers = [], array $userContext = null): string
+    /**
+     * This method returns the base query for retrieving some boxes.
+     * Boxes potentially come in multiple flavors:
+     *
+     * - miniBox, each row containing:
+     *      - product_id,
+     *      - card_id,
+     *      - reference,
+     *      - label: the card label
+     *      - product_slug,
+     *      - card_slug,
+     *      - image_id,
+     *      - image_legend, the title attribute for the image
+     *      - tax_ratio: number, 1 means no tax applied
+     *      - original_price: the original price
+     *      - price: the real price (original price with ek_product_variation applied to it)
+     *      - base_price: the price, with taxes applied to it
+     *      - sale_price: the base price, with discounts applied to it
+     *      - discount_label: null means no discount applied
+     *      - discount_type: f|p|null
+     *      - discount_value: number
+     *      - codes: string containing codes. n means novelty
+     *
+     *
+     * The returned query already stops after the joins part, in case you want to extend it...
+     *
+     *
+     * @return SqlQueryInterface
+     *
+     */
+    public static function getBaseQuery(array $userContext = null): SqlQueryInterface
     {
 
         if (null === $userContext) {
             $userContext = E::getUserContext();
         }
-
-
+        $markers = [];
 
         $qTaxSubquery = "select ratio from ek_tax_rule_condition where ";
         $qPriceSubquery = "select price from ek_product_variation where product_id=p.id and ";
@@ -161,25 +165,26 @@ where phd.product_id=p.id and
         $qDiscountSubqueryValue = str_replace("WHAT", "value", $qDiscountSubquery);
 
 
-        $q = "
-select 
+        $field = "
 p.id as product_id,
+c.id as card_id,
 p.reference,
+
+c.label,
+p.slug as product_slug,
+c.slug as card_slug,
+
+(select id from ek_product_card_image where product_card_id=c.id order by is_default desc limit 0,1) as image_id,
+(select legend from ek_product_card_image where product_card_id=c.id order by is_default desc limit 0,1) as image_legend,
+
+@taxRatio := coalesce (($qTaxSubquery), '1.00') as tax_ratio,
+
+
 p.price as original_price,
 @price:= coalesce(
   ($qPriceSubquery),
   p.price
 ) as price, 
-p.slug,
-c.id as card_id,
-c.slug as card_slug,
-c.label,
-(select id from ek_product_card_image where product_card_id=c.id order by is_default desc limit 0,1) as image_id,
-@taxRatio := ($qTaxSubquery) as tax_ratio,
-($qDiscountSubqueryLabel) as discount_label,
-@discountType := ($qDiscountSubqueryType) as discount_type,
-@discountVal := ($qDiscountSubqueryValue) as discount_value,
-
 @basePrice := (ROUND(@price * @taxRatio, 2)) as base_price,
 (
   case 
@@ -190,20 +195,29 @@ c.label,
   when @discountType is null
     then @basePrice 
   end    
-) as sale_price
+) as sale_price,
+
+p.codes,
 
 
 
+($qDiscountSubqueryLabel) as discount_label,
+@discountType := ($qDiscountSubqueryType) as discount_type,
+@discountVal := ($qDiscountSubqueryValue) as discount_value
 
-
-
-from ek_product_card c 
-inner join ek_product p on p.id=c.product_id
 
 
         ";
-        return $q;
 
+
+        $sqlQuery = SqlQuery::create()
+            ->addField($field)
+            ->setTable("ek_product_card c")
+            ->addJoin("inner join ek_product p on p.id=c.product_id")
+            ->addWhere(" and p.active=1 and c.active=1")
+            ->addMarkers($markers);
+
+        return $sqlQuery;
 
     }
 

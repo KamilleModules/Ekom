@@ -56,9 +56,9 @@ class DynamicProductListModel
                 $categoryModel = $info;
                 $categoryId = $info['id'];
 
-
                 $return = [];
                 $hybridList = HybridListFactory::getCategoryHybridList($categoryId, $pool, $return);
+
 
                 $info = $hybridList->execute();
 //                az(__FILE__, $sqlRequest->getSqlRequest());

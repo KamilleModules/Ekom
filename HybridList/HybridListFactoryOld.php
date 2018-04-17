@@ -18,8 +18,10 @@ use Module\Ekom\HybridList\HybridListControl\Filter\DiscountFilterHybridListCont
 use Module\Ekom\HybridList\HybridListControl\Filter\PriceFilterHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Filter\SummaryFilterHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Slice\PaginateSliceHybridListControl;
+use Module\Ekom\HybridList\HybridListControl\Sort\InvoiceSortHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Sort\OrderSortHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Sort\ProductSortHybridListControl;
+use Module\Ekom\HybridList\HybridListControl\Sort\WishListSortHybridListControl;
 use Module\Ekom\Utils\E;
 
 
@@ -48,6 +50,55 @@ class HybridListFactoryOld
      * @return HybridListInterface
      *
      */
+    public static function getUserWishListHybridList(array $pool, $userId)
+    {
+        $userId = (int)$userId;
+        $sqlRequest = SqlRequest::create();
+        $hybridList = WishListHybridList::create()
+            ->setListParameters($pool)
+            ->setRequestGenerator(SqlRequestGenerator::create()
+                ->setSqlRequest($sqlRequest
+                    ->addField("*")
+                    ->setTable("ek_user_has_product")
+                    ->addWhere("and user_id=" . $userId . " and deleted_date is null")
+                )
+            );
+
+
+        $hybridList->addControl("sort", WishListSortHybridListControl::create());
+        $hybridList->addControl("slice", SqlPaginatorHybridListControl::create()->setNumberOfItemsPerPage(12));
+        return $hybridList;
+    }
+
+
+    /**
+     * @return HybridListInterface
+     *
+     */
+    public static function getUserInvoicesHybridList(array $pool, $userId)
+    {
+        $userId = (int)$userId;
+        $sqlRequest = SqlRequest::create();
+        $hybridList = HybridList::create()
+            ->setListParameters($pool)
+            ->setRequestGenerator(SqlRequestGenerator::create()
+                ->setSqlRequest($sqlRequest
+                    ->addField("i.*")
+                    ->setTable("ek_invoice i")
+                    ->addWhere("and i.user_id=" . $userId)
+                )
+            );
+
+
+        $hybridList->addControl("sort", InvoiceSortHybridListControl::create());
+        $hybridList->addControl("slice", SqlPaginatorHybridListControl::create()->setNumberOfItemsPerPage(10));
+        return $hybridList;
+    }
+
+    /**
+     * @return HybridListInterface
+     *
+     */
     public static function getOrderHybridList(array $pool, $userId)
     {
         $userId = (int)$userId;
@@ -56,17 +107,7 @@ class HybridListFactoryOld
             ->setListParameters($pool)
             ->setRequestGenerator(SqlRequestGenerator::create()
                 ->setSqlRequest($sqlRequest
-                    ->addField("
-o.*, (
-select s.code from ek_order_status s 
-inner join ek_order_has_order_status h on h.order_status_id=s.id 
-inner join ek_order zo on zo.id=h.order_id
-where zo.id=o.id
-and zo.user_id=$userId
-order by h.date desc
-limit 1
-            ) as last_status_code                    
-                    ")
+                    ->addField("o.*")
                     ->setTable("ek_order o")
                     ->addWhere("and o.user_id=" . $userId)
                 )
@@ -83,18 +124,13 @@ limit 1
      * @return HybridListInterface
      * @throws \Exception
      */
-    public static function getCategoryHybridList($categoryId, array $pool, array &$return = null, $shopId = null)
+    public static function getCategoryHybridList($categoryId, array $pool, array &$return = null)
     {
 
-        $shopId = E::getShopId($shopId);
-
         ApplicationRegistry::set("ekom.categoryId", $categoryId);
-
         $cardIds = ProductCardLayer::getProductCardIdsByCategoryId($categoryId);
 
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext([
-            'shop_id' => $shopId,
-        ]);
+        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext();
         $unfilteredBoxes = []; // required by some filters/sort HybridListControl
         foreach ($cardIds as $cardId) {
             $box = ProductBoxLayer::getProductBoxByCardId($cardId, null, [], $gpc);
@@ -102,6 +138,7 @@ limit 1
                 $unfilteredBoxes[$cardId] = ProductBoxLayer::getProductBoxByCardId($cardId);
             }
         }
+
         $sIds = implode(', ', $cardIds);
         //--------------------------------------------
         // HYBRID LIST
@@ -117,14 +154,12 @@ limit 1
                     ->addJoin("
 inner join ek_category c on c.id=chpc.category_id                            
 inner join ek_product p on p.product_card_id=chpc.product_card_id   
-inner join ek_shop_has_product_card shpc on shpc.shop_id=c.shop_id and shpc.product_card_id=p.product_card_id
-inner join ek_shop_has_product shp on shp.shop_id=c.shop_id and shp.product_id=p.id             
+inner join ek_product_card card on card.id=chpc.product_card_id   
                     ")
                     ->addWhere("
-$sSql
-and c.shop_id=$shopId             
-and shpc.active=1               
-and shp.active=1               
+$sSql 
+and card.active=1               
+and p.active=1               
                             ")
                 ));
 
@@ -152,7 +187,6 @@ and shp.active=1
             'unfilteredBoxes' => $unfilteredBoxes,
             'pool' => $pool,
             'summaryFilterControl' => $summaryFilterControl,
-            'shop_id' => $shopId,
         ];
         $hybridList->setControlsContext($context);
 

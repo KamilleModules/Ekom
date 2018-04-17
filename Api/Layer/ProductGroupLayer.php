@@ -14,7 +14,14 @@ class ProductGroupLayer
 
     public static function getRelatedCardIdByGroupName(string $groupName)
     {
-        return substr($groupName, 9);
+        return QuickPdo::fetchAll("
+select 
+p.product_card_id
+from ek_product_group g 
+inner join ek_product_group_has_product h on h.product_group_id=g.id
+inner join ek_product p on p.id=h.product_id
+order by h.order asc
+        ", [], \PDO::FETCH_COLUMN);
     }
 
     public static function getNameById(int $id)
