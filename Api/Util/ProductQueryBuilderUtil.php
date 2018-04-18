@@ -178,13 +178,24 @@ where phd.product_id=p.id and
 p.id as product_id,
 c.id as card_id,
 p.reference,
-
-c.label,
+if(
+    '' != p.label,
+    p.label,
+    c.label
+) as label,
 p.slug as product_slug,
 c.slug as card_slug,
 
-(select id from ek_product_card_image where product_card_id=c.id order by is_default desc limit 0,1) as image_id,
-(select legend from ek_product_card_image where product_card_id=c.id order by is_default desc limit 0,1) as image_legend,
+coalesce (
+    (select id from ek_product_card_image where product_card_id=c.id and product_id=p.id order by is_default desc limit 0,1),
+    (select id from ek_product_card_image where product_card_id=c.id order by is_default desc limit 0,1)
+)  as image_id,
+
+coalesce (
+    (select legend from ek_product_card_image where product_card_id=c.id and product_id=p.id order by is_default desc limit 0,1),
+    (select legend from ek_product_card_image where product_card_id=c.id order by is_default desc limit 0,1)
+)
+as image_legend,
 
 @taxRatio := coalesce (($qTaxSubquery), '1.00') as tax_ratio,
 
@@ -227,7 +238,21 @@ p.price as original_price,
         $sqlQuery = SqlQuery::create()
             ->addField($field)
             ->setTable("ek_product_card c")
-            ->addJoin("inner join ek_product p on p.id=c.product_id")
+            /**
+             * Notice the difference between the commented line and the actual line:
+             * with the commented line, the request only searches in products which are the default
+             * of their cards, whereas with the uncommented line, we really search in all products;
+             *
+             * this is what we want: we for instance search all products having a discount of 20%,
+             * and so the second line yields all those products (and can possibly display different
+             * products of the same card next to each other), whereas the commented line would only
+             * search in the default products.
+             *
+             *
+             *
+             */
+//            ->addJoin("inner join ek_product p on p.id=c.product_id")
+            ->addJoin("inner join ek_product p on p.product_card_id=c.id")
             ->addWhere(" and p.active=1 and c.active=1")
             /**
              * Note about group by,
@@ -245,6 +270,49 @@ p.price as original_price,
 
     }
 
+
+    public static function getMaxiQuery(array $userContext=null){
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($userContext);
+        $sqlQuery->addField("
+s.id as seller_id,
+s.name as seller_name,
+s.label as seller_label,
+m.id as manufacturer_id,
+m.name as manufacturer_name,
+if(
+    '' != p.description,
+    p.description,
+    c.description
+) as description,
+if(
+    '' != p.meta_title,
+    p.meta_title,
+    c.meta_title
+) as meta_title,
+if(
+    '' != p.meta_description,
+    p.meta_description,
+    c.meta_description
+) as meta_description,
+if(
+    '' != p.meta_keywords,
+    p.meta_keywords,
+    c.meta_keywords
+) as meta_keywords,
+p.wholesale_price,
+p.quantity,
+p.weight,
+p.out_of_stock_text,
+p.active
+
+
+        ");
+        $sqlQuery->addJoin("
+inner join ek_seller s on s.id=p.seller_id
+left join ek_manufacturer m on m.id=p.manufacturer_id
+");
+        return $sqlQuery;
+    }
 
 
 

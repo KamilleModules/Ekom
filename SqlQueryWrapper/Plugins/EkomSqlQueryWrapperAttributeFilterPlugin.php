@@ -239,10 +239,17 @@ group by v.value
                     if ($safeIds) {
 
                         $atLeastOneAttribute = true;
+//                        $whereBits[] = "
+//(
+//    a.name = :$tagName
+//    and v.id in (" . implode(', ', $safeIds) . ")
+//)
+//
+//                        ";
                         $whereBits[] = "
 (
-    a.name = :$tagName
-    and v.id in (" . implode(', ', $safeIds) . ")
+    attribute_name = :$tagName
+    and attribute_value_id in (" . implode(', ', $safeIds) . ")
 )
                           
                         ";
@@ -257,13 +264,19 @@ group by v.value
 
 
         if (true === $atLeastOneAttribute) { // note: maybe this could/should be unconditional?
+            $sqlQuery->addField("
+a.name as attribute_name,            
+v.id as attribute_value_id            
+            ");
             $sqlQuery->addJoin("
 inner join ek_product_has_product_attribute phpa on phpa.product_id=p.id
 inner join ek_product_attribute a on a.id=phpa.product_attribute_id
 inner join ek_product_attribute_value v on v.id=phpa.product_attribute_value_id                            
 ");
-            $where = "and (" . implode(" or ", $whereBits) . ")";
-            $sqlQuery->addWhere($where);
+//            $where = "and (" . implode(" or ", $whereBits) . ")";
+            $where = "(" . implode(" or ", $whereBits) . ")";
+//            $sqlQuery->addWhere($where);
+            $sqlQuery->addHaving($where, "group1");
         }
     }
 }

@@ -9,10 +9,8 @@ use Core\Services\X;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Entity\ProductBoxEntity;
 use Module\Ekom\Api\Entity\ProductBoxEntityUtil;
-use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
 use Module\Ekom\Utils\E;
 use Module\EkomUserProductHistory\UserProductHistory\UserProductHistoryInterface;
-use QuickPdo\QuickPdo;
 
 
 /**
@@ -37,7 +35,7 @@ use QuickPdo\QuickPdo;
  *
  *
  */
-class ProductBoxLayer
+class ProductBoxLayerOld
 {
 
 
@@ -57,25 +55,24 @@ class ProductBoxLayer
         return $e->getModel();
     }
 
-    /**
-     * @param $productId
-     *
-     * @param array $productDetails ,
-     *          an array of name => value
-     *
-     * @param array|null $userContext
-     */
-    public static function getProductBoxByProductId(int $productId, array $productDetails = [], array $userContext = null)
+    public static function getProductBoxByProductId($productId, array $productDetailsArgs = [], array $gpc = null)
     {
+        if (false !== ($cardId = ProductCardLayer::getIdByProductId($productId))) {
+            $e = ProductBoxEntity::create()
+                ->setProductCardId($cardId)
+                ->setProductId($productId)
+                ->setProductDetails($productDetailsArgs);
+            if (null !== $gpc) {
+                $e->setGeneralContext($gpc);
+            }
+            return $e->getModel();
+        }
 
-        $sqlQuery = ProductQueryBuilderUtil::getMaxiQuery($userContext);
-        $sqlQuery->addWhere("and p.id=$productId");
-        $q = $sqlQuery->getSqlQuery();
-        $markers = $sqlQuery->getMarkers();
-        $row = QuickPdo::fetch($q, $markers);
-        a($row);
-        az($productId);
-
+        return [
+            'errorCode' => "productIdNotFound",
+            'errorTitle' => "Product id not found",
+            'errorMessage' => "Product id $productId was not found in this database",
+        ];
     }
 
 

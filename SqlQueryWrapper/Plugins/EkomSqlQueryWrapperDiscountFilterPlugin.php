@@ -72,7 +72,7 @@ group by discount_value
                 $discount = [$discount];
             }
             $sDiscounts = implode(', ', $discount);
-            $sqlQuery->addHaving("discount_type='p' and discount_value in ($sDiscounts)");
+            $sqlQuery->addHaving("(discount_type='p' and discount_value in ($sDiscounts))", "group1");
         }
     }
 

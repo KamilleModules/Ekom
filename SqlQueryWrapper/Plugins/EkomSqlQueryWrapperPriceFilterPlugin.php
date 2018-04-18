@@ -49,7 +49,7 @@ class EkomSqlQueryWrapperPriceFilterPlugin extends SqlQueryWrapperBasePlugin imp
             list($min, $max) = explode('-', $_GET[$this->priceKey]);
             $min = (int)$min;
             $max = (int)$max;
-            $sqlQuery->addHaving("sale_price between $min and $max");
+            $sqlQuery->addHaving("sale_price between $min and $max", "group1");
         }
     }
 
