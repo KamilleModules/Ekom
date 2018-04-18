@@ -3,6 +3,7 @@
 
 namespace Module\Ekom\Utils;
 
+use Core\Services\A;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Util\UriUtil;
@@ -96,6 +97,9 @@ use Module\Ekom\Api\Util\UriUtil;
 class AttributeSelectorHelper
 {
 
+
+
+
     /**
      *
      * Return the current state of the card attributes, depending on the selected product.
@@ -111,6 +115,7 @@ class AttributeSelectorHelper
      *
      * @param $cardProducts , the ensemble of products belonging to the same card
      * @param $productId , the id of the product from which derives the default attributes combination
+     * @see AttributeSelectorHelper::testRig()
      * @return array of attributes model, see doc for more info
      *
      *          - value: the attribute value, formatted for the database
@@ -288,6 +293,7 @@ class AttributeSelectorHelper
                 if (array_key_exists($k, $attributes) && "1" === $attributes[$k]['possible']) {
 
                     $info = $productLayer->getLinkInfoByProductId($_productId);
+
                     /**
                      * Note: about this productUri
                      * Note: this uri might be a little buggy if there are many products as exposed in the intro.
@@ -343,258 +349,260 @@ class AttributeSelectorHelper
     }
 
 
-//--------------------------------------------
-//
-//--------------------------------------------
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
     /**
-     * Here is some code you can use to test the method above
+     * Here is some code you can use to test the adaptProductWithAttributesToAttributesModel
+     * method above
      */
-//    private function testRig()
-//    {
-//        $items = [
-//            //--------------------------------------------
-//            // RED
-//            //--------------------------------------------
-//            [
-//                "product_id" => '100',
-//                "reference" => 'r4',
-//                "slug" => '',
-//                "active" => '1',
-//                "quantity" => '50',
-//                "attributes" => [
-//                    [
-//                        'name' => 'color',
-//                        'attribute_id' => '1',
-//                        'value_id' => '1',
-//                        'attribute_label' => 'the color',
-//                        'value' => 'red',
-//                    ],
-//                    [
-//                        'name' => 'size',
-//                        'attribute_id' => '2',
-//                        'value_id' => '4',
-//                        'attribute_label' => 'the size',
-//                        'value' => '4',
-//                    ],
-//                ],
-//            ],
-//            [
-//                "product_id" => '101',
-//                "reference" => 'r6',
-//                "slug" => '',
-//                "active" => '1',
-//                "quantity" => '50',
-//                "attributes" => [
-//                    [
-//                        'name' => 'color',
-//                        'attribute_id' => '1',
-//                        'value_id' => '1',
-//                        'attribute_label' => 'the color',
-//                        'value' => 'red',
-//                    ],
-//                    [
-//                        'name' => 'size',
-//                        'attribute_id' => '2',
-//                        'value_id' => '6',
-//                        'attribute_label' => 'the size',
-//                        'value' => '6',
-//                    ],
-//                ],
-//            ],
-//            [
-//                "product_id" => '102',
-//                "reference" => 'r8',
-//                "slug" => '',
-//                "active" => '1',
-//                "quantity" => '50',
-//                "attributes" => [
-//                    [
-//                        'name' => 'color',
-//                        'attribute_id' => '1',
-//                        'value_id' => '1',
-//                        'attribute_label' => 'the color',
-//                        'value' => 'red',
-//                    ],
-//                    [
-//                        'name' => 'size',
-//                        'attribute_id' => '2',
-//                        'value_id' => '8',
-//                        'attribute_label' => 'the size',
-//                        'value' => '8',
-//                    ],
-//                ],
-//            ],
-//            //--------------------------------------------
-//            // GREEN
-//            //--------------------------------------------
-//            [
-//                "product_id" => '103',
-//                "reference" => 'g4',
-//                "slug" => '',
-//                "active" => '1',
-//                "quantity" => '0',
-//                "attributes" => [
-//                    [
-//                        'name' => 'color',
-//                        'attribute_id' => '1',
-//                        'value_id' => '2',
-//                        'attribute_label' => 'the color',
-//                        'value' => 'green',
-//                    ],
-//                    [
-//                        'name' => 'size',
-//                        'attribute_id' => '2',
-//                        'value_id' => '4',
-//                        'attribute_label' => 'the size',
-//                        'value' => '4',
-//                    ],
-//                ],
-//            ],
-//            [
-//                "product_id" => '104',
-//                "reference" => 'g6',
-//                "slug" => '',
-//                "active" => '1',
-//                "quantity" => '50',
-//                "attributes" => [
-//                    [
-//                        'name' => 'color',
-//                        'attribute_id' => '1',
-//                        'value_id' => '2',
-//                        'attribute_label' => 'the color',
-//                        'value' => 'green',
-//                    ],
-//                    [
-//                        'name' => 'size',
-//                        'attribute_id' => '2',
-//                        'value_id' => '6',
-//                        'attribute_label' => 'the size',
-//                        'value' => '6',
-//                    ],
-//                ],
-//            ],
-//            [
-//                "product_id" => '105',
-//                "reference" => 'g8',
-//                "slug" => '',
-//                "active" => '1',
-//                "quantity" => '50',
-//                "attributes" => [
-//                    [
-//                        'name' => 'color',
-//                        'attribute_id' => '1',
-//                        'value_id' => '2',
-//                        'attribute_label' => 'the color',
-//                        'value' => 'green',
-//                    ],
-//                    [
-//                        'name' => 'size',
-//                        'attribute_id' => '2',
-//                        'value_id' => '8',
-//                        'attribute_label' => 'the size',
-//                        'value' => '8',
-//                    ],
-//                ],
-//            ],
-//            //--------------------------------------------
-//            // BLUE
-//            //--------------------------------------------
-//            [
-//                "product_id" => '106',
-//                "reference" => 'b4',
-//                "slug" => '',
-//                "active" => '1',
-//                "quantity" => '50',
-//                "attributes" => [
-//                    [
-//                        'name' => 'color',
-//                        'attribute_id' => '1',
-//                        'value_id' => '3',
-//                        'attribute_label' => 'the color',
-//                        'value' => 'blue',
-//                    ],
-//                    [
-//                        'name' => 'size',
-//                        'attribute_id' => '2',
-//                        'value_id' => '4',
-//                        'attribute_label' => 'the size',
-//                        'value' => '4',
-//                    ],
-//                ],
-//            ],
-//            [
-//                "product_id" => '107',
-//                "reference" => 'b6',
-//                "slug" => '',
-//                "active" => '0',
-//                "quantity" => '50',
-//                "attributes" => [
-//                    [
-//                        'name' => 'color',
-//                        'attribute_id' => '1',
-//                        'value_id' => '3',
-//                        'attribute_label' => 'the color',
-//                        'value' => 'blue',
-//                    ],
-//                    [
-//                        'name' => 'size',
-//                        'attribute_id' => '2',
-//                        'value_id' => '6',
-//                        'attribute_label' => 'the size',
-//                        'value' => '6',
-//                    ],
-//                ],
-//            ],
-//            [
-//                "product_id" => '108',
-//                "reference" => 'b8',
-//                "slug" => '',
-//                "active" => '1',
-//                "quantity" => '50',
-//                "attributes" => [
-//                    [
-//                        'name' => 'color',
-//                        'attribute_id' => '1',
-//                        'value_id' => '3',
-//                        'attribute_label' => 'the color',
-//                        'value' => 'blue',
-//                    ],
-//                    [
-//                        'name' => 'size',
-//                        'attribute_id' => '2',
-//                        'value_id' => '8',
-//                        'attribute_label' => 'the size',
-//                        'value' => '8',
-//                    ],
-//                ],
-//            ],
-//            [
-//                "product_id" => '109',
-//                "reference" => 'b10',
-//                "slug" => '',
-//                "active" => '1',
-//                "quantity" => '50',
-//                "attributes" => [
-//                    [
-//                        'name' => 'color',
-//                        'attribute_id' => '1',
-//                        'value_id' => '3',
-//                        'attribute_label' => 'the color',
-//                        'value' => 'blue',
-//                    ],
-//                    [
-//                        'name' => 'size',
-//                        'attribute_id' => '2',
-//                        'value_id' => '10',
-//                        'attribute_label' => 'the size',
-//                        'value' => '10',
-//                    ],
-//                ],
-//            ],
-//        ];
-//
-//
-//        $defaultProductId = 103;
-//        a(AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($items, $defaultProductId));
-//    }
+    private function testRig()
+    {
+        $items = [
+            //--------------------------------------------
+            // RED
+            //--------------------------------------------
+            [
+                "product_id" => '100',
+                "reference" => 'r4',
+                "slug" => '',
+                "active" => '1',
+                "quantity" => '50',
+                "attributes" => [
+                    [
+                        'name' => 'color',
+                        'attribute_id' => '1',
+                        'value_id' => '1',
+                        'attribute_label' => 'the color',
+                        'value' => 'red',
+                    ],
+                    [
+                        'name' => 'size',
+                        'attribute_id' => '2',
+                        'value_id' => '4',
+                        'attribute_label' => 'the size',
+                        'value' => '4',
+                    ],
+                ],
+            ],
+            [
+                "product_id" => '101',
+                "reference" => 'r6',
+                "slug" => '',
+                "active" => '1',
+                "quantity" => '50',
+                "attributes" => [
+                    [
+                        'name' => 'color',
+                        'attribute_id' => '1',
+                        'value_id' => '1',
+                        'attribute_label' => 'the color',
+                        'value' => 'red',
+                    ],
+                    [
+                        'name' => 'size',
+                        'attribute_id' => '2',
+                        'value_id' => '6',
+                        'attribute_label' => 'the size',
+                        'value' => '6',
+                    ],
+                ],
+            ],
+            [
+                "product_id" => '102',
+                "reference" => 'r8',
+                "slug" => '',
+                "active" => '1',
+                "quantity" => '50',
+                "attributes" => [
+                    [
+                        'name' => 'color',
+                        'attribute_id' => '1',
+                        'value_id' => '1',
+                        'attribute_label' => 'the color',
+                        'value' => 'red',
+                    ],
+                    [
+                        'name' => 'size',
+                        'attribute_id' => '2',
+                        'value_id' => '8',
+                        'attribute_label' => 'the size',
+                        'value' => '8',
+                    ],
+                ],
+            ],
+            //--------------------------------------------
+            // GREEN
+            //--------------------------------------------
+            [
+                "product_id" => '103',
+                "reference" => 'g4',
+                "slug" => '',
+                "active" => '1',
+                "quantity" => '0',
+                "attributes" => [
+                    [
+                        'name' => 'color',
+                        'attribute_id' => '1',
+                        'value_id' => '2',
+                        'attribute_label' => 'the color',
+                        'value' => 'green',
+                    ],
+                    [
+                        'name' => 'size',
+                        'attribute_id' => '2',
+                        'value_id' => '4',
+                        'attribute_label' => 'the size',
+                        'value' => '4',
+                    ],
+                ],
+            ],
+            [
+                "product_id" => '104',
+                "reference" => 'g6',
+                "slug" => '',
+                "active" => '1',
+                "quantity" => '50',
+                "attributes" => [
+                    [
+                        'name' => 'color',
+                        'attribute_id' => '1',
+                        'value_id' => '2',
+                        'attribute_label' => 'the color',
+                        'value' => 'green',
+                    ],
+                    [
+                        'name' => 'size',
+                        'attribute_id' => '2',
+                        'value_id' => '6',
+                        'attribute_label' => 'the size',
+                        'value' => '6',
+                    ],
+                ],
+            ],
+            [
+                "product_id" => '105',
+                "reference" => 'g8',
+                "slug" => '',
+                "active" => '1',
+                "quantity" => '50',
+                "attributes" => [
+                    [
+                        'name' => 'color',
+                        'attribute_id' => '1',
+                        'value_id' => '2',
+                        'attribute_label' => 'the color',
+                        'value' => 'green',
+                    ],
+                    [
+                        'name' => 'size',
+                        'attribute_id' => '2',
+                        'value_id' => '8',
+                        'attribute_label' => 'the size',
+                        'value' => '8',
+                    ],
+                ],
+            ],
+            //--------------------------------------------
+            // BLUE
+            //--------------------------------------------
+            [
+                "product_id" => '106',
+                "reference" => 'b4',
+                "slug" => '',
+                "active" => '1',
+                "quantity" => '50',
+                "attributes" => [
+                    [
+                        'name' => 'color',
+                        'attribute_id' => '1',
+                        'value_id' => '3',
+                        'attribute_label' => 'the color',
+                        'value' => 'blue',
+                    ],
+                    [
+                        'name' => 'size',
+                        'attribute_id' => '2',
+                        'value_id' => '4',
+                        'attribute_label' => 'the size',
+                        'value' => '4',
+                    ],
+                ],
+            ],
+            [
+                "product_id" => '107',
+                "reference" => 'b6',
+                "slug" => '',
+                "active" => '0',
+                "quantity" => '50',
+                "attributes" => [
+                    [
+                        'name' => 'color',
+                        'attribute_id' => '1',
+                        'value_id' => '3',
+                        'attribute_label' => 'the color',
+                        'value' => 'blue',
+                    ],
+                    [
+                        'name' => 'size',
+                        'attribute_id' => '2',
+                        'value_id' => '6',
+                        'attribute_label' => 'the size',
+                        'value' => '6',
+                    ],
+                ],
+            ],
+            [
+                "product_id" => '108',
+                "reference" => 'b8',
+                "slug" => '',
+                "active" => '1',
+                "quantity" => '50',
+                "attributes" => [
+                    [
+                        'name' => 'color',
+                        'attribute_id' => '1',
+                        'value_id' => '3',
+                        'attribute_label' => 'the color',
+                        'value' => 'blue',
+                    ],
+                    [
+                        'name' => 'size',
+                        'attribute_id' => '2',
+                        'value_id' => '8',
+                        'attribute_label' => 'the size',
+                        'value' => '8',
+                    ],
+                ],
+            ],
+            [
+                "product_id" => '109',
+                "reference" => 'b10',
+                "slug" => '',
+                "active" => '1',
+                "quantity" => '50',
+                "attributes" => [
+                    [
+                        'name' => 'color',
+                        'attribute_id' => '1',
+                        'value_id' => '3',
+                        'attribute_label' => 'the color',
+                        'value' => 'blue',
+                    ],
+                    [
+                        'name' => 'size',
+                        'attribute_id' => '2',
+                        'value_id' => '10',
+                        'attribute_label' => 'the size',
+                        'value' => '10',
+                    ],
+                ],
+            ],
+        ];
+
+
+        $defaultProductId = 103;
+        a(AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($items, $defaultProductId));
+    }
 }

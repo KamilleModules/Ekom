@@ -12,17 +12,34 @@ class ProductGroupLayer
 {
 
 
+//    public static function getRelatedCardIdsByGroupName(string $groupName)
+//    {
+//
+//
+//        return QuickPdo::fetchAll("
+//select
+//p.product_card_id
+//from ek_product_group g
+//inner join ek_product_group_has_product h on h.product_group_id=g.id
+//inner join ek_product p on p.id=h.product_id
+//
+//where g.name=:name
+//
+//order by h.order asc
+//        ", [
+//            "name" => $groupName,
+//        ], \PDO::FETCH_COLUMN);
+//    }
+
+
     public static function getRelatedCardIdByGroupName(string $groupName)
     {
-        return QuickPdo::fetchAll("
-select 
-p.product_card_id
-from ek_product_group g 
-inner join ek_product_group_has_product h on h.product_group_id=g.id
-inner join ek_product p on p.id=h.product_id
-order by h.order asc
-        ", [], \PDO::FETCH_COLUMN);
+        if (0 === strpos($groupName, ":related-")) {
+            return substr($groupName, 9);
+        }
+        throw new \Exception("This is not a correct related group syntax (:related-)");
     }
+
 
     public static function getNameById(int $id)
     {

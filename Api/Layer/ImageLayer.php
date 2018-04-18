@@ -97,6 +97,20 @@ class ImageLayer
     }
 
 
+    public static function convertUriType(string $uri, string $type)
+    {
+        $baseName = basename($uri);
+        $p = explode('-', $baseName);
+        $imageId = $p[0];
+        $dir = dirname($uri);
+        $extension = FileSystemTool::getFileExtension($baseName);
+        if ('original' === $type) {
+            return $dir . "/$imageId.$extension";
+        }
+        return $dir . "/$imageId-$type.$extension";
+    }
+
+
     public static function createRealImageCardCollection(string $imgPath, int $imageId)
     {
         $ret = [];

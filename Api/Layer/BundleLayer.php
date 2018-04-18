@@ -81,15 +81,8 @@ and b.active=1
         
         ");
 
-                $requiredProps = [
-                    "label",
-                    "ref",
-                    "priceSale",
-                    "priceBase",
-                    "discountHasDiscount",
-                    "uriCard",
-                ];
 
+                $hasTax = false;
                 foreach ($rows as $row) {
 
 
@@ -107,10 +100,24 @@ and b.active=1
                     }
                     $model = ProductBoxLayer::getProductBoxByProductId($id);
 
-                    $img = $model['images'][$model['defaultImage']]['small'];
+
+                    $img = $model['image'];
                     $qty = $row['quantity'];
 
-                    $bundleModel = ArrayTool::superimpose($model, array_flip($requiredProps));
+//                    $bundleModel = ArrayTool::superimpose($model, array_flip($requiredProps));
+                    $bundleModel = [];
+
+
+                    $bundleModel['label'] = $model['label'];
+                    $bundleModel['reference'] = $model['reference'];
+                    $bundleModel['sale_price'] = E::price($model['sale_price']);
+                    $bundleModel['base_price'] = E::price($model['base_price']);
+                    $bundleModel['has_discount'] = $model['has_discount'];
+                    $bundleModel['has_tax'] = $model['has_tax'];
+                    $bundleModel['product_uri'] = $model['product_uri'];
+
+
+
                     $bundleModel['quantity'] = $qty;
                     $bundleModel['image'] = $img;
 
@@ -123,10 +130,14 @@ and b.active=1
                      * only for dynamic changes (when the user unchecks a by default selected checkbox)
                      */
                     $bundleModel['is_visible'] = $isVisible;
+                    if (true === $bundleModel['has_tax']) {
+                        $hasTax = true;
+                    }
+
 
                     $ret[$bid]['items'][] = $bundleModel;
                     if (true === $isVisible) {
-                        $totalsWithTax[$bid][] = $model['priceSaleRaw'] * $qty;
+                        $totalsWithTax[$bid][] = $model['sale_price'] * $qty;
                     }
                 }
 
@@ -140,20 +151,19 @@ and b.active=1
                     if (array_key_exists($bid, $totalsWithTax)) {
                         $totalWithTax = array_sum($totalsWithTax[$bid]);
                     }
-                    $ret[$bid]['totalSalePriceWithTax'] = E::price($totalWithTax);
+                    $ret[$bid]['total'] = E::price($totalWithTax);
+                    $ret[$bid]['has_tax'] = $hasTax;
                 }
-
             }
+
 
             return $ret;
         });
 
     }
 
-    public function getBundleIdsByProductId($productId)
+    public function getBundleIdsByProductId(int $productId)
     {
-
-        $productId = (int)$productId;
 
 
         return A::cache()->get("Ekom.BundleLayer.getBundleIdsByProductId.$productId", function () use ($productId) {

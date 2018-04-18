@@ -268,10 +268,17 @@ group by v.value
 a.name as attribute_name,            
 v.id as attribute_value_id            
             ");
+
+            /**
+             * Note: we use left join instead of inner joins, because
+             * then we can combine the results with other filters like discount filter for instance.
+             * (i.e. the user wants to select products having discount=10 OR attribute.weight=2kg,
+             * but what if a product has discount 10 but doesn't have any attributes?)
+             */
             $sqlQuery->addJoin("
-inner join ek_product_has_product_attribute phpa on phpa.product_id=p.id
-inner join ek_product_attribute a on a.id=phpa.product_attribute_id
-inner join ek_product_attribute_value v on v.id=phpa.product_attribute_value_id                            
+left join ek_product_has_product_attribute phpa on phpa.product_id=p.id
+left join ek_product_attribute a on a.id=phpa.product_attribute_id
+left join ek_product_attribute_value v on v.id=phpa.product_attribute_value_id                            
 ");
 //            $where = "and (" . implode(" or ", $whereBits) . ")";
             $where = "(" . implode(" or ", $whereBits) . ")";

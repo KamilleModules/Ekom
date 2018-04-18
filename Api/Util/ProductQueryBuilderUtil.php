@@ -38,11 +38,11 @@ class ProductQueryBuilderUtil
      *
      * - miniBox, each row containing:
      *      - product_id,
-     *      - card_id,
+     *      - product_card_id,
      *      - reference,
      *      - label: the card label
      *      - product_slug,
-     *      - card_slug,
+     *      - product_card_slug,
      *      - image_id,
      *      - image_legend, the title attribute for the image
      *      - tax_ratio: number, 1 means no tax applied
@@ -176,7 +176,7 @@ where phd.product_id=p.id and
 
         $field = "
 p.id as product_id,
-c.id as card_id,
+c.id as product_card_id,
 p.reference,
 if(
     '' != p.label,
@@ -184,7 +184,7 @@ if(
     c.label
 ) as label,
 p.slug as product_slug,
-c.slug as card_slug,
+c.slug as product_card_slug,
 
 coalesce (
     (select id from ek_product_card_image where product_card_id=c.id and product_id=p.id order by is_default desc limit 0,1),
@@ -279,6 +279,7 @@ s.name as seller_name,
 s.label as seller_label,
 m.id as manufacturer_id,
 m.name as manufacturer_name,
+pct.name as product_card_type_name,
 if(
     '' != p.description,
     p.description,
@@ -309,6 +310,7 @@ p.active
         ");
         $sqlQuery->addJoin("
 inner join ek_seller s on s.id=p.seller_id
+inner join ek_product_card_type pct on pct.id=c.product_card_type_id
 left join ek_manufacturer m on m.id=p.manufacturer_id
 ");
         return $sqlQuery;

@@ -225,15 +225,12 @@ where p.id=$productId
 
             $row = QuickPdo::fetch("
 select 
-h.slug as slug,
-cl.slug as slug_default,
+c.slug,
 p.reference
 
 
 from ek_product p 
-inner join ek_shop_has_product_card_lang h on h.product_card_id=p.product_card_id 
-inner join ek_product_card_lang cl on cl.product_card_id=h.product_card_id and cl.lang_id=h.lang_id
-
+inner join ek_product_card c on c.id=p.product_card_id
 
 where p.id=$productId
         

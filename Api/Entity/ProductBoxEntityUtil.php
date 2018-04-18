@@ -76,7 +76,10 @@ where id=$cardId
 
         return A::cache()->get("Ekom.ProductBoxEntityUtil.getProductCardProductsWithAttributes.$cardId", function () use ($cardId) {
 
-            $productsInfo = self::getProductCardProducts($cardId);
+
+            $productsInfo = QuickPdo::fetchAll("
+select id as product_id, quantity, active from ek_product where product_card_id=$cardId        
+        ");
 
             $productIds = [];
             foreach ($productsInfo as $row) {
@@ -94,15 +97,18 @@ a.label as attribute_label,
 a.name,
 v.value,
 v.id as value_id,
-v.value as value_label
+v.label as value_label
 
 from ek_product_has_product_attribute h
+inner join ek_product p on p.id=h.product_id
 inner join ek_product_attribute a on a.id=h.product_attribute_id 
-inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id  
+inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id
+inner join ek_product_card_has_product_attribute hh on hh.product_card_id=p.product_card_id 
+  
 
 where product_id in (" . implode(', ', $productIds) . ")
          
-order by h.order asc         
+order by hh.order asc         
          
 ");
 

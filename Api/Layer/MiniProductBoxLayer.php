@@ -50,35 +50,7 @@ use QuickPdo\QuickPdo;
  *
  * We will provide the following miniBoxModel for templates:
  *
- * miniBoxModel
- * -------------
- *      - product_id,
- *      - card_id,
- *      - reference,
- *      - label: the card label
- *      - product_slug,
- *      - card_slug,
- *      - image_id,
- *      - image_legend, the legend for the image (can be empty)
- *      - tax_ratio: number, 1 means no tax applied
- *      - original_price: the original price
- *      - price: the real price (original price with ek_product_variation applied to it)
- *      - base_price: the price, with taxes applied to it
- *      - sale_price: the base price, with discounts applied to it
- *      - discount_label: null means no discount applied
- *      - discount_type: f|p|null
- *      - discount_value: number
- *      - codes: string containing codes. n means novelty
- *
- *      (above comes straight from the query, below is sugar for templates)
- *
- *      - has_tax: bool
- *      - is_novelty: bool, whether or not the product card has been marked as novelty
- *      - product_link: link to the product page
- *      - image: uri of the image (size medium)
- *      - image_alt: alt attribute of the image
- *      - image_title: title attribute of the image (like legend, but defaults to the label if empty)
- *      - has_discount: bool
+ * @see EkomModels::miniBoxModel()
  *
  *
  */
@@ -89,24 +61,36 @@ class MiniProductBoxLayer
     public static function getBoxesByProductGroupName(string $productGroupName)
     {
 
-        $cardIds = ProductGroupLayer::getRelatedCardIdByGroupName($productGroupName);
-        if ($cardIds) {
-
-            $sCardIds = implode(', ', $cardIds);
 
             $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
 
             // specific to groups
             $sqlQuery->addWhere("
-and c.id in ($sCardIds)        
+and g.name = :group_name        
         ");
+            $sqlQuery->addJoin("
+inner join ek_product_group_has_product phg on phg.product_id=p.id
+inner join ek_product_group g on g.id=phg.product_group_id
+            ");
+            $sqlQuery->addMarker("group_name", $productGroupName);
+            $sqlQuery->addOrderBy("phg.order", "asc");
+
 
 
             $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
             self::sugarifyRows($rows);
             return $rows;
-        }
-        return [];
+    }
+
+
+    /**
+     * ek_product_group
+     * @param $cardId , int
+     * @return array
+     */
+    public static function getRelatedProductBoxListByCardId(int $cardId)
+    {
+        return self::getBoxesByProductGroupName(":related-$cardId");
     }
 
 
@@ -136,8 +120,8 @@ and c.id in ($sCardIds)
     {
         $row['has_tax'] = ('1.00' === $row['tax_ratio']);
         $row['is_novelty'] = (false !== strpos($row['codes'], 'n'));
-        $row['product_link'] = A::link("Ekom_productCardRef", [
-            "slug" => $row['card_slug'],
+        $row['product_uri'] = A::link("Ekom_productCardRef", [
+            "slug" => $row['product_card_slug'],
             "ref" => $row['reference'],
         ]);
         $row['image'] = ImageLayer::getCardProductImageUriByImageId($row['image_id']);

@@ -14,7 +14,7 @@ class CommentLayer
 {
 
 
-    public function getRatingInfo($cardId)
+    public static function getRatingInfo($cardId)
     {
 
         $cardId = (int)$cardId;

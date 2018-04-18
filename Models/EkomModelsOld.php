@@ -7,7 +7,7 @@ namespace Module\Ekom\Models;
 /**
  * This class is not used by the code, except as a documentation reference.
  */
-class EkomModels
+class EkomModelsOld
 {
 
 
@@ -414,30 +414,6 @@ class EkomModels
     }
 
 
-    /**
-     *
-     * miniBoxModel
-     * -------------
-     * @see MiniProductBoxLayer
-     *
-     *
-     *      - ... all properties from the base query @see ProductQueryBuilderUtil::getBaseQuery()
-     *
-     *
-     *      - has_tax: bool
-     *      - is_novelty: bool, whether or not the product card has been marked as novelty
-     *      - product_uri: link to the product page
-     *      - image: uri of the image (size medium)
-     *      - image_alt: alt attribute of the image
-     *      - image_title: title attribute of the image (like legend, but defaults to the label if empty)
-     *      - has_discount: bool
-     *
-     */
-    private function miniBoxModel()
-    {
-
-    }
-
 
     /**
      * orderDataModel
@@ -531,9 +507,6 @@ class EkomModels
      *
      * productBoxModel (work in progress)
      * ====================
-     *
-     *
-     *
      *
      * - attributes: array of attrName => attrItem:
      * ----- attrName:

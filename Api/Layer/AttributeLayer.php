@@ -14,6 +14,33 @@ use QuickPdo\QuickPdo;
 class AttributeLayer
 {
 
+    public static function getAttributesInfoByCardId(int $cardId)
+    {
+
+        $rows = QuickPdo::fetchAll("
+select 
+h.product_id,
+p.quantity,
+p.active,
+a.id as attribute_id,
+a.name as attribute_name,
+a.label as attribute_label,
+v.id as value_id,
+v.value as value_name,
+v.value as value_label
+
+from ek_product_has_product_attribute h
+inner join ek_product p on p.id=h.product_id
+inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id
+inner join ek_product_attribute a on a.id=h.product_attribute_id 
+ 
+where p.product_card_id=$cardId
+                
+");
+        return $rows;
+
+    }
+
     public static function getItemsList(array $options = [])
     {
         $alphaSort = $options['alphaSort'] ?? false;
@@ -38,7 +65,7 @@ where product_attribute_id=$attributeId
 
     public static function getAttributeNames()
     {
-        return A::cache()->get("getAttributeNames", function ()  {
+        return A::cache()->get("getAttributeNames", function () {
             return QuickPdo::fetchAll("
 select distinct a.name 
 from ek_product_attribute a

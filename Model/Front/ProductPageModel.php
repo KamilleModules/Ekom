@@ -47,6 +47,7 @@ class ProductPageModel
             // PREPARING TAIL
             //--------------------------------------------
             $tail = self::getProductPageTailModel($head);
+//            $tail = [];
 //            Hooks::call("Ekom_decorateProductBoxClaws", $productPageModel); // todo: ?
 
         } else {
@@ -87,7 +88,7 @@ class ProductPageModel
     private static function getProductPageTailModel(array $head)
     {
         $tail = [];
-        $cardId = $head['card_id'];
+        $cardId = $head['product_card_id'];
         $productId = $head['product_id'];
 
 
@@ -102,7 +103,7 @@ class ProductPageModel
         $featuresModel = [
             "technical_description" => $technicalDescription,
             "features" => $features,
-            'seller' => $head['seller'],
+            'seller' => $head['seller_name'],
         ];
 
 
@@ -157,7 +158,7 @@ class ProductPageModel
             'comments' => $commentsModel,
             'featureBar' => [
                 'nbComments' => $nbComments,
-                'seller' => $head['seller'],
+                'seller' => $head['seller_name'],
                 // ekom composable features, change them if you want to disable some default widgets
                 '_features' => true,
             ],

@@ -142,7 +142,7 @@ class ProductBoxEntity
         //--------------------------------------------
         return A::cache()->get($cacheId, function () use ($productBoxContext) {
 
-
+return [];
             $model = [];
             try {
 

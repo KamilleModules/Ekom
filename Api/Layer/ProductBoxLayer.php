@@ -10,9 +10,11 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Entity\ProductBoxEntity;
 use Module\Ekom\Api\Entity\ProductBoxEntityUtil;
 use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
+use Module\Ekom\Utils\AttributeSelectorHelper;
 use Module\Ekom\Utils\E;
 use Module\EkomUserProductHistory\UserProductHistory\UserProductHistoryInterface;
 use QuickPdo\QuickPdo;
+use SqlQuery\SqlQueryInterface;
 
 
 /**
@@ -42,6 +44,28 @@ class ProductBoxLayer
 
 
     //--------------------------------------------
+    //
+    //--------------------------------------------
+    /**
+     * @param $productId
+     *
+     * @param array $productDetails ,
+     *          an array of name => value
+     *
+     * @param array|null $userContext
+     */
+    public static function getProductBoxByProductId(int $productId, array $productDetails = [], array $userContext = null)
+    {
+
+        $sqlQuery = ProductQueryBuilderUtil::getMaxiQuery($userContext);
+        $sqlQuery->addWhere("and p.id=$productId");
+        return self::getProductBoxBySqlQuery($sqlQuery, $productDetails, $userContext);
+
+    }
+
+
+
+    //--------------------------------------------
     // PRODUCT BOX
     //--------------------------------------------
     public static function getProductBoxByCardId($cardId, $productId = null, array $productDetailsArgs = [], array $gpc = null)
@@ -57,26 +81,6 @@ class ProductBoxLayer
         return $e->getModel();
     }
 
-    /**
-     * @param $productId
-     *
-     * @param array $productDetails ,
-     *          an array of name => value
-     *
-     * @param array|null $userContext
-     */
-    public static function getProductBoxByProductId(int $productId, array $productDetails = [], array $userContext = null)
-    {
-
-        $sqlQuery = ProductQueryBuilderUtil::getMaxiQuery($userContext);
-        $sqlQuery->addWhere("and p.id=$productId");
-        $q = $sqlQuery->getSqlQuery();
-        $markers = $sqlQuery->getMarkers();
-        $row = QuickPdo::fetch($q, $markers);
-        a($row);
-        az($productId);
-
-    }
 
 
     //--------------------------------------------
@@ -160,20 +164,6 @@ class ProductBoxLayer
         });
     }
 
-    /**
-     * ek_product_group
-     * @param $cardId , int
-     * @return array
-     */
-    public static function getRelatedProductBoxListByCardId($cardId, array $gpc = null)
-    {
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
-        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getRelatedProductBoxListByCardId.$cardId");
-        return A::cache()->get($hashString, function () use ($cardId, $gpc) {
-            $ids = RelatedProductLayer::getRelatedProductIds($cardId);
-            return self::getProductBoxListByProductIds($ids, $gpc);
-        });
-    }
 
 
 //    public static function getLastVisitedProductBoxList($userId, array $gpc = null)
@@ -215,6 +205,45 @@ class ProductBoxLayer
 //            return $boxes;
 //        });
 //    }
+
+
+    private static function getProductBoxBySqlQuery(SqlQueryInterface $sqlQuery, array $productDetails = [], array $userContext = null)
+    {
+        $q = $sqlQuery->getSqlQuery();
+        $markers = $sqlQuery->getMarkers();
+        $row = QuickPdo::fetch($q, $markers);
+
+        MiniProductBoxLayer::sugarify($row);
+        $row['product_details'] = []; // the product details map
+
+
+
+        //--------------------------------------------
+        // IMAGES
+        //--------------------------------------------
+        $imagesInfo = ProductCardImageLayer::getProductBoxImagesInfoByProductCardId($row['product_card_id'], $row['product_id']);
+        $row['images'] = $imagesInfo;
+
+
+        //--------------------------------------------
+        // COMMENTS
+        //--------------------------------------------
+        $ratingInfo = CommentLayer::getRatingInfo($row['product_card_id']);
+        $row['rating_average'] = $ratingInfo['average'];
+        $row['rating_nbVotes'] = $ratingInfo['count'];
+
+
+        //--------------------------------------------
+        // ATTRIBUTES
+        //--------------------------------------------
+        $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($row['product_card_id']);
+        $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $row['product_id']);
+        $row['attributes'] = $attr;
+
+
+
+        return $row;
+    }
 
 
 }
