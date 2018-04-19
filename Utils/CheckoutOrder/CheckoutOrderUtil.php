@@ -292,7 +292,7 @@ class CheckoutOrderUtil
                 "date" => date('Y-m-d H:i:s'),
                 "amount" => $cartModel['priceOrderGrandTotalRaw'],
                 "coupon_saving" => $cartModel['couponSavingRaw'],
-                "cart_quantity" => $cartModel['cartTotalQuantity'],
+                "cart_quantity" => $cartModel['cart_total_quantity'],
                 "tracking_number" => $trackingNumber,
                 "user_info" => $userInfo,
                 "shop_info" => $shopInfo,

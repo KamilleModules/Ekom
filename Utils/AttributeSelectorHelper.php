@@ -7,6 +7,7 @@ use Core\Services\A;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Util\UriUtil;
+use QuickPdo\QuickPdo;
 
 
 /**
@@ -348,6 +349,30 @@ class AttributeSelectorHelper
         return $ret;
     }
 
+
+    public static function getSelectedAttributesByProductId(int $productId){
+        return QuickPdo::fetchAll("
+select 
+a.name as attribute_name,
+a.label as attribute_label,
+v.value as value_name,
+v.label as value_label
+
+from ek_product_attribute a 
+inner join ek_product_has_product_attribute h on h.product_attribute_id=a.id
+inner join ek_product_attribute_value v on v.id=h.product_attribute_value_id
+inner join ek_product_card_has_product_attribute hh on hh.product_attribute_id=a.id
+
+where h.product_id=$productId
+
+group by a.name
+
+order by hh.order asc
+
+
+        
+        ");
+    }
 
 
     //--------------------------------------------

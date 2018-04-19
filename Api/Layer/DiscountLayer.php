@@ -45,6 +45,7 @@ class DiscountLayer
 {
 
 
+
     public static function getDiscountTypes()
     {
         return [

@@ -17,6 +17,7 @@ use Module\Ekom\Api\Entity\ProductBoxEntityUtil;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Api\Util\HashUtil;
+use Module\Ekom\Carrier\CarrierInterface;
 use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Utils\CartLocalStore;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
@@ -29,6 +30,7 @@ use QuickPdo\QuickPdo;
  *
  * sessionCartItem
  * ====================
+ *
  * A typical item looks like this:
  *
  * - token: string, the token computed by this class from the product_id and the major details if any.
@@ -90,70 +92,48 @@ class CartLayer
         $this->initSessionCart();
 
         /**
-         * The product details array (not productDetailsArgs)
+         * The selected product details array
          */
-        $details = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
+        $selectedProductDetails = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
         $bundle = array_key_exists('bundle', $extraArgs) ? $extraArgs['bundle'] : null;
 
-        $isValidDetails = (array_key_exists('major', $details) && array_key_exists('minor', $details));
+
+        $token = CartUtil::generateTokenByProductIdMajorProductDetails($productId, $selectedProductDetails);
 
 
-        if ($isValidDetails) {
-            $majorDetailsParams = $details['major'];
-        } else {
-            $majorDetailsParams = [];
-        }
-
-
-        $token = CartUtil::generateTokenByProductIdMajorProductDetails($productId, $majorDetailsParams);
         $alreadyExists = false;
         $remainingStockQty = null;
         //--------------------------------------------
-        // UPDATE MODE
+        // UPDATE MODE, adding to the existing quantity
         //--------------------------------------------
+        // note to myself: I'm not sure why we don't use token as the key, maybe it's about items order?
         foreach ($_SESSION['ekom'][$this->sessionName]['items'] as $k => $item) {
-            if ($item['token'] === $token) {
 
-                $isConfigurable = $this->isConfigurableProduct($productId, $details);
-                if (false === $isConfigurable) {
+            if ($token === $item['token']) {
 
-                    $existingQuantity = $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'];
-                    self::checkQuantityOverflow($productId, $existingQuantity, $quantity, $details);
-
-                    $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'] += $quantity;
-                    if ($isValidDetails) {
-                        $_SESSION['ekom'][$this->sessionName]['items'][$k]['details'] = $details;
-                    }
-                    $alreadyExists = true;
-                    break;
-                } else {
-                    self::checkQuantityOverflow($productId, 0, $quantity, $details);
-                    $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'] = $quantity;
-                    $_SESSION['ekom'][$this->sessionName]['items'][$k]['details'] = $details;
-                    $alreadyExists = true;
-                    break;
-                }
+                $alreadyExists = true;
+                $existingQuantity = $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'];
+                self::checkQuantityOverflow($productId, $existingQuantity, $quantity, $selectedProductDetails);
+                $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'] += $quantity;
+                break;
             }
         }
 
 
         //--------------------------------------------
-        // INSERT MODE
+        // INSERT MODE, adding a new quantity
         //--------------------------------------------
         if (false === $alreadyExists) {
 
-            self::checkQuantityOverflow($productId, 0, $quantity, $details);
-
+            self::checkQuantityOverflow($productId, 0, $quantity, $selectedProductDetails);
+            $cartItemBox = CartItemBoxLayer::getBox($productId, $selectedProductDetails);
+//            az(__FILE__, $cartItemBox);
             $arr = [
-                "quantity" => $quantity,
                 "token" => $token,
-                "product_id" => $productId,
+                "quantity" => $quantity,
+                "box" => $cartItemBox,
             ];
 
-
-            if ($isValidDetails) {
-                $arr['details'] = $details;
-            }
 
             if (null !== $bundle) {
                 $arr['bundle'] = (int)$bundle;
@@ -164,7 +144,7 @@ class CartLayer
             $_SESSION['ekom'][$this->sessionName]['items'][] = $arr;
         }
 
-        // modules might have change the session even if this method didn't add the item.
+
         $this->writeToLocalStore();
     }
 
@@ -386,27 +366,8 @@ class CartLayer
     //--------------------------------------------
     protected function writeToLocalStore($operationName = null)
     {
-        $userId = null;
-        $cart = [];
-
-
-        if (true === SessionUser::isConnected()) {
-            if (null !== ($userId = SessionUser::getValue('id'))) {
-
-                $cart = $_SESSION['ekom'][$this->sessionName];
-                $this->getCartLocalStore()->saveUserCart($userId, $cart);
-
-            } else {
-                XLog::error("[$this->moduleName] - $this->className: this user doesn't have an id: " . ArrayToStringTool::toPhpArray($_SESSION));
-            }
-        } else {
-            $cart = $_SESSION['ekom'][$this->sessionName];
-        }
-
-
+        $cart = $_SESSION['ekom'][$this->sessionName];
         Hooks::call("Ekom_onCartUpdate", $userId, $cart, $operationName);
-
-
         /**
          * A change in the cart should invalidate the cache
          */
@@ -453,23 +414,24 @@ class CartLayer
 
     /**
      * @param array $items
-     * @param array $couponBag
+     * @param array $coupons
      * @return array:cartModel
      * @see EkomModels::cartModel()
      *
      */
-    private static function doGetCartModel(array $items, array $couponBag = [])
+    private static function doGetCartModel(array $items, array $coupons = [])
     {
 
         $model = [];
         $modelItems = [];
 
 
-        $totalQty = 0;
-        $totalWeight = 0;
-        $cartTotal = 0;
-        $cartTotalWithoutTax = 0;
+        $cartTotalWeight = 0;
+        $cart_total_quantity = 0;
+        $cartTotalTaxIncluded = 0;
+        $cartDiscountAmount = 0;
         $cartTaxAmount = 0;
+        $cartTaxDistribution = [];
 
 
         //--------------------------------------------
@@ -479,58 +441,48 @@ class CartLayer
 
             $cartQuantity = $item['quantity'];
             $cartToken = $item['token'];
-            $details = (array_key_exists('details', $item)) ? $item['details'] : [];
-            $productDetails = ProductBoxEntityUtil::getMergedProductDetails($details);
-            $productId = self::getProductIdByCartToken($cartToken);
+            $boxModel = $item['box'];
 
 
-            $boxModel = ProductBoxLayer::getProductBoxByProductId($productId, $productDetails);
-            if (false === array_key_exists('errorCode', $boxModel)) {
+            //--------------------------------------------
+            // updating total weight and quantities
+            //--------------------------------------------
+            $weight = $boxModel['weight'];
+            $cart_total_quantity += $cartQuantity;
+            $cartTotalWeight += $weight * $cartQuantity;
 
 
-                //--------------------------------------------
-                // updating total weight and quantities
-                //--------------------------------------------
-                $weight = $boxModel['weight'];
-                $totalQty += $cartQuantity;
-                $totalWeight += $weight * $cartQuantity;
+            $lineRealPrice = E::trimPrice($cartQuantity * $boxModel['real_price']);
+            $lineBasePrice = E::trimPrice($cartQuantity * $boxModel['base_price']);
+            $lineSalePrice = E::trimPrice($cartQuantity * $boxModel['sale_price']);
 
 
-                //--------------------------------------------
-                // extending the box model to
-                //--------------------------------------------
-                $uriDetails = UriTool::uri($boxModel['product_uri'], $productDetails, true);
-                az(__FILE__, CartItemBoxLayer::getBox($productId));
-
-                $linePrice = E::trimPrice($cartQuantity * $boxModel['sale_price']);
-                $cartTotal += $linePrice;
-
-                $linePriceWithoutTax = E::trimPrice($cartQuantity * $boxModel['base_price']);
-                $cartTotalWithoutTax += $linePriceWithoutTax;
+            $unitTaxAmount = $boxModel['sale_price'] - $boxModel['base_price'];
+            $lineTaxAmount = E::trimPrice($cartQuantity * $unitTaxAmount);
+            $cartTaxAmount += $lineTaxAmount;
 
 
-                $unitTaxAmount = $boxModel['base_price'] - $boxModel['price'];
+            $cartTotalTaxIncluded += $cartQuantity * $boxModel['sale_price'];
 
 
-                $lineTaxAmount = E::trimPrice($cartQuantity * $unitTaxAmount);
-                $cartTaxAmount += $lineTaxAmount;
-
-
-                $boxModel['cart_token'] = $cartToken;
-                $boxModel['cart_quantity'] = $cartQuantity;
-                $boxModel['line_price'] = $linePrice;
-                $boxModel['formatted_line_price'] = E::price($linePrice);
-                $boxModel['priceLineWithoutTaxRaw'] = $linePriceWithoutTax;
-                $boxModel['priceLineWithoutTax'] = E::price($linePriceWithoutTax);
-                $boxModel['taxAmount'] = $lineTaxAmount;
-
-
-                ksort($boxModel);
-                $modelItems[] = $boxModel;
-            } else {
-                $className = self::getClassShortName();
-                XLog::error("[Ekom module] - $className.doGetCartModel: errorCode: " . $boxModel['errorCode'] . ", msg: " . $boxModel['errorMessage']);
+            if (true === $boxModel['has_discount']) {
+                $discountAmount = E::trimPrice($boxModel['base_price'] - $boxModel['real_price']);
+                $cartDiscountAmount += $discountAmount;
             }
+
+            TaxLayer::decorateTaxDistribution($cartTaxDistribution, $boxModel['base_price'], $boxModel['tax_details']);
+
+
+            $boxModel['cart_quantity'] = $cartQuantity;
+            $boxModel['cart_token'] = $cartToken;
+            $boxModel['line_real_price'] = $lineRealPrice;
+            $boxModel['line_real_price_formatted'] = E::price($lineRealPrice);
+            $boxModel['line_base_price'] = $lineBasePrice;
+            $boxModel['line_base_price_formatted'] = E::price($lineBasePrice);
+            $boxModel['line_sale_price'] = $lineSalePrice;
+            $boxModel['line_sale_price_formatted'] = E::price($lineSalePrice);
+
+            $modelItems[] = $boxModel;
 
         }
 
@@ -539,14 +491,19 @@ class CartLayer
         //--------------------------------------------
         // CART
         //--------------------------------------------
-        $totalWeight = round($totalWeight, 2);
+        $cartTotalWeight = round($cartTotalWeight, 2);
         $model['items'] = $modelItems;
-        $model['cartTotalQuantity'] = $totalQty;
-        $model['cartTotalWeight'] = $totalWeight;
-        $model['cartTaxAmountRaw'] = $cartTaxAmount;
-        $model['priceCartTotalRaw'] = $cartTotal;
-        $model['priceCartTotalWithoutTaxRaw'] = $cartTotal - $cartTaxAmount;
-
+        $model['cart_total_weight'] = $cartTotalWeight;
+        $model['cart_total_quantity'] = $cart_total_quantity;
+        $model['cart_total_tax_excluded'] = $cartTotalTaxIncluded - $cartTaxAmount;
+        $model['cart_total_tax_excluded_formatted'] = E::price($model['cart_total_tax_excluded']);
+        $model['cart_total_tax_included'] = $cartTotalTaxIncluded;
+        $model['cart_total_tax_included_formatted'] = E::price($cartTotalTaxIncluded);
+        $model['cart_discount_amount'] = $cartDiscountAmount;
+        $model['cart_discount_amount_formatted'] = E::price($cartDiscountAmount);
+        $model['cart_tax_amount'] = $cartTaxAmount;
+        $model['cart_tax_amount_formatted'] = E::price($cartTaxAmount);
+        $model['cart_tax_distribution'] = $cartTaxDistribution;
 
         //--------------------------------------------
         // ORDER
@@ -556,133 +513,139 @@ class CartLayer
         // SHIPPING
         //--------------------------------------------
 
-        /**
-         * @see https://github.com/KamilleModules/Ekom/tree/master/doc/cart/cart-shipping-cost-algorithm.md
-         */
+        $carrierId = null;
+        $carrierLabel = "";
+        $carrierEstimatedDeliveryDate = "";
+        $carrierHasError = false;
+        $carrierErrorCode = null;
+
+        $shippingCostTaxExcluded = 0;
+        $shippingCostTaxIncluded = 0;
+        $shippingCostDiscountAmount = 0;
+        $shippingCostTaxAmount = 0;
+        $shippingCostTaxLabel = "";
+
+
         $shippingInfo = false;
         $shopAddress = null;
         $carrier = null;
-        if ($totalWeight > 0) {
+
+
+        /**
+         * @see https://github.com/KamilleModules/Ekom/tree/master/doc/cart/cart-shipping-cost-algorithm.md
+         */
+        if ($cartTotalWeight > 0) {
             /**
              * Is there a carrier available?
              */
-            $carrier = self::getCheckoutCarrier();
-
+            $carrier = self::chooseCarrier();
 
             /**
              * Can the carrier calculate the shippingInfo with the given context?
              */
             $context = CartUtil::getCarrierShippingInfoContext($model);
             $shippingInfo = $carrier->getShippingInfo($context);
-        }
 
 
-        if (true === CartUtil::isValidShippingInfo($shippingInfo)) {
+            if (true === CartUtil::isValidShippingInfo($shippingInfo)) {
 
 
-            // applying shipping taxes
-            //--------------------------------------------
-            $taxInfo = CartUtil::getTaxInfoByValidShippingInfo($shippingInfo, $model);
+                // applying shipping taxes
+                //--------------------------------------------
+                $taxInfo = CartUtil::getTaxInfoByValidShippingInfo($shippingInfo, $model);
 
-            $shippingCostWithTax = E::trimPrice($taxInfo['priceWithTax']);
-            $shippingCost = $taxInfo['priceWithoutTax'];
+                $shippingCostWithTax = E::trimPrice($taxInfo['priceWithTax']);
+                $shippingCost = $taxInfo['priceWithoutTax'];
 
-            $model["shippingTaxDetails"] = $taxInfo['taxDetails'];
-            $model["shippingTaxRatio"] = $taxInfo['taxRatio'];
-            $model["shippingTaxGroupName"] = $taxInfo['taxGroupName'];
-            $model["shippingTaxGroupLabel"] = $taxInfo['taxGroupLabel'];
-            $model["shippingTaxAmountRaw"] = $taxInfo['taxAmountUnit'];
-            $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
-            $model["shippingDetails"] = [
-                "estimated_delivery_text" => $shippingInfo["estimated_delivery_text"],
-                "estimated_delivery_date" => $shippingInfo["estimated_delivery_date"],
-                "label" => $carrier->getLabel(),
+                $model["shippingTaxDetails"] = $taxInfo['taxDetails'];
+                $model["shippingTaxRatio"] = $taxInfo['taxRatio'];
+                $model["shippingTaxGroupName"] = $taxInfo['taxGroupName'];
+                $model["shippingTaxGroupLabel"] = $taxInfo['taxGroupLabel'];
+                $model["shippingTaxAmountRaw"] = $taxInfo['taxAmountUnit'];
+                $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
+                $model["shippingDetails"] = [
+                    "estimated_delivery_text" => $shippingInfo["estimated_delivery_text"],
+                    "estimated_delivery_date" => $shippingInfo["estimated_delivery_date"],
+                    "label" => $carrier->getLabel(),
 //                "shop_address" => $shopAddress, // not sure?
-                "carrier_id" => $carrier->getId(),
-            ];
-            $model["shippingShippingCostRaw"] = $shippingCostWithTax;
-            $model["shippingShippingCostWithoutTaxRaw"] = $shippingCost;
-            $model["shippingIsApplied"] = true;
-            $model['shippingErrorCode'] = null;
-        } else {
-            $shippingCostWithTax = 0;
-            $model["shippingTaxDetails"] = [];
-            $model["shippingTaxRatio"] = 1;
-            $model["shippingTaxGroupName"] = "";
-            $model["shippingTaxGroupLabel"] = "";
-            $model["shippingTaxAmountRaw"] = 0;
-            $model["shippingTaxHasTax"] = false;
-            $model["shippingDetails"] = [];
-            $model["shippingShippingCostRaw"] = $shippingCostWithTax;
-            $model["shippingShippingCostWithoutTaxRaw"] = $shippingCostWithTax;
-            $model["shippingIsApplied"] = false;
-
-            if (is_array($shippingInfo) && array_key_exists("errorCode", $shippingInfo)) {
-                $model['shippingErrorCode'] = $shippingInfo['errorCode'];
-            } else {
+                    "carrier_id" => $carrier->getId(),
+                ];
+                $model["shippingShippingCostRaw"] = $shippingCostWithTax;
+                $model["shippingShippingCostWithoutTaxRaw"] = $shippingCost;
+                $model["shippingIsApplied"] = true;
                 $model['shippingErrorCode'] = null;
             }
         }
 
-        // order total
-        $orderTotal = $cartTotal + $shippingCostWithTax;
-        $model["priceOrderTotalRaw"] = $orderTotal;
+
+        $model['carrier_id'] = $carrierId;
+        $model['carrier_label'] = $carrierLabel;
+        $model['carrier_estimated_delivery_date'] = $carrierEstimatedDeliveryDate;
+        $model['carrier_has_error'] = $carrierHasError;
+        $model['carrier_error_code'] = $carrierErrorCode;
+        $model['shipping_cost_tax_excluded'] = $shippingCostTaxExcluded;
+        $model['shipping_cost_tax_excluded_formatted'] = E::price($shippingCostTaxExcluded);
+        $model['shipping_cost_tax_included'] = $shippingCostTaxIncluded;
+        $model['shipping_cost_tax_included_formatted'] = E::price($shippingCostTaxIncluded);
+        $model['shipping_cost_discount_amount'] = $shippingCostDiscountAmount;
+        $model['shipping_cost_discount_amount_formatted'] = E::price($shippingCostDiscountAmount);
+        $model['shipping_cost_tax_amount'] = $shippingCostTaxAmount;
+        $model['shipping_cost_tax_amount_formatted'] = E::price($shippingCostTaxAmount);
+        $model['shipping_cost_tax_label'] = $shippingCostTaxLabel;
 
 
         //--------------------------------------------
-        // coupons
+        // COUPONS
         //--------------------------------------------
-//        az(__FILE__, $couponBag);
-        $couponInfoItems = CouponLayer::getCouponInfoItemsByIds($couponBag);
-        $couponsDetails = [];
-        /**
-         * @todo-ling, the coupons potentially can change ANYTHING in the model.
-         * To handle this versatility, we use php Classes which will be able to do ANYTHING.
-         *
-         * However, we use an array as the model, which makes it painful for evolution: if the ekom cartModel
-         * changes (and I bet it will), then all existing code needs to be re-written.
-         * To mitigate this, I suggest a Helper class provided by Ekom with standard methods taking care of
-         * doing the dirty work (for instance if you do a 2 bought, 1 free, the Helper will let you call a simple
-         * method for that).
-         *
-         */
-        $orderGrandTotal = CouponLayer::applyCoupons($couponInfoItems, $orderTotal, $model, $couponsDetails);
-        $model['priceOrderGrandTotalRaw'] = $orderGrandTotal;
+        $hasCoupons = (!empty($coupons));
+        $couponsTotal = 0;
+        $model['has_coupons'] = $hasCoupons;
+        $model['coupons_total'] = $couponsTotal;
+        $model['coupons_total_formatted'] = E::price($couponsTotal);
+        $model['coupons'] = $coupons;
 
 
-        //--------------------------------------------
-        // COMBINING ALL COUPONS
-        //--------------------------------------------
-        $model['couponDetails'] = $couponsDetails;
-        $model['couponHasCoupons'] = (count($couponsDetails) > 0);
-        $model['couponSavingRaw'] = $orderTotal - $orderGrandTotal;
+        if ('todo' === "deprecated?") {
 
-        //--------------------------------------------
-        // MODULES
-        //--------------------------------------------
-        Hooks::call("Ekom_CartLayer_decorateCartModel", $model);
+
+            $couponInfoItems = CouponLayer::getCouponInfoItemsByIds($coupons);
+            $couponsDetails = [];
+            /**
+             * @todo-ling, the coupons potentially can change ANYTHING in the model.
+             * To handle this versatility, we use php Classes which will be able to do ANYTHING.
+             *
+             * However, we use an array as the model, which makes it painful for evolution: if the ekom cartModel
+             * changes (and I bet it will), then all existing code needs to be re-written.
+             * To mitigate this, I suggest a Helper class provided by Ekom with standard methods taking care of
+             * doing the dirty work (for instance if you do a 2 bought, 1 free, the Helper will let you call a simple
+             * method for that).
+             *
+             */
+            $orderGrandTotal = CouponLayer::applyCoupons($couponInfoItems, $orderTotal, $model, $couponsDetails);
+        }
 
 
         //--------------------------------------------
-        // ROUND UP
+        // ORDER
         //--------------------------------------------
-        /**
-         * Note: this allows modules to deal only with raw values (in case they change the cart model)
-         */
-        $model['cartTaxAmount'] = E::price($model['cartTaxAmountRaw']);
-        $model['priceCartTotal'] = E::price($model['priceCartTotalRaw']);
-        $model['priceCartTotalWithoutTax'] = E::price($model['priceCartTotalWithoutTaxRaw']);
-        $model['couponSaving'] = E::price($model['couponSavingRaw']);
+        $orderTotal = $model['cart_total_tax_included'] + $model['shipping_cost_tax_included'];
+        $orderGrandTotal = $orderTotal - $couponsTotal;
+        $orderTaxAmount = $model['cart_tax_amount'] + $model['shipping_cost_tax_amount'];
+        $orderDiscountAmount = $model['cart_discount_amount'] + $model['shipping_cost_discount_amount'];
+        $orderSavingTotal = $orderDiscountAmount + $couponsTotal;
 
-        // order
-        $model["shippingShippingCost"] = E::price($model["shippingShippingCostRaw"]);
-        $model["shippingTaxAmount"] = E::price($model["shippingTaxAmountRaw"]);
-        $model["shippingShippingCostWithoutTax"] = E::price($model["shippingShippingCostWithoutTaxRaw"]);
-        $model["priceOrderTotal"] = E::price($model["priceOrderTotalRaw"]);
-        $model["priceOrderGrandTotal"] = E::price($model["priceOrderGrandTotalRaw"]);
+        $model['order_total'] = $orderTotal;
+        $model['order_total_formatted'] = E::price($orderTotal);
+        $model['order_grand_total'] = $orderGrandTotal;
+        $model['order_grand_total_formatted'] = E::price($orderGrandTotal);
+        $model['order_tax_amount'] = $orderTaxAmount;
+        $model['order_tax_amount_formatted'] = E::price($orderTaxAmount);
+        $model['order_discount_amount'] = $orderDiscountAmount;
+        $model['order_discount_amount_formatted'] = E::price($orderDiscountAmount);
+        $model['order_saving_total'] = $orderSavingTotal;
+        $model['order_saving_total_formatted'] = E::price($orderSavingTotal);
 
 
-        ksort($model);
         return $model;
     }
 
@@ -707,6 +670,7 @@ class CartLayer
      */
     private static function checkQuantityOverflow($productId, $existingQty, $qty, array $details, $isUpdate = false)
     {
+        return false;
         if (false === E::conf('acceptOutOfStockOrders', false)) {
 
             $productDetailsArgs = ProductBoxEntityUtil::getMergedProductDetails($details);
@@ -741,16 +705,10 @@ class CartLayer
 
     private function getProductDetailsByToken($token)
     {
-        $details = [
-            'major' => [],
-            'minor' => [],
-        ];
         if (false !== ($item = $this->getCartItemByToken($token))) {
-            if (array_key_exists('details', $item)) {
-                $details = $item['details'];
-            }
+            return $item['box']['selected_product_details'];
         }
-        return $details;
+        return [];
     }
 
 
@@ -774,7 +732,11 @@ class CartLayer
         );
     }
 
-    private static function getCheckoutCarrier()
+
+    /**
+     * @return CarrierInterface
+     */
+    private static function chooseCarrier()
     {
         $carrierId = CurrentCheckoutData::getCarrierId();
         if (null !== $carrierId) {

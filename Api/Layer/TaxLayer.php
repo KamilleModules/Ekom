@@ -39,6 +39,70 @@ class TaxLayer
 {
 
 
+    public static function getTaxDetailsInfoByTaxRuleConditionId(int $taxRuleConditionId)
+    {
+        $rows = QuickPdo::fetchAll("
+select         
+t.amount as `value`, 
+t.label,
+h.mode
+
+from ek_tax t 
+inner join ek_tax_rule_condition_has_tax h on h.tax_id=t.id
+
+where h.tax_rule_condition_id=$taxRuleConditionId
+
+order by h.order asc
+
+
+        ");
+
+
+        return $rows;
+
+    }
+
+
+    /**
+     * @param $basePrice
+     * @param array $taxDetails , array of items, each of which:
+     *      - value
+     *      - label
+     *      - model
+     * (see method getTaxDetailsInfoByTaxRuleConditionId of this class)
+     */
+    public static function decorateTaxDistribution(array &$distribution, $basePrice, array $taxDetails = [])
+    {
+        $newBasePrice = $basePrice;
+        foreach ($taxDetails as $k => $row) {
+            $value = $row['value'];
+            $label = $row['label'];
+            $mode = $row['mode'];
+            /**
+             * @todo-ling: combine the taxes depending on the mode,
+             * as for now this is a virtual case so I just go one after the other....
+             */
+            $basePrice = $basePrice + ($basePrice * $value) / 100;
+            $amount = $basePrice - $newBasePrice; // the amount inferred to the price by this specific tax
+            $newBasePrice = $basePrice;
+
+            if (false === array_key_exists($label, $distribution)) {
+                $distribution[$label] = [
+                    "tax_value" => $value,
+                    "amount" => $amount,
+                    "amount_formatted" => E::price($amount),
+                ];
+            } else {
+                $newAmount = $distribution[$label]['amount'] + $amount;
+                $distribution[$label]['amount'] = $newAmount;
+                $distribution[$label]['amount_formatted'] = E::price($newAmount);
+            }
+        }
+
+        return $distribution;
+    }
+
+
     public static function getListItems()
     {
         return QuickPdo::fetchAll("

@@ -39,6 +39,8 @@ class ProductQueryBuilderUtil
      * - miniBox, each row containing:
      *      - product_id,
      *      - product_card_id,
+     *      - product_card_type_name,
+     *      - product_card_type_label,
      *      - reference,
      *      - label: the card label
      *      - product_slug,
@@ -56,6 +58,10 @@ class ProductQueryBuilderUtil
      *      - discount_value: number
      *      - codes: string containing codes. n means novelty
      *
+     *      // and with options, you can add the following optional properties
+     *      - tax_rule_cond_id
+     *
+     *
      *
      * The returned query already stops after the joins part, in case you want to extend it...
      *
@@ -63,7 +69,7 @@ class ProductQueryBuilderUtil
      * @return SqlQueryInterface
      *
      */
-    public static function getBaseQuery(array $userContext = null): SqlQueryInterface
+    public static function getBaseQuery(array $userContext = null, array $options = []): SqlQueryInterface
     {
 
         if (null === $userContext) {
@@ -71,7 +77,13 @@ class ProductQueryBuilderUtil
         }
         $markers = [];
 
+        $useTaxRuleConditionId = $options['useTaxRuleConditionId'] ?? false;
+
         $qTaxSubquery = "select ratio from ek_tax_rule_condition where ";
+        if (true === $useTaxRuleConditionId) {
+            $qTaxCondSubquery = "select id from ek_tax_rule_condition where ";
+        }
+
         $qPriceSubquery = "select price from ek_product_variation where product_id=p.id and ";
         /**
          * Note: with the current architecture (meant to be fast, where price, discounts and taxes are part of the sql query so that
@@ -174,9 +186,17 @@ where phd.product_id=p.id and
         $qDiscountSubqueryValue = str_replace("WHAT", "value", $qDiscountSubquery);
 
 
+        $optionalTaxCondSubquery = "";
+        if (true === $useTaxRuleConditionId) {
+            self::applyContext($taxContext, $qTaxCondSubquery, $markers, 'taxcond');
+            $optionalTaxCondSubquery = "($qTaxCondSubquery) as tax_rule_condition_id,";
+        }
+
         $field = "
 p.id as product_id,
 c.id as product_card_id,
+pct.name as product_card_type_name,
+pct.label as product_card_type_label,
 p.reference,
 if(
     '' != p.label,
@@ -198,7 +218,7 @@ coalesce (
 as image_legend,
 
 @taxRatio := coalesce (($qTaxSubquery), '1.00') as tax_ratio,
-
+$optionalTaxCondSubquery
 
 
 
@@ -231,8 +251,8 @@ p.price as original_price,
       end    
     ) as decimal(10,2)
 )
-as base_price
-@salePrice := (ROUND(@basePrice * @taxRatio, 2)) as sale_price,
+as base_price,
+@salePrice := (ROUND(@basePrice * @taxRatio, 2)) as sale_price
         ";
 
 
@@ -253,7 +273,10 @@ as base_price
              *
              */
 //            ->addJoin("inner join ek_product p on p.id=c.product_id")
-            ->addJoin("inner join ek_product p on p.product_card_id=c.id")
+            ->addJoin("
+inner join ek_product p on p.product_card_id=c.id
+inner join ek_product_card_type pct on pct.id=c.product_card_type_id
+            ")
             ->addWhere(" and p.active=1 and c.active=1")
             /**
              * Note about group by,
@@ -272,7 +295,8 @@ as base_price
     }
 
 
-    public static function getMaxiQuery(array $userContext=null){
+    public static function getMaxiQuery(array $userContext = null)
+    {
         $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($userContext);
         $sqlQuery->addField("
 s.id as seller_id,
@@ -280,7 +304,6 @@ s.name as seller_name,
 s.label as seller_label,
 m.id as manufacturer_id,
 m.name as manufacturer_name,
-pct.name as product_card_type_name,
 if(
     '' != p.description,
     p.description,
@@ -311,7 +334,6 @@ p.active
         ");
         $sqlQuery->addJoin("
 inner join ek_seller s on s.id=p.seller_id
-inner join ek_product_card_type pct on pct.id=c.product_card_type_id
 left join ek_manufacturer m on m.id=p.manufacturer_id
 ");
         return $sqlQuery;

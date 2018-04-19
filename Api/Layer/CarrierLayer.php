@@ -58,7 +58,6 @@ class CarrierLayer
 
     /**
      * @return CarrierInterface
-     * @throws EkomException
      */
     public static function getCarrierInstanceById($carrierId)
     {
@@ -74,8 +73,7 @@ class CarrierLayer
             $ret->setName($carrierName);
             return $ret;
         }
-        throw new EkomException("[Ekom module] - CarrierLayer.getCarrierInstanceById: the carrier with 
-            id $carrierId was not found in the database");
+        throw new \Exception("Carrier instance not found with id: $carrierId");
     }
 
 
@@ -207,7 +205,7 @@ order by `name` asc
         /**
          * We have to deal with the carriers choices that the shop has made
          */
-        
+
         $shopId = ApplicationRegistry::get("ekom.shop_id");
         $rows = self::getCarriers($shopId);
 

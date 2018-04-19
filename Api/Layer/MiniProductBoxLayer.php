@@ -118,7 +118,7 @@ inner join ek_product_group g on g.id=phg.product_group_id
 
     public static function sugarify(array &$row)
     {
-        $row['has_tax'] = ('1.00' === $row['tax_ratio']);
+        $row['has_tax'] = ('1.00' !== $row['tax_ratio']);
         $row['is_novelty'] = (false !== strpos($row['codes'], 'n'));
         $row['product_uri'] = A::link("Ekom_productCardRef", [
             "slug" => $row['product_card_slug'],

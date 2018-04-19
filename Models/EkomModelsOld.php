@@ -97,7 +97,7 @@ class EkomModelsOld
      *
      *
      *
-     * - cartTotalQuantity
+     * - cart_total_quantity
      * - cartTotalWeight
      * - cartTaxAmount
      * - cartTaxAmountRaw

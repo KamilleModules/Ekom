@@ -3,6 +3,8 @@
 
 namespace Module\Ekom\Models;
 
+use Module\Ekom\Api\Layer\CartItemBoxLayer;
+
 
 /**
  * This class is not used by the code, except as a documentation reference.
@@ -80,9 +82,138 @@ class EkomModels
 
 
     /**
+     * cartItemBoxModel
+     * =====================
+     *
+     * - ...all properties of miniBoxModel @see EkomModels::miniBoxModel(), plus the following:
+     *
+     * - wholesale_price
+     * - weight
+     * - selected_attributes_info: array of attributes selected by the user, each of which:
+     *      - attribute_name
+     *      - attribute_label
+     *      - value_name
+     *      - value_label
+     *
+     *
+     * - selected_product_details: map of user selected product details
+     * - selected_product_details_info: array product details selected by the user, each of which:
+     *      - detail_name
+     *      - detail_label
+     *      - value_name
+     *      - value_label
+     *
+     * - tax_details: array of tax applied to this product, each item:
+     *      - value: in percent
+     *      - label
+     *      - mode: not used today, but represents the tax combining mode (in case there are multiple taxes assigned to this product)
+     *
+     * - discount_details: array of discount items (as of today, only one discount is applied max per product, but this could change...). Each item:
+     *      - label
+     *      - type: f|p
+     *      - value
+     *
+     * - product_uri_with_details
+     *
+     */
+    private function cartItemBoxModel()
+    {
+        return [];
+    }
+
+
+    /**
      * cartModel
      * =================
      *
+     *
+     * - items: array of:
+     *      - ...all properties of CartItemBoxModel @see EkomModels::cartItemBoxModel()
+     *      - cart_quantity
+     *      - cart_token
+     *      - line_real_price
+     *      - line_real_price_formatted
+     *      - line_base_price
+     *      - line_base_price_formatted
+     *      - line_sale_price
+     *      - line_sale_price_formatted
+     *
+     * - cart_total_weight: in kg
+     * - cart_total_quantity
+     * - cart_total_tax_excluded
+     * - cart_total_tax_excluded_formatted
+     * - cart_total_tax_included
+     * - cart_total_tax_included_formatted
+     * - cart_discount_amount
+     * - cart_discount_amount_formatted
+     * - cart_tax_amount
+     * - cart_tax_amount_formatted
+     * - cart_tax_distribution: indicates how taxes were distributed amongst the products of this cart.
+     *      It's an array of tax_label => item, each item:
+     *          - tax_value
+     *          - amount: the amount of the cart total distributed to this tax
+     *          - amount_formatted
+     *
+     *
+     * - carrier_id: null|int
+     * - carrier_label:
+     * - carrier_estimated_delivery_date: text
+     * - carrier_has_error: whether or not the carrier can deliver/not deliver the items.
+     * - carrier_error_code: an error code issued by the carrier, indicating why it couldn't deliver the items
+     *
+     *
+     * - shipping_cost_tax_excluded
+     * - shipping_cost_tax_excluded_formatted
+     * - shipping_cost_tax_included
+     * - shipping_cost_tax_included_formatted
+     * - shipping_cost_discount_amount
+     * - shipping_cost_discount_amount_formatted
+     * - shipping_cost_tax_amount
+     * - shipping_cost_tax_amount_formatted
+     * - shipping_cost_tax_label
+     *
+     *
+     *
+     *
+     * - has_coupons: bool
+     * - coupons_total: sum of all coupons.saving_amount
+     * - coupons_total_formatted
+     * - coupons: array of applied coupons, each of which: @todo-ling, need to revisit this part...
+     *      - label
+     *      - code
+     *      - saving_amount: the amount saved by this coupon
+     *      - saving_amount_formatted
+     *      - target: @todo-ling, should be something like:
+     *              - product
+     *              - cart_total
+     *              - order_total
+     *              - seller:$sellerName @see EkomModels::couponDetailsItem() for portability
+     *              - shipping_cost
+     *              - ...
+     *      - type: @todo-ling: indicate the type of math operation to apply
+     *      - value: the variable to use with type to apply the discount
+     *
+     *
+     * - order_total: cart_total_tax_included + shipping_cost_tax_included
+     * - order_total_formatted
+     * - order_grand_total: order_total - coupons_total
+     * - order_grand_total_formatted
+     * - order_tax_amount: cart_tax_amount + shipping_cost_tax_amount
+     * - order_tax_amount_formatted
+     * - order_discount_amount: cart_discount_amount + shipping_cost_discount_amount
+     * - order_discount_amount_formatted
+     * - order_saving_total: order_discount_amount + coupons_total
+     * - order_saving_total_formatted
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     * OLD DEPRECATED
+     * ---------------------
      * The cart model comes in two forms:
      * - regular (by default)
      * - noGroups
@@ -97,7 +228,7 @@ class EkomModels
      *
      *
      *
-     * - cartTotalQuantity
+     * - cart_total_quantity
      * - cartTotalWeight
      * - cartTaxAmount
      * - cartTaxAmountRaw

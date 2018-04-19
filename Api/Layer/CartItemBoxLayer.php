@@ -6,6 +6,9 @@ namespace Module\Ekom\Api\Layer;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
+use Module\Ekom\Model\EkomModel;
+use Module\Ekom\Models\EkomModels;
+use Module\Ekom\Utils\AttributeSelectorHelper;
 use QuickPdo\QuickPdo;
 
 
@@ -14,10 +17,8 @@ use QuickPdo\QuickPdo;
  *
  * This object represents a cart item.
  * A cart item is like the miniBox model,
- * @see EkomModels::miniBoxModel()
- *
- * but adds a few more properties, like the tax details, the discount details,
- * the attributes selected by the user, the product details selected by the user.
+ * @see EkomModels::miniBoxModel(), but has a few more properties.
+ * @see EkomModels::cartItemBoxModel()
  *
  *
  *
@@ -29,42 +30,59 @@ class CartItemBoxLayer
 {
 
 
-    public static function getBox(string $productId, array $selectedProductDetails=[])
+    public static function getBox(string $productId, array $selectedProductDetails = [])
     {
 
 
-            // note: product details might be able to change the core of the base query?
-            $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
-            $sqlQuery->addWhere("and p.id=$productId");
+        // note: product details might be able to change the core of the base query?
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery(null, [
+            "useTaxRuleConditionId" => true,
+        ]);
+        $sqlQuery->addField("p.weight, p.wholesale_price");
+        $sqlQuery->addWhere("and p.id=$productId");
 
-            $row = QuickPdo::fetch((string)$sqlQuery, $sqlQuery->getMarkers());
-            self::sugarify($row);
-            return $row;
+        $row = QuickPdo::fetch((string)$sqlQuery, $sqlQuery->getMarkers());
+        self::sugarify($row);
+        return $row;
     }
 
 
-
-
-
-    public static function sugarify(array &$row)
+    public static function sugarify(array &$row, array $selectedProductDetails = [])
     {
         MiniProductBoxLayer::sugarify($row);
 
-        // todo: selected attributes
-        // todo: selected product details
-        // todo: tax details
-        // todo: discount item
+        $selectedAttributesInfo = AttributeSelectorHelper::getSelectedAttributesByProductId($row['product_id']);
+        $selectedProductDetailsInfo = [];
+        Hooks::call("Ekom_collectProductDetailsInfo", $selectedProductDetailsInfo, $selectedProductDetails);
 
-        $row['has_tax'] = ('1.00' === $row['tax_ratio']);
-        $row['is_novelty'] = (false !== strpos($row['codes'], 'n'));
-        $row['product_uri'] = A::link("Ekom_productCardRef", [
-            "slug" => $row['product_card_slug'],
-            "ref" => $row['reference'],
-        ]);
-        $row['image'] = ImageLayer::getCardProductImageUriByImageId($row['image_id']);
-        $row['image_title'] = (!empty($row['image_legend']) ? $row["image_legend"] : $row['label']);
-        $row['image_alt'] = $row["label"];
-        $row['has_discount'] = (null !== $row['discount_type']);
+
+        /**
+         * We basically provide the ground for detailed information at the cart display level.
+         */
+        $row['selected_attributes_info'] = $selectedAttributesInfo;
+        $row['selected_product_details_info'] = $selectedProductDetailsInfo;
+        $row['selected_product_details'] = $selectedProductDetails; // map
+
+
+        $row['tax_details'] = TaxLayer::getTaxDetailsInfoByTaxRuleConditionId($row['tax_rule_condition_id']);
+        /**
+         * as for now we only have ONE discount max per product, but in the future we could evolve...
+         */
+        $row['discount_details'] = [];
+        if (true === $row['has_discount']) {
+            $row['discount_details'][] = [
+                "label" => $row['discount_label'],
+                "type" => $row['discount_type'],
+                "value" => $row['discount_value'],
+            ];
+        }
+
+        $row['product_uri_with_details'] = $row['product_uri']; // if in doubt, recreate it from scratch
+        if ($selectedProductDetails) {
+            $row['product_uri_with_details'] .= "?" . http_build_query($selectedProductDetails);
+        }
+
+
     }
 
 

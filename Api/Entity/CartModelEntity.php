@@ -104,7 +104,7 @@ class CartModelEntity
             $this->preCart();
             $model = [];
             $model['items'] = $this->items;
-            $model['cartTotalQuantity'] = $this->totalQty;
+            $model['cart_total_quantity'] = $this->totalQty;
             $model['cartTotalWeight'] = $this->totalWeight;
             $model['cartTaxAmountRaw'] = $this->cartTaxAmount;
             $model['priceCartTotalRaw'] = $this->cartTotal;

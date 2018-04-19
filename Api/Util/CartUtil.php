@@ -15,6 +15,7 @@ use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\SellerLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
+use Module\Ekom\Api\Layer\StoreLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Exception\EkomException;
@@ -132,7 +133,7 @@ class CartUtil
     /**
      * @see EkomModels::shippingContextModel()
      */
-    public static function getCarrierShippingInfoContext(array $primitiveCartModel)
+    public static function getCarrierShippingInfoContext(array $earlyCartModel)
     {
         /**
          * Can the carrier calculate the shippingInfo?
@@ -140,10 +141,10 @@ class CartUtil
         $shippingAddress = self::getCurrentShippingAddress();
         $shopAddress = self::getCurrentShopAddress($shippingAddress);
         return [
-            "cartItems" => $primitiveCartModel['items'],
-            "cartWeight" => $primitiveCartModel['cartTotalWeight'],
+            "cartItems" => $earlyCartModel['items'],
+            "cartWeight" => $earlyCartModel['cart_total_weight'],
             "shippingAddress" => $shippingAddress,
-            "shopAddress" => $shopAddress,
+            "storeAddress" => $shopAddress,
         ];
     }
 
@@ -563,7 +564,7 @@ class CartUtil
          * Otherwise, we return the warehouse address closest to the user's shipping address.
          * Note: that does apply only if the shop has multiple warehouse addresses.
          */
-        $addresses = ShopLayer::getPhysicalAddresses();
+        $addresses = StoreLayer::getPhysicalAddresses();
         if ($addresses) {
             if (null !== $shippingAddress && count($addresses) > 1) { // multiple addresses, we choose the closest
                 return CartUtil::getClosestPhysicalAddress($shippingAddress, $addresses);
