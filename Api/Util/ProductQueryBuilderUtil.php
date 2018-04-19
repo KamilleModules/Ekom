@@ -47,9 +47,9 @@ class ProductQueryBuilderUtil
      *      - image_legend, the title attribute for the image
      *      - tax_ratio: number, 1 means no tax applied
      *      - original_price: the original price
-     *      - price: the real price (original price with ek_product_variation applied to it)
-     *      - base_price: the price, with taxes applied to it
-     *      - sale_price: the base price, with discounts applied to it
+     *      - real_price: the real price (original price with ek_product_variation applied to it)
+     *      - base_price: the price, with discounts applied to it
+     *      - sale_price: the base price, with taxes applied to it
      *      - discount_id: null means no discount applied
      *      - discount_label: null means no discount applied
      *      - discount_type: f|p|null
@@ -214,24 +214,25 @@ p._popularity as popularity,
 
 
 p.price as original_price,
-@price:= coalesce(
+@realPrice:= coalesce(
   ($qPriceSubquery),
   p.price
-) as price, 
-@basePrice := (ROUND(@price * @taxRatio, 2)) as base_price,
-@salePrice := CAST(
+) as real_price, 
+
+@basePrice := CAST(
     (
       case 
       when @discountType = 'f'
-        then @basePrice - @discountVal
+        then @realPrice - @discountVal
       when @discountType = 'p'
-        then round(@basePrice - (@basePrice * @discountVal / 100), 2)
+        then round(@realPrice - (@realPrice * @discountVal / 100), 2)
       when @discountType is null
-        then @basePrice 
+        then @realPrice 
       end    
     ) as decimal(10,2)
- )
- as sale_price
+)
+as base_price
+@salePrice := (ROUND(@basePrice * @taxRatio, 2)) as sale_price,
         ";
 
 

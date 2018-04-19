@@ -38,6 +38,7 @@ class E
 {
 
     private static $conf = null;
+    private static $userContext = null;
 
 
     /**
@@ -59,15 +60,72 @@ class E
     }
 
 
+    /**
+     * In ekom, the monetary aspects of a product can change depending on the user.
+     *
+     * The monetary aspects includes:
+     * - the price
+     * - the discount
+     * - the tax
+     *
+     * So for instance, the product A could cost 15$ for user A, but 12$ for user B because user B is registered
+     * as a professional, whereas user A is just a regular visitor without privilege.
+     * Another example, the tax 20% applies only for users which shipping address is in France.
+     *
+     *
+     * The user context is represented by an array of variables.
+     * The user context is implemented as a singleton: it is meant to be created once per process to ensure its consistency.
+     *
+     * However, at certain strategic key points, it can update.
+     * For instance, when the user connects, or when the user changes her shipping address, ...
+     * To propagate those user context changes, we use the refreshUserContext method of this class,
+     * which has the effect to update the user context (and is the only method in ekom allowed to do so).
+     *
+     * This is the only time when the user context can be updated and deviate from its singleton nature.
+     * Whenever this happens, it is recommended to consider refreshing the page if it helps ensuring the consistency
+     * of the displayed products.
+     *
+     *
+     * So, the user context encapsulates all possible user variables which influence the monetary aspect of products
+     * such as the tax, the price, the discount applied to a product.
+     *
+     * From the user context derive 3 other contexts:
+     *
+     * - price context
+     * - discount context
+     * - tax context
+     *
+     * Those contexts depend on the user context such as a given user context always produces the
+     * exact same derived contexts (price, discount and tax contexts).
+     *
+     * Therefore, the hashed version of the user context is a good candidate for a cache identifier for encapsulating
+     * a product.
+     *
+     *
+     *
+     *
+     * @return array
+     */
     public static function getUserContext()
     {
-        return [
-            "user_id" => null,
-            "user_group_id" => null,
-            "origin_country" => null,
-            "shipping_country" => null,
-            "billing_country" => null,
-        ];
+        if (null === self::$userContext) {
+            self::$userContext = [
+                "user_id" => null,
+                "user_group_id" => null,
+                "origin_country" => null,
+                "shipping_country" => null,
+                "billing_country" => null,
+            ];
+        }
+        return self::$userContext;
+    }
+
+    /**
+     * This method is the only method allowed to change the user context in ekom.
+     */
+    public static function refreshUserContext()
+    {
+        // todo...
     }
 
 //    public static function getProductBoxContext()

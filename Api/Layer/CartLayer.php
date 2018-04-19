@@ -499,27 +499,30 @@ class CartLayer
                 //--------------------------------------------
                 // extending the box model to
                 //--------------------------------------------
-                $uriDetails = UriTool::uri($boxModel['uriProduct'], $productDetails, true);
+                $uriDetails = UriTool::uri($boxModel['product_uri'], $productDetails, true);
+                az(__FILE__, CartItemBoxLayer::getBox($productId));
 
-
-                $linePrice = E::trimPrice($cartQuantity * $boxModel['priceSaleRaw']);
+                $linePrice = E::trimPrice($cartQuantity * $boxModel['sale_price']);
                 $cartTotal += $linePrice;
 
-                $linePriceWithoutTax = E::trimPrice($cartQuantity * $boxModel['priceBaseRaw']);
+                $linePriceWithoutTax = E::trimPrice($cartQuantity * $boxModel['base_price']);
                 $cartTotalWithoutTax += $linePriceWithoutTax;
 
-                $itemTaxAmount = E::trimPrice($cartQuantity * $boxModel['taxAmount']);
-                $cartTaxAmount += $itemTaxAmount;
+
+                $unitTaxAmount = $boxModel['base_price'] - $boxModel['price'];
 
 
-                $boxModel['cartToken'] = $cartToken;
-                $boxModel['quantityCart'] = $cartQuantity;
-                $boxModel['uri_card_with_details'] = $uriDetails;
-                $boxModel['priceLineRaw'] = $linePrice;
-                $boxModel['priceLine'] = E::price($linePrice);
+                $lineTaxAmount = E::trimPrice($cartQuantity * $unitTaxAmount);
+                $cartTaxAmount += $lineTaxAmount;
+
+
+                $boxModel['cart_token'] = $cartToken;
+                $boxModel['cart_quantity'] = $cartQuantity;
+                $boxModel['line_price'] = $linePrice;
+                $boxModel['formatted_line_price'] = E::price($linePrice);
                 $boxModel['priceLineWithoutTaxRaw'] = $linePriceWithoutTax;
                 $boxModel['priceLineWithoutTax'] = E::price($linePriceWithoutTax);
-                $boxModel['taxAmount'] = $itemTaxAmount;
+                $boxModel['taxAmount'] = $lineTaxAmount;
 
 
                 ksort($boxModel);
@@ -711,7 +714,7 @@ class CartLayer
             $boxModel = ProductBoxLayer::getProductBoxByProductId($productId, $productDetailsArgs);
 
 
-            $remainingStockQty = $boxModel['quantityStock'];
+            $remainingStockQty = $boxModel['quantity'];
 
             if (false === $isUpdate) {
                 $addedQty = $qty;

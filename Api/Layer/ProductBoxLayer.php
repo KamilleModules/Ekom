@@ -10,6 +10,7 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Entity\ProductBoxEntity;
 use Module\Ekom\Api\Entity\ProductBoxEntityUtil;
 use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
+use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\AttributeSelectorHelper;
 use Module\Ekom\Utils\E;
 use Module\EkomUserProductHistory\UserProductHistory\UserProductHistoryInterface;
@@ -18,23 +19,21 @@ use SqlQuery\SqlQueryInterface;
 
 
 /**
- * Implementation note:
- * ------------------------
- * In various locations in this class, the shop_id and lang_id arguments are internalized,
- * that's because we want to avoid potential inconsistencies:
- * the hashString used for caching uses the ekom product box context which contains the shop_id and lang_id.
+ * What's the product box?
+ * ===========================
+ * When you navigate to the product page,
+ * in most themes the product box is just this big block of product information at the top of the product page.
  *
- * Note: the E::getShopId is equivalent to do ProductBoxEntityUtil::getProductBoxGeneralContext()["shop_id"].
- * Note2: this also means that if you want to change the shop_id, you can use ApplicationRegistry::set("shop_id", 6),
- * if the pbc was not cached already, or update the pbc directly, which is also stored in the ApplicationRegistry
- * with the ekom.gpc key (see ProductBoxEntityUtil for more info).
+ * This includes only the major information used by the widget of the same name.
  *
+ * It doesn't include other information like the comments about a product, the features, the related items,
+ * the bundled items,...
  *
- * Implementation note2:
- * -----------------------
- * to create a list of boxes, use the getProductBoxListByGroupName example,
- * which takes into account how the product box context should be handled.
+ * The exhaustive properties of the box model are exposed here:
+ * @see EkomModels::productBoxModel()
  *
+ * So to recap, the product page is composed of many widgets, the product box being the most visible/important.
+ * And the product box model is just the template model for displaying this product box widget.
  *
  *
  *
@@ -49,17 +48,16 @@ class ProductBoxLayer
     /**
      * @param $productId
      *
-     * @param array $productDetails ,
-     *          an array of name => value
+     * @param array $selectedProductDetails , an array of name => value chosen by the user
      *
      * @param array|null $userContext
      */
-    public static function getProductBoxByProductId(int $productId, array $productDetails = [], array $userContext = null)
+    public static function getProductBoxByProductId(int $productId, array $selectedProductDetails = [], array $userContext = null)
     {
 
         $sqlQuery = ProductQueryBuilderUtil::getMaxiQuery($userContext);
         $sqlQuery->addWhere("and p.id=$productId");
-        return self::getProductBoxBySqlQuery($sqlQuery, $productDetails, $userContext);
+        return self::getProductBoxBySqlQuery($sqlQuery, $selectedProductDetails, $userContext);
 
     }
 
@@ -207,15 +205,23 @@ class ProductBoxLayer
 //    }
 
 
-    private static function getProductBoxBySqlQuery(SqlQueryInterface $sqlQuery, array $productDetails = [], array $userContext = null)
+    private static function getProductBoxBySqlQuery(SqlQueryInterface $sqlQuery, array $selectedProductDetails = [], array $userContext = null)
     {
         $q = $sqlQuery->getSqlQuery();
         $markers = $sqlQuery->getMarkers();
         $row = QuickPdo::fetch($q, $markers);
 
         MiniProductBoxLayer::sugarify($row);
-        $row['product_details'] = []; // the product details map
 
+        $row['selected_product_details'] = $selectedProductDetails;
+        $productDetailsList = []; // todo: ask modules via hooks
+        $row['product_details_list'] = $productDetailsList;
+
+
+        $row['product_uri_with_details'] = $row['product_uri']; // if in doubt, recreate it from scratch
+        if ($selectedProductDetails) {
+            $row['product_uri_with_details'] .= "?" . http_build_query($selectedProductDetails);
+        }
 
 
         //--------------------------------------------
@@ -238,8 +244,7 @@ class ProductBoxLayer
         //--------------------------------------------
         $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($row['product_card_id']);
         $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $row['product_id']);
-        $row['attributes'] = $attr;
-
+        $row['attributes_list'] = $attr;
 
 
         return $row;
