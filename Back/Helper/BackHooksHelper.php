@@ -443,16 +443,17 @@ where a.id in ($sValues)
                     $sValues = "'" . implode("', '", $values) . "'";
                     $query = "
 select
-id,
+p.id,
 concat( 
   label, 
   concat (' ref=', reference)
 ) as label
 
-from ek_product 
+from ek_product p 
+inner join ek_product_reference pr on pr.product_id=p.id
 
 where 
-id in ($sValues)
+p.id in ($sValues)
              
                     ";
 
@@ -542,10 +543,11 @@ concat(
   concat (' ref=', reference)
 ) as label
 
-from ek_product 
+from ek_product p 
+inner join ek_product_reference pr on pr.product_id=p.id
 
 where 
-id=$value
+p.id=$value
 ", [], \PDO::FETCH_COLUMN);
                     break;
                 case "auto.product_card":

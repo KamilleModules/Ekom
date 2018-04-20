@@ -253,7 +253,8 @@ where u.id=$userId");
         $ok = QuickPdo::transaction(function () use ($data, &$hookData) {
 
 
-            $shopId = E::getShopId();
+
+            az(__FILE__, $data);
             if (!array_key_exists("active_hash", $data['ek_user'])) {
                 $data['ek_user']['active_hash'] = HashTool::getRandomHash64();
             }
@@ -271,7 +272,6 @@ where u.id=$userId");
                 foreach ($groups as $group) {
                     $groupId = EkomApi::inst()->userGroupLayer()->createGroupIfNotExist([
                         "name" => $group,
-                        "shop_id" => $shopId,
                     ]);
                     EkomApi::inst()->userHasGroupLayer()->bindUser2Group($userId, $groupId);
                     $groupIds[] = $groupId;

@@ -21,7 +21,9 @@ interface CarrierInterface
      *
      *
      * @param array :shippingContextModel $context
-     * @return false|array:shippingInfoModel
+     * @param string $errorCode
+     * @return array|false, if false, the errorCode must be defined.
+     *                      Otherwise the shippingInfoModel is returned.
      *
      *
      *
@@ -37,7 +39,7 @@ interface CarrierInterface
      *
      *
      */
-    public function getShippingInfo(array $context);
+    public function getShippingInfo(array $context, string &$errorCode = null);
 
     /**
      * If the carrier needs to communicate with external apis to get a tracking number,

@@ -4,6 +4,7 @@
 namespace Module\Ekom\Models;
 
 use Module\Ekom\Api\Layer\CartItemBoxLayer;
+use Module\Ekom\Api\Util\CartUtil;
 
 
 /**
@@ -131,6 +132,11 @@ class EkomModels
      * - items: array of:
      *      - ...all properties of CartItemBoxModel @see EkomModels::cartItemBoxModel()
      *      - cart_quantity
+     *      - real_quantity: the current stock quantity for this reference.
+     *                          Note that the miniBoxModel has a quantity which also represents the stock quantity for this reference.
+     *                          However, since the cart is stored in session, this quantity is frozen in the cart.
+     *                          And so if the real stock for this reference changes, those changes are not updated in the cart.
+     *                          But now, with the real_quantity property, you've got an up-to-date/live value of the reference's stock quantity.
      *      - cart_token
      *      - line_real_price
      *      - line_real_price_formatted
@@ -160,8 +166,19 @@ class EkomModels
      * - carrier_id: null|int
      * - carrier_label:
      * - carrier_estimated_delivery_date: text
-     * - carrier_has_error: whether or not the carrier can deliver/not deliver the items.
      * - carrier_error_code: an error code issued by the carrier, indicating why it couldn't deliver the items
+     *
+     *
+     * - shipping_status: int (0|1|2|3): the status of the shipping process.
+     *      - 0: the weight of the cart is 0, this is not deliverable (maybe the cart contains only downloadable products).
+     *      - 1: no carrier was found. This is a configuration error and shouldn't occur, unless you have no carriers
+     *                  defined/registered in your database
+     *      - 2: a carrier was found, but for some reasons it couldn't deliver the current cart.
+     *                  Read carrier_error_code to investigate about the failure.
+     *      - 3: a carrier was found, but the shippingInfo it returned are erroneous.
+     *                  This should never happen.
+     *                  If however it happens to you, contact the carrier developer and tell him to repair her carrier module.
+     *      - 4: a carrier was found and could deliver.
      *
      *
      * - shipping_cost_tax_excluded
@@ -488,6 +505,19 @@ class EkomModels
     }
 
     /**
+     * extendedCartModel
+     * ====================
+     *
+     * - cart: @see EkomModels::cartModel()
+     * - itemsGroupedBySeller: @see CartUtil::getItemsGroupedBySeller()
+     *
+     */
+    private function extendedCartModel()
+    {
+
+    }
+
+    /**
      * invoiceModel
      * ====================
      *
@@ -564,6 +594,13 @@ class EkomModels
      *      - image_alt: alt attribute of the image
      *      - image_title: title attribute of the image (like legend, but defaults to the label if empty)
      *      - has_discount: bool
+     *
+     *      - original_price_formatted
+     *      - real_price_formatted
+     *      - base_price_formatted
+     *      - sale_price_formatted
+     *      - discount_value_formatted: which can be either in currency or percent
+     *
      *
      */
     private function miniBoxModel()

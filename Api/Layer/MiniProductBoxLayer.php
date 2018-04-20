@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 
@@ -62,24 +63,23 @@ class MiniProductBoxLayer
     {
 
 
-            $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
 
-            // specific to groups
-            $sqlQuery->addWhere("
+        // specific to groups
+        $sqlQuery->addWhere("
 and g.name = :group_name        
         ");
-            $sqlQuery->addJoin("
+        $sqlQuery->addJoin("
 inner join ek_product_group_has_product phg on phg.product_id=p.id
 inner join ek_product_group g on g.id=phg.product_group_id
             ");
-            $sqlQuery->addMarker("group_name", $productGroupName);
-            $sqlQuery->addOrderBy("phg.order", "asc");
+        $sqlQuery->addMarker("group_name", $productGroupName);
+        $sqlQuery->addOrderBy("phg.order", "asc");
 
 
-
-            $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
-            self::sugarifyRows($rows);
-            return $rows;
+        $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
+        self::sugarifyRows($rows);
+        return $rows;
     }
 
 
@@ -128,6 +128,22 @@ inner join ek_product_group g on g.id=phg.product_group_id
         $row['image_title'] = (!empty($row['image_legend']) ? $row["image_legend"] : $row['label']);
         $row['image_alt'] = $row["label"];
         $row['has_discount'] = (null !== $row['discount_type']);
+        //
+        $row['original_price_formatted'] = E::price($row['original_price']);
+        $row['real_price_formatted'] = E::price($row['real_price']);
+        $row['base_price_formatted'] = E::price($row['base_price']);
+        $row['sale_price_formatted'] = E::price($row['sale_price']);
+
+
+
+        // discount value formatted
+        $discountValue = $row['discount_value'];
+        if ('p' === $row['discount_type']) {
+            $discountValueFormatted = "-$discountValue%";
+        } else {
+            $discountValueFormatted = "-" . E::price($discountValue);
+        }
+        $row['discount_value_formatted'] = $discountValueFormatted;
     }
 
     //--------------------------------------------

@@ -78,7 +78,10 @@ where id=$cardId
 
 
             $productsInfo = QuickPdo::fetchAll("
-select id as product_id, quantity, active from ek_product where product_card_id=$cardId        
+select p.id as product_id, pr.quantity, p.active 
+from ek_product p 
+inner join ek_product_reference pr on pr.product_id=p.id
+where product_card_id=$cardId        
         ");
 
             $productIds = [];

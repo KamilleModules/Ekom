@@ -4,26 +4,17 @@
 namespace Module\Ekom\Api\Layer;
 
 
-use ArrayToString\ArrayToStringTool;
-use Authenticate\SessionUser\SessionUser;
-use Bat\ClassTool;
-use Bat\UriTool;
-use Core\Services\A;
 use Core\Services\Hooks;
-use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
-use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Entity\ProductBoxEntityUtil;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Util\CartUtil;
-use Module\Ekom\Api\Util\HashUtil;
 use Module\Ekom\Carrier\CarrierInterface;
 use Module\Ekom\Exception\EkomUserMessageException;
+use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\CartLocalStore;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
-use Module\Ekom\Utils\EkomLinkHelper;
-use QuickPdo\QuickPdo;
 
 
 /**
@@ -127,7 +118,6 @@ class CartLayer
 
             self::checkQuantityOverflow($productId, 0, $quantity, $selectedProductDetails);
             $cartItemBox = CartItemBoxLayer::getBox($productId, $selectedProductDetails);
-//            az(__FILE__, $cartItemBox);
             $arr = [
                 "token" => $token,
                 "quantity" => $quantity,
@@ -281,6 +271,9 @@ class CartLayer
     //--------------------------------------------
     //
     //--------------------------------------------
+    /**
+     * @see EkomModels::cartModel()
+     */
     public function getCartModel()
     {
         if (null === $this->_cartModel) {
@@ -437,12 +430,13 @@ class CartLayer
         //--------------------------------------------
         // BOXES
         //--------------------------------------------
+        $allRefs = [];
         foreach ($items as $item) {
 
             $cartQuantity = $item['quantity'];
             $cartToken = $item['token'];
             $boxModel = $item['box'];
-
+            $allRefs[] = $boxModel['reference'];
 
             //--------------------------------------------
             // updating total weight and quantities
@@ -472,7 +466,7 @@ class CartLayer
 
 
             $lineTaxDetails = [];
-            foreach($boxModel['tax_details'] as $taxDetail){
+            foreach ($boxModel['tax_details'] as $taxDetail) {
                 $lineTaxDetails[$taxDetail['label']] = $cartQuantity * $taxDetail['amount'];
             }
 
@@ -492,6 +486,18 @@ class CartLayer
             $modelItems[] = $boxModel;
 
         }
+
+
+        //--------------------------------------------
+        // ADD REAL QUANTITIES (optional?)
+        //--------------------------------------------
+        $ref2Quantities = ProductReferenceLayer::getReference2QuantityMap($allRefs);
+        foreach ($modelItems as $k => $boxModel) {
+            $ref = $boxModel['reference'];
+            $realQuantity = $ref2Quantities[$ref] ?? $boxModel['quantity'];
+            $modelItems[$k]['real_quantity'] = (int)$realQuantity;
+        }
+
 
 //        az($modelItems);
 
@@ -523,8 +529,8 @@ class CartLayer
         $carrierId = null;
         $carrierLabel = "";
         $carrierEstimatedDeliveryDate = "";
-        $carrierHasError = false;
         $carrierErrorCode = null;
+        $shippingStatus = 0;
 
         $shippingCostTaxExcluded = 0;
         $shippingCostTaxIncluded = 0;
@@ -542,45 +548,53 @@ class CartLayer
          * @see https://github.com/KamilleModules/Ekom/tree/master/doc/cart/cart-shipping-cost-algorithm.md
          */
         if ($cartTotalWeight > 0) {
+            $shippingStatus = 1;
             /**
              * Is there a carrier available?
              */
             $carrier = self::chooseCarrier();
-
-            /**
-             * Can the carrier calculate the shippingInfo with the given context?
-             */
-            $context = CartUtil::getCarrierShippingInfoContext($model);
-            $shippingInfo = $carrier->getShippingInfo($context);
+            if (false !== $carrier) {
+                $shippingStatus = 2;
 
 
-            if (true === CartUtil::isValidShippingInfo($shippingInfo)) {
+                /**
+                 * Can the carrier calculate the shippingInfo with the given context?
+                 */
+                $context = CartUtil::getCarrierShippingInfoContext($model);
+                if (false !== ($shippingInfo = $carrier->getShippingInfo($context, $carrierErrorCode))) {
+
+                    $shippingStatus = 3;
+
+                    if (true === CartUtil::isValidShippingInfo($shippingInfo)) {
+                        $shippingStatus = 4;
 
 
-                // applying shipping taxes
-                //--------------------------------------------
-                $taxInfo = CartUtil::getTaxInfoByValidShippingInfo($shippingInfo, $model);
+                        // applying shipping taxes
+                        //--------------------------------------------
+                        $taxInfo = CartUtil::getTaxInfoByValidShippingInfo($shippingInfo, $model);
 
-                $shippingCostWithTax = E::trimPrice($taxInfo['priceWithTax']);
-                $shippingCost = $taxInfo['priceWithoutTax'];
+                        $shippingCostWithTax = E::trimPrice($taxInfo['priceWithTax']);
+                        $shippingCost = $taxInfo['priceWithoutTax'];
 
-                $model["shippingTaxDetails"] = $taxInfo['taxDetails'];
-                $model["shippingTaxRatio"] = $taxInfo['taxRatio'];
-                $model["shippingTaxGroupName"] = $taxInfo['taxGroupName'];
-                $model["shippingTaxGroupLabel"] = $taxInfo['taxGroupLabel'];
-                $model["shippingTaxAmountRaw"] = $taxInfo['taxAmountUnit'];
-                $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
-                $model["shippingDetails"] = [
-                    "estimated_delivery_text" => $shippingInfo["estimated_delivery_text"],
-                    "estimated_delivery_date" => $shippingInfo["estimated_delivery_date"],
-                    "label" => $carrier->getLabel(),
+                        $model["shippingTaxDetails"] = $taxInfo['taxDetails'];
+                        $model["shippingTaxRatio"] = $taxInfo['taxRatio'];
+                        $model["shippingTaxGroupName"] = $taxInfo['taxGroupName'];
+                        $model["shippingTaxGroupLabel"] = $taxInfo['taxGroupLabel'];
+                        $model["shippingTaxAmountRaw"] = $taxInfo['taxAmountUnit'];
+                        $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
+                        $model["shippingDetails"] = [
+                            "estimated_delivery_text" => $shippingInfo["estimated_delivery_text"],
+                            "estimated_delivery_date" => $shippingInfo["estimated_delivery_date"],
+                            "label" => $carrier->getLabel(),
 //                "shop_address" => $shopAddress, // not sure?
-                    "carrier_id" => $carrier->getId(),
-                ];
-                $model["shippingShippingCostRaw"] = $shippingCostWithTax;
-                $model["shippingShippingCostWithoutTaxRaw"] = $shippingCost;
-                $model["shippingIsApplied"] = true;
-                $model['shippingErrorCode'] = null;
+                            "carrier_id" => $carrier->getId(),
+                        ];
+                        $model["shippingShippingCostRaw"] = $shippingCostWithTax;
+                        $model["shippingShippingCostWithoutTaxRaw"] = $shippingCost;
+                        $model["shippingIsApplied"] = true;
+                        $model['shippingErrorCode'] = null;
+                    }
+                }
             }
         }
 
@@ -588,8 +602,10 @@ class CartLayer
         $model['carrier_id'] = $carrierId;
         $model['carrier_label'] = $carrierLabel;
         $model['carrier_estimated_delivery_date'] = $carrierEstimatedDeliveryDate;
-        $model['carrier_has_error'] = $carrierHasError;
         $model['carrier_error_code'] = $carrierErrorCode;
+
+
+        $model['shipping_status'] = $shippingStatus;
         $model['shipping_cost_tax_excluded'] = $shippingCostTaxExcluded;
         $model['shipping_cost_tax_excluded_formatted'] = E::price($shippingCostTaxExcluded);
         $model['shipping_cost_tax_included'] = $shippingCostTaxIncluded;
@@ -741,16 +757,23 @@ class CartLayer
 
 
     /**
-     * @return CarrierInterface
+     * @return CarrierInterface|false
      */
     private static function chooseCarrier()
     {
-        $carrierId = CurrentCheckoutData::getCarrierId();
-        if (null !== $carrierId) {
+        try {
+
+            $carrierId = CurrentCheckoutData::getCarrierId();
+            if (null !== $carrierId) {
+                return CarrierLayer::getCarrierInstanceById($carrierId);
+            }
+            $carrierId = CarrierLayer::getShopDefaultCarrierId();
             return CarrierLayer::getCarrierInstanceById($carrierId);
+
+        } catch (\Exception $e) {
+            XLog::error("[Ekom.CartLayer]: chooseCarrier, exception caught -- $e");
         }
-        $carrierId = CarrierLayer::getShopDefaultCarrierId();
-        return CarrierLayer::getCarrierInstanceById($carrierId);
+        return false;
     }
 
 

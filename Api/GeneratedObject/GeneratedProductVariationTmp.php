@@ -13,13 +13,13 @@ use XiaoApi\Object\TableCrudObject;
  *
  * You are supposed to extend this object.
  */
-class GeneratedProductVariation extends TableCrudObject
+class GeneratedProductVariationTmp extends TableCrudObject
 {
 
     public function __construct()
     {
         parent::__construct();
-        $this->table = "ek_product_variation";
+        $this->table = "ek_product_variation_tmp";
         $this->primaryKey = ['id'];
     }
 

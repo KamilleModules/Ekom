@@ -32,20 +32,20 @@ use Module\Ekom\Api\Object\ProductAttributeValue;
 use Module\Ekom\Api\Object\ProductBundle;
 use Module\Ekom\Api\Object\ProductBundleHasProduct;
 use Module\Ekom\Api\Object\ProductCard;
-use Module\Ekom\Api\Object\ProductCardHasDiscount;
 use Module\Ekom\Api\Object\ProductCardHasProductAttribute;
 use Module\Ekom\Api\Object\ProductCardImage;
 use Module\Ekom\Api\Object\ProductCardType;
 use Module\Ekom\Api\Object\ProductComment;
 use Module\Ekom\Api\Object\ProductGroup;
 use Module\Ekom\Api\Object\ProductGroupHasProduct;
-use Module\Ekom\Api\Object\ProductHasDiscount;
 use Module\Ekom\Api\Object\ProductHasFeature;
 use Module\Ekom\Api\Object\ProductHasProductAttribute;
 use Module\Ekom\Api\Object\ProductHasProvider;
 use Module\Ekom\Api\Object\ProductHasTag;
 use Module\Ekom\Api\Object\ProductPurchaseStat;
 use Module\Ekom\Api\Object\ProductPurchaseStatCategory;
+use Module\Ekom\Api\Object\ProductReference;
+use Module\Ekom\Api\Object\ProductReferenceHasDiscount;
 use Module\Ekom\Api\Object\ProductVariation;
 use Module\Ekom\Api\Object\Provider;
 use Module\Ekom\Api\Object\Seller;
@@ -294,13 +294,6 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('productCard');
     }
     /**
-     * @return ProductCardHasDiscount
-     */
-    public function productCardHasDiscount()
-    {
-        return $this->getObject('productCardHasDiscount');
-    }
-    /**
      * @return ProductCardHasProductAttribute
      */
     public function productCardHasProductAttribute()
@@ -343,13 +336,6 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('productGroupHasProduct');
     }
     /**
-     * @return ProductHasDiscount
-     */
-    public function productHasDiscount()
-    {
-        return $this->getObject('productHasDiscount');
-    }
-    /**
      * @return ProductHasFeature
      */
     public function productHasFeature()
@@ -390,6 +376,20 @@ class GeneratedEkomApi extends XiaoApi
     public function productPurchaseStatCategory()
     {
         return $this->getObject('productPurchaseStatCategory');
+    }
+    /**
+     * @return ProductReference
+     */
+    public function productReference()
+    {
+        return $this->getObject('productReference');
+    }
+    /**
+     * @return ProductReferenceHasDiscount
+     */
+    public function productReferenceHasDiscount()
+    {
+        return $this->getObject('productReferenceHasDiscount');
     }
     /**
      * @return ProductVariation

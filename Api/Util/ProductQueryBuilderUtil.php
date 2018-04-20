@@ -46,6 +46,8 @@ class ProductQueryBuilderUtil
      *      - seller_name,
      *      - seller_label,
      *      - reference,
+     *      - quantity
+     *      - out_of_stock_text
      *      - label: the card label
      *      - product_slug,
      *      - product_card_slug,
@@ -88,7 +90,7 @@ class ProductQueryBuilderUtil
             $qTaxCondSubquery = "select id from ek_tax_rule_condition where ";
         }
 
-        $qPriceSubquery = "select price from ek_product_variation where product_id=p.id and ";
+        $qPriceSubquery = "select price from ek_product_variation where product_reference_id=pr.id and ";
         /**
          * Note: with the current architecture (meant to be fast, where price, discounts and taxes are part of the sql query so that
          * we can request on them), we can only have one discount per product (i.e. not multiple
@@ -121,9 +123,9 @@ select
 WHAT
  
 from ek_discount d
-inner join ek_product_has_discount phd on phd.discount_id=d.id
+inner join ek_product_reference_has_discount phd on phd.discount_id=d.id
 
-where phd.product_id=p.id and
+where phd.product_reference_id=pr.id and
 
 ";
 
@@ -204,7 +206,9 @@ pct.label as product_card_type_label,
 sel.id as seller_id,
 sel.name as seller_name,
 sel.label as seller_label,
-p.reference,
+pr.reference,
+pr.quantity,
+p.out_of_stock_text,
 if(
     '' != p.label,
     p.label,
@@ -240,10 +244,10 @@ p._popularity as popularity,
 @discountVal := ($qDiscountSubqueryValue) as discount_value,
 
 
-p.price as original_price,
+pr.price as original_price,
 @realPrice:= coalesce(
   ($qPriceSubquery),
-  p.price
+  pr.price
 ) as real_price, 
 
 @basePrice := CAST(
@@ -282,6 +286,7 @@ as base_price,
 //            ->addJoin("inner join ek_product p on p.id=c.product_id")
             ->addJoin("
 inner join ek_product p on p.product_card_id=c.id
+inner join ek_product_reference pr on pr.product_id=p.id
 inner join ek_product_card_type pct on pct.id=c.product_card_type_id
 inner join ek_seller sel on sel.id=p.seller_id
             ")
@@ -330,7 +335,7 @@ if(
     c.meta_keywords
 ) as meta_keywords,
 p.wholesale_price,
-p.quantity,
+pr.quantity,
 p.weight,
 p.out_of_stock_text,
 p.active

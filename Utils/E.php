@@ -229,9 +229,9 @@ class E
     /**
      * Return the front office lang iso code (eng, fra, ...)
      */
-    public static function langIsoCode()
+    public static function lang()
     {
-        return E::conf("langIsoCode");
+        return ApplicationRegistry::get("lang", E::conf("default_lang"));
     }
 
     /**
@@ -574,7 +574,7 @@ class E
 
         if (null === self::$conf) {
             self::$conf = [
-                'langIsoCode' => XConfig::get("Ekom.langIsoCode"),
+                'default_lang' => XConfig::get("Ekom.default_lang"),
                 'currencySymbol' => XConfig::get("Ekom.currencySymbol"),
                 'currencyIsoCode' => XConfig::get("Ekom.currencyIsoCode"),
                 'moneyFormatArgs' => XConfig::get("Ekom.moneyFormatArgs"),

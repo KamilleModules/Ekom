@@ -69,17 +69,18 @@ class ProductLayer
         return QuickPdo::fetch("
 select 
  
-concat(label, ' (ref=', reference, ')') as label 
+concat(label, ' (ref=', pr.reference, ')') as label 
  
-from ek_product 
-where id=$id  
+from ek_product p 
+inner join ek_product_reference pr on pr.product_id=p.id
+where p.id=$id  
         ", [], \PDO::FETCH_COLUMN);
     }
 
     public static function getNbOutOfStockProducts()
     {
         return QuickPdo::fetch("select count(*) as count
-from ek_product 
+from ek_product_reference
 where quantity=0    
         ", [], \PDO::FETCH_UNIQUE | \PDO::FETCH_COLUMN);
     }
@@ -104,7 +105,7 @@ order by product_id asc
 
     public static function getProductIdByRef($ref)
     {
-        return QuickPdo::fetch("select id from ek_product where reference=:ref", [
+        return QuickPdo::fetch("select product_id from ek_product_reference where reference=:ref", [
             'ref' => $ref,
         ], \PDO::FETCH_COLUMN);
     }
@@ -216,7 +217,6 @@ where p.id=$productId
     public function getLinkInfoByProductId($productId)
     {
 
-
         $productId = (int)$productId;
 
 
@@ -226,10 +226,11 @@ where p.id=$productId
             $row = QuickPdo::fetch("
 select 
 c.slug,
-p.reference
+pr.reference
 
 
-from ek_product p 
+from ek_product p
+inner join ek_product_reference pr on pr.product_id=p.id 
 inner join ek_product_card c on c.id=p.product_card_id
 
 where p.id=$productId

@@ -28,7 +28,6 @@ class Discount extends GeneratedDiscount
             $discount_id = self::getIdFromCreateUpdate(func_get_args());
 
 
-
             //--------------------------------------------
             // FOR EVERY INTERACTION WITH THE DISCOUNT TABLE,
             // we first remove all bindings in ek_product_has_discount table,
@@ -37,7 +36,7 @@ class Discount extends GeneratedDiscount
             QuickPdo::transaction(function () use ($discount_id, $data) {
 
 
-                QuickPdo::delete("ek_product_has_discount", [
+                QuickPdo::delete("ek_product_reference_has_discount", [
                     ["discount_id", "=", $discount_id],
                 ]);
 
@@ -66,11 +65,24 @@ class Discount extends GeneratedDiscount
 
                 $allProductIds = array_unique($allProductIds);
 
-                foreach ($allProductIds as $productId) {
-                    QuickPdo::insert("ek_product_has_discount", [
-                        'discount_id' => $discount_id,
-                        'product_id' => $productId,
-                    ]);
+
+                if ($allProductIds) {
+
+
+                    $sProductIds = implode(', ', $allProductIds);
+
+
+                    // convert this to references
+                    $productReferenceIds = QuickPdo::fetchAll("select id from ek_product_reference where product_id in ($sProductIds)", [], \PDO::FETCH_COLUMN);
+
+
+
+                    foreach ($productReferenceIds as $productReferenceId) {
+                        QuickPdo::insert("ek_product_reference_has_discount", [
+                            'discount_id' => $discount_id,
+                            'product_reference_id' => $productReferenceId,
+                        ]);
+                    }
                 }
 
 

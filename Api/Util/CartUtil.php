@@ -196,6 +196,18 @@ class CartUtil
 
 
     /**
+     * @see EkomModels::extendedCartModel()
+     */
+    public static function getExtendedCartModel()
+    {
+        $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
+        return [
+            "cart" => $cartModel,
+            "itemsGroupedBySeller" => self::getItemsGroupedBySeller($cartModel['items']),
+        ];
+    }
+
+    /**
      * @param array $items
      * @return array of seller_name => info, with info having the following structure:
      *
@@ -223,64 +235,55 @@ class CartUtil
         foreach ($items as $item) {
 
             $sellerName = $item['seller_name'];
-            $sellerInfo = [];
-
 
             if (false === array_key_exists($sellerName, $ret)) {
-                $sellerInfo = [
-                    'label' => "",
+                $taxDetails = [];
+                $lineTaxDetails = $item['line_tax_details'];
+                foreach ($lineTaxDetails as $taxLabel => $lineTaxAmount) {
+                    $taxDetails[$taxLabel] = [
+                        "tax_amount" => $lineTaxAmount,
+                        "tax_amount_formatted" => E::price($lineTaxAmount),
+                    ];
+                }
+                $ret[$sellerName] = [
+                    'label' => $item['seller_label'],
                     'has_tax' => false, // has at least one item with tax
                     'total_weight' => 0,
                     'total' => 0,
                     'total_formatted' => "0",
                     'total_tax_amount' => 0,
                     'total_tax_amount_formatted' => "0",
-                    'tax_details' => [],
+                    'tax_details' => $taxDetails,
                     'items' => [],
                 ];
+            } else {
+                $lineTaxDetails = $item['line_tax_details'];
+                foreach ($lineTaxDetails as $taxLabel => $lineTaxAmount) {
+                    $ret[$sellerName]["tax_details"][$taxLabel]['tax_amount'] += $lineTaxAmount;
+                    $ret[$sellerName]["tax_details"][$taxLabel]['tax_amount_formatted'] = E::price($lineTaxAmount);
+                }
             }
-
-            $taxDetails = $item['tax_details'];
-            foreach($taxDetails as $taxDetail){
-
-            }
-
 
 
             if (true === $item['has_tax']) {
-                $sellerInfo['has_tax'] = true;
+                $ret[$sellerName]['has_tax'] = true;
             }
 
 
-            $sellerInfo['total_tax_amount'] += ($item['line_sale_price'] - $item['line_base_price']);
-            $sellerInfo['total'] += $item['line_sale_price'];
-            $sellerInfo['total_weight'] += $item['weight'] * $item['cart_quantity'];
+            $ret[$sellerName]['total_tax_amount'] += ($item['line_sale_price'] - $item['line_base_price']);
+            $ret[$sellerName]['total'] += $item['line_sale_price'];
+            $ret[$sellerName]['total_weight'] += $item['weight'] * $item['cart_quantity'];
 
-            $sellerInfo['items'][] = $item;
-
-
-            $ret[$sellerName] = $sellerInfo;
+            $ret[$sellerName]['items'][] = $item;
         }
 
 
         foreach ($ret as $seller => $item) {
-            $ret[$seller]['label'] = $item['items'][0]['seller_label'];
-            $ret[$seller]['total'] = E::price($item['totalRaw']);
-            $ret[$seller]['taxAmountTotal'] = E::price($item['taxAmountTotalRaw']);
-
-            $taxDetails = $ret[$seller]['taxDetails'];
-            if ($taxDetails) {
-                foreach ($taxDetails as $k => $v) {
-                    $v['taxAmountTotal'] = E::price($v['taxAmountTotalRaw']);
-                    $taxDetails[$k] = $v;
-                }
-                $ret[$seller]['taxDetails'] = $taxDetails;
-            }
-
-            $taxHint = 0;
-            Hooks::call("Ekom_Cart_getSellerTaxHint", $taxHint, $seller, $ret[$seller]["items"]);
-            $ret[$seller]['taxHint'] = $taxHint;
+            $ret[$seller]['total_formatted'] = E::price($item['total']);
+            $ret[$seller]['total_tax_amount_formatted'] = E::price($item['total_tax_amount']);
         }
+
+
         return $ret;
     }
 
