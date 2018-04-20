@@ -39,7 +39,7 @@ class TaxLayer
 {
 
 
-    public static function getTaxDetailsInfoByTaxRuleConditionId(int $taxRuleConditionId)
+    public static function getTaxDetailsInfoByTaxRuleConditionId(int $taxRuleConditionId, $basePrice)
     {
         $rows = QuickPdo::fetchAll("
 select         
@@ -57,6 +57,14 @@ order by h.order asc
 
         ");
 
+
+        $basePriceReference = $basePrice;
+        foreach($rows as $k => $row){
+            $basePrice = $basePrice + ($basePrice * $row['value']) / 100;
+            $amount = E::trimPrice($basePrice - $basePriceReference); // the amount inferred to the price by this specific tax
+            $basePriceReference = $basePrice;
+            $rows[$k]['amount'] = $amount;
+        }
 
         return $rows;
 

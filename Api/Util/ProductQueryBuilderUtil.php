@@ -41,6 +41,10 @@ class ProductQueryBuilderUtil
      *      - product_card_id,
      *      - product_card_type_name,
      *      - product_card_type_label,
+     *      - product_card_type_label,
+     *      - seller_id,
+     *      - seller_name,
+     *      - seller_label,
      *      - reference,
      *      - label: the card label
      *      - product_slug,
@@ -197,6 +201,9 @@ p.id as product_id,
 c.id as product_card_id,
 pct.name as product_card_type_name,
 pct.label as product_card_type_label,
+sel.id as seller_id,
+sel.name as seller_name,
+sel.label as seller_label,
 p.reference,
 if(
     '' != p.label,
@@ -276,6 +283,7 @@ as base_price,
             ->addJoin("
 inner join ek_product p on p.product_card_id=c.id
 inner join ek_product_card_type pct on pct.id=c.product_card_type_id
+inner join ek_seller sel on sel.id=p.seller_id
             ")
             ->addWhere(" and p.active=1 and c.active=1")
             /**
@@ -299,9 +307,6 @@ inner join ek_product_card_type pct on pct.id=c.product_card_type_id
     {
         $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($userContext);
         $sqlQuery->addField("
-s.id as seller_id,
-s.name as seller_name,
-s.label as seller_label,
 m.id as manufacturer_id,
 m.name as manufacturer_name,
 if(
@@ -333,7 +338,6 @@ p.active
 
         ");
         $sqlQuery->addJoin("
-inner join ek_seller s on s.id=p.seller_id
 left join ek_manufacturer m on m.id=p.manufacturer_id
 ");
         return $sqlQuery;

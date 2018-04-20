@@ -26,7 +26,7 @@ use Module\Ekom\Utils\DistanceEstimator\DistanceEstimatorInterface;
 use Module\Ekom\Utils\E;
 use Module\ThisApp\ThisAppConfig;
 
-class CartUtil
+class CartUtilOld
 {
 
 
@@ -199,17 +199,16 @@ class CartUtil
      * @param array $items
      * @return array of seller_name => info, with info having the following structure:
      *
-     * - label: the seller label
      * - has_tax: bool, Whether at least one item had the tax applied to it
-     * - total_weight: the total weight for this group (in kg)
      * - total: the sum of the items sale_price
      * - total_formatted
-     * - total_tax_amount: the total amount of tax collected for this seller
-     * - total_tax_amount_formatted
-     * - tax_details: an array of tax amounts grouped by tax for the current seller group.
-     *                  It's an array of tax_label => tax_info, with tax_info:
-     *                      - tax_amount: the sum of the individual tax amounts for each item of that seller group.
-     *                      - tax_amount_formatted
+     * - tax_amount_total: the total amount of tax collected for this seller
+     * - tax_amount_total_formatted
+     * - taxDetails: an array, each entry representing a tax group applied to at least one product for this seller.
+     *              Each entry is an array of taxGroupName to item, each item being an array with the following structure:
+     *              - taxGroupLabel: string, the tax group label
+     *              - taxAmountTotalRaw: number, the cumulated amount coming from this tax group for this seller
+     *              - taxAmountTotal: the formatted version of taxAmountTotalRaw
      *
      * - items: the items for the current seller
      *
@@ -222,44 +221,49 @@ class CartUtil
 
         foreach ($items as $item) {
 
-            $sellerName = $item['seller_name'];
-            $sellerInfo = [];
+            $seller = $item['seller'];
 
 
-            if (false === array_key_exists($sellerName, $ret)) {
-                $sellerInfo = [
-                    'label' => "",
-                    'has_tax' => false, // has at least one item with tax
-                    'total_weight' => 0,
+            if (false === array_key_exists($seller, $ret)) {
+
+
+                $ret[$seller] = [
+                    'label' => [],
+                    /**
+                     * taxHint is a number indicating
+                     * the type of visual hint to display next to the price totals
+                     * for every seller.
+                     *
+                     * - 0: none
+                     * - 1: no tax (HT in french)
+                     * - 2: with tax (TTC in french)
+                     *
+                     */
+                    'taxHint' => 0,
                     'total' => 0,
-                    'total_formatted' => "0",
-                    'total_tax_amount' => 0,
-                    'total_tax_amount_formatted' => "0",
-                    'tax_details' => [],
+                    'cartWeight' => 0,
+                    'taxAmountTotalRaw' => 0,
+                    'taxAmountTotal' => 0,
+                    'totalRaw' => 0,
+                    'taxDetails' => [],
                     'items' => [],
                 ];
             }
 
-            $taxDetails = $item['tax_details'];
-            foreach($taxDetails as $taxDetail){
-
+            if (!array_key_exists($item['taxGroupName'], $ret[$seller]['taxDetails'])) {
+                $ret[$seller]['taxDetails'][$item['taxGroupName']] = [
+                    'taxGroupLabel' => $item['taxGroupLabel'],
+                    'taxAmountTotalRaw' => 0,
+                    'taxAmountTotal' => 0,
+                ];
             }
 
 
-
-            if (true === $item['has_tax']) {
-                $sellerInfo['has_tax'] = true;
-            }
-
-
-            $sellerInfo['total_tax_amount'] += ($item['line_sale_price'] - $item['line_base_price']);
-            $sellerInfo['total'] += $item['line_sale_price'];
-            $sellerInfo['total_weight'] += $item['weight'] * $item['cart_quantity'];
-
-            $sellerInfo['items'][] = $item;
-
-
-            $ret[$sellerName] = $sellerInfo;
+            $ret[$seller]['taxDetails'][$item['taxGroupName']]['taxAmountTotalRaw'] += $item['taxAmount'];
+            $ret[$seller]['taxAmountTotalRaw'] += $item['taxAmount'];
+            $ret[$seller]['totalRaw'] += $item['priceLineRaw'];
+            $ret[$seller]['cartWeight'] += $item['weight'] * $item['quantityCart'];
+            $ret[$seller]['items'][] = $item;
         }
 
 

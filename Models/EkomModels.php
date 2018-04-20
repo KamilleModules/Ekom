@@ -107,6 +107,7 @@ class EkomModels
      *      - value: in percent
      *      - label
      *      - mode: not used today, but represents the tax combining mode (in case there are multiple taxes assigned to this product)
+     *      - amount: the amount of tax collected for this item
      *
      * - discount_details: array of discount items (as of today, only one discount is applied max per product, but this could change...). Each item:
      *      - label
@@ -137,6 +138,7 @@ class EkomModels
      *      - line_base_price_formatted
      *      - line_sale_price
      *      - line_sale_price_formatted
+     *      - line_tax_details: array of tax label => tax amount for this line (the tax amount for one unit x quantity)
      *
      * - cart_total_weight: in kg
      * - cart_total_quantity
@@ -148,10 +150,10 @@ class EkomModels
      * - cart_discount_amount_formatted
      * - cart_tax_amount
      * - cart_tax_amount_formatted
-     * - cart_tax_distribution: indicates how taxes were distributed amongst the products of this cart.
+     * - cart_tax_distribution: the tax of the items of this cart, grouped by tax.
      *      It's an array of tax_label => item, each item:
      *          - tax_value
-     *          - amount: the amount of the cart total distributed to this tax
+     *          - amount: sum of tax amounts of the cart items bound to this tax
      *          - amount_formatted
      *
      *

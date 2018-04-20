@@ -470,6 +470,12 @@ class CartLayer
                 $cartDiscountAmount += $discountAmount;
             }
 
+
+            $lineTaxDetails = [];
+            foreach($boxModel['tax_details'] as $taxDetail){
+                $lineTaxDetails[$taxDetail['label']] = $cartQuantity * $taxDetail['amount'];
+            }
+
             TaxLayer::decorateTaxDistribution($cartTaxDistribution, $boxModel['base_price'], $boxModel['tax_details']);
 
 
@@ -481,6 +487,7 @@ class CartLayer
             $boxModel['line_base_price_formatted'] = E::price($lineBasePrice);
             $boxModel['line_sale_price'] = $lineSalePrice;
             $boxModel['line_sale_price_formatted'] = E::price($lineSalePrice);
+            $boxModel['line_tax_details'] = $lineTaxDetails;
 
             $modelItems[] = $boxModel;
 

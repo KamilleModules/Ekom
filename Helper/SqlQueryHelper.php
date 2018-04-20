@@ -10,16 +10,26 @@ use SqlQuery\SqlQueryInterface;
 
 class SqlQueryHelper
 {
-    public static function getCategoryWithFiltersSqlQueryByCategoryId(int $categoryId): SqlQueryInterface
+
+    /**
+     * @param int $categoryId
+     * @return SqlQueryInterface|false
+     */
+    public static function getCategoryWithFiltersSqlQueryByCategoryId(int $categoryId)
     {
 
         $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
         $cardIds = ProductCardLayer::getProductCardIdsByCategoryId($categoryId);
-        $sCardIds = implode(', ', $cardIds);
-        $sqlQuery->addWhere(" and c.id in ($sCardIds)");
+        if ($cardIds) {
+
+
+            $sCardIds = implode(', ', $cardIds);
+            $sqlQuery->addWhere(" and c.id in ($sCardIds)");
 
 
 //        self::decorateSqlQueryWithListStaticParams($sqlQuery, $listParams);
-        return $sqlQuery;
+            return $sqlQuery;
+        }
+        return false;
     }
 }

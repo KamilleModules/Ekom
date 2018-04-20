@@ -16,8 +16,6 @@ use QuickPdo\QuickPdo;
  * 2018-04-19
  *
  * This object represents a cart item.
- * A cart item is like the miniBox model,
- * @see EkomModels::miniBoxModel(), but has a few more properties.
  * @see EkomModels::cartItemBoxModel()
  *
  *
@@ -64,7 +62,7 @@ class CartItemBoxLayer
         $row['selected_product_details'] = $selectedProductDetails; // map
 
 
-        $row['tax_details'] = TaxLayer::getTaxDetailsInfoByTaxRuleConditionId($row['tax_rule_condition_id']);
+        $row['tax_details'] = TaxLayer::getTaxDetailsInfoByTaxRuleConditionId($row['tax_rule_condition_id'], $row['base_price']);
         /**
          * as for now we only have ONE discount max per product, but in the future we could evolve...
          */
