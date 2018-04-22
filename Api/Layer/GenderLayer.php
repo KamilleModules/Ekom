@@ -12,11 +12,12 @@ class GenderLayer
 {
 
 
-    public static function getListItems()
+    public static function getListItems(bool $useLongLabel = true): array
     {
-        return QuickPdo::fetchAll('
-select id, label
+        $word = (true === $useLongLabel) ? 'long_label' : 'label';
+        return QuickPdo::fetchAll("
+select id, $word
 from ek_gender
-', [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
 }

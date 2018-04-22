@@ -33,6 +33,7 @@ class GeneratedGender extends TableCrudObject
 			'id' => null,
 			'name' => '',
 			'label' => '',
+			'long_label' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

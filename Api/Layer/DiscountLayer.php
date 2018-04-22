@@ -44,8 +44,6 @@ use QuickPdo\QuickPdo;
 class DiscountLayer
 {
 
-
-
     public static function getDiscountTypes()
     {
         return [

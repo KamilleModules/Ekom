@@ -40,7 +40,7 @@ class LoginController extends EkomFrontController
         if (array_key_exists($model['nameKey'], $_POST) && $key === $_POST[$model['nameKey']]) {
 
 
-            $errorMsg = "The entry does not not exist in the database, or the password doesn't match";
+            $errorMsg = "Cette entrée n'existe pas dans la base de données, ou bien le mot de passe n'est pas le bon";
 
             $model['valueEmail'] = $_POST[$model['nameEmail']];
             $model['valuePass'] = $_POST[$model['namePass']];

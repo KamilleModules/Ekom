@@ -105,7 +105,7 @@ class UserAddressSokoForm
             ->addValidationRule("address", SokoNotEmptyValidationRule::create())
             ->addValidationRule("city", SokoNotEmptyValidationRule::create())
             ->addValidationRule("postcode", SokoNotEmptyValidationRule::create())
-            ->addValidationRule("phone_prefix", SokoNotEmptyValidationRule::create())
+//            ->addValidationRule("phone_prefix", SokoNotEmptyValidationRule::create())
             ->addValidationRule("phone", SokoNotEmptyValidationRule::create())
             ->addValidationRule("country", SokoInArrayValidationRule::create()
                 ->setErrorMessage("Veuillez choisir un pays")
@@ -121,8 +121,11 @@ class UserAddressSokoForm
     //--------------------------------------------
     private static function getCountryChoices()
     {
-        $list = EkomApi::inst()->countryLayer()->getCountryList();
-        array_unshift($list, "Veuillez choisir un pays");
+        $countryList = EkomApi::inst()->countryLayer()->getCountryList();
+        $list = [
+            "Veuillez choisir un pays",
+        ];
+        $list += $countryList;
         return $list;
     }
 }

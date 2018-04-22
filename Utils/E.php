@@ -20,6 +20,8 @@ use Kamille\Services\XConfig;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
+use Module\Ekom\Api\Layer\ConnexionLayer;
+use Module\Ekom\Api\Layer\DiscountLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
 use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Exception\EkomException;
@@ -99,7 +101,8 @@ class E
      * exact same derived contexts (price, discount and tax contexts).
      *
      * Therefore, the hashed version of the user context is a good candidate for a cache identifier for encapsulating
-     * a product.
+     * a product, and by extension a product list.
+     *
      *
      *
      *
@@ -109,24 +112,78 @@ class E
     public static function getUserContext()
     {
         if (null === self::$userContext) {
-            self::$userContext = [
-                "user_id" => null,
-                "user_group_id" => null,
-                "origin_country" => null,
-                "shipping_country" => null,
-                "billing_country" => null,
-            ];
+            self::buildUserContext();
         }
         return self::$userContext;
     }
 
     /**
      * This method is the only method allowed to change the user context in ekom.
+     * Call this method whenever the user context changes:
+     *
+     * - the user disconnects from her account
+     * - the user connects to her account
+     * - the user is connected and changes some sensible data of her account
+     *
      */
     public static function refreshUserContext()
     {
-        // todo...
+        if (E::userIsConnected()) {
+            $userId = E::getUserId();
+
+            // we need to update the connexionData, which is the source of the UserContext when the user is connected
+            $connexionData = ConnexionLayer::buildConnexionDataByUserId($userId);
+            SessionUser::setValues($connexionData);
+        }
+        self::buildUserContext();
     }
+
+    private static function buildUserContext()
+    {
+
+        /**
+         * Here we set the base user context,
+         * and then pass it to modules in case they want to extend/override it.
+         */
+        $dateSegment = date('Y-m-d') . " 00:00:00"; // modules will decide, ekom provide one segment per day by default
+        $userId = null;
+        $connexionData = [];
+
+        if (E::userIsConnected()) {
+            $userId = E::getUserId();
+            $connexionData = ConnexionLayer::getConnexionData();
+            $userContext = [
+                "time_segment" => $dateSegment,
+                "user_group_id" => $connexionData['user_group_id'],
+                "user_group_name" => $connexionData['user_group_name'],
+                "shipping_country" => $connexionData['default_shipping_country'],
+                "billing_country" => $connexionData['default_billing_country'],
+            ];
+
+
+        } else {
+            $userContext = [
+                "time_segment" => $dateSegment,
+                "user_group_id" => null,
+                "user_group_name" => null,
+                "shipping_country" => null,
+                "billing_country" => null,
+            ];
+        }
+
+        /**
+         * userId=null means the user is not connected and the connexionData is empty.
+         * Note: it is recommended that you don't create new data with this hook,
+         * but rather just use the data that you create in the
+         * Ekom_Connexion_decorateUserConnexionData hook, which is called
+         * only when the user connects or the data changes, whereas the hooks
+         * below gets called on every page (i.e. you don't want to create an
+         * unnecessary sql query on every request...).
+         */
+        Hooks::call("Ekom_UserContext_decorateUserContext", $userContext, $connexionData, $userId);
+        self::$userContext = $userContext;
+    }
+
 
 //    public static function getProductBoxContext()
 //    {
@@ -143,16 +200,14 @@ class E
 //        HashTool::getHashByArray(self::getProductBoxContext());
 //    }
 
-    public static function getTaxContext(array $userContext = null)
+    public static function getTaxContext()
     {
         if (true === self::isBackOffice()) {
             return [];
         } else {
 
-            if (null === $userContext) {
-                $userContext = E::getUserContext();
-            }
 
+            $userContext = E::getUserContext();
             $taxContext = [
                 "cond_user_group_id" => $userContext['user_group_id'],
                 "cond_extra1" => null,
@@ -205,8 +260,8 @@ class E
                  * so for instance if you implement a 2 date segments per day,
                  * you would return 2018-04-16 00:00:00 and 2018-04-16 12:00:00.
                  */
-                "datetime" => date('Y-m-d H:i:s'), // here I'm using a fluid no cache strategy for now...
-                "cond_user_group_id" => null,
+                "datetime" => $userContext['time_segment'],
+                "cond_user_group_id" => $userContext['user_group_id'],
                 "cond_extra1" => null,
             ];
             Hooks::call("Ekom_decoratePriceContext", $priceContext, $userContext);
@@ -481,11 +536,11 @@ class E
     /**
      * Send a front office mail
      */
-    public static function sendMail($mailType, $recipient, array $variables = [])
+    public static function sendMail(string $template, string $recipient, array $variables = [])
     {
         if (true === XConfig::get("Ekom.mailEnable")) {
-            Hooks::call("Ekom_Mailer_decorateVariables", $variables, $mailType, $recipient);
-            return FishMailerService::create()->sendMail($mailType, $recipient, $variables);
+            Hooks::call("Ekom_Mailer_decorateVariables", $variables, $template, $recipient);
+            return FishMailerService::create()->sendFishMailByTemplate($recipient, $template, $variables);
         }
         return true;
     }

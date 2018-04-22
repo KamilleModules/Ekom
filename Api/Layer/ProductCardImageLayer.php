@@ -52,9 +52,14 @@ order by position asc
 
         $rows = QuickPdo::fetchAll($q);
         foreach ($rows as $k => $row) {
-            $rows[$k]['is_default'] = (bool)$row['is_default'];
-            $rows[$k]['uri'] = ImageLayer::getCardProductImageUriByImageId($row['id']);
+            $uri = ImageLayer::getCardProductImageUriByImageId($row['id']);
+            if (null !== $uri) {
+                $rows[$k]['is_default'] = (bool)$row['is_default'];
+                $rows[$k]['uri'] = ImageLayer::getCardProductImageUriByImageId($row['id']);
 //            $rows[$k]['alt'] = $row['alt']; // alt should be given by the database, right?
+            } else {
+                unset($rows[$k]);
+            }
         }
 
         return $rows;

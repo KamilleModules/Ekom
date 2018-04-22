@@ -11,6 +11,29 @@ class StoreLayer
 {
 
 
+
+    public static function getPhysicalAddressById(int $addressId){
+
+
+        $q = "
+            select 
+a.*,
+c.iso_code as country_iso_code,
+c.label as country
+
+from ek_store h 
+inner join ek_address a on a.id=h.address_id 
+inner join ek_country c on c.id=a.country_id 
+
+where 
+a.id=$addressId
+and a.active=1
+";
+
+
+        return QuickPdo::fetch($q);
+    }
+
     public static function hasStoreByLabel(string $label)
     {
         $res = QuickPdo::fetch("

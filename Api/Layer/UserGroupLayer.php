@@ -13,6 +13,11 @@ class UserGroupLayer
 {
 
 
+    public static function getGroupIdByName(string $name)
+    {
+        return QuickPdo::fetch("select id from ek_user_group where name=:name", ["name" => $name], \PDO::FETCH_COLUMN);
+    }
+
     public static function getDefaultGroupId()
     {
         $q = "select id from ek_user_group where name=:name";

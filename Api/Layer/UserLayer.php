@@ -202,24 +202,6 @@ where u.id=$userId");
     }
 
 
-    //--------------------------------------------
-    // USER PERSONAL
-    //--------------------------------------------
-    /**
-     * Used to get the user account (view/template) information
-     * @return false|array
-     */
-    public function getAccountInfo($userId)
-    {
-        $groupId2Names = $this->getUserGroupNames($userId);
-        if (false !== ($info = $this->getUserInfo($userId))) {
-            $info['groups'] = $groupId2Names;
-            return $info;
-        }
-        return false;
-    }
-
-
     /**
      * Data should be filtered before hand, it's assumed to be sanitized.
      * It's an array containing the following:
@@ -253,33 +235,16 @@ where u.id=$userId");
         $ok = QuickPdo::transaction(function () use ($data, &$hookData) {
 
 
-
-            az(__FILE__, $data);
             if (!array_key_exists("active_hash", $data['ek_user'])) {
                 $data['ek_user']['active_hash'] = HashTool::getRandomHash64();
             }
-            $userId = EkomApi::inst()->user()->create($data['ek_user']);
+            $userId = User::getInst()->create($data['ek_user']);
 
 
             $hookData = [
                 "user_id" => $userId,
                 "data" => $data,
             ];
-
-            if (array_key_exists("groups", $data)) {
-                $groups = $data["groups"];
-                $groupIds = [];
-                foreach ($groups as $group) {
-                    $groupId = EkomApi::inst()->userGroupLayer()->createGroupIfNotExist([
-                        "name" => $group,
-                    ]);
-                    EkomApi::inst()->userHasGroupLayer()->bindUser2Group($userId, $groupId);
-                    $groupIds[] = $groupId;
-                }
-                $hookData['groupIds'] = $groupIds;
-            }
-
-
             Hooks::call("Ekom_createAccountAfter", $hookData);
 
 
@@ -330,62 +295,13 @@ where u.id=$userId");
         return 0;
     }
 
-
-    public function getUserGroupIds($userId)
+    public static function getPasswordById(int $userId)
     {
-        return A::cache()->get("Ekom.UserLayer.getUserGroupIds.$userId", function () use ($userId) {
-
-            $userId = (int)$userId;
-            return EkomApi::inst()->userHasUserGroup()->readValues("user_group_id", [
-                "where" => [
-                    ["user_id", "=", $userId],
-                ],
-            ]);
-        }, [
-            "ek_user_has_user_group.delete.$userId",
-            "ek_user_has_user_group.update.$userId",
-        ]);
-    }
-
-    public function hasGroup($groupName, $userId = null)
-    {
-        if (null === $userId) {
-            $userId = E::getUserId(null);
-            if (null === $userId) {
-                return false;
-            }
-        }
-        $groups = $this->getUserGroupNames($userId);
-        return in_array($groupName, $groups);
-    }
-
-
-    /**
-     * @param $userId
-     * @return array of groupId => groupName owned by user which id is given
-     */
-    public function getUserGroupNames($userId)
-    {
-        /**
-         * @todo-ling: remove forceGenerate cache
-         */
-        return A::cache()->get("Ekom.UserLayer.getUserGroupNames.$userId", function () use ($userId) {
-
-            $userId = (int)$userId;
-            return QuickPdo::fetchAll("
-select g.id, g.name 
-from ek_user_group g 
-inner join ek_user_has_user_group h on h.user_group_id=g.id
-where h.user_id=$userId             
-            ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
-        }, true);
+        return QuickPdo::fetch("select pass from ek_user where id=$userId", [], \PDO::FETCH_COLUMN);
     }
 
     public function getUserInfo($userId)
     {
-        /**
-         * @todo-ling: remove forceGenerate cache
-         */
         return A::cache()->get("Ekom.UserLayer.getUserInfo.$userId", function () use ($userId) {
 
             $userId = (int)$userId;
@@ -394,7 +310,7 @@ select *
 from ek_user
 where id=$userId             
             ");
-        }, true);
+        });
     }
 
 

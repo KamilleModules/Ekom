@@ -125,14 +125,6 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                     }
                 }
 
-
-                //
-                $selectedShopAddressId = CurrentCheckoutData::getShopAddressId();
-                if (null === $selectedShopAddressId) {
-                    $selectedShopAddress = ShopLayer::getDefaultShopAddress();
-                    $selectedShopAddressId = $selectedShopAddress['id'];
-                }
-
                 // which one is selected in the gui?
                 $selectedAddressId = CurrentCheckoutData::getShippingAddressId();
                 if (null === $selectedAddressId) {
@@ -180,7 +172,6 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                 $ret['shippingAddress'] = $shippingAddress;
                 $ret['billingAddress'] = $billingAddress;
                 $ret['carrierId'] = $selectedCarrierId;
-                $ret['shopAddressId'] = $selectedShopAddressId;
                 $ret['shippingComments'] = $shippingComments;
                 $ret['context'] = $this->context;
             } else {

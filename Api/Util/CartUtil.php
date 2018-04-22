@@ -551,9 +551,9 @@ class CartUtil
         /**
          * If the shop address was already SELECTED (by ekom), then use this address
          */
-        $addressId = CurrentCheckoutData::getShopAddressId();
+        $addressId = CurrentCheckoutData::getStoreAddressId();
         if (null !== $addressId) {
-            return ShopLayer::getPhysicalAddressById($addressId);
+            return StoreLayer::getPhysicalAddressById($addressId);
         }
 
         /**

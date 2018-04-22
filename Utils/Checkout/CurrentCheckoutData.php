@@ -80,14 +80,14 @@ class CurrentCheckoutData
         self::set("billing_address_id", $id);
     }
 
-    public static function getShopAddressId()
+    public static function getStoreAddressId()
     {
-        return self::get("shop_address_id", null);
+        return self::get("store_address_id", null);
     }
 
-    public static function setShopAddressId($id)
+    public static function setStoreAddressId($id)
     {
-        self::set("shop_address_id", $id);
+        self::set("store_address_id", $id);
     }
 
     public static function getPaymentMethodId()

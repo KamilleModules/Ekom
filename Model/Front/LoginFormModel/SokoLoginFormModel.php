@@ -63,7 +63,6 @@ class SokoLoginFormModel
                 ->setChoices([
                     "1" => "Mémoriser mes informations sur cet ordinateur",
                 ])
-
                 ->setValue($memorize)
             );
 
@@ -77,7 +76,7 @@ class SokoLoginFormModel
 
             $email = $context['email'];
             $pass = $context['pass'];
-            $errorMsg = "The entry does not not exist in the database, or the password doesn't match";
+            $errorMsg = "Cet utilisateur n'existe pas dans notre base de données, ou bien le mot de passe ne correspond pas.";
 
 
             //--------------------------------------------
@@ -106,7 +105,7 @@ class SokoLoginFormModel
                         //--------------------------------------------
                         // CONNECT THE USER
                         //--------------------------------------------
-                        $data = ConnexionLayer::getConnexionDataByUserId($userId);
+                        $data = ConnexionLayer::buildConnexionDataByUserId($userId);
                         EkomApi::inst()->connexionLayer()->connect($data);
                         Hooks::call("Ekom_onUserConnectedAfter");
 

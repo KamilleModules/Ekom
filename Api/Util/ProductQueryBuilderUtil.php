@@ -337,7 +337,6 @@ if(
 p.wholesale_price,
 pr.quantity,
 p.weight,
-p.out_of_stock_text,
 p.active
 
 

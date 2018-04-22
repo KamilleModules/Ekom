@@ -4,6 +4,7 @@
 namespace Module\Ekom\Models;
 
 use Module\Ekom\Api\Layer\CartItemBoxLayer;
+use Module\Ekom\Api\Layer\ConnexionLayer;
 use Module\Ekom\Api\Util\CartUtil;
 
 
@@ -415,6 +416,43 @@ class EkomModels
     private function categoryModel()
     {
         return [];
+    }
+
+
+    /**
+     * connexionData
+     * ===============
+     *
+     * @see ConnexionLayer::getConnexionDataByUserId()
+     *
+     *
+     * (the base connexion data)
+     * - id
+     * - email
+     * - user_group_id
+     * - user_group_name
+     * - user_group_label
+     * - gender_id
+     * - gender_name
+     * - gender_label
+     * - gender_long_label
+     * - default_shipping_address_id: string|null
+     * - default_shipping_country_id: string|null
+     * - default_shipping_country: string|null
+     * - default_billing_address_id: string|null
+     * - default_billing_country_id: string|null
+     * - default_billing_country: string|null
+     *
+     * (the extension of the connexion data)
+     * - ...other properties set by modules,
+     *              Ekom recommends that those are predictable for a given base connexionData array,
+     *              unless your modules handle the connexionData update (@see ConnexionLayer::getConnexionDataByUserId())
+     *
+     *
+     */
+    private function connexionData()
+    {
+
     }
 
 

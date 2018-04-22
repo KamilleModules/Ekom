@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 
 use Bat\FileSystemTool;
 use Core\Services\A;
+use Kamille\Services\XLog;
 use Module\Ekom\Utils\E;
 use ThumbnailTools\ThumbnailTool;
 
@@ -182,6 +183,7 @@ class ImageLayer
                 return $uriBase . $extension;
             }
         }
+        XLog::error("[Ekom.ImageLayer] -- image with id $imageId not found in the file system: $uriBase.$extension");
     }
 
 
