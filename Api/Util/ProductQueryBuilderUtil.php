@@ -300,7 +300,7 @@ inner join ek_seller sel on sel.id=p.seller_id
              * See this topic: https://dba.stackexchange.com/questions/50391/why-does-mysql-allow-having-to-use-select-aliases
              *
              */
-            ->addGroupBy('p.id')
+            ->addGroupBy('pr.reference')
             ->addMarkers($markers);
 
         return $sqlQuery;
