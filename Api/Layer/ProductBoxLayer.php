@@ -52,160 +52,29 @@ class ProductBoxLayer
      *
      * @param array|null $userContext
      */
-    public static function getProductBoxByProductId(int $productId, array $selectedProductDetails = [], array $userContext = null)
-    {
+//    public static function getProductBoxByProductId(int $productId, array $selectedProductDetails = [], array $userContext = null)
+//    {
+//
+//        $sqlQuery = ProductQueryBuilderUtil::getMaxiQuery($userContext);
+//        $sqlQuery->addWhere("and p.id=$productId");
+//        return self::getProductBoxBySqlQuery($sqlQuery, $selectedProductDetails, $userContext);
+//
+//    }
 
-        $sqlQuery = ProductQueryBuilderUtil::getMaxiQuery($userContext);
-        $sqlQuery->addWhere("and p.id=$productId");
-        return self::getProductBoxBySqlQuery($sqlQuery, $selectedProductDetails, $userContext);
+    public static function getProductBoxByProductReferenceId(int $productReferenceId)
+    {
+        $sqlQuery = ProductQueryBuilderUtil::getMaxiQuery();
+        $sqlQuery->addWhere("and pr.id=$productReferenceId");
+        return self::getProductBoxBySqlQuery($sqlQuery);
 
     }
-
-
-
-    //--------------------------------------------
-    // PRODUCT BOX
-    //--------------------------------------------
-    public static function getProductBoxByCardId($cardId, $productId = null, array $productDetailsArgs = [], array $gpc = null)
-    {
-        $e = ProductBoxEntity::create()
-            ->setProductCardId($cardId)
-            ->setProductId($productId)
-            ->setProductDetails($productDetailsArgs);
-        if (null !== $gpc) {
-            $e->setGeneralContext($gpc);
-        }
-
-        return $e->getModel();
-    }
-
 
 
     //--------------------------------------------
     // PRODUCT BOX LIST
     //--------------------------------------------
-    public static function getProductBoxListByCardIds(array $cardIds, array $gpc = null)
-    {
-        /**
-         * This is a low level method and is not cached.
-         *
-         * This method is not cached for a few reasons:
-         *
-         * - cart uses them
-         * - developer could use them as tool for their own development, and we don't want the
-         *      cache to interfere with that
-         *
-         * You should use a wrapper if speed is an issue.
-         */
-        $boxes = [];
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
-        foreach ($cardIds as $cardId) {
-            $boxes[] = ProductBoxEntity::create()
-                ->setProductCardId($cardId)
-                ->setGeneralContext($gpc)
-                ->getModel();
-        }
-        return $boxes;
-    }
 
-    public static function getProductBoxListByProductIds(array $productIds, array $gpc = null)
-    {
-        /**
-         * This is a low level method and is not cached.
-         *
-         * This method is not cached for a few reasons:
-         *
-         * - cart uses them
-         * - developer could use them as tool for their own development, and we don't want the
-         *      cache to interfere with that
-         *
-         * You should use a wrapper if speed is an issue.
-         */
-        $id2cardIds = ProductCardLayer::getProductId2CardIdByProductIds($productIds);
-        $boxes = [];
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
-        foreach ($id2cardIds as $productId => $cardId) {
-            $boxes[] = ProductBoxEntity::create()
-                ->setProductCardId($cardId)
-                ->setProductId($productId)
-                ->setGeneralContext($gpc)
-                ->getModel();
-        }
-        return $boxes;
-    }
-
-
-    public static function getProductBoxListByCategoryName($categoryName, array $gpc = null)
-    {
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
-        $shopId = $gpc['shop_id'];
-        $langId = $gpc['lang_id'];
-        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getProductBoxListByCategoryName.$shopId.$langId.$categoryName");
-        return A::cache()->get($hashString, function () use ($categoryName, $shopId, $gpc) {
-            $ids = CategoryLayer::getCardIdsByCategoryName($categoryName, $shopId, true);
-            return self::getProductBoxListByCardIds($ids, $gpc);
-        });
-    }
-
-    /**
-     * ek_product_group
-     * @param $groupName
-     * @return array
-     */
-    public static function getProductBoxListByGroupName($groupName, array $gpc = null)
-    {
-        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
-        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getProductBoxListByGroupName.$groupName");
-        return A::cache()->get($hashString, function () use ($groupName, $gpc) {
-            $ids = ProductGroupLayer::getProductIdsByGroup($groupName);
-            return self::getProductBoxListByProductIds($ids, $gpc);
-        });
-    }
-
-
-
-//    public static function getLastVisitedProductBoxList($userId, array $gpc = null)
-//    {
-//        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext($gpc);
-//        $shopId = $gpc['shop_id'];
-//        $langId = $gpc['lang_id'];
-//        $hashString = ProductBoxEntityUtil::hashify("Ekom.ProductBoxLayer.getLastVisitedProductBoxListByCardId.$shopId.$langId.$userId");
-//        $gpc = ProductBoxEntityUtil::getProductBoxGeneralContext();
-//        return A::cache()->get($hashString, function () use ($userId, $shopId, $gpc) {
-//            /**
-//             * @var $history UserProductHistoryInterface
-//             */
-//            $boxes = [];
-//            $history = X::get("EkomUserProductHistory_UserProductHistory");
-//            $productsInfo = $history->getLastVisitedProducts($userId, 7);
-//            $id2Details = [];
-//            foreach ($productsInfo as $info) {
-//                list($productId, $productDetails) = $info;
-//
-//                if ($productDetails) {
-//                    $details = array_merge($productDetails['major'], $productDetails['minor']);
-//                } else {
-//                    $details = [];
-//                }
-//
-//                $id2Details[$productId] = $details;
-//            }
-//            $id2cardIds = ProductCardLayer::getProductId2CardIdByProductIds(array_keys($id2Details));
-//            foreach ($id2cardIds as $productId => $cardId) {
-//                $details = $id2Details[$productId];
-//                $boxes[] = ProductBoxEntity::create()
-//                    ->setProductCardId($cardId)
-//                    ->setProductId($productId)
-//                    ->setProductDetails($details)
-//                    ->setGeneralContext($gpc)
-//                    ->getModel();
-//            }
-//            return $boxes;
-//        });
-//    }
-
-
-    private static function getProductBoxBySqlQuery(SqlQueryInterface $sqlQuery, array $selectedProductDetails = [], array $userContext = null)
+    private static function getProductBoxBySqlQuery(SqlQueryInterface $sqlQuery)
     {
         $q = $sqlQuery->getSqlQuery();
         $markers = $sqlQuery->getMarkers();
@@ -213,8 +82,32 @@ class ProductBoxLayer
 
         MiniProductBoxLayer::sugarify($row);
 
-        $row['selected_product_details'] = $selectedProductDetails;
+
+        /**
+         * Note:
+         * the productBox needs to provide two properties:
+         *
+         * - attributes_list
+         * - product_details_list
+         *
+         * which detailed structure is still under discussion, but probably will look like this (for both):
+         *
+         * - 0:
+         *      - name
+         *      - value
+         *      - label
+         *      - selected
+         *      - ?ajax_product_uri: the uri to call to update the product box, this property presence is under discussion,
+         *              but for seo reasons, has been voted out (not worth it).
+         *
+         * There is no rule about how to produce those lists, but in Ekom the implementation discussion
+         * starts here: class-modules/Ekom/doc/product-box/product-box-modifiers.md
+         *
+         */
+
+        $selectedProductDetails = []; // todo: ask modules via hooks
         $productDetailsList = []; // todo: ask modules via hooks
+        $row['selected_product_details'] = $selectedProductDetails;
         $row['product_details_list'] = $productDetailsList;
 
 
@@ -245,6 +138,7 @@ class ProductBoxLayer
         $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($row['product_card_id']);
         $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $row['product_id']);
         $row['attributes_list'] = $attr;
+        
 
 
         return $row;

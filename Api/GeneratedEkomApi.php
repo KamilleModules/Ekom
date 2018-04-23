@@ -62,7 +62,8 @@ use Module\Ekom\Api\Object\Timezone;
 use Module\Ekom\Api\Object\User;
 use Module\Ekom\Api\Object\UserGroup;
 use Module\Ekom\Api\Object\UserHasAddress;
-use Module\Ekom\Api\Object\UserHasProduct;
+use Module\Ekom\Api\Object\UserHasProductReference;
+use Module\Ekom\Api\Object\UserVisitedProductReference;
 
 use XiaoApi\Api\XiaoApi;
 
@@ -505,10 +506,17 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('userHasAddress');
     }
     /**
-     * @return UserHasProduct
+     * @return UserHasProductReference
      */
-    public function userHasProduct()
+    public function userHasProductReference()
     {
-        return $this->getObject('userHasProduct');
+        return $this->getObject('userHasProductReference');
+    }
+    /**
+     * @return UserVisitedProductReference
+     */
+    public function userVisitedProductReference()
+    {
+        return $this->getObject('userVisitedProductReference');
     }
 }

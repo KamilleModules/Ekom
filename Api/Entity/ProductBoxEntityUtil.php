@@ -14,6 +14,9 @@ class ProductBoxEntityUtil
 {
 
 
+    /**
+     * @deprecated
+     */
     public static function getMergedProductDetails(array $productDetailsArr)
     {
         $majorDetailsParams = (array_key_exists('major', $productDetailsArr)) ? $productDetailsArr['major'] : [];

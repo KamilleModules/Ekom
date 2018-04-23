@@ -7,8 +7,10 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
 use Kamille\Services\XConfig;
 use Module\Ekom\Api\Layer\InvoiceLayer;
+use Module\Ekom\Api\Layer\UserVisitedProductReferencesLayer;
 use Module\Ekom\Back\Util\ApplicationSanityCheck\ApplicationSanityCheckUtil;
 use Module\Ekom\Exception\EkomUserMessageException;
+use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\Pdf\PdfHtmlInfoInterface;
@@ -16,6 +18,32 @@ use QuickPdo\Helper\QuickPdoHelper;
 
 class HooksHelper
 {
+
+    /**
+     * @param array $tailModel
+     * @param array $headModel, is the box model.
+     * @see EkomModels::productBoxModel()
+     *
+     */
+    public static function Ekom_ProductPage_decoratePageTailModel(array &$tailModel, array $headModel)
+    {
+
+        //--------------------------------------------
+        // last visited
+        //--------------------------------------------
+        $lastVisited = UserVisitedProductReferencesLayer::getLastVisitedProductsByProductBox($headModel);
+        $tailModel['lastVisited'] = $lastVisited;
+    }
+
+
+    /**
+     * @param array $productBox
+     * @see EkomModels::productBoxModel()
+     */
+    public static function Ekom_ProductGetInfoService_PageVisited(array $productBox)
+    {
+        UserVisitedProductReferencesLayer::addVisitedReferenceByProductBoxModel($productBox);
+    }
 
 
     public static function FishMailer_collectVariables(array &$pool, string $template, string $mode)

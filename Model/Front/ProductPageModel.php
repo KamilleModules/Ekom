@@ -38,9 +38,9 @@ class ProductPageModel
         $tail = []; // tail box model
 
 
-        if (false !== ($productId = ProductLayer::getProductIdByRef($reference))) {
-            $productDetails = ProductBoxEntityUtil::filterProductDetails($_GET);
-            $head = ProductBoxLayer::getProductBoxByProductId($productId, $productDetails);
+        if (false !== ($productReferenceId = ProductLayer::getProductReferenceIdByRef($reference))) {
+//            $productDetails = ProductBoxEntityUtil::filterProductDetails($_GET);
+            $head = ProductBoxLayer::getProductBoxByProductReferenceId($productReferenceId);
 
 //            az($head);
             //--------------------------------------------
@@ -68,17 +68,17 @@ class ProductPageModel
     }
 
 
-    public static function getModelByProductId($productId)
-    {
-        $productDetails = ProductBoxEntityUtil::filterProductDetails($_GET);
-        $head = ProductBoxLayer::getProductBoxByProductId($productId, $productDetails);
-        $tail = self::getProductPageTailModel($head);
-
-        return [
-            'head' => $head,
-            'tail' => $tail,
-        ];
-    }
+//    public static function getModelByProductId($productId)
+//    {
+//        $productDetails = ProductBoxEntityUtil::filterProductDetails($_GET);
+//        $head = ProductBoxLayer::getProductBoxByProductId($productId, $productDetails);
+//        $tail = self::getProductPageTailModel($head);
+//
+//        return [
+//            'head' => $head,
+//            'tail' => $tail,
+//        ];
+//    }
 
 
 

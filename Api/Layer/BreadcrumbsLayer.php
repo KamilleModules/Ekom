@@ -33,7 +33,7 @@ class BreadcrumbsLayer
         //--------------------------------------------
         // PRODUCT CARD
         //--------------------------------------------
-        $productId = ApplicationRegistry::get("ekom.productId");
+        $productReferenceId = ApplicationRegistry::get("ekom.productReferenceId");
         $categoryId = ApplicationRegistry::get("ekom.categoryId");
 
 
@@ -41,10 +41,10 @@ class BreadcrumbsLayer
         $label = null;
         $items = [];
 
-        if (null !== $productId) {
+        if (null !== $productReferenceId) {
 
 
-            $box = ProductBoxLayer::getProductBoxByProductId($productId);
+            $box = ProductBoxLayer::getProductBoxByProductReferenceId($productReferenceId);
             $label = $box['label'];
             $cardId = $box['product_card_id'];
             $tree = EkomApi::inst()->categoryLayer()->getCategoryTreeByProductCardId($cardId);

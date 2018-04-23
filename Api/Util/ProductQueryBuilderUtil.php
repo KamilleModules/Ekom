@@ -39,6 +39,7 @@ class ProductQueryBuilderUtil
      * - miniBox, each row containing:
      *      - product_id,
      *      - product_card_id,
+     *      - product_reference_id
      *      - product_card_type_name,
      *      - product_card_type_label,
      *      - product_card_type_label,
@@ -65,7 +66,7 @@ class ProductQueryBuilderUtil
      *      - codes: string containing codes. n means novelty
      *
      *      // and with options, you can add the following optional properties
-     *      - tax_rule_cond_id
+     *      - tax_rule_condition_id: null|int
      *
      *
      *
@@ -201,6 +202,7 @@ where phd.product_reference_id=pr.id and
         $field = "
 p.id as product_id,
 c.id as product_card_id,
+pr.id as product_reference_id,
 pct.name as product_card_type_name,
 pct.label as product_card_type_label,
 sel.id as seller_id,

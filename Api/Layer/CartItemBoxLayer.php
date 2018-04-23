@@ -28,7 +28,7 @@ class CartItemBoxLayer
 {
 
 
-    public static function getBox(string $productId, array $selectedProductDetails = [])
+    public static function getBox(int $productReferenceId)
     {
 
 
@@ -37,7 +37,7 @@ class CartItemBoxLayer
             "useTaxRuleConditionId" => true,
         ]);
         $sqlQuery->addField("p.weight, p.wholesale_price");
-        $sqlQuery->addWhere("and p.id=$productId");
+        $sqlQuery->addWhere("and pr.id=$productReferenceId");
 
         $row = QuickPdo::fetch((string)$sqlQuery, $sqlQuery->getMarkers());
         self::sugarify($row);
@@ -62,7 +62,13 @@ class CartItemBoxLayer
         $row['selected_product_details'] = $selectedProductDetails; // map
 
 
-        $row['tax_details'] = TaxLayer::getTaxDetailsInfoByTaxRuleConditionId($row['tax_rule_condition_id'], $row['base_price']);
+        if ($row['tax_rule_condition_id']) {
+            $row['tax_details'] = TaxLayer::getTaxDetailsInfoByTaxRuleConditionId($row['tax_rule_condition_id'], $row['base_price']);
+        } else {
+            $row['tax_details'] = [];
+        }
+
+
         /**
          * as for now we only have ONE discount max per product, but in the future we could evolve...
          */

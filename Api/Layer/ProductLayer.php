@@ -103,9 +103,9 @@ order by product_id asc
 
     }
 
-    public static function getProductIdByRef($ref)
+    public static function getProductReferenceIdByRef($ref)
     {
-        return QuickPdo::fetch("select product_id from ek_product_reference where reference=:ref", [
+        return QuickPdo::fetch("select id from ek_product_reference where reference=:ref", [
             'ref' => $ref,
         ], \PDO::FETCH_COLUMN);
     }

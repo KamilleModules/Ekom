@@ -182,11 +182,12 @@ class CartUtil
     }
 
 
-    public static function generateTokenByProductIdMajorProductDetails($productId, array $majorDetails = [])
+    public static function generateTokenByProductReferenceId($productReferenceId, array $minorDetails = [])
     {
-        $token = (string)$productId;
+        $token = (string)$productReferenceId;
 
-        if (count($majorDetails) > 0) {
+        if (count($minorDetails) > 0) {
+            throw new \Exception("Not impemented yet");
             ksort($majorDetails);
             $sDetails = implode('-', $majorDetails); // this will be enough for now, later we could use a hash
             $token .= '-' . $sDetails;

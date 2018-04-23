@@ -741,7 +741,67 @@ class EkomModels
      * ====================
      *
      *
+     * - product_id
+     * - product_card_id
+     * - product_reference_id
+     * - product_card_type_name
+     * - product_card_type_label
+     * - seller_id
+     * - seller_name
+     * - seller_label
+     * - reference
+     * - quantity
+     * - out_of_stock_text
+     * - label
+     * - product_slug
+     * - product_card_slug
+     * - image_id
+     * - image_legend
+     * - tax_ratio
+     * - codes
+     * - popularity
+     * - discount_id
+     * - discount_label
+     * - discount_type
+     * - discount_value
+     * - original_price
+     * - real_price
+     * - base_price
+     * - sale_price
+     * - manufacturer_id
+     * - manufacturer_name
+     * - description
+     * - meta_title
+     * - meta_description
+     * - meta_keywords
+     * - wholesale_price
+     * - weight
+     * - active
+     * - has_tax
+     * - is_novelty
+     * - product_uri
+     * - image
+     * - image_title
+     * - image_alt
+     * - has_discount
+     * - original_price_formatted
+     * - real_price_formatted
+     * - base_price_formatted
+     * - sale_price_formatted
+     * - discount_value_formatted
+     * - selected_product_details
+     * - product_details_list
+     * - product_uri_with_details
+     * - images
+     * - rating_average
+     * - rating_nbVotes
+     * - attributes_list
      *
+     *
+     *
+     *
+     * OLD DEPRECATED
+     * ------------------
      *
      * - attributes: array of attrName => attrItem:
      * ----- attrName:

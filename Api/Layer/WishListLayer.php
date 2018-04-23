@@ -115,12 +115,11 @@ limit 0, $limit
 
 
         if (false === ($row = QuickPdo::fetch("
-        select user_id from ek_user_has_product 
+        select user_id from ek_user_has_product_reference 
         where
          user_id=$userId 
          and product_id=$pId
-         and product_details='$sProductDetails'
-         and deleted_date is null
+         and date_deleted is null
 "))) {
             EkomApi::inst()->userHasProduct()->create([
                 'user_id' => $userId,
@@ -196,15 +195,15 @@ limit 0, $limit
                 return 0;
             }
         }
-        $q = "select count(*) as count from ek_user_has_product 
+        $q = "select count(*) as count from ek_user_has_product_reference 
 where user_id=$userId";
         if ('current' === $type) {
             $q .= "
-and deleted_date is null";
+and date_deleted is null";
         }
         elseif ('deleted' === $type) {
             $q .= "
-and deleted_date is not null";
+and date_deleted is not null";
         }
         return QuickPdo::fetch($q, [], \PDO::FETCH_COLUMN);
     }

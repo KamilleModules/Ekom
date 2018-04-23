@@ -78,18 +78,17 @@ class CartLayer
      * @throws EkomUserMessageException when something wrong that the user should know happens
      *
      */
-    public function addItem($quantity, $productId, array $extraArgs = [])
+    public function addItem($quantity, $productReferenceId, array $extraArgs = [])
     {
         $this->initSessionCart();
 
         /**
          * The selected product details array
          */
-        $selectedProductDetails = array_key_exists('details', $extraArgs) ? $extraArgs['details'] : [];
         $bundle = array_key_exists('bundle', $extraArgs) ? $extraArgs['bundle'] : null;
 
 
-        $token = CartUtil::generateTokenByProductIdMajorProductDetails($productId, $selectedProductDetails);
+        $token = CartUtil::generateTokenByProductReferenceId($productReferenceId);
 
 
         $alreadyExists = false;
@@ -104,7 +103,7 @@ class CartLayer
 
                 $alreadyExists = true;
                 $existingQuantity = $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'];
-                self::checkQuantityOverflow($productId, $existingQuantity, $quantity, $selectedProductDetails);
+                self::checkQuantityOverflow($productReferenceId, $existingQuantity, $quantity);
                 $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'] += $quantity;
                 break;
             }
@@ -116,8 +115,8 @@ class CartLayer
         //--------------------------------------------
         if (false === $alreadyExists) {
 
-            self::checkQuantityOverflow($productId, 0, $quantity, $selectedProductDetails);
-            $cartItemBox = CartItemBoxLayer::getBox($productId, $selectedProductDetails);
+            self::checkQuantityOverflow($productReferenceId, 0, $quantity);
+            $cartItemBox = CartItemBoxLayer::getBox($productReferenceId);
             $arr = [
                 "token" => $token,
                 "quantity" => $quantity,
@@ -196,7 +195,7 @@ class CartLayer
     {
         $this->initSessionCart();
         $token = (string)$token;
-        $productId = self::getProductIdByCartToken($token);
+        $productReferenceId = self::getProductReferenceIdByCartToken($token);
 
 
         $newQty = (int)$newQty;
@@ -208,8 +207,8 @@ class CartLayer
         foreach ($_SESSION['ekom'][$this->sessionName]['items'] as $k => $item) {
             if ($item['token'] === $token) {
                 $existingQty = $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'];
-                $details = $this->getProductDetailsByToken($token);
-                self::checkQuantityOverflow($productId, $existingQty, $newQty, $details, true);
+//                $details = $this->getProductDetailsByToken($token);
+                self::checkQuantityOverflow($productReferenceId, $existingQty, $newQty,  true);
 
                 $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'] = $newQty;
                 $wasUpdated = true;
@@ -399,7 +398,7 @@ class CartLayer
         }
     }
 
-    private static function getProductIdByCartToken($token)
+    private static function getProductReferenceIdByCartToken(string $token)
     {
         return explode('-', $token)[0];
     }
@@ -691,28 +690,32 @@ class CartLayer
      * @param bool $isUpdate
      * @throws \Exception
      */
-    private static function checkQuantityOverflow($productId, $existingQty, $qty, array $details, $isUpdate = false)
+    private static function checkQuantityOverflow($productReferenceId, $existingQty, $qty, $isUpdate = false)
     {
-        return false;
+
         if (false === E::conf('acceptOutOfStockOrders', false)) {
 
-            $productDetailsArgs = ProductBoxEntityUtil::getMergedProductDetails($details);
+            $boxModel = ProductBoxLayer::getProductBoxByProductReferenceId($productReferenceId);
+            $remainingStockQty = (int)$boxModel['quantity'];
 
-            $boxModel = ProductBoxLayer::getProductBoxByProductId($productId, $productDetailsArgs);
 
+            if (0 === $remainingStockQty) {
+                $sentence = "Oops. Ce produit n'est actuellement plus en stock!";
+            } else {
+                $sentence = "Il ne reste plus que $remainingStockQty exemplaires de ce produit, veuillez réduire la quantité commandée.";
+            }
 
-            $remainingStockQty = $boxModel['quantity'];
 
             if (false === $isUpdate) {
                 $addedQty = $qty;
                 $desiredQty = $existingQty + $addedQty;
                 if (-1 !== $remainingStockQty && $desiredQty > $remainingStockQty) {
-                    throw new EkomUserMessageException("Cannot add $addedQty products to the cart (only $remainingStockQty left in stock)");
+                    throw new EkomUserMessageException($sentence);
                 }
             } else {
                 $newQty = $qty;
                 if (-1 !== $remainingStockQty && $newQty > $remainingStockQty) {
-                    throw new EkomUserMessageException("Cannot set $newQty products to the cart (only $remainingStockQty left in stock)");
+                    throw new EkomUserMessageException($sentence);
                 }
             }
         }

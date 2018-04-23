@@ -340,6 +340,7 @@ class AttributeSelectorHelper
                     'productUri' => $attributeInfo['productUri'],
                     'getProductInfoAjaxUri' => $attributeInfo['getProductInfoAjaxUri'],
                     'product_id' => $attributeInfo['_product_id'],
+                    'product_reference_id' => $attributeInfo['_product_id'],
                 ];
 
                 $ret[$name]['attribute_id'] = $attributeInfo['attribute_id'];
