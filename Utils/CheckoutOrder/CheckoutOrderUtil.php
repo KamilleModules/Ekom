@@ -84,7 +84,7 @@ class CheckoutOrderUtil
      */
     public function placeOrder(array $data, array $cartModel)
     {
-
+        $extendedCartModel = CartUtil::getExtendedCartModel();
 
         /**
          * 1. check (and hooks)
@@ -132,9 +132,9 @@ class CheckoutOrderUtil
          *
          *
          */
-        $shippingErrorCode = $cartModel['shippingErrorCode'];
+        $shippingErrorCode = $cartModel['carrier_error_code'];
         if (null !== $shippingErrorCode) {
-            self::handleShippingErrorCode($shippingErrorCode);
+            self::handleCarrierErrorCode($shippingErrorCode);
         }
 
 
@@ -150,7 +150,7 @@ class CheckoutOrderUtil
             $importantKeys = array_merge($importantKeys, [
                 'carrier_id',
                 'shipping_address_id',
-                'shop_address_id',
+                'store_address_id',
             ]);
         }
         $missing = ArrayTool::getMissingKeys($data, $importantKeys);
@@ -217,7 +217,7 @@ class CheckoutOrderUtil
              */
             $paymentMethodId = $data['payment_method_id'];
             $paymentHandler = PaymentLayer::getPaymentMethodHandlerById($paymentMethodId);
-            $paymentMethodDetails = $paymentHandler->getCommittedConfiguration($data, $cartModel);
+            $paymentMethodDetails = $paymentHandler->getCommittedConfiguration($data, $extendedCartModel);
 
 
             $this->checkPaymentErrors($data, $cartModel, $paymentMethodDetails, $paymentHandler);
@@ -234,10 +234,8 @@ class CheckoutOrderUtil
             }
 
 
-
-
-            $shopAddressId = (array_key_exists("shop_address_id", $data)) ? $data['shop_address_id'] : null;
-            $shopInfo = ShopLayer::getShopInfoModel($shopAddressId);
+            $storeAddressId = (array_key_exists("store_address_id", $data)) ? $data['store_address_id'] : null;
+            $shopInfo = ShopLayer::getShopInfoModel($storeAddressId);
 
 
             $shippingAddressId = (array_key_exists("shipping_address_id", $data)) ? $data['shipping_address_id'] : null;
@@ -283,7 +281,6 @@ class CheckoutOrderUtil
             // LAST OPPORTUNITY FOR MODULES TO DECORATE ORDER DETAILS
             //--------------------------------------------
             Hooks::call("Ekom_CheckoutOrderUtil_decorateOrderDetails", $orderDetails, $data);
-
 
 
             // I let this model in non serialized form for debugging
@@ -608,7 +605,7 @@ class CheckoutOrderUtil
     {
         $orderId = null;
         $exception = null;
-        QuickPdo::transaction(function () use ($orderModel,  &$orderId) {
+        QuickPdo::transaction(function () use ($orderModel, &$orderId) {
 
             $paymentMethod = $orderModel['order_details']["payment_method_name"];
             $paymentMethodDetails = $orderModel['order_details']["payment_method_details"];
@@ -749,7 +746,7 @@ class CheckoutOrderUtil
         if (array_key_exists("carrier_id", $data)) {
             $carrierId = (int)$data['carrier_id'];
             $shippingAddressId = (int)$data['shipping_address_id'];
-            $shopAddressId = (int)$data['shop_address_id'];
+            $storeAddressId = (int)$data['store_address_id'];
 
             // the user owns the shipping address
             $res = QuickPdo::fetch("select user_id from ek_user_has_address where user_id=$userId and address_id=$shippingAddressId");
@@ -764,9 +761,9 @@ class CheckoutOrderUtil
             }
 
             // the shop address really belongs to the shop
-            $res = QuickPdo::fetch("select id from ek_store where address_id=$shopAddressId");
+            $res = QuickPdo::fetch("select id from ek_store where address_id=$storeAddressId");
             if (false === $res) {
-                $this->devError("Inconsistent data: address $shopAddressId is not a store address");
+                $this->devError("Inconsistent data: address $storeAddressId is not a store address");
             }
         }
 
@@ -784,13 +781,17 @@ class CheckoutOrderUtil
         try {
             Hooks::call("Ekom_CheckoutOrderUtil_checkDataConsistency", $data, $cartModel);
         } catch (\Exception $e) {
-            $this->devError($e->getMessage());
+            if ($e instanceof EkomUserMessageException) {
+                throw $e;
+            } else {
+                $this->devError($e->getMessage());
+            }
         }
 
     }
 
 
-    private static function handleShippingErrorCode($errorCode)
+    private static function handleCarrierErrorCode($errorCode)
     {
         $appErrorInfo = [
             'text' => null,

@@ -121,7 +121,7 @@ class CartUtil
      */
     public static function hasAtLeastOneShippableItem(array $cartModel)
     {
-        return ($cartModel['cartTotalWeight'] > 0);
+        return ($cartModel['cart_total_weight'] > 0);
     }
 
     /**
@@ -240,7 +240,7 @@ class CartUtil
         $token = (string)$productReferenceId;
 
         if (count($minorDetails) > 0) {
-            throw new \Exception("Not impemented yet");
+            throw new \Exception("Not implemented yet");
             ksort($majorDetails);
             $sDetails = implode('-', $majorDetails); // this will be enough for now, later we could use a hash
             $token .= '-' . $sDetails;
@@ -254,13 +254,7 @@ class CartUtil
      */
     public static function getExtendedCartModel()
     {
-        // which one?
-//        $cartModel = EkomApi::inst()->cartLayer()->getCartModel();
-        $cartModel = CheckoutUtil::getCurrentCartLayer()->getCartModel();
-        return [
-            "cart" => $cartModel,
-            "itemsGroupedBySeller" => self::getItemsGroupedBySeller($cartModel['items']),
-        ];
+        return CheckoutUtil::getCurrentCartLayer()->getExtendedCartModel();
     }
 
     /**

@@ -57,11 +57,13 @@ class CartLayer
     protected $moduleName;
 
     private $_cartModel; // cache
+    private $_extendedCartModel; // cache
 
 
     public function __construct()
     {
         $this->_cartModel = null;
+        $this->_extendedCartModel = null;
         $this->sessionName = 'cart';
         $this->className = 'CartLayer';
         $this->moduleName = 'Ekom';
@@ -284,6 +286,20 @@ class CartLayer
             $this->_cartModel = $ret;
         }
         return $this->_cartModel;
+    }
+
+    /**
+     * @see EkomModels::extendedCartModel()
+     */
+    public function getExtendedCartModel()
+    {
+        if (null === $this->_extendedCartModel) {
+            $this->_extendedCartModel = [
+                "cart" => $this->getCartModel(),
+                "itemsGroupedBySeller" => CartUtil::getItemsGroupedBySeller($this->_cartModel['items']),
+            ];
+        }
+        return $this->_extendedCartModel;
     }
 
 
