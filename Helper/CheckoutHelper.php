@@ -32,9 +32,9 @@ class CheckoutHelper
             $changes[] = 'payment_method_id';
         }
 
-        if (null !== ($shop_address_id = EcpServiceUtil::get("shop_address_id", false))) {
-            CurrentCheckoutData::setShopAddressId($shop_address_id);
-            $changes[] = 'shop_address_id';
+        if (null !== ($store_address_id = EcpServiceUtil::get("store_address_id", false))) {
+            CurrentCheckoutData::setStoreAddressId($store_address_id);
+            $changes[] = 'store_address_id';
         }
 
 

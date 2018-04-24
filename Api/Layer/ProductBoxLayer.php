@@ -93,7 +93,7 @@ class ProductBoxLayer
          * which detailed structure is still under discussion, but probably will look like this (for both):
          *
          * - 0:
-         *      - name
+         *      - nameEkom/Checkout/default
          *      - value
          *      - label
          *      - selected
@@ -138,7 +138,7 @@ class ProductBoxLayer
         $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($row['product_card_id']);
         $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $row['product_id']);
         $row['attributes_list'] = $attr;
-        
+
 
 
         return $row;

@@ -11,8 +11,28 @@ class StoreLayer
 {
 
 
+    public static function getPreferredPhysicalAddressById(int $addressId = null)
+    {
+        $addresses = self::getPhysicalAddresses();
+        foreach($addresses as $address){
+            if((int)$address['id'] === $addressId){
+                return $address;
+            }
+        }
+        return array_shift($addresses);
+    }
 
-    public static function getPhysicalAddressById(int $addressId){
+    public static function getPreferredPhysicalAddressIdById(int $addressId = null)
+    {
+        $preferredAddress = self::getPreferredPhysicalAddressById($addressId);
+        if($preferredAddress){
+            return $preferredAddress['id'];
+        }
+        return null;
+    }
+
+    public static function getPhysicalAddressById(int $addressId)
+    {
 
 
         $q = "
@@ -84,7 +104,6 @@ where a.active=1";
 
         });
     }
-
 
 
     public function getStorePhysicalAddress()

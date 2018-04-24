@@ -7,6 +7,7 @@ namespace Module\Ekom\Utils\CheckoutProcess;
 use Core\Services\Hooks;
 use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Util\CartUtil;
+use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoBillingCheckoutProcessStep;
 use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoLoginCheckoutProcessStep;
 use Module\Ekom\Utils\CheckoutProcess\Step\Soko\SokoPaymentCheckoutProcessStep;

@@ -146,6 +146,7 @@ class EkomModels
      *      - line_sale_price
      *      - line_sale_price_formatted
      *      - line_tax_details: array of tax label => tax amount for this line (the tax amount for one unit x quantity)
+     *      - line_tax_amount: array of tax label => tax amount for this line (the tax amount for one unit x quantity)
      *
      * - cart_total_weight: in kg
      * - cart_total_quantity
@@ -166,7 +167,7 @@ class EkomModels
      *
      * - carrier_id: null|int
      * - carrier_label:
-     * - carrier_estimated_delivery_date: text
+     * - carrier_estimated_delivery_date: text, indicating the estimated delivery date
      * - carrier_error_code: an error code issued by the carrier, indicating why it couldn't deliver the items
      *
      *
@@ -191,6 +192,7 @@ class EkomModels
      * - shipping_cost_tax_amount
      * - shipping_cost_tax_amount_formatted
      * - shipping_cost_tax_label
+     * - shipping_cost_tax_name
      *
      *
      *
@@ -199,6 +201,7 @@ class EkomModels
      * - coupons_total: sum of all coupons.saving_amount
      * - coupons_total_formatted
      * - coupons: array of applied coupons, each of which: @todo-ling, need to revisit this part...
+     *              (is used by CartUtil::getSellerCarts, and probably many other places....)
      *      - label
      *      - code
      *      - saving_amount: the amount saved by this coupon
@@ -547,7 +550,7 @@ class EkomModels
      * ====================
      *
      * - cart: @see EkomModels::cartModel()
-     * - itemsGroupedBySeller: @see CartUtil::getItemsGroupedBySeller()
+     * - itemsGroupedBySeller: @see EkomModels::itemsGroupedBySeller()
      *
      */
     private function extendedCartModel()
@@ -610,6 +613,32 @@ class EkomModels
      *
      */
     private function invoiceModel()
+    {
+        return [];
+    }
+
+
+    /**
+     * itemsGroupedBySeller
+     * ====================
+     * @see CartUtil::getItemsGroupedBySeller()
+     *
+     * - seller_name
+     *      - label: the seller label
+     *      - has_tax: bool, Whether at least one item had the tax applied to it
+     *      - total_weight: the total weight for this group (in kg)
+     *      - total: the sum of the items sale_price
+     *      - total_formatted
+     *      - total_tax_amount: the total amount of tax collected for this seller
+     *      - total_tax_amount_formatted
+     *      - tax_details: an array of tax amounts grouped by tax for the current seller group.
+     *                       It's an array of tax_label => tax_info, with tax_info:
+     *                           - tax_amount: the sum of the individual tax amounts for each item of that seller group.
+     *                           - tax_amount_formatted
+     *
+     *      - items: the items for the current seller
+     */
+    private function itemsGroupedBySeller()
     {
         return [];
     }
@@ -937,27 +966,12 @@ class EkomModels
      * @see CarrierInterface
      *
      *
-     *
-     * It has two forms:
-     *
-     * form1 (typical case)
-     * ---------
-     * - @depr estimated_delivery_text: null|string
-     * - estimated_delivery_date: null|datetime|[datetimeStart, datetimeEnd]
+     * - ?estimated_delivery_text:
+     * - ?estimated_delivery_date: null|datetime|[datetimeStart, datetimeEnd]
      * - shipping_cost: number, the cost of the shipping of the accepted products (without tax applied)
-     * - @depr ?tracking_number: string
      *
      *
-     * Note: assuming both estimated delivery date and delivery text are provided, the template will decide which
-     * one to display.
-     *
-     *
-     * form2 (erroneous)
-     * -----------
-     * The carrier, for some reasons, will not handle the order.
-     *
-     * - errorCode: string, an error code that prevents the checkout process to complete. It's application specific.
-     *
+     * Note: you should provide at least either the delivery text or the delivery date.
      *
      *
      */

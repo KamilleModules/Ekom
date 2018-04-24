@@ -20,7 +20,7 @@ class GeneratedUserHasProductReference extends TableCrudObject
     {
         parent::__construct();
         $this->table = "ek_user_has_product_reference";
-        $this->primaryKey = ['user_id', 'product_reference_id'];
+        $this->primaryKey = ['id'];
     }
 
 
@@ -30,13 +30,17 @@ class GeneratedUserHasProductReference extends TableCrudObject
     protected function getCreateData(array $data)
     {
         $base = [
+			'id' => null,
 			'user_id' => 0,
 			'product_reference_id' => 0,
 			'date_added' => '',
-			'date_deleted' => '',
+			'date_deleted' => null,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
+        if ("" === $ret["date_deleted"]) {
+            $ret["date_deleted"] = null;
+        }
 
 
         return $ret;

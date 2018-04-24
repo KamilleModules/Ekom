@@ -59,7 +59,7 @@ order by h.order asc
 
 
         $basePriceReference = $basePrice;
-        foreach($rows as $k => $row){
+        foreach ($rows as $k => $row) {
             $basePrice = $basePrice + ($basePrice * $row['value']) / 100;
             $amount = E::trimPrice($basePrice - $basePriceReference); // the amount inferred to the price by this specific tax
             $basePriceReference = $basePrice;
@@ -125,6 +125,16 @@ select id, label from ek_tax order by id asc
         return QuickPdo::fetch("
 select amount from ek_tax where id=$taxId        
         ", [], \PDO::FETCH_COLUMN);
+    }
+
+
+    public static function getTaxInfoByName(string $taxName)
+    {
+        return QuickPdo::fetch("
+select * from ek_tax where name=:name        
+        ", [
+            "name" => $taxName,
+        ], \PDO::FETCH_COLUMN);
     }
 
     public static function getModeItems()

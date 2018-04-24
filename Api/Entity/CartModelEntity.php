@@ -7,6 +7,7 @@ use Bat\UriTool;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\Layer\ProductBoxLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
+use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\E;
 
@@ -29,11 +30,13 @@ class CartModelEntity
     private $cartTotalWithoutTax;
     private $cartTaxAmount;
 
-    // shipping item
+    // shipping data
     private $shippingInfo;
-    private $taxGroupName;
+    private $shippingTaxName;
+    private $shippingStatus;
     private $carrierId;
     private $carrierLabel;
+    private $carrierErrorCode;
 
 
     // coupons
@@ -65,20 +68,17 @@ class CartModelEntity
 
     /**
      *
-     * @param array $shippingInfo
      * @see EkomModels::shippingInfoModel()
-     *
-     * @param $taxGroupName
-     * @param $carrierId
-     * @param $carrierLabel
      * @return $this
      */
-    public function addShippingItem(array $shippingInfo, $taxGroupName, $carrierId, $carrierLabel)
+    public function setShippingData(array $shippingInfo, $shippingTaxName, $carrierId, $carrierLabel, $carrierErrorCode, $shippingStatus)
     {
         $this->shippingInfo = $shippingInfo;
-        $this->taxGroupName = $taxGroupName;
+        $this->shippingTaxName = $shippingTaxName;
+        $this->shippingStatus = $shippingStatus;
         $this->carrierId = $carrierId;
         $this->carrierLabel = $carrierLabel;
+        $this->carrierErrorCode = $carrierErrorCode;
         return $this;
     }
 
@@ -105,10 +105,10 @@ class CartModelEntity
             $model = [];
             $model['items'] = $this->items;
             $model['cart_total_quantity'] = $this->totalQty;
-            $model['cartTotalWeight'] = $this->totalWeight;
-            $model['cartTaxAmountRaw'] = $this->cartTaxAmount;
-            $model['priceCartTotalRaw'] = $this->cartTotal;
-            $model['priceCartTotalWithoutTaxRaw'] = $this->cartTotal - $this->cartTaxAmount;
+            $model['cart_total_weight'] = $this->totalWeight;
+            $model['cart_tax_amount'] = $this->cartTaxAmount;
+            $model['cart_total_tax_included'] = $this->cartTotal;
+            $model['cart_total_tax_excluded'] = $this->cartTotal - $this->cartTaxAmount;
             $this->_primitiveModel = $model;
         }
         return $this->_primitiveModel;
@@ -120,13 +120,14 @@ class CartModelEntity
 
         $model = $this->getPrimitiveModel();
 
+
         // shipping info
         $this->applyShippingItem($model);
 
 
         // order total
-        $orderTotal = $model['priceCartTotalRaw'] + $model["shippingShippingCostRaw"];
-        $model["priceOrderTotalRaw"] = $orderTotal;
+        $orderTotal = $model['cart_total_tax_included'] + $model["shipping_cost_tax_included"];
+        $model["order_total"] = $orderTotal;
 
 
         $this->applyCouponDetails($model);
@@ -138,17 +139,17 @@ class CartModelEntity
         /**
          * Note: this allows modules to deal only with raw values (in case they change the cart model)
          */
-        $model['cartTaxAmount'] = E::price($model['cartTaxAmountRaw']);
-        $model['priceCartTotal'] = E::price($model['priceCartTotalRaw']);
-        $model['priceCartTotalWithoutTax'] = E::price($model['priceCartTotalWithoutTaxRaw']);
-        $model['couponSaving'] = E::price($model['couponSavingRaw']);
+        $model['cart_tax_amount_formatted'] = E::price($model['cart_tax_amount']);
+        $model['cart_total_tax_included_formatted'] = E::price($model['cart_total_tax_included']);
+        $model['cart_total_tax_excluded_formatted'] = E::price($model['cart_total_tax_excluded']);
+        $model['coupons_total_formatted'] = E::price($model['coupons_total']);
 
         // order
-        $model["shippingShippingCost"] = E::price($model["shippingShippingCostRaw"]);
-        $model["shippingTaxAmount"] = E::price($model["shippingTaxAmountRaw"]);
-        $model["shippingShippingCostWithoutTax"] = E::price($model["shippingShippingCostWithoutTaxRaw"]);
-        $model["priceOrderTotal"] = E::price($model["priceOrderTotalRaw"]);
-        $model["priceOrderGrandTotal"] = E::price($model["priceOrderGrandTotalRaw"]);
+        $model["shipping_cost_tax_included_formatted"] = E::price($model["shipping_cost_tax_included"]);
+        $model["shipping_cost_tax_excluded_formatted"] = E::price($model["shipping_cost_tax_excluded"]);
+        $model["shipping_cost_tax_amount_formatted"] = E::price($model["shipping_cost_tax_amount"]);
+        $model["order_total_formatted"] = E::price($model["order_total"]);
+        $model["order_grand_total_formatted"] = E::price($model["order_grand_total"]);
 
 
         ksort($model);
@@ -173,9 +174,10 @@ class CartModelEntity
 
         foreach ($this->items as $k => $boxModel) {
 
+
             if (false === array_key_exists('errorCode', $boxModel)) {
 
-                $cartQuantity = $boxModel['quantityCart'];
+                $cartQuantity = $boxModel['cart_quantity'];
 
                 //--------------------------------------------
                 // updating total weight and quantities
@@ -188,26 +190,30 @@ class CartModelEntity
                 //--------------------------------------------
                 // extending the box model to
                 //--------------------------------------------
-                $productDetails = $boxModel['productDetailsMap'];
-                $uriDetails = UriTool::uri($boxModel['uriProduct'], $productDetails, true);
+                $productDetails = $boxModel['selected_product_details'];
+//                $uriDetails = UriTool::uri($boxModel['uriProduct'], $productDetails, true);
+                $uriDetails = $boxModel['product_uri_with_details'];
 
 
-                $linePrice = E::trimPrice($cartQuantity * $boxModel['priceSaleRaw']);
+                $linePrice = E::trimPrice($cartQuantity * $boxModel['sale_price']);
                 $cartTotal += $linePrice;
 
-                $linePriceWithoutTax = E::trimPrice($cartQuantity * $boxModel['priceBaseRaw']);
+                $linePriceWithoutTax = E::trimPrice($cartQuantity * $boxModel['base_price']);
                 $cartTotalWithoutTax += $linePriceWithoutTax;
 
-                $itemTaxAmount = E::trimPrice($cartQuantity * $boxModel['taxAmount']);
-                $cartTaxAmount += $itemTaxAmount;
+
+//                $taxAmount = $boxModel['sale_price'] - $boxModel['base_price'];
+//                $itemTaxAmount = E::trimPrice($cartQuantity * $taxAmount);
+                $lineTaxAmount = $boxModel['line_tax_amount'];
+                $cartTaxAmount += $lineTaxAmount;
 
 
                 $boxModel['uri_card_with_details'] = $uriDetails;
-                $boxModel['priceLineRaw'] = $linePrice;
-                $boxModel['priceLine'] = E::price($linePrice);
-                $boxModel['priceLineWithoutTaxRaw'] = $linePriceWithoutTax;
-                $boxModel['priceLineWithoutTax'] = E::price($linePriceWithoutTax);
-                $boxModel['taxAmount'] = $itemTaxAmount;
+                $boxModel['line_sale_price'] = $linePrice;
+                $boxModel['line_sale_price_formatted'] = E::price($linePrice);
+                $boxModel['line_base_price'] = $linePriceWithoutTax;
+                $boxModel['line_base_price_formatted'] = E::price($linePriceWithoutTax);
+                $boxModel['line_tax_amount'] = $lineTaxAmount;
 
 
                 ksort($boxModel);
@@ -227,61 +233,43 @@ class CartModelEntity
 
     private function applyShippingItem(array &$model)
     {
+
         $shippingInfo = $this->shippingInfo;
-        if (is_string($this->taxGroupName) && is_array($shippingInfo) && false === array_key_exists("errorCode", $shippingInfo)) {
+        $shippingTaxName = $this->shippingTaxName;
+        $carrierEstimatedDeliveryDate = CartUtil::getEstimatedDeliveryDate($shippingInfo['estimated_delivery_date']);
 
-            // applying shipping taxes
-            //--------------------------------------------
-            $shippingCost = $shippingInfo['shipping_cost'];
-            $shippingTaxGroup = TaxLayer::getTaxGroupInfoByName($this->taxGroupName);
-            $taxInfo = TaxLayer::applyTaxGroup($shippingTaxGroup, $shippingCost);
+        $model['carrier_id'] = $this->carrierId;
+        $model['carrier_label'] = $this->carrierLabel;
+        $model['carrier_estimated_delivery_date'] = $carrierEstimatedDeliveryDate;
 
 
-            $shippingCostWithTax = E::trimPrice($taxInfo['priceWithTax']);
-            $shippingCost = $taxInfo['priceWithoutTax'];
+        $shippingTaxInfo = TaxLayer::getTaxInfoByName($shippingTaxName);
+        $shippingCostTaxAmount = $shippingTaxInfo['amount'];
+        $shippingCostTaxExcluded = E::trimPrice($shippingInfo['shipping_cost']);
+        $shippingCostTaxIncluded = $shippingCostTaxExcluded + ($shippingCostTaxExcluded * $shippingCostTaxAmount / 100);
 
-            $model["shippingTaxDetails"] = $taxInfo['taxDetails'];
-            $model["shippingTaxRatio"] = $taxInfo['taxRatio'];
-            $model["shippingTaxGroupName"] = $taxInfo['taxGroupName'];
-            $model["shippingTaxGroupLabel"] = $taxInfo['taxGroupLabel'];
-            $model["shippingTaxAmountRaw"] = $taxInfo['taxAmountUnit'];
-            $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
-            $model["shippingDetails"] = [
-                "estimated_delivery_text" => (array_key_exists("estimated_delivery_text", $shippingInfo)) ? $shippingInfo["estimated_delivery_text"] : "",
-                "estimated_delivery_date" => $shippingInfo["estimated_delivery_date"],
-                "label" => $this->carrierLabel,
-//                "shop_address" => $shopAddress, // not sure?
-                "carrier_id" => $this->carrierId,
-            ];
-            $model["shippingShippingCostRaw"] = $shippingCostWithTax;
-            $model["shippingShippingCostWithoutTaxRaw"] = $shippingCost;
-            $model["shippingIsApplied"] = true;
-            $model['shippingErrorCode'] = null;
-        } else {
-            $shippingCostWithTax = 0;
-            $model["shippingTaxDetails"] = [];
-            $model["shippingTaxRatio"] = 1;
-            $model["shippingTaxGroupName"] = "";
-            $model["shippingTaxGroupLabel"] = "";
-            $model["shippingTaxAmountRaw"] = 0;
-            $model["shippingTaxHasTax"] = false;
-            $model["shippingDetails"] = [];
-            $model["shippingShippingCostRaw"] = $shippingCostWithTax;
-            $model["shippingShippingCostWithoutTaxRaw"] = $shippingCostWithTax;
-            $model["shippingIsApplied"] = false;
 
-            if (is_array($shippingInfo) && array_key_exists("errorCode", $shippingInfo)) {
-                $model['shippingErrorCode'] = $shippingInfo['errorCode'];
-            } else {
-                $model['shippingErrorCode'] = null;
-            }
-        }
+        $model['carrier_error_code'] = $this->carrierErrorCode;
+        $model['shipping_status'] = $this->shippingStatus;
+
+        $model['shipping_cost_tax_excluded'] = $shippingCostTaxExcluded;
+        $model['shipping_cost_tax_excluded_formatted'] = E::price($shippingCostTaxExcluded);
+        $model['shipping_cost_tax_included'] = $shippingCostTaxIncluded;
+        $model['shipping_cost_tax_included_formatted'] = E::price($shippingCostTaxIncluded);
+        $model['shipping_cost_discount_amount'] = 0; // not handled yet, @todo-ling?
+        $model['shipping_cost_discount_amount_formatted'] = E::price(0);
+
+        $model['shipping_cost_tax_amount'] = $shippingCostTaxAmount;
+        $model['shipping_cost_tax_amount_formatted'] = E::price($shippingCostTaxAmount);
+
+        $model['shipping_cost_tax_label'] = $shippingTaxInfo['label'];
+        $model['shipping_cost_tax_name'] = $shippingTaxInfo["name"];
     }
 
 
     private function applyCouponDetails(array &$model)
     {
-        $orderGrandTotal = $model["priceOrderTotalRaw"];
+        $orderGrandTotal = $model["order_total"];
         if ($this->couponsDetails) {
             /**
              * Note: although present in the array,
@@ -297,12 +285,11 @@ class CartModelEntity
         if ($orderGrandTotal < 0) {
             $orderGrandTotal = 0;
         }
-        $model['priceOrderGrandTotalRaw'] = $orderGrandTotal;
 
-
-        $model['couponDetails'] = $this->couponsDetails;
-        $model['couponHasCoupons'] = (count($this->couponsDetails) > 0);
-        $model['couponSavingRaw'] = $model["priceOrderTotalRaw"] - $orderGrandTotal;
+        $model['order_grand_total'] = $orderGrandTotal;
+        $model['coupons'] = $this->couponsDetails;
+        $model['has_coupons'] = (count($this->couponsDetails) > 0);
+        $model['coupons_total'] = $model["order_total"] - $orderGrandTotal;
     }
 }
 

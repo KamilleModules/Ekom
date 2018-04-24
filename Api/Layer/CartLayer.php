@@ -15,6 +15,7 @@ use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\CartLocalStore;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
+use Module\ThisApp\Ekom\Helper\CartHelper;
 
 
 /**
@@ -208,7 +209,7 @@ class CartLayer
             if ($item['token'] === $token) {
                 $existingQty = $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'];
 //                $details = $this->getProductDetailsByToken($token);
-                self::checkQuantityOverflow($productReferenceId, $existingQty, $newQty,  true);
+                self::checkQuantityOverflow($productReferenceId, $existingQty, $newQty, true);
 
                 $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'] = $newQty;
                 $wasUpdated = true;
@@ -481,6 +482,7 @@ class CartLayer
             $boxModel['line_sale_price'] = $lineSalePrice;
             $boxModel['line_sale_price_formatted'] = E::price($lineSalePrice);
             $boxModel['line_tax_details'] = $lineTaxDetails;
+            $boxModel['line_tax_amount'] = $lineTaxAmount;
 
             $modelItems[] = $boxModel;
 
@@ -536,10 +538,10 @@ class CartLayer
         $shippingCostDiscountAmount = 0;
         $shippingCostTaxAmount = 0;
         $shippingCostTaxLabel = "";
+        $shippingCostTaxName = "";
 
 
         $shippingInfo = false;
-        $shopAddress = null;
         $carrier = null;
 
 
@@ -553,6 +555,11 @@ class CartLayer
              */
             $carrier = self::chooseCarrier();
             if (false !== $carrier) {
+
+                /**
+                 * @var $carrier CarrierInterface
+                 */
+
                 $shippingStatus = 2;
 
 
@@ -568,30 +575,29 @@ class CartLayer
                         $shippingStatus = 4;
 
 
+                        $shippingCostTaxExcluded = E::trimPrice($shippingInfo['shipping_cost']); // just to be sure...
+
+
                         // applying shipping taxes
                         //--------------------------------------------
-                        $taxInfo = CartUtil::getTaxInfoByValidShippingInfo($shippingInfo, $model);
+                        $taxInfo = CartUtil::getShippingCostTaxInfoByEarlyCartModel($model);
 
-                        $shippingCostWithTax = E::trimPrice($taxInfo['priceWithTax']);
-                        $shippingCost = $taxInfo['priceWithoutTax'];
+                        $shippingCostTaxAmount = $taxInfo['tax_amount'];
+                        $shippingCostTaxLabel = $taxInfo['tax_label'];
+                        $shippingCostTaxName = $taxInfo['tax_name'];
 
-                        $model["shippingTaxDetails"] = $taxInfo['taxDetails'];
-                        $model["shippingTaxRatio"] = $taxInfo['taxRatio'];
-                        $model["shippingTaxGroupName"] = $taxInfo['taxGroupName'];
-                        $model["shippingTaxGroupLabel"] = $taxInfo['taxGroupLabel'];
-                        $model["shippingTaxAmountRaw"] = $taxInfo['taxAmountUnit'];
-                        $model["shippingTaxHasTax"] = ($taxInfo['taxAmountUnit'] > 0); // whether or not the tax was applied
-                        $model["shippingDetails"] = [
-                            "estimated_delivery_text" => $shippingInfo["estimated_delivery_text"],
-                            "estimated_delivery_date" => $shippingInfo["estimated_delivery_date"],
-                            "label" => $carrier->getLabel(),
-//                "shop_address" => $shopAddress, // not sure?
-                            "carrier_id" => $carrier->getId(),
-                        ];
-                        $model["shippingShippingCostRaw"] = $shippingCostWithTax;
-                        $model["shippingShippingCostWithoutTaxRaw"] = $shippingCost;
-                        $model["shippingIsApplied"] = true;
-                        $model['shippingErrorCode'] = null;
+
+                        /**
+                         * As for now, we assume that only one tax (max) will be applied
+                         * on the shipping cost (i.e. not multiple taxes combined)
+                         */
+                        $shippingCostTaxIncluded = $shippingCostTaxExcluded + ($shippingCostTaxExcluded * $shippingCostTaxAmount / 100);
+
+
+                        $carrierId = $carrier->getId();
+                        $carrierLabel = $carrier->getLabel();
+                        $carrierEstimatedDeliveryDate = CartUtil::getEstimatedDeliveryDate($shippingInfo['estimated_delivery_date']);
+
                     }
                 }
             }
@@ -614,6 +620,7 @@ class CartLayer
         $model['shipping_cost_tax_amount'] = $shippingCostTaxAmount;
         $model['shipping_cost_tax_amount_formatted'] = E::price($shippingCostTaxAmount);
         $model['shipping_cost_tax_label'] = $shippingCostTaxLabel;
+        $model['shipping_cost_tax_name'] = $shippingCostTaxName;
 
 
         //--------------------------------------------

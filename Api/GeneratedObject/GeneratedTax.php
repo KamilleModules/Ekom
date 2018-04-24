@@ -33,6 +33,7 @@ class GeneratedTax extends TableCrudObject
 			'id' => null,
 			'amount' => '',
 			'label' => '',
+			'name' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

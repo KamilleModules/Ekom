@@ -17,26 +17,7 @@ interface CarrierInterface
      * or false if the carrier is unable to compute this array correctly at the moment
      * (probably because some info are missing in the context)
      *
-     * @see EkomModels::shippingInfoModel().
-     *
-     *
-     * @param array :shippingContextModel $context
-     * @param string $errorCode
-     * @return array|false, if false, the errorCode must be defined.
-     *                      Otherwise the shippingInfoModel is returned.
-     *
-     *
-     *
-     * @see EkomModels::shippingContextModel().
-     * @see EkomModels::shippingInfoModel().
-     *
-     *
-     *
-     * Note: there was a rejected second argument to this method before,
-     * but for now I've dropped it.
-     * The idea was that a carrier might handle SOME of the products in the cart but not all.
-     *
-     *
+     * @see EkomModels::shippingInfoModel()
      *
      */
     public function getShippingInfo(array $context, string &$errorCode = null);
