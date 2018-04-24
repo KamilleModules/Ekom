@@ -4,14 +4,41 @@
 namespace Module\Ekom\Model\Front\Customer;
 
 
+use Module\Ekom\Helper\SqlQueryHelper;
 use Module\Ekom\HybridList\HybridListFactory;
-use Module\Ekom\Utils\E;
+use Module\Ekom\SqlQueryWrapper\EkomProductListSqlQueryWrapper;
+use SqlQueryWrapper\Plugins\SqlQueryWrapperSortPlugin;
 
 
 class CustomerWishListModel
 {
 
-    public static function getModel(array $pool, $userId)
+    public static function getModel(int $userId)
+    {
+
+        $sqlQuery = SqlQueryHelper::getUserWishListSqlQuery($userId);
+
+        $wrapper = EkomProductListSqlQueryWrapper::create();
+
+        /**
+         * @var $sortPlugin SqlQueryWrapperSortPlugin
+         */
+        $sortPlugin = $wrapper->getPlugin("sort");
+        $sortPlugin->setDefaultSort("date_added_desc");
+        $sortPlugin->prependSortItems([
+            "date_added_asc" => "Date d'ajout ascendante",
+            "date_added_desc" => "Date d'ajout descendante",
+        ]);
+
+
+        $wrapper->setSqlQuery($sqlQuery)->prepare();
+
+        return [
+            "listWrapper" => $wrapper,
+        ];
+    }
+
+    public static function getModelDeprecated(array $pool, $userId)
     {
 
 

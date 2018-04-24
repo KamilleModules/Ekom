@@ -5,6 +5,7 @@ namespace Module\Ekom\Api\Layer;
 
 
 use Core\Services\A;
+use Core\Services\Hooks;
 use Core\Services\X;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Entity\ProductBoxEntity;
@@ -46,20 +47,34 @@ class ProductBoxLayer
     //
     //--------------------------------------------
     /**
+     * This should be called only from an ajax service.
+     * Normally, you would have the product_reference_id available and so you would use the
+     * product reference id (getProductBoxByReferenceId method below).
+     * However on the product page, it's just easier to pass the product id plus the product details,
+     * let the modules resolve those to a product reference id, and then use the getProductBoxByReferenceId method.
+     *
+     * Note that the product box layer is the only case I know of which use this technique,
+     * all other use cases make use of the product reference id (the cart, links in general)
+     *
+     *
+     *
      * @param $productId
-     *
      * @param array $selectedProductDetails , an array of name => value chosen by the user
-     *
-     * @param array|null $userContext
      */
-//    public static function getProductBoxByProductId(int $productId, array $selectedProductDetails = [], array $userContext = null)
-//    {
-//
-//        $sqlQuery = ProductQueryBuilderUtil::getMaxiQuery($userContext);
-//        $sqlQuery->addWhere("and p.id=$productId");
-//        return self::getProductBoxBySqlQuery($sqlQuery, $selectedProductDetails, $userContext);
-//
-//    }
+    public static function getProductBoxByProductId(int $productId, array $selectedProductDetails = [])
+    {
+        $referenceId = null;
+        Hooks::call("Ekom_ProductBox_getReferenceIdByProductId", $referenceId, $productId, $selectedProductDetails);
+        if (null === $referenceId) {
+            /**
+             * If null, we assume that you don't use product details, and so we assume that your product
+             * only relies on product attribute (recommended).
+             */
+            $referenceId = ProductReferenceLayer::getFirstProductReferenceIdByProductId($productId);
+        }
+        return self::getProductBoxByProductReferenceId($referenceId);
+
+    }
 
     public static function getProductBoxByProductReferenceId(int $productReferenceId)
     {
@@ -83,30 +98,8 @@ class ProductBoxLayer
         MiniProductBoxLayer::sugarify($row);
 
 
-        /**
-         * Note:
-         * the productBox needs to provide two properties:
-         *
-         * - attributes_list
-         * - product_details_list
-         *
-         * which detailed structure is still under discussion, but probably will look like this (for both):
-         *
-         * - 0:
-         *      - name
-         *      - value
-         *      - label
-         *      - selected
-         *      - ?ajax_product_uri: the uri to call to update the product box, this property presence is under discussion,
-         *              but for seo reasons, has been voted out (not worth it).
-         *
-         * There is no rule about how to produce those lists, but in Ekom the implementation discussion
-         * starts here: class-modules/Ekom/doc/product-box/product-box-modifiers.md
-         *
-         */
-
         $selectedProductDetails = []; // todo: ask modules via hooks
-        $productDetailsList = []; // todo: ask modules via hooks
+        $productDetailsList = []; // todo: ask modules via hooks, use same structure as attribute list...
         $row['selected_product_details'] = $selectedProductDetails;
         $row['product_details_list'] = $productDetailsList;
 
@@ -138,7 +131,6 @@ class ProductBoxLayer
         $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($row['product_card_id']);
         $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $row['product_id']);
         $row['attributes_list'] = $attr;
-        
 
 
         return $row;

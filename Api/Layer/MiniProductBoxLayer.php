@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
+use Module\Ekom\Helper\SqlQueryHelper;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
@@ -61,54 +62,10 @@ class MiniProductBoxLayer
 
     public static function getLastVisitedBoxes(int $userId, int $limit = 10, array $excludedProductReferenceIds = [], array $options = [])
     {
-        $sqlQuery = self::getLastVisitedSqlQuery($userId, $limit, $excludedProductReferenceIds, $options);
+        $sqlQuery = SqlQueryHelper::getLastVisitedSqlQuery($userId, $limit, $excludedProductReferenceIds, $options);
         $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
         self::sugarifyRows($rows);
         return $rows;
-    }
-
-
-    public static function getLastVisitedSqlQuery(int $userId, int $limit = 10, array $excludedProductReferenceIds = [], array $options = [])
-    {
-        $sortedByDateDesc = $options['sortedByDateDesc'] ?? true;
-
-        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
-
-
-        $sqlQuery->addWhere("
-and uvpr.user_id=$userId
-        ");
-
-
-        if ($excludedProductReferenceIds) {
-            $sIds = implode(", ", array_map('intval', $excludedProductReferenceIds));
-            $sqlQuery->addWhere("
-and uvpr.product_reference_id not in($sIds)
-        ");
-        }
-
-
-        $sqlQuery->addJoin("
-inner join ek_user_visited_product_reference uvpr on uvpr.product_reference_id=pr.id
-            ");
-
-
-        if (true === $sortedByDateDesc) {
-            $sqlQuery->addOrderBy("uvpr.date", "desc");
-        }
-        $sqlQuery->setLimit(0, $limit);
-
-        /**
-         * Here, we believe showing the same product with all attributes variations
-         * is not really interesting, we prefer to show only different cards.
-         *
-         */
-        $sqlQuery->setGroupBy([
-            "c.id",
-        ]);
-
-
-        return $sqlQuery;
     }
 
 

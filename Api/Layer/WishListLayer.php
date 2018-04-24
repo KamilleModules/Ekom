@@ -74,11 +74,11 @@ limit 0, $limit
 
     public static function removeUserWishlist($userId)
     {
-        QuickPdo::update("ek_user_has_product", [
-            "deleted_date" => date("Y-m-d H:i:s"),
+        QuickPdo::update("ek_user_has_product_reference", [
+            "date_deleted" => date("Y-m-d H:i:s"),
         ], [
             ["user_id", "=", $userId],
-            " and deleted_date is null",
+            " and date_deleted is null",
         ]);
     }
 
@@ -97,20 +97,11 @@ limit 0, $limit
      * @param int $n
      * @return bool|mixed
      */
-    public function addToWishList($pId, array $productDetails = [], $userId = null, &$n = 0)
+    public function addToWishList(int $productReferenceId,  int $userId = null, &$n = 0)
     {
 
         if (null === $userId) {
-
             $userId = E::getUserId();
-        }
-        $userId = (int)$userId;
-        $pId = (int)$pId;
-
-        if ($productDetails) {
-            $sProductDetails = serialize($productDetails);
-        } else {
-            $sProductDetails = "";
         }
 
 
@@ -118,15 +109,14 @@ limit 0, $limit
         select user_id from ek_user_has_product_reference 
         where
          user_id=$userId 
-         and product_id=$pId
+         and product_reference_id=$productReferenceId
          and date_deleted is null
 "))) {
-            EkomApi::inst()->userHasProduct()->create([
+            EkomApi::inst()->userHasProductReference()->create([
                 'user_id' => $userId,
-                'product_id' => $pId,
-                'product_details' => $sProductDetails,
-                'date' => date("Y-m-d H:i:s"),
-                'deleted_date' => null,
+                'product_reference_id' => $productReferenceId,
+                'date_added' => date("Y-m-d H:i:s"),
+                'date_deleted' => null,
             ]);
 
             if (0 === $n) {
