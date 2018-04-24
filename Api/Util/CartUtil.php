@@ -143,10 +143,7 @@ class CartUtil
 
         $carrierId = CurrentCheckoutData::getCarrierId();
         if (null === $carrierId) {
-            $shippingDetails = $cart['shippingDetails'];
-            if (array_key_exists("carrier_id", $shippingDetails)) {
-                $carrierId = $shippingDetails['carrier_id'];
-            }
+            $carrierId = $cart['carrier_id'];
         }
         $carrierId = (int)$carrierId;
 
