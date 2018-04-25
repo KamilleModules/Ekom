@@ -87,9 +87,9 @@ class OrderInfoModel
 
 
         $phoneFormatted = $address['phone'];
-        if ($phoneFormatted && $address['phone_prefix']) {
-            $phoneFormatted = "(+$address[phone_prefix]) " . $phoneFormatted;
-        }
+//        if ($phoneFormatted && $address['phone_prefix']) {
+//            $phoneFormatted = "(+$address[phone_prefix]) " . $phoneFormatted;
+//        }
         $address['phone_formatted'] = $phoneFormatted;
         return $address;
     }

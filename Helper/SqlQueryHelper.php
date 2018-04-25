@@ -4,6 +4,7 @@
 namespace Module\Ekom\Helper;
 
 
+use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\Api\Layer\ProductCardLayer;
 use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
 use SqlQuery\SqlQueryInterface;
@@ -21,18 +22,27 @@ class SqlQueryHelper
         $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
         $cardIds = ProductCardLayer::getProductCardIdsByCategoryId($categoryId);
         if ($cardIds) {
-
-
             $sCardIds = implode(', ', $cardIds);
             $sqlQuery->addWhere(" and c.id in ($sCardIds)");
-
-
-//        self::decorateSqlQueryWithListStaticParams($sqlQuery, $listParams);
             return $sqlQuery;
         }
         return false;
     }
 
+
+    public static function getCategorySqlQueryByCategoryName(string $categoryName)
+    {
+
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
+        $cardIds = CategoryLayer::getCardIdsByCategoryName($categoryName,  true);
+
+        if ($cardIds) {
+            $sCardIds = implode(', ', $cardIds);
+            $sqlQuery->addWhere(" and c.id in ($sCardIds)");
+            return $sqlQuery;
+        }
+        return false;
+    }
 
 
     public static function getLastVisitedSqlQuery(int $userId, int $limit = 10, array $excludedProductReferenceIds = [])
@@ -75,9 +85,6 @@ inner join ek_user_visited_product_reference uvpr on uvpr.product_reference_id=p
     }
 
 
-
-
-
     public static function getUserWishListSqlQuery(int $userId, array $options = [])
     {
 
@@ -90,12 +97,9 @@ and uhpr.date_deleted is null
         ");
 
 
-
         $sqlQuery->addJoin("
 inner join ek_user_has_product_reference uhpr on uhpr.product_reference_id=pr.id
             ");
-
-
 
 
         /**

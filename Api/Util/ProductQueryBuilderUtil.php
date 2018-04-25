@@ -47,9 +47,10 @@ class ProductQueryBuilderUtil
      *      - seller_name,
      *      - seller_label,
      *      - reference,
-     *      - quantity
-     *      - out_of_stock_text
-     *      - label: the card label
+     *      - quantity,
+     *      - out_of_stock_text,
+     *      - label: the card label,
+     *      - description,
      *      - product_slug,
      *      - product_card_slug,
      *      - image_id,
@@ -216,6 +217,11 @@ if(
     p.label,
     c.label
 ) as label,
+if(
+    '' != p.description,
+    p.description,
+    c.description
+) as description,
 p.slug as product_slug,
 c.slug as product_card_slug,
 
@@ -316,11 +322,6 @@ inner join ek_seller sel on sel.id=p.seller_id
         $sqlQuery->addField("
 m.id as manufacturer_id,
 m.name as manufacturer_name,
-if(
-    '' != p.description,
-    p.description,
-    c.description
-) as description,
 if(
     '' != p.meta_title,
     p.meta_title,

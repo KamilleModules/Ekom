@@ -332,8 +332,12 @@ class CartUtil
      * for every seller!
      *
      */
-    public static function getSellerCarts(array $extendedCartModel)
+    public static function getSellerCarts(array $extendedCartModel, array $options = [])
     {
+
+        $onItemAfter = $options['onItemAfter'] ?? null;
+
+
         $itemsBySeller = $extendedCartModel['itemsGroupedBySeller'];
         $cartModel = $extendedCartModel['cart'];
         /**
@@ -477,7 +481,7 @@ class CartUtil
                 $percent = $sellerDirectives['shippingRatio'];
 
 
-                $shippingCostTotal = $cartModel['shipping_cost_tax_excluded'];
+                $shippingCostTotal = $cartModel['shipping_cost_tax_included'];
                 $sellerShippingCost = $shippingCostTotal * $percent;
                 $currentShippingCostPaid += $sellerShippingCost;
 
@@ -495,7 +499,9 @@ class CartUtil
                  * @see EkomModels::shippingInfoModel()
                  * The shipping info might not be available (if the user is not connected for instance)
                  */
-                if (0.0 === (float)$cartModel['shipping_cost_tax_amount']) {
+
+
+                if (4 === $cartModel['shipping_status']) {
                     $shippingInfo = [
                         "estimated_delivery_date" => $cartModel['carrier_estimated_delivery_date'],
                         "shipping_cost" => $sellerShippingCost,
@@ -531,7 +537,13 @@ class CartUtil
 
             $sellerCartModel = $entity->getModel();
             $allCarts[$seller] = $sellerCartModel;
+
+
+            if ($onItemAfter) {
+                call_user_func($onItemAfter, $seller, $item, $sellerCartModel);
+            }
         }
+
 
         return $allCarts;
     }

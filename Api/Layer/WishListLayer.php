@@ -17,27 +17,25 @@ class WishListLayer
         $userId = (int)$userId;
         $q = "
 select 
-product_id,
-product_details,
-`date`,
-deleted_date
+product_reference_id,
+date_added
 
-from ek_user_has_product 
+from ek_user_has_product_reference 
 where user_id=$userId
          
         ";
         if ('current' === $type) {
             $q .= "
-and deleted_date is null            
+and date_deleted is null            
             ";
         } elseif ("deleted" === $type) {
             $q .= "
-and deleted_date is not null            
+and date_deleted is not null            
             ";
         }
 
         $q .= "
-order by `date` desc        
+order by `date_added` desc        
         ";
 
         if (null !== $limit) {
@@ -47,14 +45,16 @@ limit 0, $limit
             ";
         }
 
-        $rows = QuickPdo::fetchAll($q);
-        foreach ($rows as $k => $row) {
-            $productDetails = StringTool::unserializeAsArray($row['product_details']);
 
-            $box = ProductBoxLayer::getProductBoxByProductId($row["product_id"], $productDetails);
-            $box['wishlist_deleted_date'] = $row['deleted_date'];
-            $box['wishlist_date'] = $row['date'];
-            $rows[$k] = $box;
+        $referenceIds = [];
+        $wishlistRows = QuickPdo::fetchAll($q, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+        foreach ($wishlistRows as $productReferenceId => $dateAdded) {
+            $referenceIds[] = $productReferenceId;
+        }
+        $rows = MiniProductBoxLayer::getBoxesByProductReferenceIds($referenceIds);
+        foreach ($rows as $k => $row) {
+            $row['wishlist_date'] = $wishlistRows[$row['product_reference_id']];
+            $rows[$k] = $row;
         }
         return $rows;
 
@@ -64,11 +64,11 @@ limit 0, $limit
     public static function removeUserWishlistItem($userId, $productId)
     {
         QuickPdo::update("ek_user_has_product", [
-            "deleted_date" => date("Y-m-d H:i:s"),
+            "date_deleted" => date("Y-m-d H:i:s"),
         ], [
             ["user_id", "=", $userId],
             ["product_id", "=", $productId],
-            " and deleted_date is null",
+            " and date_deleted is null",
         ]);
     }
 
@@ -97,7 +97,7 @@ limit 0, $limit
      * @param int $n
      * @return bool|mixed
      */
-    public function addToWishList(int $productReferenceId,  int $userId = null, &$n = 0)
+    public function addToWishList(int $productReferenceId, int $userId = null, &$n = 0)
     {
 
         if (null === $userId) {
@@ -145,7 +145,7 @@ limit 0, $limit
 //        //--------------------------------------------
 //        $player = EkomApi::inst()->productLayer();
 //        $userId = (int)$userId;
-//        $rows = QuickPdo::fetchAll("select product_id, product_details from ek_user_has_product where user_id=$userId and deleted_date is null");
+//        $rows = QuickPdo::fetchAll("select product_id, product_details from ek_user_has_product where user_id=$userId and date_deleted is null");
 //        $pRows = [];
 //        foreach ($rows as $row) {
 //            $productDetails = $row['product_details'];
@@ -190,8 +190,7 @@ where user_id=$userId";
         if ('current' === $type) {
             $q .= "
 and date_deleted is null";
-        }
-        elseif ('deleted' === $type) {
+        } elseif ('deleted' === $type) {
             $q .= "
 and date_deleted is not null";
         }
@@ -202,9 +201,9 @@ and date_deleted is not null";
     {
         $userId = (int)$userId;
         return QuickPdo::fetch("
-select date from ek_user_has_product
+select date_added from ek_user_has_product_reference
 where user_id=$userId
- order by date asc        
+ order by date_added asc        
         ", [], \PDO::FETCH_COLUMN);
     }
 }

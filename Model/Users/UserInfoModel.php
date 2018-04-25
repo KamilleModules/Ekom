@@ -117,18 +117,17 @@ class UserInfoModel
     {
         $fullRows = WishListLayer::getWishListItemsByUserId($userId, 5);
 
+
         $rows = [];
         foreach ($fullRows as $row) {
             $rows[] = [
-                'ref' => $row['ref'],
+                'ref' => $row['reference'],
                 'label' => $row['label'],
-                'photo' => $row['imageThumb'],
-                'sale_price' => $row['priceSale'],
+                'photo' => $row['image'],
+                'sale_price' => $row['sale_price'],
                 'date' => $row['wishlist_date'],
                 'action' => '',
                 // hidden
-                'product_type_id' => $row['product_type_id'],
-                'card_id' => $row['card_id'],
                 'product_id' => $row['product_id'],
             ];
         }
@@ -453,6 +452,6 @@ inner join ek_user_group gr on gr.id=u.user_group_id
     //--------------------------------------------
     private static function phone(array $item)
     {
-        return "+" . $item['phone_prefix'] . ": " . $item['phone'];
+        return $item['phone'];
     }
 }

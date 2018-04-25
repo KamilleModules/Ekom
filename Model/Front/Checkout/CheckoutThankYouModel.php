@@ -7,6 +7,7 @@ namespace Module\Ekom\Model\Front\Checkout;
 use Kamille\Architecture\Response\Web\HttpResponseInterface;
 use Kamille\Architecture\Response\Web\RedirectResponse;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Layer\MiniProductBoxLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\ProductBoxLayer;
 use Module\Ekom\Utils\E;
@@ -34,21 +35,18 @@ class CheckoutThankYouModel
 
 
                     $orderDetails = $info['order_details'];
-                    $items = $orderDetails['cartModel']['items'];
-                    $estimatedDeliveryDate = null;
-                    $shippingDetails = $orderDetails['cartModel']['shippingDetails'];
-                    if (array_key_exists("estimated_delivery_date", $shippingDetails)) {
-                        $estimatedDeliveryDate = $shippingDetails['estimated_delivery_date'];
-                    }
+                    $cartModel = $orderDetails['cartModel']['cart'];
+                    $items = $cartModel['items'];
+                    $estimatedDeliveryDate = $cartModel['carrier_estimated_delivery_date'];
 
 
                     $products = [];
                     foreach ($items as $p) {
                         $products[] = [
-                            "label" => $p['label'] . ' (ref: ' . $p['ref'] . ')',
-                            "quantity" => $p['quantityCart'],
-                            "img" => $p['imageThumb'],
-                            "uri" => $p['uri_card_with_details'],
+                            "label" => $p['label'] . ' (ref: ' . $p['reference'] . ')',
+                            "quantity" => $p['cart_quantity'],
+                            "img" => $p['image'],
+                            "uri" => $p['product_uri_with_details'],
                         ];
                     }
 
@@ -72,8 +70,8 @@ class CheckoutThankYouModel
                     /**
                      * @todo-ling: change those fake/demo carousels
                      */
-                    $products = ProductBoxLayer::getProductBoxListByCategoryName("kettlebell");
-                    $productsAlt = ProductBoxLayer::getProductBoxListByCategoryName("bandes");
+                    $products = MiniProductBoxLayer::getBoxesByCategoryName("kettlebell");
+                    $productsAlt = MiniProductBoxLayer::getBoxesByCategoryName("bandes");
 
                     $model['products'] = $products;
                     $model['productsAlt'] = $productsAlt;

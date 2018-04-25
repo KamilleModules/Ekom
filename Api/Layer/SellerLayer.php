@@ -68,7 +68,13 @@ order by name asc
         });
     }
 
-    public static function getDefaultSellerAddressByName($seller)
+
+    /**
+     *
+     * Return the administrative address of the seller.
+     *
+     */
+    public static function getSellerAddressByName(string $sellerName)
     {
         /**
          * Some sellers are just virtual and dynamically created.
@@ -82,9 +88,7 @@ order by name asc
          * A tip is to insert the virtual seller name in the ek_seller table, but affecting no products to it.
          *
          */
-
-
-        $sellerAddress = A::cache()->get("Ekom.SellerLayer.getDefaultSellerAddress.$seller", function () use ($seller) {
+        $sellerAddress = A::cache()->get("Ekom.SellerLayer.getSellerAddressByName", function () use ($sellerName) {
 
             $q = "
             select 
@@ -92,23 +96,17 @@ a.*,
 c.iso_code as country_iso_code,
 c.label as country
 
-from ek_seller_has_address h
-inner join ek_seller s on s.id=h.seller_id 
-inner join ek_address a on a.id=h.address_id 
+from ek_seller s 
+inner join ek_address a on a.id=s.address_id 
 inner join ek_country c on c.id=a.country_id  
-
 where s.name=:seller
-and a.active=1
-
-order by h.`order` asc
             ";
 
 
-            return QuickPdo::fetch($q, ['seller' => $seller]);
-
+            return QuickPdo::fetch($q, ['seller' => $sellerName]);
         });
         if (false === $sellerAddress) {
-            throw new EkomException("Seller $seller has no active address");
+            throw new EkomException("Seller $sellerName was not found or has no address");
         }
         return $sellerAddress;
     }

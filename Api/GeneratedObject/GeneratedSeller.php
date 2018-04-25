@@ -33,9 +33,13 @@ class GeneratedSeller extends TableCrudObject
 			'id' => null,
 			'name' => '',
 			'label' => '',
+			'address_id' => null,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
+        if (0 === (int)$ret["address_id"]) {
+            $ret["address_id"] = null;
+        }
 
 
         return $ret;

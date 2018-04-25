@@ -15,6 +15,7 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Object\User;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Session\EkomSession;
 use Module\Ekom\Utils\Checkout\CheckoutPageUtil;
 use Module\Ekom\Utils\E;
@@ -122,14 +123,24 @@ where 1
         EkomApi::inst()->user()->update($data, ['id' => (int)$userId]);
     }
 
+
+    /**
+     * @see EkomModels::userInfoModel()
+     */
     public static function getUserInfoById($userId)
     {
-        /**
-         * @todo-ling: caching?
-         */
         $userId = (int)$userId;
-        return QuickPdo::fetch("select u.*, g.name as group_name from ek_user u 
+        return QuickPdo::fetch("
+select 
+u.*, 
+g.name as group_name,
+g.label as group_label,
+ge.name as gender_name, 
+ge.label as gender_label,
+ge.long_label as gender_long_label
+from ek_user u 
 inner join ek_user_group g on g.id=u.user_group_id  
+inner join ek_gender ge on ge.id=u.gender_id  
 where u.id=$userId");
     }
 

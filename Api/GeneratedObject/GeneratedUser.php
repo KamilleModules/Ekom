@@ -41,7 +41,6 @@ class GeneratedUser extends TableCrudObject
 			'date_last_connection' => null,
 			'mobile' => '',
 			'phone' => '',
-			'phone_prefix' => '',
 			'newsletter' => 0,
 			'birthday' => null,
 			'active_hash' => '',

@@ -278,9 +278,6 @@ select reference from ek_order where id=$id
 
     public static function getOrderInfo($id)
     {
-        /**
-         * @todo-ling, remove force generate
-         */
         $id = (int)$id;
         return A::cache()->get("Ekom.OrderLayer.getOrderInfo.$id.", function () use ($id) {
 
@@ -291,7 +288,7 @@ select * from ek_order where id=$id
                 self::unserializeRow($row);
             }
             return $row;
-        }, true);
+        });
     }
 
     public static function getOrderLastStatus($orderId)
@@ -532,7 +529,7 @@ and
     public static function unserializeRow(array &$row)
     {
         $row['user_info'] = unserialize($row['user_info']);
-        $row['shop_info'] = unserialize($row['shop_info']);
+        $row['store_info'] = unserialize($row['store_info']);
         $row['shipping_address'] = unserialize($row['shipping_address']);
         $row['billing_address'] = unserialize($row['billing_address']);
         $row['order_details'] = unserialize($row['order_details']);

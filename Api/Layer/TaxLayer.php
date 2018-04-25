@@ -134,7 +134,7 @@ select amount from ek_tax where id=$taxId
 select * from ek_tax where name=:name        
         ", [
             "name" => $taxName,
-        ], \PDO::FETCH_COLUMN);
+        ]);
     }
 
     public static function getModeItems()

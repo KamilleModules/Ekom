@@ -53,7 +53,11 @@ class ProductLayer
 
     public static function getLabelByProductRef(string $ref)
     {
-        return QuickPdo::fetch("select label from ek_product where reference=:ref", ['ref' => $ref], \PDO::FETCH_COLUMN);
+        return QuickPdo::fetch("
+select label 
+from ek_product p
+inner join ek_product_reference pr on pr.product_id=p.id 
+where pr.reference=:ref", ['ref' => $ref], \PDO::FETCH_COLUMN);
     }
 
     public static function getLabelByProductId(int $id)

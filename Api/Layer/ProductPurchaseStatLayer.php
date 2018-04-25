@@ -15,26 +15,29 @@ use QuickPdo\QuickPdoStmtTool;
 class ProductPurchaseStatLayer
 {
 
-    public static function insertStatsByCart($orderId, array $cart, $userId)
+    public static function insertStatsByCart($orderId, array $extendedCartModel, $userId)
     {
+        $cart = $extendedCartModel['cart'];
         foreach ($cart['items'] as $box) {
 
-            $box['productDetailsSelection'];
+
+
+
 
             EkomApi::inst()->productPurchaseStat()->create([
                 "purchase_date" => date("Y-m-d H:i:s"),
                 "orderId" => $orderId,
                 "user_id" => $userId,
                 "product_id" => $box['product_id'],
-                "product_ref" => $box['ref'],
+                "product_ref" => $box['reference'],
                 "product_label" => $box['label'],
-                "quantity" => $box['quantityCart'],
-                "price" => $box['priceSaleRaw'],
-                "price_without_tax" => $box['priceBaseRaw'],
-                "total" => $box['priceLineRaw'],
-                "total_without_tax" => $box['priceLineWithoutTaxRaw'],
-                "attribute_selection" => serialize($box['attributesSelection']),
-                "product_details_selection" => serialize($box['productDetailsSelection']),
+                "quantity" => $box['cart_quantity'],
+                "price" => $box['sale_price'],
+                "price_without_tax" => $box['base_price'],
+                "total" => $box['line_sale_price'],
+                "total_without_tax" => $box['line_base_price'],
+                "attribute_selection" => serialize($box['selected_attributes_info']),
+                "product_details_selection" => serialize($box['selected_product_details_info']),
                 "wholesale_price" => $box['wholesale_price'],
             ]);
 

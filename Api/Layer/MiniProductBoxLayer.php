@@ -9,9 +9,17 @@ use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
 use Module\Ekom\Helper\SqlQueryHelper;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
+use QuickPdo\QuickPdoStmtTool;
 
 
 /**
+ *
+ *
+ * Amongst other things,
+ * This class is a good start to display carousels.
+ *
+ *
+ *
  * 2018-04-13
  *
  * Caching is a real problem.
@@ -60,12 +68,69 @@ class MiniProductBoxLayer
 {
 
 
+    public static function getBoxesBySearchExpression(string $searchExpression)
+    {
+
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
+
+        $sqlQuery->addWhere("
+and 
+(
+    p.label like :query or  
+    pr.reference like :query or
+    tag.name like :query
+)        
+        ");
+
+        $sqlQuery->addJoin("
+left join ek_product_has_tag phtag on phtag.product_id=p.id
+left join ek_tag tag on tag.id=phtag.tag_id      
+        ");
+
+        $sqlQuery->addMarker("query", '%' . QuickPdoStmtTool::stripWildcards($searchExpression) . '%');
+
+
+        $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
+        self::sugarifyRows($rows);
+        return $rows;
+    }
+
+
+    public static function getBoxesByProductReferenceIds(array $referenceIds)
+    {
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
+        $sProductReferenceIds = implode(', ', array_map('intval', $referenceIds));
+
+        $sqlQuery->addWhere("
+and pr.id in ($sProductReferenceIds)        
+        ");
+
+        $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
+        self::sugarifyRows($rows);
+        return $rows;
+    }
+
+
     public static function getLastVisitedBoxes(int $userId, int $limit = 10, array $excludedProductReferenceIds = [], array $options = [])
     {
         $sqlQuery = SqlQueryHelper::getLastVisitedSqlQuery($userId, $limit, $excludedProductReferenceIds, $options);
         $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
         self::sugarifyRows($rows);
         return $rows;
+    }
+
+
+    public static function getBoxesByCategoryName(string $categoryName, int $limit = 10)
+    {
+        $sqlQuery = SqlQueryHelper::getCategorySqlQueryByCategoryName($categoryName);
+        if (false !== $sqlQuery) {
+
+
+            $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
+            self::sugarifyRows($rows);
+            return $rows;
+        }
+        return [];
     }
 
 
