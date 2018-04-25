@@ -4,12 +4,15 @@
 namespace Module\Ekom\Utils\CheckoutProcess\Step\Soko;
 
 
+use Kamille\Services\XLog;
 use Kamille\Utils\Claws\Error\ClawsWidgetError;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Layer\ShopLayer;
+use Module\Ekom\Api\Layer\StoreLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Exception\EkomUserMessageException;
+use Module\Ekom\Helper\CheckoutProcessHelper;
 use Module\Ekom\SokoForm\UserAddress\UserAddressSokoForm;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\CheckoutProcess\CheckoutProcessInterface;
@@ -51,6 +54,11 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                         $filteredContext['is_default_shipping_address'] = (int)$filteredContext['is_default_shipping_address'];
                     }
                     EkomApi::inst()->userAddressLayer()->createAddress($userId, $filteredContext);
+
+
+
+
+
                 } catch (EkomUserMessageException $e) {
                     $form->addNotification($e->getMessage(), "error");
                 }
@@ -111,6 +119,14 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                     throw new EkomUserMessageException("No carrier offer for this app");
                 }
                 $ret['carrierOffers'] = $carrierOffers;
+
+
+
+                CheckoutProcessHelper::fixUnsyncedCurrentCheckoutDataAddresses();
+
+
+
+
                 /**
                  * Note: it's important for me to be sure selectedCarrierId is defined.
                  * That's because if we click the next step button without having
@@ -166,12 +182,18 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                 CurrentCheckoutData::setShippingAddressId($selectedAddressId);
 
 
+
+
+
+
+
                 $ret['userAddresses'] = $userAddresses;
                 $ret['billingSyncedWithShippingValue'] = (int)!$billing_synced_with_shipping;
                 $ret['billingSyncedWithShippingSelected'] = $billing_synced_with_shipping;
                 $ret['shippingAddress'] = $shippingAddress;
                 $ret['billingAddress'] = $billingAddress;
                 $ret['carrierId'] = $selectedCarrierId;
+                $ret['storeAddressId'] = StoreLayer::getPreferredPhysicalAddressIdById(CurrentCheckoutData::getStoreAddressId());
                 $ret['shippingComments'] = $shippingComments;
                 $ret['context'] = $this->context;
             } else {

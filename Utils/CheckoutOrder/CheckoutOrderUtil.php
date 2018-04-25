@@ -72,19 +72,19 @@ class CheckoutOrderUtil
      *
      *
      *
-     * @param array $data : <orderDataModel>
-     * @see EkomModels::orderDataModel()
+     * @param array $checkoutData
+     * @see EkomModels::checkoutData()
      *
-     * @param array $cartModel
-     * @see EkomModels::cartModel()
+     * @param array $extendedCartModel
+     * @see EkomModels::extendedCartModel()
      * @return int, the id of the order
      *
      * @throws EkomUserMessageException
      * @throws \Exception
      */
-    public function placeOrder(array $data, array $cartModel)
+    public function placeOrder(array $checkoutData, array $extendedCartModel)
     {
-
+        $cartModel = $extendedCartModel['cart'];
 
         /**
          * 1. check (and hooks)
@@ -132,9 +132,9 @@ class CheckoutOrderUtil
          *
          *
          */
-        $shippingErrorCode = $cartModel['shippingErrorCode'];
+        $shippingErrorCode = $cartModel['carrier_error_code'];
         if (null !== $shippingErrorCode) {
-            self::handleShippingErrorCode($shippingErrorCode);
+            self::handleCarrierErrorCode($shippingErrorCode);
         }
 
 
@@ -146,17 +146,17 @@ class CheckoutOrderUtil
             'billing_address_id',
             'payment_method_id',
         ];
-        if (true === CartUtil::hasAtLeastOneShippableItem($cartModel)) {
+        if (true === CartUtil::hasAtLeastOneShippableItem($extendedCartModel)) {
             $importantKeys = array_merge($importantKeys, [
                 'carrier_id',
                 'shipping_address_id',
-                'shop_address_id',
+                'store_address_id',
             ]);
         }
-        $missing = ArrayTool::getMissingKeys($data, $importantKeys);
+        $missing = ArrayTool::getMissingKeys($checkoutData, $importantKeys);
         if (false === $missing) {
 
-            $this->checkDataConsistency($data, $cartModel);
+            $this->checkDataConsistency($checkoutData, $extendedCartModel);
 
             //--------------------------------------------
             // COLLECT
@@ -179,7 +179,6 @@ class CheckoutOrderUtil
              *
              */
 
-
             $orderModel = [];
             /**
              * @var $refProvider OrderReferenceProviderInterface
@@ -195,7 +194,7 @@ class CheckoutOrderUtil
 
             //  we start with special objects
             //--------------------------------------------
-            $billingAddressId = $data['billing_address_id'];
+            $billingAddressId = $checkoutData['billing_address_id'];
 
             // carrier
             /**
@@ -203,10 +202,10 @@ class CheckoutOrderUtil
              * https://github.com/KamilleModules/Ekom/tree/master/doc/checkout/carrier-and-sellers.md
              */
             $carrierId = null;
-            if (array_key_exists("carrier_id", $data)) {
-                $carrierId = $data['carrier_id'];
+            if (array_key_exists("carrier_id", $checkoutData)) {
+                $carrierId = $checkoutData['carrier_id'];
                 $carrier = CarrierLayer::getCarrierInstanceById($carrierId);
-                $carrier->placeOrder($orderModel, $cartModel, $data);
+                $carrier->placeOrder($orderModel, $extendedCartModel, $checkoutData);
             }
 
 
@@ -215,32 +214,33 @@ class CheckoutOrderUtil
              * For payment method handlers, in this collect step, we only collect the user configuration
              * (of the chosen payment method) when he clicked the "pay" button.
              */
-            $paymentMethodId = $data['payment_method_id'];
+            $paymentMethodId = $checkoutData['payment_method_id'];
             $paymentHandler = PaymentLayer::getPaymentMethodHandlerById($paymentMethodId);
-            $paymentMethodDetails = $paymentHandler->getCommittedConfiguration($data, $cartModel);
+            $paymentMethodDetails = $paymentHandler->getCommittedConfiguration($checkoutData, $extendedCartModel);
 
 
-            $this->checkPaymentErrors($data, $cartModel, $paymentMethodDetails, $paymentHandler);
+            $this->checkPaymentErrors($checkoutData, $extendedCartModel, $paymentMethodDetails, $paymentHandler);
 
 
             // now ekom logic
-            $trackingNumber = (array_key_exists("tracking_number", $orderModel)) ? $orderModel['tracking_number'] : "";
-            $carrierDetails = (array_key_exists("carrier_details", $orderModel)) ? $orderModel['carrier_details'] : [];
+            $trackingNumber = $orderModel["tracking_number"] ?? "";
 
-            $userId = (int)$data['user_id'];
+
+            $userId = (int)$checkoutData['user_id'];
             $userInfo = UserLayer::getUserInfoById($userId);
             if (false === $userInfo) { // I'm a little paranoid here, since this has been already checked, but it shouldn't hurt
                 $this->devError("See, I was not too paranoid: user not found: $userId");
             }
 
 
+            $storeAddressId = (array_key_exists("store_address_id", $checkoutData)) ? $checkoutData['store_address_id'] : null;
+            $storeInfo = [];
+            if (null !== $storeAddressId) {
+                $storeInfo = OrderLayer::getStoreInfoByStoreAddressId($storeAddressId);
+            }
 
 
-            $shopAddressId = (array_key_exists("shop_address_id", $data)) ? $data['shop_address_id'] : null;
-            $shopInfo = ShopLayer::getShopInfoModel($shopAddressId);
-
-
-            $shippingAddressId = (array_key_exists("shipping_address_id", $data)) ? $data['shipping_address_id'] : null;
+            $shippingAddressId = (array_key_exists("shipping_address_id", $checkoutData)) ? $checkoutData['shipping_address_id'] : null;
             if (null !== $shippingAddressId) {
                 $shippingAddress = UserAddressLayer::getAddressById($userId, $shippingAddressId);
             } else {
@@ -249,7 +249,7 @@ class CheckoutOrderUtil
             $billingAddress = UserAddressLayer::getAddressById($userId, $billingAddressId);
 
 
-            $_cartModel = $cartModel;
+            $_cartModel = $extendedCartModel['cart'];
             $paymentMethodNameAndLabel = PaymentLayer::getPaymentMethodNameAndLabelById($paymentMethodId);
             if (false === $paymentMethodNameAndLabel) {
                 $this->devError("Inconsistent data: payment method name not found with id $paymentMethodId");
@@ -265,15 +265,15 @@ class CheckoutOrderUtil
                 $orderDetails = array_replace($orderDetails, [
                     "carrier_id" => $carrierId,
                     "carrier_name" => $carrier->getName(),
-                    "carrier_details" => $carrierDetails,
+                    "carrier_tracking_number" => $trackingNumber,
                 ]);
             }
 
             //--------------------------------------------
             // miscellaneous
             //--------------------------------------------
-            if (array_key_exists("shipping_comments", $data)) {
-                $orderDetails['shipping_comment'] = $data["shipping_comments"];
+            if (array_key_exists("shipping_comments", $checkoutData)) {
+                $orderDetails['shipping_comment'] = $checkoutData["shipping_comments"];
             } else {
                 $orderDetails['shipping_comment'] = "";
             }
@@ -282,25 +282,25 @@ class CheckoutOrderUtil
             //--------------------------------------------
             // LAST OPPORTUNITY FOR MODULES TO DECORATE ORDER DETAILS
             //--------------------------------------------
-            Hooks::call("Ekom_CheckoutOrderUtil_decorateOrderDetails", $orderDetails, $data);
-
+            Hooks::call("Ekom_CheckoutOrderUtil_decorateOrderDetails", $orderDetails, $checkoutData, $extendedCartModel);
 
 
             // I let this model in non serialized form for debugging
             $orderModel = array_replace($orderModel, [
                 "user_id" => $userId,
                 "date" => date('Y-m-d H:i:s'),
-                "amount" => $cartModel['priceOrderGrandTotalRaw'],
-                "coupon_saving" => $cartModel['couponSavingRaw'],
+                "amount" => $cartModel['order_grand_total'],
+                "coupon_saving" => $cartModel['coupons_total'],
                 "cart_quantity" => $cartModel['cart_total_quantity'],
                 "tracking_number" => $trackingNumber,
                 "user_info" => $userInfo,
-                "shop_info" => $shopInfo,
+                "store_info" => $storeInfo,
                 "shipping_address" => $shippingAddress,
                 "billing_address" => $billingAddress,
                 "order_details" => $orderDetails,
             ]);
 
+            az("here", $orderModel);
 
             //--------------------------------------------
             // INSERT IN DATABASE
@@ -318,13 +318,13 @@ class CheckoutOrderUtil
     //--------------------------------------------
     //
     //--------------------------------------------
-    protected function checkPaymentErrors(array $orderData, array $cartModel, array $paymentMethodDetails, PaymentMethodHandlerInterface $paymentHandler)
+    protected function checkPaymentErrors(array $orderData, array $extendedCartModel, array $paymentMethodDetails, PaymentMethodHandlerInterface $paymentHandler)
     {
         if (array_key_exists("credit_card_id", $paymentMethodDetails)) {
             $userId = $orderData['user_id'];
             $cardId = $paymentMethodDetails['credit_card_id'];
             $repaymentSchedule = $paymentMethodDetails['repayment_schedule'];
-            $userMessageCodes = CreditCardWalletPaymentMethodHandler::getUserErrorMessageCodes($cartModel, $repaymentSchedule, $userId, $cardId);
+            $userMessageCodes = CreditCardWalletPaymentMethodHandler::getUserErrorMessageCodes($extendedCartModel, $repaymentSchedule, $userId, $cardId);
 
             if (in_array("cardExpired", $userMessageCodes, true)) {
                 throw new EkomUserMessageException("
@@ -418,20 +418,20 @@ class CheckoutOrderUtil
          */
         $sellerInfo = [];
 
-        $totalWeight = $orderCartModel['cartTotalWeight'];
+        $totalWeight = $orderCartModel['cart_total_weight'];
         $nbShippingParticipants = 0;
-        $couponAmount = $orderCartModel['couponSavingRaw'];
-        $couponDetails = $orderCartModel['couponDetails'];
+        $couponAmount = $orderCartModel['coupons_total'];
+        $couponDetails = $orderCartModel['coupons'];
         $nbSellers = count($itemsBySeller);
         $sellerCouponRatio = 1 / $nbSellers;
 
 
         foreach ($itemsBySeller as $seller => $item) {
 
-            $participateToShipping = $item['cartWeight'] > 0;
+            $participateToShipping = $item['total_weight'] > 0;
 
             if (true === $participateToShipping) {
-                $shippingRatio = $item['cartWeight'] / $totalWeight;
+                $shippingRatio = $item['total_weight'] / $totalWeight;
                 $nbShippingParticipants++;
             } else {
                 $shippingRatio = 0;
@@ -464,7 +464,7 @@ class CheckoutOrderUtil
                 /**
                  * participate to the shipping costs?
                  */
-                'useShipping' => $item['cartWeight'] > 0,
+                'useShipping' => $item['total_weight'] > 0,
                 'couponDetails' => $sellerCouponDetails,
             ];
 
@@ -477,8 +477,8 @@ class CheckoutOrderUtil
          * Effectively creating the invoices
          */
         $invoices = [];
-        $taxGroupName = $orderCartModel['shippingTaxGroupName'];
-        $shippingDetails = $orderCartModel['shippingDetails'];
+        $taxGroupName = $orderCartModel['shipping_cost_tax_name'];
+//        $shippingDetails = $orderCartModel['shippingDetails'];
         $currentShippingCostPaid = 0;
 
         foreach ($itemsBySeller as $seller => $item) {
@@ -549,15 +549,17 @@ class CheckoutOrderUtil
                  * @see EkomModels::shippingInfoModel()
                  */
                 $shippingInfo = [
-                    "estimated_delivery_date" => $shippingDetails['estimated_delivery_date'],
+                    "estimated_delivery_date" => $orderCartModel['carrier_estimated_delivery_date'],
                     "shipping_cost" => $sellerShippingCost,
                 ];
 
 
-                $entity->addShippingItem($shippingInfo,
+                $entity->setShippingData($shippingInfo,
                     $taxGroupName,
-                    $shippingDetails['carrier_id'],
-                    $shippingDetails['label']
+                    $orderCartModel['carrier_id'],
+                    $orderCartModel['carrier_label'],
+                    $orderCartModel['carrier_error_code'],
+                    $orderCartModel['shipping_status']
                 );
             }
 
@@ -565,8 +567,12 @@ class CheckoutOrderUtil
             //--------------------------------------------
             // COUPONS
             //--------------------------------------------
-            if ($sellerDirectives['couponDetails']) {
-                $sellerCouponDetails = $sellerDirectives['couponDetails'];
+//            if ($sellerDirectives['couponDetails']) {
+//                $sellerCouponDetails = $sellerDirectives['couponDetails'];
+//                $entity->addCouponDetails($sellerCouponDetails);
+//            }
+            if ($sellerDirectives['coupons']) {
+                $sellerCouponDetails = $sellerDirectives['coupons'];
                 $entity->addCouponDetails($sellerCouponDetails);
             }
 
@@ -608,7 +614,7 @@ class CheckoutOrderUtil
     {
         $orderId = null;
         $exception = null;
-        QuickPdo::transaction(function () use ($orderModel,  &$orderId) {
+        QuickPdo::transaction(function () use ($orderModel, &$orderId) {
 
             $paymentMethod = $orderModel['order_details']["payment_method_name"];
             $paymentMethodDetails = $orderModel['order_details']["payment_method_details"];
@@ -629,7 +635,7 @@ class CheckoutOrderUtil
                 'payment_method' => $paymentMethod,
                 'payment_method_extra' => $paymentMethodExtra,
                 'user_info' => serialize($orderModel['user_info']),
-                'shop_info' => serialize($orderModel['shop_info']),
+                'store_info' => serialize($orderModel['store_info']),
                 'shipping_address' => serialize($orderModel['shipping_address']),
                 'billing_address' => serialize($orderModel['billing_address']),
                 'order_details' => serialize($orderModel['order_details']),
@@ -725,11 +731,11 @@ class CheckoutOrderUtil
      * - the shop owns the payment method id
      *
      */
-    private function checkDataConsistency(array $data, $cartModel)
+    private function checkDataConsistency(array $checkoutData, $extendedCartModel)
     {
-        $userId = (int)$data['user_id'];
-        $billingAddressId = (int)$data['billing_address_id'];
-        $paymentMethodId = (int)$data['payment_method_id'];
+        $userId = (int)$checkoutData['user_id'];
+        $billingAddressId = (int)$checkoutData['billing_address_id'];
+        $paymentMethodId = (int)$checkoutData['payment_method_id'];
 
 
         // the user belongs to the shop
@@ -746,10 +752,10 @@ class CheckoutOrderUtil
 
 
         // do we use shipping step?
-        if (array_key_exists("carrier_id", $data)) {
-            $carrierId = (int)$data['carrier_id'];
-            $shippingAddressId = (int)$data['shipping_address_id'];
-            $shopAddressId = (int)$data['shop_address_id'];
+        if (array_key_exists("carrier_id", $checkoutData)) {
+            $carrierId = (int)$checkoutData['carrier_id'];
+            $shippingAddressId = (int)$checkoutData['shipping_address_id'];
+            $storeAddressId = (int)$checkoutData['store_address_id'];
 
             // the user owns the shipping address
             $res = QuickPdo::fetch("select user_id from ek_user_has_address where user_id=$userId and address_id=$shippingAddressId");
@@ -764,9 +770,9 @@ class CheckoutOrderUtil
             }
 
             // the shop address really belongs to the shop
-            $res = QuickPdo::fetch("select id from ek_store where address_id=$shopAddressId");
+            $res = QuickPdo::fetch("select id from ek_store where address_id=$storeAddressId");
             if (false === $res) {
-                $this->devError("Inconsistent data: address $shopAddressId is not a store address");
+                $this->devError("Inconsistent data: address $storeAddressId is not a store address");
             }
         }
 
@@ -782,15 +788,19 @@ class CheckoutOrderUtil
         // ASKING MODULES
         //--------------------------------------------
         try {
-            Hooks::call("Ekom_CheckoutOrderUtil_checkDataConsistency", $data, $cartModel);
+            Hooks::call("Ekom_CheckoutOrderUtil_checkDataConsistency", $checkoutData, $extendedCartModel);
         } catch (\Exception $e) {
-            $this->devError($e->getMessage());
+            if ($e instanceof EkomUserMessageException) {
+                throw $e;
+            } else {
+                $this->devError($e->getMessage());
+            }
         }
 
     }
 
 
-    private static function handleShippingErrorCode($errorCode)
+    private static function handleCarrierErrorCode($errorCode)
     {
         $appErrorInfo = [
             'text' => null,

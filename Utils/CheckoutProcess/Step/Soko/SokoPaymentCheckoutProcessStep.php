@@ -90,6 +90,7 @@ class SokoPaymentCheckoutProcessStep extends BaseCheckoutProcessStep
          */
         CurrentCheckoutData::setPaymentMethodId($paymentMethodId);
 
+
         return [
             "paymentMethodItems" => PaymentLayer::getPaymentMethodHandlersItems($paymentMethodId),
             "uriPaymentThankYou" => E::link("Ekom_checkoutOnePageThankYou"),

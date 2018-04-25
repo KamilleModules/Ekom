@@ -125,7 +125,7 @@ order by h.`order` asc
     }
 
 
-    public function userOwnsAddress($userId, $id)
+    public static function userOwnsAddress($userId, $id)
     {
         $id = (int)$id;
         $userId = (int)$userId;

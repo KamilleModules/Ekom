@@ -20,6 +20,24 @@ class OrderLayer
 {
 
 
+    public static function getStoreInfoByStoreAddressId(int $storeAddressId)
+    {
+        return QuickPdo::fetch("
+select 
+s.label,
+a.*,
+c.iso_code as country
+
+from ek_store s 
+inner join ek_address a on a.id=s.address_id
+inner join ek_country c on c.id=a.country_id
+
+where s.address_id=$storeAddressId
+        
+        ");
+    }
+
+
     public static function getUserIdByOrderId(int $orderId)
     {
         return QuickPdo::fetch("select user_id from ek_order where id=$orderId", [], \PDO::FETCH_COLUMN);

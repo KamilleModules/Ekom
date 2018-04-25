@@ -44,8 +44,8 @@ interface PaymentMethodHandlerInterface
     /**
      * @param $orderData : array:<orderDataModel>
      * @see EkomModels::orderDataModel()
-     * @param $cartModel : array:<cartModel>
-     * @see EkomModels::cartModel()
+     * @param $extendedCartModel
+     * @see EkomModels::extendedCartModel()
      *
      * @return array, the payment configuration details when the user clicked the "pay" button.
      * Those details appear on the invoice and/or at the order level.
@@ -58,7 +58,7 @@ interface PaymentMethodHandlerInterface
      *          - [ 2018-02-03, "3ème versement", 100, "100€" ]
      *
      */
-    public function getCommittedConfiguration(array $orderData, array $cartModel);
+    public function getCommittedConfiguration(array $orderData, array $extendedCartModel);
 
 
 }

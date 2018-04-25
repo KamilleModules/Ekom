@@ -98,6 +98,31 @@ class ProductBoxLayer
         MiniProductBoxLayer::sugarify($row);
 
 
+
+
+        /**
+         * Note:
+         * the productBox needs to provide two properties:
+         *
+         * - attributes_list
+         * - product_details_list
+         *
+         * which detailed structure is still under discussion, but probably will look like this (for both):
+         *
+         * - 0:
+         *      - nameEkom/Checkout/default
+         *      - value
+         *      - label
+         *      - selected
+         *      - ?ajax_product_uri: the uri to call to update the product box, this property presence is under discussion,
+         *              but for seo reasons, has been voted out (not worth it).
+         *
+         * There is no rule about how to produce those lists, but in Ekom the implementation discussion
+         * starts here: class-modules/Ekom/doc/product-box/product-box-modifiers.md
+         *
+         */
+
+
         $selectedProductDetails = []; // todo: ask modules via hooks
         $productDetailsList = []; // todo: ask modules via hooks, use same structure as attribute list...
         $row['selected_product_details'] = $selectedProductDetails;
@@ -131,6 +156,7 @@ class ProductBoxLayer
         $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($row['product_card_id']);
         $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $row['product_id']);
         $row['attributes_list'] = $attr;
+
 
 
         return $row;

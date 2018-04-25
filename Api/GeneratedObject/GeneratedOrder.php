@@ -41,7 +41,7 @@ class GeneratedOrder extends TableCrudObject
 			'payment_method' => '',
 			'payment_method_extra' => '',
 			'user_info' => '',
-			'shop_info' => '',
+			'store_info' => '',
 			'shipping_address' => '',
 			'billing_address' => '',
 			'order_details' => '',

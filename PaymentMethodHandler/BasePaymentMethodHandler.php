@@ -20,7 +20,7 @@ abstract class BasePaymentMethodHandler implements PaymentMethodHandlerInterface
 //    }
 
 
-    public function getCommittedConfiguration(array $orderData, array $cartModel)
+    public function getCommittedConfiguration(array $orderData, array $extendedCartModel)
     {
         return [];
     }

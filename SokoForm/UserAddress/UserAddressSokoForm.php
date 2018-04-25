@@ -35,7 +35,6 @@ class UserAddressSokoForm
         $countryChoices = self::getCountryChoices();
 
 
-
         $isDefaultShippingChoice = [
             "1" => "En faire mon adresse de livraison par défaut",
         ];
@@ -57,11 +56,11 @@ class UserAddressSokoForm
                 ->setLabel("Libellé")
                 ->setName("libelle")
             )
-            ->addControl(SokoInputControl::create()
-                ->setLabel("Préfixe téléphonique")
-                ->setValue("33")
-                ->setName("phone_prefix") // a custom widget
-            )
+//            ->addControl(SokoInputControl::create()
+//                ->setLabel("Préfixe téléphonique")
+//                ->setValue("33")
+//                ->setName("phone_prefix") // a custom widget
+//            )
             ->addControl(SokoInputControl::create()
                 ->setLabel('Numéro de téléphone')
                 ->setName("phone")
@@ -91,11 +90,24 @@ class UserAddressSokoForm
             ->addControl(SokoChoiceControl::create()
                 ->setName("is_default_shipping_address")
                 ->setChoices($isDefaultShippingChoice)
+                ->setValue("1")
             )
             ->addControl(SokoChoiceControl::create()
                 ->setName("is_default_billing_address")
                 ->setChoices($isDefaultBillingChoice)
+                ->setValue("1")
             );
+
+
+        if (array_key_exists("debug", $_GET)) {
+            $form->inject([
+                "libelle" => "maurice dupont",
+                "phone" => "0619524565",
+                "city" => "Tours",
+                "address" => "6 rue port feu hugon",
+                "postcode" => "37000",
+            ]);
+        }
 
 
         $form
