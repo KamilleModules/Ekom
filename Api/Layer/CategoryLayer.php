@@ -28,6 +28,15 @@ class CategoryLayer
 {
 
 
+    public static function getCategoryIdsByProductCardId(int $productCardId)
+    {
+        return QuickPdo::fetchAll("
+select category_id from ek_category_has_product_card
+where product_card_id=$productCardId        
+        ", [], \PDO::FETCH_COLUMN);
+    }
+
+
     public static function getItemsList(array $options = [])
     {
         $alphaSort = $options['alphaSort'] ?? false;
@@ -37,7 +46,6 @@ class CategoryLayer
         }
         return QuickPdo::fetchAll($q, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
-
 
 
     public static function getTopCategoryInfoById(int $categoryId)
@@ -310,7 +318,6 @@ where c.name in ('" . implode("','", $names) . "')
         $categoryId = self::getCategoryIdByName($categoryName);
         return self::getCardIdsByCategoryId($categoryId, $recursive);
     }
-
 
 
     public static function getCardIdsByCategoryId($categoryId, $recursive = true)

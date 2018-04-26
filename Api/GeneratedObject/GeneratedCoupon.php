@@ -31,6 +31,7 @@ class GeneratedCoupon extends TableCrudObject
     {
         $base = [
 			'id' => null,
+			'seller_id' => null,
 			'label' => '',
 			'code' => '',
 			'description' => '',
@@ -47,12 +48,15 @@ class GeneratedCoupon extends TableCrudObject
 			'cond_rules' => null,
 			'quantity' => null,
 			'quantity_per_user' => null,
-			'action_free_shipping' => 0,
 			'action_type' => null,
 			'action_value' => null,
+			'target' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
+        if (0 === (int)$ret["seller_id"]) {
+            $ret["seller_id"] = null;
+        }
         if (0 === (int)$ret["cond_user_id"]) {
             $ret["cond_user_id"] = null;
         }

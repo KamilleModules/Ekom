@@ -6,35 +6,11 @@ namespace Module\Ekom\SokoForm\Controls;
 
 use Bat\StringTool;
 use Kamille\Utils\ThemeHelper\KamilleThemeHelper;
+use Module\Ekom\Helper\ConditionRulesHelper;
 use SokoForm\Control\SokoFreeHtmlControl;
 
 /**
- *
- * Syntax reminder for db insertion/extraction
- * ======================
- *
- * The inline version of the rules uses this syntax:
- *
- *
- * - syntax: <rule> (<ruleSep> <rule>)*
- * - ruleSep: the diamond symbol (<>)
- * - rule: <quantity> <:> <criterion>
- * - quantity: number
- * - criterion: <criteria> (<criteriaSep> <criteria>)*
- * - criteriaSep: sharp symbol (#)
- * - criteria: <type> <=> <values>
- * - type: string, one of:
- *      - product
- *      - card
- *      - attribute
- *      - category
- *      - manufacturer
- *      - seller
- * - values: csv of ids of the given type
- *
- *
- *
- *
+ * @see ConditionRulesHelper
  */
 class SokoCouponRulesFreeHtmlControl extends SokoFreeHtmlControl
 {
@@ -55,7 +31,7 @@ class SokoCouponRulesFreeHtmlControl extends SokoFreeHtmlControl
     private function displayGui()
     {
 
-        $value = self::uncompile($this->value);
+        $value = ConditionRulesHelper::uncompile($this->value);
 
         KamilleThemeHelper::moduleCss("Ekom", "backoffice.css");
         $cssId = StringTool::getUniqueCssId("coupon-");
@@ -182,8 +158,9 @@ class SokoCouponRulesFreeHtmlControl extends SokoFreeHtmlControl
 
                         nullosApi.inst().request2Modal("Ekom:back.coupon-tennis", {
                             type: type,
-                            values: values
+                            values: values,
                         }, {
+                            cssClass: "modal-nullos-biggest",
                             onCloseBefore: function (jModal) {
                                 var jRightSelect = jModal.find('.right-select');
                                 var values = [];
@@ -326,40 +303,5 @@ class SokoCouponRulesFreeHtmlControl extends SokoFreeHtmlControl
         <?php
     }
 
-    public static function uncompile($value)
-    {
 
-        $ruleSep = '<>';
-        $criteriaSep = '#';
-        $ret = [];
-        if ($value) {
-
-            $rules = explode($ruleSep, $value);
-            foreach ($rules as $rule) {
-                $p = explode(':', $rule, 2);
-                $quantity = $p[0];
-                $criterion = $p[1];
-                $allCriteria = explode($criteriaSep, $criterion);
-                $_criterion = [];
-                foreach ($allCriteria as $criteria) {
-                    $q = explode('=', $criteria, 2);
-                    $type = $q[0];
-                    $values = $q[1];
-                    $aValues = explode(',', $values);
-                    $count = count($aValues);
-
-                    $_criterion[] = [$type, $values, $count];
-                }
-
-
-                $_rule = [
-                    "quantity" => $quantity,
-                    "criterion" => $_criterion,
-                ];
-
-                $ret[] = $_rule;
-            }
-        }
-        return $ret;
-    }
 }

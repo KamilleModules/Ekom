@@ -110,11 +110,14 @@ class EkomModels
      *      - mode: not used today, but represents the tax combining mode (in case there are multiple taxes assigned to this product)
      *      - amount: the amount of tax collected for this item
      *
+     * - tax_amount: the amount of tax applied to this item
+     * - tax_amount_formatted:
      *
      * - discount_details: array of discount items (as of today, only one discount is applied max per product, but this could change...). Each item:
      *      - label
      *      - type: f|p
      *      - value
+     *      - amount
      *
      *
      * - product_uri_with_details
@@ -147,7 +150,9 @@ class EkomModels
      *      - line_sale_price
      *      - line_sale_price_formatted
      *      - line_tax_details: array of tax label => tax amount for this line (the tax amount for one unit x quantity)
-     *      - line_tax_amount: array of tax label => tax amount for this line (the tax amount for one unit x quantity)
+     *      - line_tax_amount: the amount of tax for this line
+     *      - line_discount_amount: the amount of discount for this line
+     *
      *
      * - cart_total_weight: in kg
      * - cart_total_quantity
@@ -155,11 +160,13 @@ class EkomModels
      * - cart_total_tax_excluded_formatted
      * - cart_total_tax_included
      * - cart_total_tax_included_formatted
-     * - cart_discount_amount
+     * - cart_discount_amount:
      * - cart_discount_amount_formatted
+     * - cart_discount_details: array of discount label => line discount amount .
+     *                              Note that in current Ekom we only have one discount per product max (this might change).
      * - cart_tax_amount
      * - cart_tax_amount_formatted
-     * - cart_tax_distribution: the tax of the items of this cart, grouped by tax.
+     * - cart_tax_details: the tax of the items of this cart, grouped by tax.
      *      It's an array of tax_label => item, each item:
      *          - tax_value
      *          - amount: sum of tax amounts of the cart items bound to this tax
@@ -204,7 +211,21 @@ class EkomModels
      * - has_coupons: bool
      * - coupons_total: sum of all coupons.saving_amount
      * - coupons_total_formatted
-     * - coupons: array of applied coupons, each of which: @todo-ling, need to revisit this part...
+     * - coupons: array of coupon id.
+     *          Note: coupons have to be recomputed on every page refresh,
+     *          because they are applied depending on conditions which might change
+     *          with any condition, such as the number of items in the cart, the datetime, etc...
+     *
+     *          So basically, the system with coupons is:
+     *              - first the user tries to add a coupon,
+     *              - if the coupon is accepted, then:
+     *                  - it is added to the coupons bag
+     *                  - it is also added in the coupons array (see below) and its effects
+     *                          are immediate.
+     *
+     * - coupons_details: array of currently applied coupons.
+     *      array of target => couponDetailModel
+     *      @work-in-progress
      *              (is used by CartUtil::getSellerCarts, and probably many other places....)
      *      - label
      *      - code
@@ -255,7 +276,7 @@ class EkomModels
     }
 
     /**
-     * orderDataModel
+     * checkoutData
      * -------------
      * - user_id
      * - ?carrier_id              (only if at least an item needs to be shipped)
@@ -635,110 +656,6 @@ class EkomModels
      * - rating_nbVotes
      * - attributes_list
      *
-     *
-     *
-     *
-     * OLD DEPRECATED
-     * ------------------
-     *
-     * - attributes: array of attrName => attrItem:
-     * ----- attrName:
-     * --------- label: string, the attribute label
-     * --------- values: array of attributeValueItem:
-     * ------------- 0:
-     * ----------------- value: string, the attribute value
-     * ----------------- value_label: string, the attribute value label
-     * ----------------- value_id: string, the attribute value id
-     * ----------------- selected: string (0|1)
-     * ----------------- productUri: string, the product uri
-     * ----------------- getProductInfoAjaxUri: string, the uri used to refresh the product via ajax
-     * ----------------- product_id: int
-     *
-     * - attributesSelection: array of selected attribute item:
-     * ----- 0:
-     * --------- attribute_id: string
-     * --------- attribute_label: string
-     * --------- name: string
-     * --------- value: string
-     * --------- value_id: string
-     * --------- value_label: string
-     *
-     * - attributesString
-     * - card_id
-     * - card_slug
-     * - codes
-     * - defaultImage
-     * - description
-     *
-     * - discount
-     * - discountBadge  (pc20)
-     * - discountLabel
-     * - discountHasDiscount
-     * - discountPrice
-     * - discountRawPrice
-     * - discountRawSavingFixed
-     * - discountSavingFixed
-     * - discountSavingPercent
-     * - discountType
-     *
-     * - hasNovelty
-     * - imageLarge
-     * - imageMedium
-     * - imageSmall
-     * - imageThumb
-     * - images
-     * - label
-     * - label_flat
-     * - metaDescription
-     * - metaKeywords
-     * - metaTitle
-     * - outOfStockText
-     * - popularity
-     * - priceBase
-     * - priceBaseRaw
-     * - priceOriginal
-     * - priceOriginalRaw
-     * - priceSale
-     * - priceSaleRaw
-     *
-     * - productBoxContext      // array for dev
-     *
-     * - @depr productDetails
-     *          The product details array (major/minor), created by modules
-     * - productDetailsArgs
-     *              product details passed via the uri
-     * - productDetailsMap,
-     *              all product details identifying the product,
-     *              this is the recommended form (of product details) to
-     *              use to identify a product
-     * - productDetailsSelection, array of item:
-     *      - name
-     *      - attribute_label
-     *      - value
-     *      - value_label
-     * - product_id
-     * - product_reference
-     * - product_type
-     * - product_type_id
-     * - quantityInStock
-     * - quantityStock
-     * - rating_amount
-     * - rating_nbVotes
-     * - ref
-     * - seller
-     *
-     * - taxAmount
-     * - taxGroupLabel
-     * - taxGroupName
-     * - taxHasTax
-     * - taxRatio
-     *
-     * - uriCard
-     * - uriCardAjax
-     * - uriLogin
-     * - uriProductInstance
-     * - video_info
-     * - weight
      */
     private function productBoxModel()
     {

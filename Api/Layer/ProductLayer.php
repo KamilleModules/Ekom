@@ -43,9 +43,12 @@ class ProductLayer
             $label = "concat (label, ' (ref=', reference, ')') ";
         }
 
-        $q = "select id, $label from ek_product";
+        $q = "select p.id, $label 
+from ek_product p 
+inner join ek_product_reference pr on pr.product_id=p.id
+";
         if ($alphaSort) {
-            $q .= " order by label asc";
+            $q .= " order by p.label asc";
         }
         return QuickPdo::fetchAll($q, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }

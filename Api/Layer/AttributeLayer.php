@@ -14,6 +14,17 @@ use QuickPdo\QuickPdo;
 class AttributeLayer
 {
 
+
+    public static function getAttributeIdsByProductId(int $productId)
+    {
+        return QuickPdo::fetchAll("
+select product_attribute_id
+from ek_product_has_product_attribute 
+where product_id=$productId        
+        ", [], \PDO::FETCH_COLUMN);
+    }
+
+
     public static function getAttributesInfoByCardId(int $cardId)
     {
 

@@ -7,7 +7,9 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
 use Kamille\Services\XConfig;
 use Module\Ekom\Api\Layer\InvoiceLayer;
+use Module\Ekom\Api\Layer\UserHasCouponLayer;
 use Module\Ekom\Api\Layer\UserVisitedProductReferencesLayer;
+use Module\Ekom\Api\Object\UserHasCoupon;
 use Module\Ekom\Back\Util\ApplicationSanityCheck\ApplicationSanityCheckUtil;
 use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Models\EkomModels;
@@ -21,7 +23,7 @@ class HooksHelper
 
     /**
      * @param array $tailModel
-     * @param array $headModel, is the box model.
+     * @param array $headModel , is the box model.
      * @see EkomModels::productBoxModel()
      *
      */
@@ -43,6 +45,14 @@ class HooksHelper
     public static function Ekom_ProductGetInfoService_PageVisited(array $productBox)
     {
         UserVisitedProductReferencesLayer::addVisitedReferenceByProductBoxModel($productBox);
+    }
+
+
+    protected static function Ekom_Cart_onCouponAddedAfter(int $couponId)
+    {
+        if (E::userIsConnected()) {
+            UserHasCouponLayer::addUserHasCouponEntry(E::getUserId(), $couponId);
+        }
     }
 
 

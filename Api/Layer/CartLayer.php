@@ -229,7 +229,8 @@ class CartLayer
     public function addCoupon($couponId)
     {
         $this->initSessionCart();
-        $_SESSION['ekom'][$this->sessionName]['coupons'] = [$couponId];
+        $_SESSION['ekom'][$this->sessionName]['coupons'][] = $couponId;
+        Hooks::call("Ekom_Cart_onCouponAddedAfter", $couponId);
         $this->writeToLocalStore();
     }
 
@@ -440,7 +441,9 @@ class CartLayer
         $cartTotalTaxIncluded = 0;
         $cartDiscountAmount = 0;
         $cartTaxAmount = 0;
+        $lineDiscountAmount = 0;
         $cartTaxDistribution = [];
+        $cartDiscountDetails = [];
 
 
         //--------------------------------------------
@@ -473,11 +476,16 @@ class CartLayer
 
 
             $cartTotalTaxIncluded += $cartQuantity * $boxModel['sale_price'];
+            $lineDiscountAmount = 0;
 
 
             if (true === $boxModel['has_discount']) {
-                $discountAmount = E::trimPrice($boxModel['base_price'] - $boxModel['real_price']);
-                $cartDiscountAmount += $discountAmount;
+                $lineDiscountAmount = $lineBasePrice - $lineRealPrice;
+                $cartDiscountAmount += $lineDiscountAmount;
+
+                foreach($boxModel['discount_details'] as $discount_detail){
+                    $cartDiscountDetails[$discount_detail['label']] = $discount_detail['amount'] * $cartQuantity;
+                }
             }
 
 
@@ -499,6 +507,7 @@ class CartLayer
             $boxModel['line_sale_price_formatted'] = E::price($lineSalePrice);
             $boxModel['line_tax_details'] = $lineTaxDetails;
             $boxModel['line_tax_amount'] = $lineTaxAmount;
+            $boxModel['line_discount_amount'] = $lineDiscountAmount;
 
             $modelItems[] = $boxModel;
 
@@ -531,9 +540,10 @@ class CartLayer
         $model['cart_total_tax_included_formatted'] = E::price($cartTotalTaxIncluded);
         $model['cart_discount_amount'] = $cartDiscountAmount;
         $model['cart_discount_amount_formatted'] = E::price($cartDiscountAmount);
+        $model['cart_discount_details'] = $cartDiscountDetails;
         $model['cart_tax_amount'] = $cartTaxAmount;
         $model['cart_tax_amount_formatted'] = E::price($cartTaxAmount);
-        $model['cart_tax_distribution'] = $cartTaxDistribution;
+        $model['cart_tax_details'] = $cartTaxDistribution;
 
         //--------------------------------------------
         // ORDER
@@ -584,7 +594,6 @@ class CartLayer
                  */
                 $context = CartUtil::getCarrierShippingInfoContext($model);
                 if (false !== ($shippingInfo = $carrier->getShippingInfo($context, $carrierErrorCode))) {
-
 
                     $shippingStatus = 3;
 

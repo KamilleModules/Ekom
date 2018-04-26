@@ -29,6 +29,9 @@ class CartModelEntity
     private $cartTotal;
     private $cartTotalWithoutTax;
     private $cartTaxAmount;
+    private $cartDiscountAmount;
+    private $cartDiscountDetails;
+    private $cartTaxDetails;
 
     // shipping data
     private $shippingInfo;
@@ -50,6 +53,9 @@ class CartModelEntity
         $this->shippingInfo = null;
         $this->couponsDetails = [];
         $this->_primitiveModel = null;
+        $this->cartDiscountAmount = 0;
+        $this->cartDiscountDetails = [];
+        $this->cartTaxDetails = [];
     }
 
     public static function create()
@@ -106,9 +112,12 @@ class CartModelEntity
             $model['items'] = $this->items;
             $model['cart_total_quantity'] = $this->totalQty;
             $model['cart_total_weight'] = $this->totalWeight;
-            $model['cart_tax_amount'] = $this->cartTaxAmount;
+            $model['cart_discount_amount'] = $this->cartDiscountAmount;
+            $model['cart_discount_details'] = $this->cartDiscountDetails;
             $model['cart_total_tax_included'] = $this->cartTotal;
             $model['cart_total_tax_excluded'] = $this->cartTotal - $this->cartTaxAmount;
+            $model['cart_tax_amount'] = $this->cartTaxAmount;
+            $model['cart_tax_details'] = $this->cartTaxDetails;
             $this->_primitiveModel = $model;
         }
         return $this->_primitiveModel;
@@ -140,6 +149,7 @@ class CartModelEntity
          * Note: this allows modules to deal only with raw values (in case they change the cart model)
          */
         $model['cart_tax_amount_formatted'] = E::price($model['cart_tax_amount']);
+        $model['cart_discount_amount_formatted'] = E::price($model['cart_discount_amount']);
         $model['cart_total_tax_included_formatted'] = E::price($model['cart_total_tax_included']);
         $model['cart_total_tax_excluded_formatted'] = E::price($model['cart_total_tax_excluded']);
         $model['coupons_total_formatted'] = E::price($model['coupons_total']);
@@ -150,6 +160,18 @@ class CartModelEntity
         $model["shipping_cost_tax_amount_formatted"] = E::price($model["shipping_cost_tax_amount"]);
         $model["order_total_formatted"] = E::price($model["order_total"]);
         $model["order_grand_total_formatted"] = E::price($model["order_grand_total"]);
+
+
+        $orderTaxAmount = $model['cart_tax_amount'] + $model["shipping_cost_tax_amount"];
+        $orderDiscountAmount = $model['cart_discount_amount'] + $model["shipping_cost_discount_amount"];
+        $orderSavingTotal = $orderDiscountAmount + $model["coupons_total"];
+
+        $model["order_tax_amount"] = $orderTaxAmount;
+        $model["order_tax_amount_formatted"] = E::price($orderTaxAmount);
+        $model["order_discount_amount"] = $orderDiscountAmount;
+        $model["order_discount_amount_formatted"] = E::price($orderDiscountAmount);
+        $model["order_saving_total"] = $orderSavingTotal;
+        $model["order_saving_total_formatted"] = E::price($orderSavingTotal);
 
 
         ksort($model);
@@ -171,6 +193,9 @@ class CartModelEntity
         $cartTotal = 0;
         $cartTotalWithoutTax = 0;
         $cartTaxAmount = 0;
+        $cartDiscountAmount = 0;
+        $cartDiscountDetails = [];
+        $cartTaxDistribution = [];
 
         foreach ($this->items as $k => $boxModel) {
 
@@ -202,10 +227,22 @@ class CartModelEntity
                 $cartTotalWithoutTax += $linePriceWithoutTax;
 
 
+                $lineDiscountAmount = $boxModel['line_discount_amount'];
+                $cartDiscountAmount += $lineDiscountAmount;
+
+
+                foreach($boxModel['discount_details'] as $discount_detail){
+                    $cartDiscountDetails[$discount_detail['label']] = $discount_detail['amount'] * $cartQuantity;
+                }
+
+
 //                $taxAmount = $boxModel['sale_price'] - $boxModel['base_price'];
 //                $itemTaxAmount = E::trimPrice($cartQuantity * $taxAmount);
                 $lineTaxAmount = $boxModel['line_tax_amount'];
                 $cartTaxAmount += $lineTaxAmount;
+
+                TaxLayer::decorateTaxDistribution($cartTaxDistribution, $boxModel['base_price'], $boxModel['tax_details']);
+
 
 
                 $boxModel['uri_card_with_details'] = $uriDetails;
@@ -228,6 +265,9 @@ class CartModelEntity
         $this->cartTotal = $cartTotal;
         $this->cartTotalWithoutTax = $cartTotalWithoutTax;
         $this->cartTaxAmount = $cartTaxAmount;
+        $this->cartTaxDetails = $cartTaxDistribution;
+        $this->cartDiscountAmount = $cartDiscountAmount;
+        $this->cartDiscountDetails = $cartDiscountDetails;
     }
 
 

@@ -50,6 +50,7 @@ use Module\Ekom\Api\Object\ProductReferenceHasDiscount;
 use Module\Ekom\Api\Object\ProductVariation;
 use Module\Ekom\Api\Object\Provider;
 use Module\Ekom\Api\Object\Seller;
+use Module\Ekom\Api\Object\SellerHasAddress;
 use Module\Ekom\Api\Object\ShopConfiguration;
 use Module\Ekom\Api\Object\Store;
 use Module\Ekom\Api\Object\Tag;
@@ -61,6 +62,7 @@ use Module\Ekom\Api\Object\Timezone;
 use Module\Ekom\Api\Object\User;
 use Module\Ekom\Api\Object\UserGroup;
 use Module\Ekom\Api\Object\UserHasAddress;
+use Module\Ekom\Api\Object\UserHasCoupon;
 use Module\Ekom\Api\Object\UserHasProductReference;
 use Module\Ekom\Api\Object\UserVisitedProductReference;
 
@@ -421,6 +423,13 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('seller');
     }
     /**
+     * @return SellerHasAddress
+     */
+    public function sellerHasAddress()
+    {
+        return $this->getObject('sellerHasAddress');
+    }
+    /**
      * @return ShopConfiguration
      */
     public function shopConfiguration()
@@ -496,6 +505,13 @@ class GeneratedEkomApi extends XiaoApi
     public function userHasAddress()
     {
         return $this->getObject('userHasAddress');
+    }
+    /**
+     * @return UserHasCoupon
+     */
+    public function userHasCoupon()
+    {
+        return $this->getObject('userHasCoupon');
     }
     /**
      * @return UserHasProductReference

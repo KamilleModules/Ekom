@@ -43,6 +43,7 @@ class ProductQueryBuilderUtil
      *      - product_card_type_name,
      *      - product_card_type_label,
      *      - product_card_type_label,
+     *      - manufacturer_id,
      *      - seller_id,
      *      - seller_name,
      *      - seller_label,
@@ -174,12 +175,32 @@ where phd.product_reference_id=pr.id and
         $datetime = $discountContext['datetime'];
         unset($discountContext['datetime']);
 
+
         $qDiscountSubquery .= " 
         active = 1 
         and (cond_date_start is null or cond_date_start <= '$datetime')
         and (cond_date_end is null or cond_date_end >= '$datetime')
-        and
         ";
+
+
+        /**
+         * Note: here I'm setting the cond_user_group_id manually,
+         * it allows me this:
+         *      in the backoffice I set a discount with no values for the user group (null)
+         *      to target ALL groups.
+         *      If I let the default applyContext method handles the cond_user_group_id,
+         *      the user group=null in the backoffice would not target ANY user group...
+         */
+        if ($discountContext['cond_user_group_id']) {
+            $userGroupId = (int)$discountContext['cond_user_group_id'];
+            $qDiscountSubquery .= "
+        and (cond_user_group_id is null or cond_user_group_id=$userGroupId)
+            ";
+        }
+
+        $qDiscountSubquery .= " and ";
+
+        unset($discountContext['cond_user_group_id']);
         self::applyContext($discountContext, $qDiscountSubquery, $markers, 'discount');
 
         /**
@@ -210,6 +231,7 @@ pct.label as product_card_type_label,
 sel.id as seller_id,
 sel.name as seller_name,
 sel.label as seller_label,
+p.manufacturer_id,
 pr.reference,
 pr.quantity,
 p.out_of_stock_text,

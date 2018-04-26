@@ -48,7 +48,7 @@ class TotalRecapRenderer extends BaseRenderer
             "shippingTaxAndDetails" => "shipping_cost_tax_amount_formatted",
             "shippingCostWithTax" => "shipping_cost_tax_included_formatted",
             "orderTotal" => "order_total_formatted",
-            "coupons" => "order_saving_total_formatted",
+            "coupons" => "coupons_total_formatted",
             "couponsAndDetails" => "coupons",
             "orderGrandTotal" => "order_grand_total_formatted",
         ];
@@ -69,7 +69,7 @@ class TotalRecapRenderer extends BaseRenderer
             <?php foreach ($this->rows as $name): ?>
                 <tr>
                     <td><?php echo $this->rowsLabels[$name]; ?></td>
-                    <td><?php echo $this->cartModel[$this->rows2Property[$name]]; ?></td>
+                    <td class="t-price"><?php echo $this->cartModel[$this->rows2Property[$name]]; ?></td>
                 </tr>
             <?php endforeach; ?>
         </table>
@@ -95,7 +95,7 @@ class TotalRecapRenderer extends BaseRenderer
             ?>
             <tr>
                 <td><?php echo $this->rowsLabels[$name]; ?></td>
-                <td><?php echo $this->cartModel[$this->rows2Property[$name]]; ?></td>
+                <td class="t-price"><?php echo $this->cartModel[$this->rows2Property[$name]]; ?></td>
             </tr>
             <?php
         }

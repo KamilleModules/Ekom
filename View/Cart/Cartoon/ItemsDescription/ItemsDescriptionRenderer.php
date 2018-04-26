@@ -52,12 +52,12 @@ class ItemsDescriptionRenderer extends BaseRenderer
             'originalPrice' => "Prix original",
             'discount' => "Remise",
             'discountLabel' => "Libellé remise",
-            'basePrice' => "Prix de base",
+            'basePrice' => "Prix remisé",
             'tax' => "Taxe",
             'taxLabel' => "Libellé taxe",
-            'salePrice' => "Prix de vente",
-            'linePriceWithoutTax' => "Prix ligne HT",
-            'linePriceWithTax' => "Prix ligne TTC",
+            'salePrice' => "Prix unitaire",
+            'linePriceWithoutTax' => "Total HT",
+            'linePriceWithTax' => "Total TTC",
         ];
 
         $this->column2Property = [
@@ -72,7 +72,7 @@ class ItemsDescriptionRenderer extends BaseRenderer
             'discount' => "discount_details",
             'discountLabel' => "discount_details",
             'basePrice' => "base_price",
-            'tax' => "tax_details",
+            'tax' => "tax_amount",
             'taxLabel' => "tax_details",
             'salePrice' => "sale_price",
             'linePriceWithoutTax' => "line_base_price",
@@ -169,23 +169,17 @@ class ItemsDescriptionRenderer extends BaseRenderer
         }
     }
 
-    protected function getColumnContentTax(array $item)
-    {
-        if ($item['line_tax_details']) {
-            $totalAmount = 0;
-            foreach ($item['line_tax_details'] as $lineAmount) {
-                $totalAmount += $lineAmount;
-            }
-            echo PriceHelper::priceAsDecimal($totalAmount);
-        }
-    }
-
 
     protected function getColumnContentTaxLabel(array $item)
     {
         if ($item['line_tax_details']) {
             echo implode(", ", array_keys($item['line_tax_details']));
         }
+    }
+
+    protected function getColumnContentTax(array $item)
+    {
+        echo PriceHelper::priceAsDecimal($item['tax_amount']);
     }
 
 

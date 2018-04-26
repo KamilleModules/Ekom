@@ -13,8 +13,10 @@ use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Helper\ConditionRulesHelper;
 use Module\Ekom\Model\EkomModel;
 use Module\Ekom\Models\EkomModels;
+use Module\Ekom\SokoForm\Controls\SokoCouponRulesFreeHtmlControl;
 use Module\Ekom\Utils\E;
 use Module\ThisApp\Ekom\Helper\CartHelper;
 use QuickPdo\QuickPdo;
@@ -29,6 +31,16 @@ class CouponLayer
 {
 
 
+    public static function getActionTypesList()
+    {
+        return [
+            "f" => "Réduction fixe",
+            "p" => "Réduction proportionnelle",
+            "o" => "Offert",
+        ];
+    }
+
+
     public static function getListItems()
     {
         return QuickPdo::fetchAll('
@@ -36,7 +48,6 @@ select id, label
 from ek_coupon
 ', [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
-
 
 
     public static function getCouponInfoItemsByIds(array $ids)
@@ -65,7 +76,13 @@ where c.id in ($sIds)
 
     public static function getCouponInfoByCode($code)
     {
-        return QuickPdo::fetch("select * from ek_coupon where code=:code", [
+        return QuickPdo::fetch("select 
+c.*,
+s.name as seller_name,
+s.label as seller_label
+from ek_coupon c 
+left join ek_seller s on s.id=c.seller_id
+where c.code=:code", [
             "code" => $code,
         ]);
     }
@@ -73,7 +90,13 @@ where c.id in ($sIds)
     public static function getCouponInfoById($id)
     {
         $id = (int)$id;
-        return QuickPdo::fetch("select * from ek_coupon where id=$id");
+        return QuickPdo::fetch("select 
+c.*,
+s.name as seller_name,
+s.label as seller_label
+from ek_coupon c 
+left join ek_seller s on s.id=c.seller_id
+where c.id=$id");
     }
 
     public static function getCouponCodeById($id)
@@ -134,27 +157,186 @@ where c.id in ($sIds)
      * @param null|string $error , an error code indicating what type of failure occurred (in case the coupon couldn't
      *              be added). Possible error codes are:
      *              - inactive: the coupon is inactive
-     *              - mismatch: the coupon cannot apply to the current cart
-     *                          (for instance because you don't have certain products in your cart)
+     *              - max_nb_per_user_reached: the user already has reached the limit given by the administrator for this coupon.
+     *
+     *              Then most of the errors codes have the following syntax:
+     *
+     *              - mismatch:$errorType(:$errorInsiqhtValue)?
+     *                      Often, the errorInsight value is just the value set as the condition by the administrator.
+     *
+     *
+     *              Those indicate a condition mismatch.
+     *
+     *              The following error codes can be thrown:
+     *
+     *              - mismatch:seller:$condSellerLabel
+     *              - mismatch:user:$condUserId
+     *              - mismatch:date_start:$condDateStart
+     *              - mismatch:date_end:$condDateEnd
+     *              - mismatch:minimum_amount:$condMinimumAmount
+     *              - mismatch:country_id:$sIds
+     *                          $sIds being a csv of cond country ids
+     *              - mismatch:user_group_id:$sIds
+     *                          $sIds being a csv of cond user group ids
+     *              - mismatch:cumulable:$sIds
+     *                          $sIds being a csv of cond cumulable coupons ids
+     *              - mismatch:condition_rules,
+     *                      this indicates that a condition rule has failed.
+     *                      There is no insight, but you can switch to debug mode if you want:
+     *                      see more in class-modules/Ekom/Helper/ConditionRulesHelper.php
+     *
+     *
+     *
      * @return bool: whether or not the coupon is valid
      *
      */
     public static function couponIsValid(array $couponInfo, array $cartModel, &$error = null)
     {
+
         if ('1' === $couponInfo['active']) {
             //--------------------------------------------
-            // CHECKING SELLER TARGET
+            // CHECKING SELLER
             //--------------------------------------------
-            $seller = self::getSellerByTarget($couponInfo['target']);
-            /**
-             * If a seller is designated as a coupon target, the coupon applies only if there is at least one item
-             * from that seller in the cart.
-             */
-            if (null !== $seller) {
-                if (false === CartHelper::cartContainsFromSeller($cartModel, $seller)) {
-                    $error = 'mismatch';
+            $sellerId = $couponInfo['seller_id'];
+            if (null !== $sellerId) {
+                /**
+                 * If a seller is designated as a coupon target, the coupon applies only if there is at least one item
+                 * from that seller in the cart.
+                 */
+                $sellerName = $couponInfo['seller_name'];
+                if (false === CartHelper::cartContainsFromSeller($cartModel, $sellerName)) {
+                    $sellerLabel = $couponInfo['seller_label'];
+                    $error = 'mismatch:seller:' . $sellerLabel;
                     return false;
                 }
+            }
+
+            //--------------------------------------------
+            // CHECKING OTHER CONDITIONS
+            //--------------------------------------------
+            $userContext = E::getUserContext();
+
+
+            $condUserId = $couponInfo['cond_user_id'];
+            if (null !== $condUserId) {
+                $userId = E::getUserId(null);
+                if ($userId !== $condUserId) {
+                    $error = "mismatch:user:$condUserId";
+                }
+            }
+
+
+            $condDateStart = $couponInfo['cond_date_start'];
+            if (null !== $condDateStart) {
+                $curDatetime = date('Y-m-d H:i:s');
+                if ($condDateStart > $curDatetime) {
+                    $error = "mismatch:date_start:$condDateStart";
+                }
+            }
+
+            $condDateEnd = $couponInfo['cond_date_end'];
+            if (null !== $condDateEnd) {
+                $curDatetime = date('Y-m-d H:i:s');
+                if ($condDateEnd < $curDatetime) {
+                    $error = "mismatch:date_end:$condDateEnd";
+                }
+            }
+
+
+            $condMinimumAmount = $couponInfo['cond_minimum_amount'];
+            if (null !== $condMinimumAmount) {
+                $currentAmount = $cartModel['cart_total_tax_excluded'];
+                if ($currentAmount < $condMinimumAmount) {
+                    $error = "mismatch:minimum_amount:$condMinimumAmount";
+                }
+            }
+
+
+            $condCountryIds = StringTool::unserializeAsArray($couponInfo['cond_country_id']);
+            if ($condCountryIds) {
+
+                $userShippingCountry = $userContext['shipping_country'];
+                $sIds = implode(',', $condCountryIds);
+
+                $row = QuickPdo::fetch("
+select id 
+from ek_country  
+where 
+id in ($sIds)
+and iso_code = :iso_code
+      
+                ", [
+                    "iso_code" => $userShippingCountry,
+                ]);
+
+                if (false === $row) {
+                    $error = "mismatch:country_id:$sIds";
+                }
+            }
+
+
+            $condUserGroupIds = StringTool::unserializeAsArray($couponInfo['cond_user_group_id']);
+            if ($condUserGroupIds) {
+                $userGroupId = (string)$userContext['user_group_id'];
+                $sIds = implode(',', $condUserGroupIds);
+                if (false === in_array($userGroupId, $condUserGroupIds, true)) {
+                    $error = "mismatch:user_group_id:$sIds";
+                }
+            }
+
+
+            $condCumulableWithCouponIds = StringTool::unserializeAsArray($couponInfo['cond_cumulable_with_coupon_id']);
+            if ($condCumulableWithCouponIds) {
+                $userCouponIds = $cartModel['coupons'];
+                /**
+                 * If the user has no coupons yet,
+                 * then we allow without conditions
+                 */
+                if (!empty($userCouponIds)) {
+
+                    $isCumulable = false;
+                    foreach ($userCouponIds as $userCouponId) {
+                        $userCouponId = (string)$userCouponId;
+                        if (in_array($userCouponId, $condCumulableWithCouponIds, true)) {
+                            $isCumulable = true;
+                            break;
+                        }
+                    }
+
+                    if (false === $isCumulable) {
+                        $sIds = implode(',', $condCumulableWithCouponIds);
+                        $error = "mismatch:cumulable:$sIds";
+                    }
+                }
+            }
+
+
+            //--------------------------------------------
+            // CONDITION RULES
+            //--------------------------------------------
+            $condRules = $couponInfo['cond_rules'];
+            if (null !== $condRules) {
+                $aCondRules = ConditionRulesHelper::uncompile($condRules);
+
+                if ($aCondRules) {
+                    $isValid = true;
+                    foreach ($aCondRules as $conditionRule) {
+
+                        $res = ConditionRulesHelper::evaluateRule($conditionRule, $cartModel);
+                        if (false === $res) {
+                            $isValid = false;
+                            break;
+                        }
+                    }
+                    if (false === $isValid) {
+                        $error = "mismatch:condition_rules";
+                    }
+                }
+            }
+
+
+            if (null !== $error) {
+                return false;
             }
             return true;
         } else {
@@ -182,6 +364,7 @@ where c.id in ($sIds)
     {
         $_couponInfo = CouponLayer::getCouponInfoByCode($code);
         if (false !== $_couponInfo) {
+
             $couponInfo = $_couponInfo;
             return self::couponIsValid($_couponInfo, $cartModel, $error);
         } else {

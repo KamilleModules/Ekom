@@ -9,6 +9,7 @@ use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
 use Module\Ekom\Model\EkomModel;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\AttributeSelectorHelper;
+use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
 
@@ -68,16 +69,24 @@ class CartItemBoxLayer
             $row['tax_details'] = [];
         }
 
+        $taxAmount = $row['sale_price'] - $row['base_price'];
+        $row['tax_amount'] = $taxAmount;
+        $row['tax_amount_formatted'] = E::price($taxAmount);
 
         /**
          * as for now we only have ONE discount max per product, but in the future we could evolve...
+         * So for now I just compute discount using a subtraction (do the changes if you use more than one discount
+         * per product
          */
+        $discountAmountPerUnit = $row['base_price'] - $row['real_price'];
+
         $row['discount_details'] = [];
         if (true === $row['has_discount']) {
             $row['discount_details'][] = [
                 "label" => $row['discount_label'],
                 "type" => $row['discount_type'],
                 "value" => $row['discount_value'],
+                "amount" => $discountAmountPerUnit,
             ];
         }
 
