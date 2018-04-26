@@ -585,6 +585,7 @@ class CartLayer
                 $context = CartUtil::getCarrierShippingInfoContext($model);
                 if (false !== ($shippingInfo = $carrier->getShippingInfo($context, $carrierErrorCode))) {
 
+
                     $shippingStatus = 3;
 
                     if (true === CartUtil::isValidShippingInfo($shippingInfo)) {

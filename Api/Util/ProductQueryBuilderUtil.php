@@ -135,13 +135,13 @@ where phd.product_reference_id=pr.id and
         //--------------------------------------------
         // PRICE CONTEXT
         //--------------------------------------------
-//        $priceContext = E::getPriceContext();
-        $priceContext = [
-            /**
-             * ThisApp will set this to either b2b or default (if the user is connected, or not connected)
-             */
-            "cond_identifier" => "b2b",
-        ];
+        $priceContext = E::getPriceContext();
+//        $priceContext = [
+//            /**
+//             * ThisApp will set this to either b2b or default (if the user is connected, or not connected)
+//             */
+//            "cond_identifier" => "b2b",
+//        ];
         self::applyContext($priceContext, $qPriceSubquery, $markers, 'price');
         $qPriceSubquery .= " limit 0,1";
 
@@ -149,26 +149,27 @@ where phd.product_reference_id=pr.id and
         //--------------------------------------------
         // TAX CONTEXT
         //--------------------------------------------
-//        $taxContext = E::getTaxContext();
-        $taxContext = [
-            "cond_user_group_id" => $userContext['user_group_id'],
-            "cond_extra1" => null,
-            "cond_extra2" => null,
-            "cond_extra3" => null,
-            "cond_extra4" => null,
-        ];
+        $taxContext = E::getTaxContext();
+//        $taxContext ['cond_user_group_id'] = "4";
+//        $taxContext = [
+//            "cond_user_group_id" => $userContext['user_group_id'],
+//            "cond_extra1" => null,
+//            "cond_extra2" => null,
+//            "cond_extra3" => null,
+//            "cond_extra4" => null,
+//        ];
         self::applyContext($taxContext, $qTaxSubquery, $markers, 'tax');
 
 
         //--------------------------------------------
         // DISCOUNT CONTEXT
         //--------------------------------------------
-//        $discountContext = E::getDiscountContext();
-        $discountContext = [
-            "datetime" => date('Y-m-d H:i:s'),
-            "cond_user_group_id" => null,
-            "cond_extra1" => null,
-        ];
+        $discountContext = E::getDiscountContext();
+//        $discountContext = [
+//            "datetime" => date('Y-m-d H:i:s'),
+//            "cond_user_group_id" => null,
+//            "cond_extra1" => null,
+//        ];
 
         $datetime = $discountContext['datetime'];
         unset($discountContext['datetime']);

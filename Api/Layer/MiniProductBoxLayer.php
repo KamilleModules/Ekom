@@ -68,27 +68,54 @@ class MiniProductBoxLayer
 {
 
 
+    /**
+     * Note: this one returns a custom box (a miniBoxModel with some extra properties for the
+     * search engine to display).
+     */
     public static function getBoxesBySearchExpression(string $searchExpression)
     {
 
+
+
+
+
         $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
 
-        $sqlQuery->addWhere("
-and 
-(
-    p.label like :query or  
-    pr.reference like :query or
-    tag.name like :query
-)        
+
+        $sqlQuery->addField("
+tag.name as tag_name,
+coalesce(        
+    ( 
+      select 
+        group_concat( distinct label separator ', ')
+        from ek_product_attribute_value v 
+        inner join ek_product_has_product_attribute h on h.product_attribute_value_id=v.id
+        where h.product_id=p.id
+            
+    ),
+    ''
+) as attr_string
+        
         ");
+
+
 
         $sqlQuery->addJoin("
 left join ek_product_has_tag phtag on phtag.product_id=p.id
 left join ek_tag tag on tag.id=phtag.tag_id      
         ");
 
-        $sqlQuery->addMarker("query", '%' . QuickPdoStmtTool::stripWildcards($searchExpression) . '%');
 
+        $sqlQuery->addHaving("
+    label like :query or  
+    reference like :query or
+    tag_name like :query or 
+    attr_string like :query  
+          
+        ");
+
+
+        $sqlQuery->addMarker("query", '%' . QuickPdoStmtTool::stripWildcards($searchExpression) . '%');
 
         $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
         self::sugarifyRows($rows);

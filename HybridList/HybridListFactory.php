@@ -83,7 +83,10 @@ class HybridListFactory
             ->setListParameters($pool)
             ->setRequestGenerator(SqlRequestGenerator::create()
                 ->setSqlRequest($sqlRequest
-                    ->addField("i.*")
+                    ->addField("i.*, s.label as seller_label")
+                    ->addJoin("
+left join ek_seller s on s.id=i.seller_id                    
+                    ")
                     ->setTable("ek_invoice i")
                     ->addWhere("and i.user_id=" . $userId)
                 )

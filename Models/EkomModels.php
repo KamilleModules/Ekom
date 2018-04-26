@@ -110,10 +110,12 @@ class EkomModels
      *      - mode: not used today, but represents the tax combining mode (in case there are multiple taxes assigned to this product)
      *      - amount: the amount of tax collected for this item
      *
+     *
      * - discount_details: array of discount items (as of today, only one discount is applied max per product, but this could change...). Each item:
      *      - label
      *      - type: f|p
      *      - value
+     *
      *
      * - product_uri_with_details
      *

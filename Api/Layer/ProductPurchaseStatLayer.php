@@ -26,7 +26,7 @@ class ProductPurchaseStatLayer
 
             EkomApi::inst()->productPurchaseStat()->create([
                 "purchase_date" => date("Y-m-d H:i:s"),
-                "orderId" => $orderId,
+                "order_id" => $orderId,
                 "user_id" => $userId,
                 "product_id" => $box['product_id'],
                 "product_ref" => $box['reference'],

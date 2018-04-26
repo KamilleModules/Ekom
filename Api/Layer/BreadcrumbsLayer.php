@@ -5,6 +5,7 @@ namespace Module\Ekom\Api\Layer;
 
 
 use Kamille\Architecture\Registry\ApplicationRegistry;
+use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Utils\E;
 
@@ -37,7 +38,6 @@ class BreadcrumbsLayer
         $categoryId = ApplicationRegistry::get("ekom.categoryId");
 
 
-
         $label = null;
         $items = [];
 
@@ -48,6 +48,17 @@ class BreadcrumbsLayer
             $label = $box['label'];
             $cardId = $box['product_card_id'];
             $tree = EkomApi::inst()->categoryLayer()->getCategoryTreeByProductCardId($cardId);
+
+            /**
+             * The product card probably isn't bound to any category,
+             * the administrator should be aware of that.
+             * In the product page, this will result in an incomplete breadcrumb.
+             */
+            if (false === $tree) {
+                $tree = [];
+                XLog::error("[Ekom.BreadcrumbsLayer] -- it seems that the product card id $cardId isn't bound to any category yet. Please fix this. The uri was: " . $_SERVER['REQUEST_URI']);
+            }
+
 
             $tree = array_reverse($tree);
             foreach ($tree as $item) {

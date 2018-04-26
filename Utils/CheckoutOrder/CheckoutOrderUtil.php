@@ -481,11 +481,25 @@ class CheckoutOrderUtil
 
             $orderId = $_orderId;
 
+
+
+            //--------------------------------------------
+            // UPDATING THE ORDER STATUS NOW
+            //--------------------------------------------
+            /**
+             * Note: we need to set the payment_sent status now BEFORE
+             * the invoices are actually created, since the invoices
+             * can potentially set the status to payment_accepted (this happened
+             * to me after credit card checking with the bank's api...).
+             *
+             */
+            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT);
+
+
+
+
             //--------------------------------------------
             // NOW INVOICES...
-            /**
-             * @todo-ling: are you sure?
-             */
             //--------------------------------------------
             $invoices = $this->createInvoices($orderId, $orderModel);
             foreach ($invoices as $invoice) {
@@ -520,10 +534,7 @@ class CheckoutOrderUtil
 
 
 
-            //--------------------------------------------
-            // FINALIZING THE ORDER PROCESS
-            //--------------------------------------------
-            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT);
+
             Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
 
 

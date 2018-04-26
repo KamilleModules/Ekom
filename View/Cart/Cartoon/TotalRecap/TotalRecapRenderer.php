@@ -42,15 +42,15 @@ class TotalRecapRenderer extends BaseRenderer
             "orderGrandTotal" => "Total",
         ];
         $this->rows2Property = [
-            "subtotal" => "priceCartTotal",
-            "shippingCostWithoutTax" => "shippingShippingCostWithoutTax",
+            "subtotal" => "cart_total_tax_included_formatted",
+            "shippingCostWithoutTax" => "shipping_cost_tax_excluded_formatted",
             "shippingTax" => "shippingTaxAmount",
-            "shippingTaxAndDetails" => "shippingTaxAmount",
-            "shippingCostWithTax" => "shippingShippingCost",
-            "orderTotal" => "priceOrderTotal",
-            "coupons" => "couponSaving",
-            "couponsAndDetails" => "couponSaving",
-            "orderGrandTotal" => "priceOrderGrandTotal",
+            "shippingTaxAndDetails" => "shipping_cost_tax_amount_formatted",
+            "shippingCostWithTax" => "shipping_cost_tax_included_formatted",
+            "orderTotal" => "order_total_formatted",
+            "coupons" => "order_saving_total_formatted",
+            "couponsAndDetails" => "coupons",
+            "orderGrandTotal" => "order_grand_total_formatted",
         ];
     }
 

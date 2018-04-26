@@ -127,6 +127,7 @@ class HooksHelper
 
                                 $invoiceDetails = $invoice['invoice_details'];
                                 $cartModel = $invoiceDetails['cartModel'];
+
                                 $paymentDetails = $invoiceDetails['payment_method_details'];
                                 $repaymentSchedule = (array_key_exists("repayment_schedule", $paymentDetails)) ? $paymentDetails['repayment_schedule'] : [];
 

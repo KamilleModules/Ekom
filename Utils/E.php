@@ -375,6 +375,11 @@ class E
         return EkomApi::inst()->connexionLayer()->getUserData($key, $default);
     }
 
+    public static function getAllUserData()
+    {
+        return EkomApi::inst()->connexionLayer()->getConnexionData();
+    }
+
     public static function isErroneousModel(array $m)
     {
         if (array_key_exists('errorCode', $m)) {

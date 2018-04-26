@@ -57,9 +57,7 @@ class EkomBasicProductSearcher extends AbstractProductSearch
         //--------------------------------------------
         // PRODUCTS
         //--------------------------------------------
-        $products =MiniProductBoxLayer::getBoxesBySearchExpression($query);
-
-
+        $products = MiniProductBoxLayer::getBoxesBySearchExpression($query);
 
 
         //--------------------------------------------

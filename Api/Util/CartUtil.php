@@ -331,6 +331,10 @@ class CartUtil
      * This is used in some paymentMethodHandlers, which need to have a hand on the repayment schedules
      * for every seller!
      *
+     * @param $options:
+     *      - onItemAfter
+     *
+     *
      */
     public static function getSellerCarts(array $extendedCartModel, array $options = [])
     {
@@ -481,8 +485,8 @@ class CartUtil
                 $percent = $sellerDirectives['shippingRatio'];
 
 
-                $shippingCostTotal = $cartModel['shipping_cost_tax_included'];
-                $sellerShippingCost = $shippingCostTotal * $percent;
+                $shippingCostTotalExcluded = $cartModel['shipping_cost_tax_excluded'];
+                $sellerShippingCost = $shippingCostTotalExcluded * $percent;
                 $currentShippingCostPaid += $sellerShippingCost;
 
                 /**
@@ -492,7 +496,7 @@ class CartUtil
                  *
                  */
                 if (0 === $nbShippingParticipants) {
-                    $sellerShippingCost += ($shippingCostTotal - $currentShippingCostPaid);
+                    $sellerShippingCost += ($shippingCostTotalExcluded - $currentShippingCostPaid);
                 }
 
                 /**

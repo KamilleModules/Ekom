@@ -4,6 +4,7 @@
 namespace Module\Ekom\View\Cart\Cartoon\Invoice\InvoiceInfo;
 
 
+use Kamille\Services\XConfig;
 use Module\Ekom\View\Cart\Cartoon\Util\BaseRenderer;
 
 class OrderInvoiceInfoRenderer extends BaseRenderer
@@ -40,7 +41,7 @@ class OrderInvoiceInfoRenderer extends BaseRenderer
     {
         $orderDetails = $this->order['order_details'];
         $paymentMethod = $orderDetails['payment_method_name'];
-        $cartModel = $orderDetails['cartModel'];
+        $cartModel = $orderDetails['cartModel']['cart'];
         $paymentDetails = $orderDetails['payment_method_details'];
         ?>
         <div class="invoice-info">
@@ -60,7 +61,7 @@ class OrderInvoiceInfoRenderer extends BaseRenderer
                 <?php if ($this->has('invoice_info_order_amount')): ?>
                     <tr>
                         <td>Montant total:</td>
-                        <td><?php echo $cartModel['priceOrderGrandTotal']; ?></td>
+                        <td><?php echo $cartModel['order_grand_total_formatted']; ?></td>
                     </tr>
                 <?php endif; ?>
                 <?php if ($this->has('invoice_info_order_payment_method')): ?>
@@ -81,7 +82,7 @@ class OrderInvoiceInfoRenderer extends BaseRenderer
                 <?php if ($this->has('invoice_info_currency')): ?>
                     <tr>
                         <td>Devise:</td>
-                        <td><?php echo $this->order['currency_iso_code']; ?></td>
+                        <td><?php echo XConfig::get("Ekom.currencyIsoCode"); ?></td>
                     </tr>
                 <?php endif; ?>
             </table>
