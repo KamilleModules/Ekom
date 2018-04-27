@@ -319,7 +319,7 @@ class CartModelEntity
              * This class primary goal basically display an invoice.
              */
             foreach ($this->couponsDetails as $couponsDetail) {
-                $orderGrandTotal -= $couponsDetail['savingRaw'];
+                $orderGrandTotal -= $couponsDetail['amount'];
             }
         }
         if ($orderGrandTotal < 0) {
@@ -327,7 +327,7 @@ class CartModelEntity
         }
 
         $model['order_grand_total'] = $orderGrandTotal;
-        $model['coupons'] = $this->couponsDetails;
+        $model['coupons_details'] = $this->couponsDetails;
         $model['has_coupons'] = (count($this->couponsDetails) > 0);
         $model['coupons_total'] = $model["order_total"] - $orderGrandTotal;
     }

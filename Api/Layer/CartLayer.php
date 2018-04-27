@@ -226,13 +226,13 @@ class CartLayer
     }
 
 
-    public function addCoupon($couponId)
+    public function addCoupon(int $couponId)
     {
         $this->initSessionCart();
         $_SESSION['ekom'][$this->sessionName]['coupons'][] = $couponId;
-        Hooks::call("Ekom_Cart_onCouponAddedAfter", $couponId);
         $this->writeToLocalStore();
     }
+
 
     public function removeCoupon($code)
     {
@@ -245,6 +245,31 @@ class CartLayer
             $this->writeToLocalStore();
         }
         return $this;
+    }
+
+
+    /**
+     * Add a coupon for which the quantity_per_user couldn't be checked (because the user wasn't connected).
+     * @param int $couponId
+     */
+    public function addCouponToCheckUponConnection(int $couponId)
+    {
+        $this->initSessionCart();
+        $_SESSION['ekom'][$this->sessionName]['couponsToCheck'][] = $couponId;
+        $this->writeToLocalStore();
+    }
+
+    public function getCouponsToCheckUponConnection()
+    {
+        $this->initSessionCart();
+        return $_SESSION['ekom'][$this->sessionName]['couponsToCheck'];
+    }
+
+    public function removeCouponsToCheckUponConnection()
+    {
+        $this->initSessionCart();
+        $_SESSION['ekom'][$this->sessionName]['couponsToCheck'] = [];
+        $this->writeToLocalStore();
     }
 
 
@@ -371,6 +396,7 @@ class CartLayer
     }
 
 
+
     //--------------------------------------------
     //
     //--------------------------------------------
@@ -394,9 +420,17 @@ class CartLayer
             $_SESSION['ekom'][$this->sessionName] = [
                 'items' => [],
                 'coupons' => [],
+                /**
+                 * array of coupon ids, the coupons to check upon user connection.
+                 * Note that we could have store these anywhere else (not just in this class),
+                 * but I believe it's convenient to have them here too...
+                 */
+                'couponsToCheck' => [],
             ];
         }
     }
+
+
 
 
     //--------------------------------------------
@@ -434,7 +468,6 @@ class CartLayer
 
         $model = [];
         $modelItems = [];
-
 
         $cartTotalWeight = 0;
         $cart_total_quantity = 0;
@@ -483,7 +516,7 @@ class CartLayer
                 $lineDiscountAmount = $lineBasePrice - $lineRealPrice;
                 $cartDiscountAmount += $lineDiscountAmount;
 
-                foreach($boxModel['discount_details'] as $discount_detail){
+                foreach ($boxModel['discount_details'] as $discount_detail) {
                     $cartDiscountDetails[$discount_detail['label']] = $discount_detail['amount'] * $cartQuantity;
                 }
             }
@@ -650,45 +683,42 @@ class CartLayer
 
 
         //--------------------------------------------
+        // ORDER
+        //--------------------------------------------
+        $orderTotal = $model['cart_total_tax_included'] + $model['shipping_cost_tax_included'];
+
+
+        //--------------------------------------------
         // COUPONS
         //--------------------------------------------
         $hasCoupons = (!empty($coupons));
-        $couponsTotal = 0;
+        $couponsDetails = [];
+        /**
+         * Note that the coupons need to be applied on every process,
+         * since they potentially depend on cart change.
+         */
+        $couponsTotal = CouponLayer::applyCouponsByIds($coupons, $orderTotal, $model, $couponsDetails);
+
+
         $model['has_coupons'] = $hasCoupons;
         $model['coupons_total'] = $couponsTotal;
         $model['coupons_total_formatted'] = E::price($couponsTotal);
         $model['coupons'] = $coupons;
-
-
-        if ('todo' === "deprecated?") {
-
-
-            $couponInfoItems = CouponLayer::getCouponInfoItemsByIds($coupons);
-            $couponsDetails = [];
-            /**
-             * @todo-ling, the coupons potentially can change ANYTHING in the model.
-             * To handle this versatility, we use php Classes which will be able to do ANYTHING.
-             *
-             * However, we use an array as the model, which makes it painful for evolution: if the ekom cartModel
-             * changes (and I bet it will), then all existing code needs to be re-written.
-             * To mitigate this, I suggest a Helper class provided by Ekom with standard methods taking care of
-             * doing the dirty work (for instance if you do a 2 bought, 1 free, the Helper will let you call a simple
-             * method for that).
-             *
-             */
-            $orderGrandTotal = CouponLayer::applyCoupons($couponInfoItems, $orderTotal, $model, $couponsDetails);
-        }
+        $model['coupons_details'] = $couponsDetails;
 
 
         //--------------------------------------------
-        // ORDER
+        //
         //--------------------------------------------
-        $orderTotal = $model['cart_total_tax_included'] + $model['shipping_cost_tax_included'];
-        $orderGrandTotal = $orderTotal - $couponsTotal;
         $orderTaxAmount = $model['cart_tax_amount'] + $model['shipping_cost_tax_amount'];
         $orderDiscountAmount = $model['cart_discount_amount'] + $model['shipping_cost_discount_amount'];
+        $orderGrandTotal = $orderTotal - $couponsTotal;
         $orderSavingTotal = $orderDiscountAmount + $couponsTotal;
 
+
+        //--------------------------------------------
+        //
+        //--------------------------------------------
         $model['order_total'] = $orderTotal;
         $model['order_total_formatted'] = E::price($orderTotal);
         $model['order_grand_total'] = $orderGrandTotal;

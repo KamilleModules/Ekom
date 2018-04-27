@@ -257,6 +257,15 @@ class CartUtil
         return CheckoutUtil::getCurrentCartLayer()->getExtendedCartModel();
     }
 
+
+    /**
+     * @return CartLayer
+     */
+    public static function getCart()
+    {
+        return CheckoutUtil::getCurrentCartLayer();
+    }
+
     /**
      * @param array $items
      * @return array of items grouped by sellers:
@@ -331,7 +340,7 @@ class CartUtil
      * This is used in some paymentMethodHandlers, which need to have a hand on the repayment schedules
      * for every seller!
      *
-     * @param $options:
+     * @param $options :
      *      - onItemAfter
      *
      *
@@ -391,7 +400,7 @@ class CartUtil
 
         $totalWeight = $cartModel['cart_total_weight'];
         $nbShippingParticipants = 0;
-        $couponDetails = $cartModel['coupons'];
+        $couponDetails = $cartModel['coupons_details'];
         $nbSellers = count($itemsBySeller);
         if ($nbSellers) {
             $sellerCouponRatio = 1 / $nbSellers;
@@ -414,19 +423,18 @@ class CartUtil
 
             $sellerCouponDetails = [];
             foreach ($couponDetails as $couponDetailsItem) {
-                $target = $couponDetailsItem['target'];
-                if ('' === trim($target)) {
-                    $savingRaw = $couponDetailsItem['savingRaw'];
-                    $couponDetailsItem['savingRaw'] = $savingRaw * $sellerCouponRatio;
-                    $couponDetailsItem['saving'] = E::price($couponDetailsItem['savingRaw']);
-                    $couponDetailsItem['details']['sellerDetails'] = "saving x sellerRatio = $savingRaw x $sellerCouponRatio";
+                $sellerName = $couponDetailsItem['seller_name'];
+
+                if (null === $sellerName) {
+                    $amount = $couponDetailsItem['amount'];
+                    $couponDetailsItem['amount'] = $amount * $sellerCouponRatio;
+                    $couponDetailsItem['amount_formatted'] = E::price($couponDetailsItem['amount']);
+                    $couponDetailsItem['details']['sellerDetails'] = "saving x sellerRatio = $amount x $sellerCouponRatio";
                     $sellerCouponDetails[] = $couponDetailsItem;
-                } elseif (0 === strpos($target, "seller:")) {
-                    $p = explode(":", $target, 2);
-                    $sellName = trim($p[1]);
-                    if ($seller === $sellName) {
-                        $savingRaw = $couponDetailsItem['savingRaw'];
-                        $couponDetailsItem['details']['sellerDetails'] = "100% of $savingRaw = $savingRaw";
+                } else {
+                    if ($seller === $sellerName) {
+                        $amount = $couponDetailsItem['amount'];
+                        $couponDetailsItem['details']['sellerDetails'] = "100% of $amount = $amount";
                         $sellerCouponDetails[] = $couponDetailsItem;
                     }
                 }

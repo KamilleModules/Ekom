@@ -193,6 +193,9 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                 $ret['shippingAddress'] = $shippingAddress;
                 $ret['billingAddress'] = $billingAddress;
                 $ret['carrierId'] = $selectedCarrierId;
+                /**
+                 * Watch out, this could be an int or null.
+                 */
                 $ret['storeAddressId'] = StoreLayer::getPreferredPhysicalAddressIdById(CurrentCheckoutData::getStoreAddressId());
                 $ret['shippingComments'] = $shippingComments;
                 $ret['context'] = $this->context;

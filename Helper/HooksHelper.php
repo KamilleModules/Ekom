@@ -3,24 +3,53 @@
 
 namespace Module\Ekom\Helper;
 
-use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
 use Kamille\Services\XConfig;
 use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\InvoiceLayer;
 use Module\Ekom\Api\Layer\UserHasCouponLayer;
 use Module\Ekom\Api\Layer\UserVisitedProductReferencesLayer;
-use Module\Ekom\Api\Object\UserHasCoupon;
+use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Back\Util\ApplicationSanityCheck\ApplicationSanityCheckUtil;
 use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Models\EkomModels;
-use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\Pdf\PdfHtmlInfoInterface;
+use Notificator\SessionNotificator;
 use QuickPdo\Helper\QuickPdoHelper;
 
 class HooksHelper
 {
+
+    public static function Ekom_onUserConnectedAfter()
+    {
+
+        /**
+         * checking coupons quantity_per_user.
+         */
+        $cart = CartUtil::getCart();
+        $couponIds = $cart->getCouponsToCheckUponConnection();
+        $userId = E::getUserId();
+        foreach ($couponIds as $couponId) {
+
+
+            $couponInfo = CouponLayer::getCouponInfoById($couponId);
+
+            $currentQuantity = UserHasCouponLayer::getNbCouponsByCouponIdUserId($couponId, $userId);
+            $quantityPerUser = $couponInfo['quantity_per_user'];
+            if ($currentQuantity >= $quantityPerUser) {
+                /**
+                 * Discard the coupon and alert the user
+                 */
+                $code = $couponInfo['code'];
+                $cart->removeCoupon($code);
+                $couponLabel = $couponInfo['label'];
+                SessionNotificator::addWarning("Le coupon $code (\"$couponLabel\") a été retiré de votre panier, car vous l'avez déjà utilisé $quantityPerUser fois.");
+            }
+        }
+        $cart->removeCouponsToCheckUponConnection();
+    }
+
 
     /**
      * @param array $tailModel
@@ -47,8 +76,6 @@ class HooksHelper
     {
         UserVisitedProductReferencesLayer::addVisitedReferenceByProductBoxModel($productBox);
     }
-
-
 
 
     public static function FishMailer_collectVariables(array &$pool, string $template, string $mode)

@@ -60,4 +60,10 @@ and if it fails we discard the coupons, reporting the incident to the user.
 
 
 
+Can we use the same coupon multiple times?
+-------------
+
+Let's make a simple rule to start with: no.
+
+
 

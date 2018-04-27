@@ -27,12 +27,13 @@ class UserHasCouponLayer
 {
 
 
-    public static function getNbCouponsByUserId(int $userId)
+    public static function getNbCouponsByCouponIdUserId(int $couponId, int $userId)
     {
         return QuickPdo::fetch("
 select count(*) as count 
 from ek_user_has_coupon 
 where user_id=$userId
+and coupon_id=$couponId
 ", [], \PDO::FETCH_COLUMN);
     }
 

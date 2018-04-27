@@ -190,11 +190,6 @@ class EkomHooks
     }
 
             
-    protected static function Ekom_Coupon_collectCouponDetails(array &$details, $price, $discountPrice, array $currentCartModel) {
-            
-    }
-
-            
     protected static function Ekom_createAccountAfter(array &$hookData) {
             
     }

@@ -22,11 +22,16 @@ class StoreLayer
         return array_shift($addresses);
     }
 
+
+    /**
+     * @param int|null $addressId
+     * @return null|int
+     */
     public static function getPreferredPhysicalAddressIdById(int $addressId = null)
     {
         $preferredAddress = self::getPreferredPhysicalAddressById($addressId);
         if($preferredAddress){
-            return $preferredAddress['id'];
+            return (int)$preferredAddress['id'];
         }
         return null;
     }

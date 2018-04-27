@@ -223,23 +223,7 @@ class EkomModels
      *                  - it is also added in the coupons array (see below) and its effects
      *                          are immediate.
      *
-     * - coupons_details: array of currently applied coupons.
-     *      array of target => couponDetailModel
-     *      @work-in-progress
-     *              (is used by CartUtil::getSellerCarts, and probably many other places....)
-     *      - label
-     *      - code
-     *      - saving_amount: the amount saved by this coupon
-     *      - saving_amount_formatted
-     *      - target: @todo-ling, should be something like:
-     *              - product
-     *              - cart_total
-     *              - order_total
-     *              - seller:$sellerName @see EkomModels::couponDetailsItem() for portability
-     *              - shipping_cost
-     *              - ...
-     *      - type: @todo-ling: indicate the type of math operation to apply
-     *      - value: the variable to use with type to apply the discount
+     * - coupons_details: array, @see couponDetailsModel
      *
      *
      * - order_total: cart_total_tax_included + shipping_cost_tax_included
@@ -331,47 +315,63 @@ class EkomModels
 
 
     /**
-     * couponDetailsItem
+     * couponDetailsModel
      * ===============
-     * - code: coupon code
-     * - label: coupon label
-     * - savingRaw: the unformatted amount of saving for the ensemble of the discounts for this coupon
-     * - saving: the formatted version of savingRaw
-     * - target: string, 256 chars.
-     *              Can be used in any way you want.
-     *              However, ekom by default uses the following heuristics:
      *
-     *              - <emptyString>
-     *                      distribute the coupon amount equally amongst all sellers.
-     *                      Note: we could also use a ratio proportional to the
-     *                      amount of the order handled by a seller,
-     *                      but as for now, this technique is not implemented.
+     * array of couponDetailItem, each of which:
+     *      - code: coupon code
+     *      - seller_id: int|null, the seller id
+     *      - seller_name: string|null, the seller name creating the coupon, or null if the coupon does not
+     *              apply to a seller in particular.
+     *      - label: coupon label
+     *      - amount: the amount in euros
+     *      - amount_formatted
+     *      - target: string, 256 chars.
+     *                   Can be used in any way you want.
+     *                   However, ekom by default uses the following heuristics:
      *
-     *              - seller:$sellerName
-     *                      apply the coupon amount only to the $sellerName seller
+     *                   - shipping_cost: the coupon applies to the shipping cost
+     *                   - order: the coupon applies to the order total
      *
      *
-     * - details: array, free form
+     *                    @this-part below is deprecated
+     *                   - <emptyString>
+     *                           distribute the coupon amount equally amongst all sellers.
+     *                           Note: we could also use a ratio proportional to the
+     *                           amount of the order handled by a seller,
+     *                           but as for now, this technique is not implemented.
+     *
+     *                   - seller:$sellerName
+     *                           apply the coupon amount only to the $sellerName seller
+     *      - details: array used internally be ekom
+     *
+     *
+     *
+     * The target can be one of:
+     * - shipping_cost
+     * - order
+     *
+     * @related: config/morphic/Ekom/back/discounts/coupon.form.conf.php
+     *
+     *
+     *
      */
-    private function couponDetailsItem()
+    private function couponDetailsModel()
     {
 
     }
 
 
     /**
-     * couponInfo
-     * ================
-     * - code: string, the code of the coupon
-     * - active: 1|0, whether or not the coupon code is considered active when added to the coupon bag
-     * - procedure_type: string (see discountItem in this class)
-     * - procedure_operand: string (see discountItem in this class)
-     * - target: string, the target of the coupon (see database.md for more info)
-     * - label: string, the coupon label
+     * couponInfoModel
+     * ==================
      *
+     * - ek_coupon.*
+     * - seller_name
+     * - seller_label
      *
      */
-    private function couponInfo()
+    private function couponInfoModel()
     {
 
     }

@@ -31,9 +31,6 @@ class CouponLayer
 {
 
 
-
-
-
     public static function decrementCouponById(int $couponId)
     {
         QuickPdo::freeStmt("
@@ -62,30 +59,6 @@ from ek_coupon
     }
 
 
-    public static function getCouponInfoItemsByIds(array $ids)
-    {
-
-
-        if ($ids) {
-            $ids = array_map('intval', $ids);
-            $sIds = implode(', ', $ids);
-            return QuickPdo::fetchAll("
-select
-c.id, 
-c.code, 
-c.active, 
-c.procedure_type, 
-c.procedure_operand, 
-c.target, 
-c.shop_id, 
-c.label
-from ek_coupon c
-where c.id in ($sIds)
-");
-        }
-        return [];
-    }
-
     public static function getCouponInfoByCode($code)
     {
         return QuickPdo::fetch("select 
@@ -99,16 +72,46 @@ where c.code=:code", [
         ]);
     }
 
+
+    /**
+     * @return array
+     * @see EkomModels::couponInfoModel()
+     */
     public static function getCouponInfoById($id)
     {
         $id = (int)$id;
-        return QuickPdo::fetch("select 
+        return QuickPdo::fetch("
+select 
 c.*,
 s.name as seller_name,
 s.label as seller_label
 from ek_coupon c 
 left join ek_seller s on s.id=c.seller_id
-where c.id=$id");
+where c.id=$id
+");
+    }
+
+
+    /**
+     * @return array of couponInfo
+     * @see EkomModels::couponInfoModel()
+     */
+    public static function getCouponInfoByIds(array $couponIds)
+    {
+        if ($couponIds) {
+            $couponIds = array_map('intval', $couponIds);
+            $sIds = implode(', ', $couponIds);
+            return QuickPdo::fetchAll("
+select            
+c.*,
+s.name as seller_name,
+s.label as seller_label
+from ek_coupon c 
+left join ek_seller s on s.id=c.seller_id
+where c.id in ($sIds)
+");
+        }
+        return [];
     }
 
     public static function getCouponCodeById($id)
@@ -119,19 +122,7 @@ where c.id=$id");
 
     /**
      *
-     * Apply coupon(s) (or not) to the given cartModel (as defined at the top of the CartLayer class).
-     * The coupon only applies if there is a viable target in the cart.
-     *
-     * We use the target property of the couponInfoItem to decide whether or not the target can be found in
-     * the cart.
-     * @see EkomModels::couponDetailsItem()
-     *
-     * If target is empty
-     *
-     *
-     *
-     *
-     *
+     * @deprecated
      * @param array $couponInfoItems , array of couponInfo
      * @see EkomModels::couponInfo()
      * @param $price
@@ -145,16 +136,42 @@ where c.id=$id");
      * @return number, the discount price
      * @throws \Exception
      */
-    public static function applyCoupons(array $couponInfoItems, $price, array &$cartModel, array &$couponsDetails)
+//    public static function applyCoupons(array $couponInfoItems, $price, array &$cartModel, array &$couponsDetails)
+//    {
+//        $discountPrice = $price;
+//        foreach ($couponInfoItems as $couponInfoItem) {
+//            $error = null;
+//            if (true === self::couponIsValid($couponInfoItem, $cartModel, $error)) {
+//                $discountPrice = self::applyCoupon($couponInfoItem, $discountPrice, $cartModel, $couponsDetails);
+//            }
+//        }
+//        return $discountPrice;
+//    }
+
+
+    /**
+     * Apply coupon ids to the cart.
+     * The couponDetails array is filled accordingly.
+     * @see EkomModels::couponDetailsModel()
+     *
+     */
+    public static function applyCouponsByIds(array $couponIds, $price, array &$cartModel, array &$couponsDetails)
     {
+        $couponInfoItems = self::getCouponInfoByIds($couponIds);
+        $couponsTotal = 0;
         $discountPrice = $price;
         foreach ($couponInfoItems as $couponInfoItem) {
             $error = null;
+            /**
+             * We need to recheck that coupons are valid every time,
+             * that's because the content of the cart can change on every page...
+             */
             if (true === self::couponIsValid($couponInfoItem, $cartModel, $error)) {
-                $discountPrice = self::applyCoupon($couponInfoItem, $discountPrice, $cartModel, $couponsDetails);
+                $amount = self::applyCoupon($couponInfoItem, $discountPrice, $cartModel, $couponsDetails);
+                $couponsTotal += $amount;
             }
         }
-        return $discountPrice;
+        return $couponsTotal;
     }
 
 
@@ -385,6 +402,73 @@ and iso_code = :iso_code
         return false;
     }
 
+
+    /**
+     * This method adds an item to the coupon details array, containing the info about the coupons.
+     * @see EkomModels::couponDetailsModel()
+     *
+     */
+    private static function applyCoupon(array $couponInfoItem, $price, array $currentCartModel, array &$couponsDetails)
+    {
+        $amount = 0;
+        if ("1" === $couponInfoItem['active']) {
+
+
+            $willBeAdded = true;
+
+            $actionType = $couponInfoItem['action_type'];
+            $actionValue = $couponInfoItem['action_value'];
+
+            switch ($actionType) {
+                case 'f':
+                    $amount = E::trimPrice($actionValue);
+                    break;
+                case 'p':
+                    $newPrice = $price - ($actionValue * $price) / 100;
+                    if ($newPrice < 0) {
+                        $newPrice = 0;
+                    }
+                    $amount = E::trimPrice($price - $newPrice);
+                    break;
+                /**
+                 * This is offered, but depends on the target.
+                 * For now, it's only available with the following targets:
+                 *
+                 *
+                 * - shipping_cost
+                 */
+                case 'o':
+
+                    if ('shipping_cost' === $couponInfoItem['target']) {
+                        $amount = $currentCartModel['shipping_cost_tax_included'];
+                    } else {
+                        $willBeAdded = false;
+                    }
+
+                    break;
+                default:
+                    XLog::error("[Ekom module] - CouponLayer: unknown action type: " . $actionType);
+                    break;
+            }
+
+
+            if (true === $willBeAdded) {
+                $couponsDetails[] = [
+                    "seller_id" => $couponInfoItem['seller_id'],
+                    "seller_name" => $couponInfoItem['seller_name'],
+                    "target" => $couponInfoItem['target'],
+                    "code" => $couponInfoItem['code'],
+                    "label" => $couponInfoItem['label'],
+                    "amount" => $amount,
+                    "amount_formatted" => E::price($amount),
+                    "details" => [],
+                ];
+            }
+        }
+        return $amount;
+    }
+
+
     /**
      * Apply the given coupon to the given basePrice,
      * return the discount price, and add a couponDetailsItem (see at the top of this document)
@@ -398,7 +482,7 @@ and iso_code = :iso_code
      * @return float
      * @throws \Exception
      */
-    public static function applyCoupon(array $couponInfoItem, $price, array $currentCartModel, array &$couponsDetails)
+    public static function applyCouponDeprecated(array $couponInfoItem, $price, array $currentCartModel, array &$couponsDetails)
     {
         $discountPrice = $price;
         if ("1" === $couponInfoItem['active']) {
@@ -411,8 +495,6 @@ and iso_code = :iso_code
             $discountPrice = DiscountLayer::applyDiscountInfoToPrice($discountInfo, $discountPrice);
 
             $details = [];
-            Hooks::call("Ekom_Coupon_collectCouponDetails", $details, $price, $discountPrice, $currentCartModel);
-
 
             $saving = E::trimPrice($price - $discountPrice);
             $couponsDetails[] = [
@@ -427,7 +509,6 @@ and iso_code = :iso_code
         }
         return $discountPrice;
     }
-
 
     //--------------------------------------------
     //
