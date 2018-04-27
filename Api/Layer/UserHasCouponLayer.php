@@ -27,7 +27,17 @@ class UserHasCouponLayer
 {
 
 
-    public static function addUserHasCouponEntry(int $userId, int $couponId){
+    public static function getNbCouponsByUserId(int $userId)
+    {
+        return QuickPdo::fetch("
+select count(*) as count 
+from ek_user_has_coupon 
+where user_id=$userId
+", [], \PDO::FETCH_COLUMN);
+    }
+
+    public static function addUserHasCouponEntry(int $userId, int $couponId)
+    {
         UserHasCoupon::getInst()->create([
             "user_id" => $userId,
             "coupon_id" => $couponId,
@@ -35,5 +45,26 @@ class UserHasCouponLayer
         ]);
     }
 
+
+    public static function decrementUserCouponIfNecessary(int $userId, int $couponId)
+    {
+        $quantityInfo = QuickPdo::fetch("
+select 
+quantity_per_user,
+(select count(*) as count from ek_user_has_coupon where user_id=$userId) as current_quantity
+
+from ek_coupon
+where id=$couponId
+");
+        if (false !== $quantityInfo) {
+
+            $quantityPerUser = $quantityInfo['quantity_per_user'];
+            $currentQuantity = $quantityInfo['current_quantity'];
+
+            if ($quantityPerUser > $currentQuantity) {
+                self::addUserHasCouponEntry($userId, $couponId);
+            }
+        }
+    }
 }
 

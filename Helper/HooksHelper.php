@@ -6,6 +6,7 @@ namespace Module\Ekom\Helper;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Ling\Z;
 use Kamille\Services\XConfig;
+use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\InvoiceLayer;
 use Module\Ekom\Api\Layer\UserHasCouponLayer;
 use Module\Ekom\Api\Layer\UserVisitedProductReferencesLayer;
@@ -48,12 +49,6 @@ class HooksHelper
     }
 
 
-    protected static function Ekom_Cart_onCouponAddedAfter(int $couponId)
-    {
-        if (E::userIsConnected()) {
-            UserHasCouponLayer::addUserHasCouponEntry(E::getUserId(), $couponId);
-        }
-    }
 
 
     public static function FishMailer_collectVariables(array &$pool, string $template, string $mode)

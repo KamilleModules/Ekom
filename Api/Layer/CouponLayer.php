@@ -31,6 +31,18 @@ class CouponLayer
 {
 
 
+
+
+
+    public static function decrementCouponById(int $couponId)
+    {
+        QuickPdo::freeStmt("
+update ek_coupon set quantity = quantity - 1 
+where id=$couponId and quantity > 0        
+        ");
+    }
+
+
     public static function getActionTypesList()
     {
         return [
