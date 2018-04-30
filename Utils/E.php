@@ -202,12 +202,18 @@ class E
 
     public static function getTaxContext()
     {
+        $userContext = E::getUserContext();
         if (true === self::isBackOffice()) {
-            return [];
+            return [
+                "cond_user_group_id" => $userContext['user_group_id'],
+                "cond_extra1" => null,
+                "cond_extra2" => null,
+                "cond_extra3" => null,
+                "cond_extra4" => null,
+            ];
         } else {
 
 
-            $userContext = E::getUserContext();
             $taxContext = [
                 "cond_user_group_id" => $userContext['user_group_id'],
                 "cond_extra1" => null,
@@ -224,7 +230,7 @@ class E
     {
         if (true === self::isBackOffice()) {
             return [
-
+                "cond_identifier" => null,
             ];
         } else {
 
@@ -243,7 +249,11 @@ class E
     public static function getDiscountContext(array $userContext = null)
     {
         if (true === self::isBackOffice()) {
-            return [];
+            return [
+                "datetime" => $userContext['time_segment'],
+                "cond_user_group_id" => $userContext['user_group_id'],
+                "cond_extra1" => null,
+            ];
         } else {
 
             if (null === $userContext) {
@@ -549,8 +559,6 @@ class E
         }
         return true;
     }
-
-
 
 
     /**

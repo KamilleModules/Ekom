@@ -75,6 +75,22 @@ class ProductQueryBuilderUtil
      * The returned query already stops after the joins part, in case you want to extend it...
      *
      *
+     * Important note:
+     * ----------------
+     * This query builder is mainly designed for the front.
+     * However, the backoffice can also use it to display some list,
+     * but beware that the user had a specific userContext which was shaping the created sqlQuery in the front,
+     * but in the backoffice we don't have the userContext.
+     * In this implementation, we don't even try to recreate it,
+     * we basically say:
+     *
+     *      - whenever you use the QueryBuilder in the backoffice, you only get an approximate preview of what
+     *          the user really saw (in terms of prices, taxes, discounts).
+     *          But that's fine (at least for me for now).
+     *
+     *
+     *
+     *
      * @return SqlQueryInterface
      *
      */
@@ -174,6 +190,7 @@ where phd.product_reference_id=pr.id and
 
         $datetime = $discountContext['datetime'];
         unset($discountContext['datetime']);
+
 
 
         $qDiscountSubquery .= " 

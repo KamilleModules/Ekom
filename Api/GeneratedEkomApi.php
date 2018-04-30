@@ -51,6 +51,7 @@ use Module\Ekom\Api\Object\ProductVariation;
 use Module\Ekom\Api\Object\Provider;
 use Module\Ekom\Api\Object\Seller;
 use Module\Ekom\Api\Object\SellerHasAddress;
+use Module\Ekom\Api\Object\Shop;
 use Module\Ekom\Api\Object\ShopConfiguration;
 use Module\Ekom\Api\Object\Store;
 use Module\Ekom\Api\Object\Tag;
@@ -428,6 +429,13 @@ class GeneratedEkomApi extends XiaoApi
     public function sellerHasAddress()
     {
         return $this->getObject('sellerHasAddress');
+    }
+    /**
+     * @return Shop
+     */
+    public function shop()
+    {
+        return $this->getObject('shop');
     }
     /**
      * @return ShopConfiguration

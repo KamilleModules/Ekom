@@ -3,8 +3,10 @@
 
 namespace Module\Ekom\Models;
 
+use Controller\Ekom\Back\Catalog\CardController;
 use Module\Ekom\Api\Layer\CartItemBoxLayer;
 use Module\Ekom\Api\Layer\ConnexionLayer;
+use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\PaymentMethodHandler\PaymentMethodHandlerInterface;
 
@@ -726,16 +728,9 @@ class EkomModels
      * shopPhysicalAddress
      * =====================
      *
-     * - id
-     * - first_name: not used for a company
-     * - last_name: use this field to put the company name
-     * - phone
-     * - address
-     * - city
-     * - postcode
-     * - supplement
-     * - active
-     * - country
+     * @see ShopLayer
+     *
+     * - ek_address.*
      * - country_iso_code: the country iso code
      * - country: the country label
      *
@@ -800,6 +795,23 @@ class EkomModels
      * - gender_long_label
      */
     private function userInfoModel()
+    {
+
+    }
+
+
+    /**
+     * verticalMenuItem
+     * --------------
+     * @see CardController::getVerticalMenuItem()
+     *
+     *
+     * - 0: string label
+     * - 1: string uri
+     * - 2: bool isSelected
+     * - 2: bool isDisabled
+     */
+    private function verticalMenuItem()
     {
 
     }

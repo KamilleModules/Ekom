@@ -64,7 +64,7 @@ class ItemsDescriptionRenderer extends BaseRenderer
             'quantity' => "cart_quantity",
             'image' => "image",
             'reference' => "reference",
-            'seller' => "seller",
+            'seller' => "seller_label",
             'label' => "label",
             'labelAndDetails' => "label",
             'description' => "description",
