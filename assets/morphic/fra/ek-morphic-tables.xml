@@ -240,11 +240,23 @@
         <genre>f</genre>
         <article>la</article>
     </item>
+    <item table="ek_product_reference">
+        <label>référence produit</label>
+        <labelPlural>références produit</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
+    </item>
     <item table="ek_product_type">
         <label>type de produit</label>
         <labelPlural>types de produit</labelPlural>
         <genre>m</genre>
         <article>le</article>
+    </item>
+    <item table="ek_product_variation">
+        <label>variation de produit</label>
+        <labelPlural>variations de produit</labelPlural>
+        <genre>f</genre>
+        <article>la</article>
     </item>
     <item table="ek_provider">
         <label>fournisseur</label>

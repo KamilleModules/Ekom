@@ -50,9 +50,13 @@ class ProductCardHelper
         }
         if (array_key_exists('id', $_GET)) {
             $args['id'] = $_GET['id'];
+        } elseif (array_key_exists('productCardId', $options)) {
+            $args['id'] = $options['productCardId'];
         }
         if (array_key_exists('product_id', $_GET)) {
             $args['product_id'] = $_GET['product_id'];
+        } elseif (array_key_exists('productId', $options)) {
+            $args['product_id'] = $options['productId'];
         }
 
         return [
