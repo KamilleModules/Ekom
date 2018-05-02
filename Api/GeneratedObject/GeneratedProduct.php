@@ -34,6 +34,7 @@ class GeneratedProduct extends TableCrudObject
 			'product_card_id' => 0,
 			'seller_id' => 0,
 			'manufacturer_id' => null,
+			'internal_reference' => '',
 			'label' => '',
 			'description' => '',
 			'slug' => '',

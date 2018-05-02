@@ -34,7 +34,6 @@ class GeneratedProductHasFeature extends TableCrudObject
 			'feature_id' => 0,
 			'feature_value_id' => 0,
 			'position' => 0,
-			'technical_description' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

@@ -13,6 +13,12 @@ use QuickPdo\QuickPdo;
 class FeatureLayer
 {
 
+    public static function getIdByName(string $name)
+    {
+        return QuickPdo::fetch("select id from ek_feature where name=:name", [
+            "name" => $name,
+        ], \PDO::FETCH_COLUMN);
+    }
 
     public static function getValueItems($langId, $featureId = null)
     {
@@ -74,8 +80,7 @@ select value from ek_feature_value_lang where feature_value_id=$featureValueId a
 select 
         
 f.name,
-fv.value,
-h.technical_description
+fv.value
         
 from ek_product_has_feature h 
 inner join ek_feature f on f.id=h.feature_id
