@@ -518,7 +518,7 @@ class EkomModelsOld
      * ----------------- value_id: string, the attribute value id
      * ----------------- selected: string (0|1)
      * ----------------- productUri: string, the product uri
-     * ----------------- getProductInfoAjaxUri: string, the uri used to refresh the product via ajax
+     * ----------------- ajax_page_uri: string, the uri used to refresh the product via ajax
      * ----------------- product_id: int
      *
      * - attributesSelection: array of selected attribute item:

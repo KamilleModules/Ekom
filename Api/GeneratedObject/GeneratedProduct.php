@@ -37,6 +37,7 @@ class GeneratedProduct extends TableCrudObject
 			'internal_reference' => '',
 			'label' => '',
 			'description' => '',
+			'long_description' => '',
 			'slug' => '',
 			'meta_title' => '',
 			'meta_description' => '',

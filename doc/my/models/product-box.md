@@ -155,7 +155,7 @@ The normal form is presented below:
                                         - existence: 0|1, whether or not the product for this attribute value does exist.
                                                          Read Module\Ekom\Utils\AttributeSelectorHelper's source code top comment for more info.
                                         - productUri: string, the uri to the corresponding product.
-                                        - getProductInfoAjaxUri: string, the uri to the ajax service to call to get information
+                                        - ajax_page_uri: string, the uri to the ajax service to call to get information
                                                                 about the product
                                         - product_id: string, the product id
                                                                 

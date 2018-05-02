@@ -45,6 +45,8 @@ class EkomModels
     }
 
 
+
+
     /**
      * carrierOfferModel
      * ==================
@@ -611,6 +613,7 @@ class EkomModels
      * - seller_name
      * - seller_label
      * - reference
+     * - internal_reference
      * - quantity
      * - out_of_stock_text
      * - label
@@ -632,6 +635,7 @@ class EkomModels
      * - manufacturer_id
      * - manufacturer_name
      * - description
+     * - long_description
      * - meta_title
      * - meta_description
      * - meta_keywords
@@ -651,17 +655,39 @@ class EkomModels
      * - sale_price_formatted
      * - discount_value_formatted
      * - selected_product_details
-     * - product_details_list
+     * - product_details_list: @see EkomModels::productModifiersListModel()
      * - product_uri_with_details
      * - images
      * - rating_average
      * - rating_nbVotes
-     * - attributes_list
+     * - attributes_list: @see EkomModels::productModifiersListModel()
+     *
      *
      */
     private function productBoxModel()
     {
 
+    }
+
+
+    /**
+     * productModifiersListModel
+     * =======================
+     *
+     * array of modifierName => array:
+     *      - label: label of the modifier
+     *      - values:
+     *          - value
+     *          - value_label
+     *          - selected: 0|1
+     *          - page_uri:
+     *          - ajax_page_uri:
+     *
+     *
+     */
+    private function productModifiersListModel()
+    {
+        return [];
     }
 
 

@@ -96,10 +96,7 @@ class ProductPageModel
         // FEATURES (properties)
         //--------------------------------------------
         $features = FeatureLayer::getFeaturesModelByProductId($productId);
-        $technicalDescription = "";
-        if (count($features) > 0) {
-            $technicalDescription = $features[0]['technical_description'];
-        }
+        $technicalDescription = $head['long_description'];
         $featuresModel = [
             "technical_description" => $technicalDescription,
             "features" => $features,

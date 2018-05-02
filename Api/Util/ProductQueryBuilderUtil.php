@@ -192,7 +192,6 @@ where phd.product_reference_id=pr.id and
         unset($discountContext['datetime']);
 
 
-
         $qDiscountSubquery .= " 
         active = 1 
         and (cond_date_start is null or cond_date_start <= '$datetime')
@@ -362,6 +361,12 @@ inner join ek_seller sel on sel.id=p.seller_id
         $sqlQuery->addField("
 m.id as manufacturer_id,
 m.name as manufacturer_name,
+p.internal_reference,
+if(
+    '' != p.long_description,
+    p.long_description,
+    c.long_description
+) as long_description,
 if(
     '' != p.meta_title,
     p.meta_title,

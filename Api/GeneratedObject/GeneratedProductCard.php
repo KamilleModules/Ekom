@@ -34,6 +34,7 @@ class GeneratedProductCard extends TableCrudObject
 			'product_card_type_id' => 0,
 			'label' => '',
 			'description' => '',
+			'long_description' => '',
 			'slug' => '',
 			'meta_title' => '',
 			'meta_description' => '',

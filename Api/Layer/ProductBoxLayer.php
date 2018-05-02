@@ -98,33 +98,40 @@ class ProductBoxLayer
         MiniProductBoxLayer::sugarify($row);
 
 
-
-
         /**
-         * Note:
-         * the productBox needs to provide two properties:
+         * @moduleDevelopers: if you are using product details,
+         * then you should define at least the following properties:
+         * - selected_product_details: a map of user selected product details.
+         *          Note to myself: I believe this is not technically required,
+         *          it needs only to be in the cartItemBoxModel,
+         *          but having it here can ease the transition (since the cartItem uses the productBox
+         *          to build itself)
          *
-         * - attributes_list
-         * - product_details_list
          *
-         * which detailed structure is still under discussion, but probably will look like this (for both):
+         * - product_details_list, the productModifiersListModel
          *
-         * - 0:
-         *      - nameEkom/Checkout/default
-         *      - value
-         *      - label
-         *      - selected
-         *      - ?ajax_product_uri: the uri to call to update the product box, this property presence is under discussion,
-         *              but for seo reasons, has been voted out (not worth it).
-         *
-         * There is no rule about how to produce those lists, but in Ekom the implementation discussion
-         * starts here: class-modules/Ekom/doc/product-box/product-box-modifiers.md
-         *
+         * @see EkomModels::productModifiersListModel()
          */
+        Hooks::call("Ekom_ProductBox_decorateBoxLayerModel", $row);
+        $selectedProductDetails = $row['selected_product_details'] ?? [];
+        $productDetailsList = $row['product_details_list'] ?? [];
+        $attributes_list = $row['attributes_list'] ?? null;
+
+        if (null === $attributes_list) {
+            //--------------------------------------------
+            // ATTRIBUTES
+            //--------------------------------------------
+            /**
+             * Those are the default Ekom attributes.
+             * Your module might want to override this default system IF
+             * it usses both the attributes AND product details mechanism together
+             */
+            $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($row['product_card_id']);
+            $attributes_list = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $row['product_id']);
+
+        }
 
 
-        $selectedProductDetails = []; // todo: ask modules via hooks
-        $productDetailsList = []; // todo: ask modules via hooks, use same structure as attribute list...
         $row['selected_product_details'] = $selectedProductDetails;
         $row['product_details_list'] = $productDetailsList;
 
@@ -153,10 +160,7 @@ class ProductBoxLayer
         //--------------------------------------------
         // ATTRIBUTES
         //--------------------------------------------
-        $productsInfo = ProductBoxEntityUtil::getProductCardProductsWithAttributes($row['product_card_id']);
-        $attr = AttributeSelectorHelper::adaptProductWithAttributesToAttributesModel($productsInfo, $row['product_id']);
-        $row['attributes_list'] = $attr;
-
+        $row['attributes_list'] = $attributes_list;
 
 
         return $row;

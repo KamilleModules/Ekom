@@ -7,6 +7,7 @@ use Core\Services\A;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Util\UriUtil;
+use Module\Ekom\Models\EkomModels;
 use QuickPdo\QuickPdo;
 
 
@@ -117,12 +118,18 @@ class AttributeSelectorHelper
      * @param $cardProducts , the ensemble of products belonging to the same card
      * @param $productId , the id of the product from which derives the default attributes combination
      * @see AttributeSelectorHelper::testRig()
-     * @return array of attributes model, see doc for more info
+     * @return array of attributes model.
+     *          In short, here is what is returned: the productModifiersListModel.
+     *          @see EkomModels::productModifiersListModel()
+     *
+     *
+     *
+     * See doc for more info
      *
      *          - value: the attribute value, formatted for the database
      *          - value_label: the attribute value, formatted for the humans
      *          - value_id: the attribute value id in the database
-     *          - selected: 1|0, whether or not the attribute value is part of
+     *          - selected: bool whether or not the attribute value is part of the user selection
      *          - (DEPRECATED)quantity: if it's 0, indicate that this particular combination is out of stock.
      *                          Note: some products have quantity=-1, which means infinite.
      *                          We let the template interpret those values for themselves.
@@ -303,8 +310,8 @@ class AttributeSelectorHelper
                      */
                     $productUri = E::link("Ekom_productCardRef", ['slug' => $info['cardSlug'], 'ref' => $info['ref']]);
                     $productAjaxUri = UriUtil::getProductBoxBaseAjaxUri($_productId);
-                    $attributes[$k]['productUri'] = $productUri;
-                    $attributes[$k]['getProductInfoAjaxUri'] = $productAjaxUri;
+                    $attributes[$k]['page_uri'] = $productUri;
+                    $attributes[$k]['ajax_page_uri'] = $productAjaxUri;
                 }
             }
             $curChain .= $nextChain;
@@ -337,8 +344,8 @@ class AttributeSelectorHelper
                     'value_label' => $attributeInfo['value_label'],
                     'value_id' => $attributeInfo['value_id'],
                     'selected' => $selected,
-                    'productUri' => $attributeInfo['productUri'],
-                    'getProductInfoAjaxUri' => $attributeInfo['getProductInfoAjaxUri'],
+                    'page_uri' => $attributeInfo['page_uri'],
+                    'ajax_page_uri' => $attributeInfo['ajax_page_uri'],
                     'product_id' => $attributeInfo['_product_id'],
                 ];
 
