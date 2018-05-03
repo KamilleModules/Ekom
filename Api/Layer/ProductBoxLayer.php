@@ -101,13 +101,8 @@ class ProductBoxLayer
         /**
          * @moduleDevelopers: if you are using product details,
          * then you should define at least the following properties:
+         *
          * - selected_product_details: a map of user selected product details.
-         *          Note to myself: I believe this is not technically required,
-         *          it needs only to be in the cartItemBoxModel,
-         *          but having it here can ease the transition (since the cartItem uses the productBox
-         *          to build itself)
-         *
-         *
          * - product_details_list, the productModifiersListModel
          *
          * @see EkomModels::productModifiersListModel()

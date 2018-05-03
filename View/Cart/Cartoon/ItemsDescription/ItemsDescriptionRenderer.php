@@ -141,7 +141,7 @@ class ItemsDescriptionRenderer extends BaseRenderer
             <?php if ($item['selected_product_details_info']): ?>
                 <?php foreach ($item['selected_product_details_info'] as $detailItem): ?>
                     <div class="product-property">
-                        <span class="name"><?php echo $detailItem['attribute_label']; ?>:</span>
+                        <span class="name"><?php echo $detailItem['detail_label']; ?>:</span>
                         <span class="value"><?php echo $detailItem['value_label']; ?></span>
                     </div>
                 <?php endforeach; ?>

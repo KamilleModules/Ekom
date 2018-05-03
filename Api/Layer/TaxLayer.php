@@ -128,7 +128,7 @@ select amount from ek_tax where id=$taxId
     }
 
 
-    public static function getTaxInfoByName(string $taxName)
+    public static function getTaxInfoByName($taxName)
     {
         return QuickPdo::fetch("
 select * from ek_tax where name=:name        

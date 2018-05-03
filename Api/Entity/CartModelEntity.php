@@ -231,7 +231,7 @@ class CartModelEntity
                 $cartDiscountAmount += $lineDiscountAmount;
 
 
-                foreach($boxModel['discount_details'] as $discount_detail){
+                foreach ($boxModel['discount_details'] as $discount_detail) {
                     $cartDiscountDetails[$discount_detail['label']] = $discount_detail['amount'] * $cartQuantity;
                 }
 
@@ -242,7 +242,6 @@ class CartModelEntity
                 $cartTaxAmount += $lineTaxAmount;
 
                 TaxLayer::decorateTaxDistribution($cartTaxDistribution, $boxModel['base_price'], $boxModel['tax_details']);
-
 
 
                 $boxModel['uri_card_with_details'] = $uriDetails;
@@ -274,36 +273,58 @@ class CartModelEntity
     private function applyShippingItem(array &$model)
     {
 
-        $shippingInfo = $this->shippingInfo;
-        $shippingTaxName = $this->shippingTaxName;
-        $carrierEstimatedDeliveryDate = CartUtil::getEstimatedDeliveryDate($shippingInfo['estimated_delivery_date']);
+        if (null !== $this->shippingInfo) {
 
-        $model['carrier_id'] = $this->carrierId;
-        $model['carrier_label'] = $this->carrierLabel;
-        $model['carrier_estimated_delivery_date'] = $carrierEstimatedDeliveryDate;
+            $shippingInfo = $this->shippingInfo;
+            $shippingTaxName = $this->shippingTaxName;
+            $carrierEstimatedDeliveryDate = CartUtil::getEstimatedDeliveryDate($shippingInfo['estimated_delivery_date']);
 
-
-        $shippingTaxInfo = TaxLayer::getTaxInfoByName($shippingTaxName);
-        $shippingCostTaxAmount = $shippingTaxInfo['amount'];
-        $shippingCostTaxExcluded = E::trimPrice($shippingInfo['shipping_cost']);
-        $shippingCostTaxIncluded = $shippingCostTaxExcluded + ($shippingCostTaxExcluded * $shippingCostTaxAmount / 100);
+            $model['carrier_id'] = $this->carrierId;
+            $model['carrier_label'] = $this->carrierLabel;
+            $model['carrier_estimated_delivery_date'] = $carrierEstimatedDeliveryDate;
 
 
-        $model['carrier_error_code'] = $this->carrierErrorCode;
-        $model['shipping_status'] = $this->shippingStatus;
+            $shippingTaxInfo = TaxLayer::getTaxInfoByName($shippingTaxName);
+            $shippingCostTaxAmount = $shippingTaxInfo['amount'];
+            $shippingCostTaxExcluded = E::trimPrice($shippingInfo['shipping_cost']);
+            $shippingCostTaxIncluded = $shippingCostTaxExcluded + ($shippingCostTaxExcluded * $shippingCostTaxAmount / 100);
 
-        $model['shipping_cost_tax_excluded'] = $shippingCostTaxExcluded;
-        $model['shipping_cost_tax_excluded_formatted'] = E::price($shippingCostTaxExcluded);
-        $model['shipping_cost_tax_included'] = $shippingCostTaxIncluded;
-        $model['shipping_cost_tax_included_formatted'] = E::price($shippingCostTaxIncluded);
-        $model['shipping_cost_discount_amount'] = 0; // not handled yet, @todo-ling?
-        $model['shipping_cost_discount_amount_formatted'] = E::price(0);
 
-        $model['shipping_cost_tax_amount'] = $shippingCostTaxAmount;
-        $model['shipping_cost_tax_amount_formatted'] = E::price($shippingCostTaxAmount);
+            $model['carrier_error_code'] = $this->carrierErrorCode;
+            $model['shipping_status'] = $this->shippingStatus;
 
-        $model['shipping_cost_tax_label'] = $shippingTaxInfo['label'];
-        $model['shipping_cost_tax_name'] = $shippingTaxInfo["name"];
+            $model['shipping_cost_tax_excluded'] = $shippingCostTaxExcluded;
+            $model['shipping_cost_tax_excluded_formatted'] = E::price($shippingCostTaxExcluded);
+            $model['shipping_cost_tax_included'] = $shippingCostTaxIncluded;
+            $model['shipping_cost_tax_included_formatted'] = E::price($shippingCostTaxIncluded);
+            $model['shipping_cost_discount_amount'] = 0; // not handled yet, @todo-ling?
+            $model['shipping_cost_discount_amount_formatted'] = E::price(0);
+
+            $model['shipping_cost_tax_amount'] = $shippingCostTaxAmount;
+            $model['shipping_cost_tax_amount_formatted'] = E::price($shippingCostTaxAmount);
+
+            $model['shipping_cost_tax_label'] = $shippingTaxInfo['label'];
+            $model['shipping_cost_tax_name'] = $shippingTaxInfo["name"];
+        } else {
+            $model['carrier_id'] = null;
+            $model['carrier_label'] = "";
+            $model['carrier_estimated_delivery_date'] = "";
+            $model['carrier_error_code'] = $this->carrierErrorCode;
+            $model['shipping_status'] = $this->shippingStatus;
+
+            $model['shipping_cost_tax_excluded'] = 0;
+            $model['shipping_cost_tax_excluded_formatted'] = E::price(0);
+            $model['shipping_cost_tax_included'] = 0;
+            $model['shipping_cost_tax_included_formatted'] = E::price(0);
+            $model['shipping_cost_discount_amount'] = 0; // not handled yet, @todo-ling?
+            $model['shipping_cost_discount_amount_formatted'] = E::price(0);
+
+            $model['shipping_cost_tax_amount'] = 0;
+            $model['shipping_cost_tax_amount_formatted'] = E::price(0);
+
+            $model['shipping_cost_tax_label'] = "";
+            $model['shipping_cost_tax_name'] = "";
+        }
     }
 
 

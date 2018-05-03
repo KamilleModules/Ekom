@@ -48,7 +48,7 @@ class RepaymentScheduleRenderer extends BaseRenderer
         <div class="repayment-schedule">
             <div class="echeancier">
                 <h4>Échéancier</h4>
-                <table>
+                <table class="cartoon-columns">
                     <tr>
                         <?php if ($this->has("repayment_schedule_label")): ?>
                             <td>Libellé</td>

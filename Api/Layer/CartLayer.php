@@ -84,11 +84,11 @@ class CartLayer
     public function addItem($quantity, $productReferenceId, array $extraArgs = [])
     {
         $this->initSessionCart();
-
         /**
          * The selected product details array
          */
         $bundle = array_key_exists('bundle', $extraArgs) ? $extraArgs['bundle'] : null;
+
 
 
         $token = CartUtil::generateTokenByProductReferenceId($productReferenceId);

@@ -105,6 +105,10 @@ class ProductQueryBuilderUtil
         $useTaxRuleConditionId = $options['useTaxRuleConditionId'] ?? false;
 
         $qTaxSubquery = "select ratio from ek_tax_rule_condition where ";
+
+        /**
+         * if true, yields the tax_rule_condition_id field in the results
+         */
         if (true === $useTaxRuleConditionId) {
             $qTaxCondSubquery = "select id from ek_tax_rule_condition where ";
         }

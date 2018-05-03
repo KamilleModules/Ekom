@@ -107,6 +107,7 @@ class EkomModels
      *      - detail_label
      *      - value_name
      *      - value_label
+     *      - ...more as you need
      *
      * - tax_details: array of tax applied to this product, each item:
      *      - value: in percent

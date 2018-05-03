@@ -46,22 +46,31 @@ class CartItemBoxLayer
     }
 
 
-    public static function sugarify(array &$row, array $selectedProductDetails = [])
+    public static function sugarify(array &$row)
     {
         MiniProductBoxLayer::sugarify($row);
 
         $selectedAttributesInfo = AttributeSelectorHelper::getSelectedAttributesByProductId($row['product_id']);
-        $selectedProductDetailsInfo = [];
-        Hooks::call("Ekom_collectProductDetailsInfo", $selectedProductDetailsInfo, $selectedProductDetails);
+
+        Hooks::call("Ekom_CartItemBox_decorateCartItemBoxModel", $row);
+
 
 
         /**
          * We basically provide the ground for detailed information at the cart display level.
          */
         $row['selected_attributes_info'] = $selectedAttributesInfo;
-        $row['selected_product_details_info'] = $selectedProductDetailsInfo;
-        $row['selected_product_details'] = $selectedProductDetails; // map
+        $row['selected_product_details_info'] = $row['selected_product_details_info'] ?? [];
 
+        /**
+         * Rebuilding productDetailsMap from productDetailsInfo
+         */
+        $productDetailsMap = [];
+        foreach($row['selected_product_details_info'] as $info){
+            $productDetailsMap[$info['detail_name']] = $info['value_name'];
+        }
+        $row['selected_product_details'] = $row['selected_product_details'] ?? $productDetailsMap;
+        $selectedProductDetails = $row['selected_product_details'];
 
         if ($row['tax_rule_condition_id']) {
             $row['tax_details'] = TaxLayer::getTaxDetailsInfoByTaxRuleConditionId($row['tax_rule_condition_id'], $row['base_price']);
