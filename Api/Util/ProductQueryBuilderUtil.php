@@ -18,6 +18,7 @@ use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Helper\ProductDetailsHelper;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\Checkout\CheckoutUtil;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
@@ -48,6 +49,7 @@ class ProductQueryBuilderUtil
      *      - seller_name,
      *      - seller_label,
      *      - reference,
+     *      - _product_details, @see ProductDetailsHelper
      *      - quantity,
      *      - out_of_stock_text,
      *      - label: the card label,
@@ -69,6 +71,7 @@ class ProductQueryBuilderUtil
      *
      *      // and with options, you can add the following optional properties
      *      - tax_rule_condition_id: null|int
+     *      - attr_string: string value labels separated with comma+space ", " as the separator
      *
      *
      *
@@ -94,15 +97,12 @@ class ProductQueryBuilderUtil
      * @return SqlQueryInterface
      *
      */
-    public static function getBaseQuery(array $userContext = null, array $options = []): SqlQueryInterface
+    public static function getBaseQuery(array $options = []): SqlQueryInterface
     {
-
-        if (null === $userContext) {
-            $userContext = E::getUserContext();
-        }
         $markers = [];
-
         $useTaxRuleConditionId = $options['useTaxRuleConditionId'] ?? false;
+        $useAttributeString = $options['useAttributesString'] ?? true;
+
 
         $qTaxSubquery = "select ratio from ek_tax_rule_condition where ";
 
@@ -242,6 +242,25 @@ where phd.product_reference_id=pr.id and
             $optionalTaxCondSubquery = "($qTaxCondSubquery) as tax_rule_condition_id,";
         }
 
+
+        $sAttributeString = "";
+        if (true === $useAttributeString) {
+            $sAttributeString .= "
+coalesce(        
+    ( 
+      select 
+        group_concat( distinct label separator ', ')
+        from ek_product_attribute_value v 
+        inner join ek_product_has_product_attribute h on h.product_attribute_value_id=v.id
+        where h.product_id=p.id
+            
+    ),
+    ''
+) as attr_string,            
+            ";
+        }
+
+
         $field = "
 p.id as product_id,
 c.id as product_card_id,
@@ -253,6 +272,8 @@ sel.name as seller_name,
 sel.label as seller_label,
 p.manufacturer_id,
 pr.reference,
+pr._product_details,
+$sAttributeString
 pr.quantity,
 p.out_of_stock_text,
 if(
@@ -359,9 +380,9 @@ inner join ek_seller sel on sel.id=p.seller_id
     }
 
 
-    public static function getMaxiQuery(array $userContext = null)
+    public static function getMaxiQuery()
     {
-        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($userContext);
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
         $sqlQuery->addField("
 m.id as manufacturer_id,
 m.name as manufacturer_name,

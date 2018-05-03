@@ -54,16 +54,12 @@ order by label asc
     }
 
 
-    public function getLabelByIso($iso, $langId = null)
+    public static function getLabelByIso(string $iso)
     {
-        $langId = E::getLangId($langId);
         return QuickPdo::fetch("
-select cl.label
-from ek_country_lang cl  
-inner join ek_country c on c.id=cl.country_id
- 
-where c.iso_code=:iso
-and cl.lang_id=$langId
+select label
+from ek_country 
+where iso_code=:iso
 ", [
             "iso" => $iso,
         ], \PDO::FETCH_COLUMN);

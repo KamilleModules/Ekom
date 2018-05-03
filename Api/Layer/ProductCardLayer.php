@@ -190,7 +190,11 @@ select DISTINCT product_card_id from ek_product where id in ($sIds)
         return [];
     }
 
-    public function getLabelById($id, $shopId = null, $langId = null, $default = "")
+
+    /**
+     * @deprecated
+     */
+    public static function getLabelById($id, $shopId = null, $langId = null, $default = "")
     {
 
         $shopId = E::getShopId($shopId);

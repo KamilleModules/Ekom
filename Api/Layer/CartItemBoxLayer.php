@@ -34,8 +34,9 @@ class CartItemBoxLayer
 
 
         // note: product details might be able to change the core of the base query?
-        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery(null, [
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery([
             "useTaxRuleConditionId" => true,
+            "useAttributesString" => true,
         ]);
         $sqlQuery->addField("p.weight, p.wholesale_price");
         $sqlQuery->addWhere("and pr.id=$productReferenceId");
@@ -55,7 +56,6 @@ class CartItemBoxLayer
         Hooks::call("Ekom_CartItemBox_decorateCartItemBoxModel", $row);
 
 
-
         /**
          * We basically provide the ground for detailed information at the cart display level.
          */
@@ -66,7 +66,7 @@ class CartItemBoxLayer
          * Rebuilding productDetailsMap from productDetailsInfo
          */
         $productDetailsMap = [];
-        foreach($row['selected_product_details_info'] as $info){
+        foreach ($row['selected_product_details_info'] as $info) {
             $productDetailsMap[$info['detail_name']] = $info['value_name'];
         }
         $row['selected_product_details'] = $row['selected_product_details'] ?? $productDetailsMap;

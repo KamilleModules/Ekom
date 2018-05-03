@@ -543,6 +543,7 @@ class EkomModels
      *      - base_price_formatted
      *      - sale_price_formatted
      *      - discount_value_formatted: which can be either in currency or percent
+     *      - product_details: array of detailName => valueName
      *
      *
      */

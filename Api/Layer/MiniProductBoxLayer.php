@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
+use Module\Ekom\Helper\ProductDetailsHelper;
 use Module\Ekom\Helper\SqlQueryHelper;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
@@ -76,9 +77,6 @@ class MiniProductBoxLayer
     {
 
 
-
-
-
         $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
 
 
@@ -97,7 +95,6 @@ coalesce(
 ) as attr_string
         
         ");
-
 
 
         $sqlQuery->addJoin("
@@ -245,6 +242,11 @@ inner join ek_product_group g on g.id=phg.product_group_id
             $discountValueFormatted = "-" . E::price($discountValue);
         }
         $row['discount_value_formatted'] = $discountValueFormatted;
+
+
+        $row['product_details'] = ProductDetailsHelper::productDetailsCacheStringToArray($row['_product_details']);
+
+
     }
 
     //--------------------------------------------
