@@ -24,6 +24,7 @@ use Module\Ekom\Api\Object\Newsletter;
 use Module\Ekom\Api\Object\Order;
 use Module\Ekom\Api\Object\OrderHasOrderStatus;
 use Module\Ekom\Api\Object\OrderStatus;
+use Module\Ekom\Api\Object\Page;
 use Module\Ekom\Api\Object\PasswordRecoveryRequest;
 use Module\Ekom\Api\Object\PaymentMethod;
 use Module\Ekom\Api\Object\Product;
@@ -240,6 +241,13 @@ class GeneratedEkomApi extends XiaoApi
     public function orderStatus()
     {
         return $this->getObject('orderStatus');
+    }
+    /**
+     * @return Page
+     */
+    public function page()
+    {
+        return $this->getObject('page');
     }
     /**
      * @return PasswordRecoveryRequest

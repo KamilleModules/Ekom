@@ -344,6 +344,21 @@ class BackHooksHelper
             );
 
 
+        $cmsItem = Item::create()
+            ->setActive(true)
+            ->setName("cms")
+            ->setLabel("Cms")
+            ->setIcon("fa fa-pencil-square-o")
+            ->setLink("#")
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("cms_page")
+                ->setLabel("Pages")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Cms_Page_List"))
+            );
+
+
         $statItem = Item::create()
             ->setActive(true)
             ->setName("stats")
@@ -365,6 +380,7 @@ class BackHooksHelper
             ->addItem($discountItem)
             ->addItem($carrierItem)
             ->addItem($localizationItem)
+            ->addItem($cmsItem)
             ->addItem($statItem);
 
 
@@ -374,6 +390,7 @@ class BackHooksHelper
             'Ekom.users' => $usersItem,
             'Ekom.carriers' => $carrierItem,
             'Ekom.localization' => $localizationItem,
+            'Ekom.cms' => $cmsItem,
             'Ekom.stats' => $statItem,
             'Ekom.catalog' => $catalogItem,
         ];

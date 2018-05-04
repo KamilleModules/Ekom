@@ -17,9 +17,46 @@ use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\Pdf\PdfHtmlInfoInterface;
 use Notificator\SessionNotificator;
 use QuickPdo\Helper\QuickPdoHelper;
+use QuickPdo\QuickPdo;
 
 class HooksHelper
 {
+
+    public static function Ekom_FrontController_Meta_decorate(array &$metaArray, string $route)
+    {
+        $uri = $_SERVER['REQUEST_URI'] ?? "";
+        $p = explode("?", $uri, 2);
+        $uri = $p[0];
+
+        $row = QuickPdo::fetch("
+select 
+meta_title,
+meta_description,
+meta_keywords
+from ek_page 
+where uri=:uri
+
+union all 
+
+select 
+meta_title,
+meta_description,
+meta_keywords
+from ek_page 
+where route=:route
+
+", [
+            "uri" => $uri,
+            "route" => $route,
+        ]);
+
+        if (false !== $row) {
+            $metaArray["title"] = $row['meta_title'];
+            $metaArray["description"] = $row['meta_description'];
+            $metaArray["keywords"] = $row['meta_keywords'];
+        }
+    }
+
 
     public static function Ekom_onUserConnectedAfter()
     {

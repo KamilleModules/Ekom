@@ -5,6 +5,7 @@ namespace Module\Ekom\Api\Layer;
 
 use Core\Services\A;
 use Core\Services\Hooks;
+use Kamille\Services\XConfig;
 use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
 use Module\Ekom\Helper\ProductDetailsHelper;
 use Module\Ekom\Helper\SqlQueryHelper;
@@ -122,16 +123,21 @@ left join ek_tag tag on tag.id=phtag.tag_id
 
     public static function getBoxesByProductReferenceIds(array $referenceIds)
     {
-        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
-        $sProductReferenceIds = implode(', ', array_map('intval', $referenceIds));
+        if ($referenceIds) {
 
-        $sqlQuery->addWhere("
+            $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
+            $sProductReferenceIds = implode(', ', array_map('intval', $referenceIds));
+            if ($sProductReferenceIds) {
+                $sqlQuery->addWhere("
 and pr.id in ($sProductReferenceIds)        
         ");
 
-        $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
-        self::sugarifyRows($rows);
-        return $rows;
+            }
+            $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
+            self::sugarifyRows($rows);
+            return $rows;
+        }
+        return [];
     }
 
 
@@ -223,7 +229,14 @@ inner join ek_product_group g on g.id=phg.product_group_id
             "slug" => $row['product_card_slug'],
             "ref" => $row['reference'],
         ]);
-        $row['image'] = ImageLayer::getCardProductImageUriByImageId($row['image_id']);
+        if (null !== $row['image_id']) {
+            $row['image'] = ImageLayer::getCardProductImageUriByImageId($row['image_id']);
+        } else {
+            /**
+             * Maybe should add a default image?
+             */
+            $row['image'] = XConfig::get("Ekom.imageNotFoundUri");
+        }
         $row['image_title'] = (!empty($row['image_legend']) ? $row["image_legend"] : $row['label']);
         $row['image_alt'] = $row["label"];
         $row['has_discount'] = (null !== $row['discount_type']);
