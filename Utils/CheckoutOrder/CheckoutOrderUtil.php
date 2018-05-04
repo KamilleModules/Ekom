@@ -348,9 +348,16 @@ class CheckoutOrderUtil
      */
     protected function createInvoices($orderId, array $orderModel)
     {
+
+        Hooks::call("Ekom_CheckoutOrderUtil_Invoice_decorateOrderModel", $orderModel);
+
+
+
         $orderDetails = $orderModel['order_details'];
         $orderCartModel = $orderModel['order_details']['cartModel'];
         $paymentMethod = $orderModel['order_details']["payment_method_name"];
+
+
 
 
         // by default, we create one invoice per seller
@@ -386,6 +393,9 @@ class CheckoutOrderUtil
             ) {
                 $invoiceDetails = $orderDetails;
                 $invoiceDetails['cartModel'] = $sellerCartModel;
+
+
+
                 $sellerAddress = SellerLayer::getSellerAddressByName($seller);
                 $sellerId = SellerLayer::getIdByName($seller);
 

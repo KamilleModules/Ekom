@@ -630,6 +630,7 @@ class CartLayer
 
                     $shippingStatus = 3;
 
+
                     if (true === CartUtil::isValidShippingInfo($shippingInfo)) {
                         $shippingStatus = 4;
 

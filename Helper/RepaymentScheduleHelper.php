@@ -5,10 +5,54 @@ namespace Module\Ekom\Helper;
 
 
 use Bat\DateTool;
+use Kamille\Services\XConfig;
 use Module\Ekom\Utils\E;
 
 class RepaymentScheduleHelper
 {
+
+    /**
+     * For now, Ekom only deals with one currency at the time.
+     *
+     * Options are four things like:
+     *      - if Ekom becomes multi-currency in the future...
+     */
+    public static function getPerSellerRepaymentSchedule(array $repaymentSchedule, string $sellerName, array $options = [])
+    {
+
+
+        $total = 0;
+        $items = [];
+        if (false === "ekomIsMultiCurrency") {
+            // just an idea...
+            $currencySymbol = $repaymentSchedule['currencySymbol'] ?? XConfig::get("Ekom.currencySymbol");
+        }
+
+
+        $cpt = 1;
+        foreach ($repaymentSchedule['items'] as $item) {
+
+            $recipients = $item['recipients'];
+            if (array_key_exists($sellerName, $recipients)) {
+                $label = "Virement n°$cpt";
+                $item['label'] = $label;
+                $price = $recipients[$sellerName];
+                $item['priceRaw'] = $price;
+                $item['price'] = E::price($price); // !ekom only handles one currency for now..
+
+                $items[] = $item;
+                $total += $price;
+                $cpt++;
+            }
+        }
+
+        return [
+            "totalRaw" => $total,
+            "total" => E::price($total),
+            "items" => $items,
+        ];
+    }
+
 
     public static function balancedScheduleToRepaymentSchedule(array $balancedSchedule)
     {

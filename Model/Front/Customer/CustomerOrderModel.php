@@ -28,7 +28,9 @@ class CustomerOrderModel
 
         OrderLayer::unserializeRows($items);
         foreach ($items as $k => $item) {
-            $item['status_history'] = OrderLayer::getOrderHistoryById($item['id']);
+            $item['status_history'] = OrderLayer::getOrderHistoryById($item['id'], [
+                "skipIdenticalSiblings" => true,
+            ]);
             $items[$k] = $item;
         }
         $info['items'] = $items;

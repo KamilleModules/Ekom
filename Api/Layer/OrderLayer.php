@@ -400,10 +400,11 @@ group by label
     }
 
 
-    public static function getOrderHistoryById($orderId)
+    public static function getOrderHistoryById($orderId, array $options = [])
     {
         $orderId = (int)$orderId;
-        return QuickPdo::fetchAll("
+        $skipIdenticalSiblings = $options['skipIdenticalSiblings'] ?? false;
+        $rows = QuickPdo::fetchAll("
 select 
 s.code,
 s.color,
@@ -417,6 +418,18 @@ inner join ek_order_has_order_status h on h.order_status_id=s.id
 where h.order_id=$orderId
 order by date asc         
         ");
+        if (true === $skipIdenticalSiblings) {
+            $prevCode = null;
+            foreach ($rows as $k => $row) {
+                $code = $row['code'];
+                if ($code === $prevCode) {
+                    unset($rows[$k]);
+                }
+                $prevCode = $code;
+            }
+        }
+
+        return $rows;
     }
 
 
@@ -425,6 +438,8 @@ order by date asc
         $code2Ids = self::getCode2Ids();
         if (array_key_exists($code, $code2Ids)) {
             $orderStatusId = $code2Ids[$code];
+
+
             return EkomApi::inst()->orderHasOrderStatus()->create([
                 "order_id" => $orderId,
                 "order_status_id" => $orderStatusId,

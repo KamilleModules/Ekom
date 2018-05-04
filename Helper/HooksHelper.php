@@ -160,8 +160,10 @@ class HooksHelper
                                 $invoiceDetails = $invoice['invoice_details'];
                                 $cartModel = $invoiceDetails['cartModel'];
 
+                                $seller = $invoice['seller'];
                                 $paymentDetails = $invoiceDetails['payment_method_details'];
-                                $repaymentSchedule = (array_key_exists("repayment_schedule", $paymentDetails)) ? $paymentDetails['repayment_schedule'] : [];
+                                $sellersRepaymentSchedule = $paymentDetails['sellers_repayment_schedules'] ?? [];
+                                $repaymentSchedule = (array_key_exists($seller, $sellersRepaymentSchedule)) ? $sellersRepaymentSchedule[$seller] : [];
 
                                 ob_start();
                                 require_once $template;
