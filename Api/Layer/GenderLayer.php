@@ -20,4 +20,9 @@ select id, $word
 from ek_gender
 ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
+
+    public static function getInfoById(int $id)
+    {
+        return QuickPdo::fetch("select * from ek_gender where id=$id");
+    }
 }

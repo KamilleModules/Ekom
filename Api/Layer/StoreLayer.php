@@ -10,12 +10,39 @@ use QuickPdo\QuickPdo;
 class StoreLayer
 {
 
+    public static function getInfoByLabel(string $label)
+    {
+        return QuickPdo::fetch("
+select         
+
+s.label,
+a.id,
+a.libelle,
+a.phone,
+a.address,
+a.city,
+a.postcode,
+a.supplement,
+a.active,
+a.country_id,
+c.iso_code as country
+
+from ek_store s 
+inner join ek_address a on a.id=s.address_id
+inner join ek_country c on c.id=a.country_id
+
+where s.label=:label
+        ", [
+            "label" => $label,
+        ]);
+    }
+
 
     public static function getPreferredPhysicalAddressById(int $addressId = null)
     {
         $addresses = self::getPhysicalAddresses();
-        foreach($addresses as $address){
-            if((int)$address['id'] === $addressId){
+        foreach ($addresses as $address) {
+            if ((int)$address['id'] === $addressId) {
                 return $address;
             }
         }
@@ -30,7 +57,7 @@ class StoreLayer
     public static function getPreferredPhysicalAddressIdById(int $addressId = null)
     {
         $preferredAddress = self::getPreferredPhysicalAddressById($addressId);
-        if($preferredAddress){
+        if ($preferredAddress) {
             return (int)$preferredAddress['id'];
         }
         return null;

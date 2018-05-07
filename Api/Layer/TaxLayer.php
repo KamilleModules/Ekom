@@ -39,6 +39,16 @@ class TaxLayer
 {
 
 
+    public static function getTaxInfoByAmount($amount){
+        return QuickPdo::fetch("
+select * 
+from ek_tax 
+where amount=:amount
+        ", [
+            "amount" => $amount,
+        ]);
+    }
+
     public static function getTaxDetailsInfoByTaxRuleConditionId(int $taxRuleConditionId, $basePrice)
     {
         $rows = QuickPdo::fetchAll("

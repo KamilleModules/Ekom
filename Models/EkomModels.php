@@ -5,6 +5,7 @@ namespace Module\Ekom\Models;
 
 use Controller\Ekom\Back\Catalog\CardController;
 use Module\Ekom\Api\Layer\CartItemBoxLayer;
+use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\ConnexionLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Util\CartUtil;
@@ -89,6 +90,8 @@ class EkomModels
     /**
      * cartItemBoxModel
      * =====================
+     * @see CartItemBoxLayer
+     *
      *
      * - ...all properties of miniBoxModel @see EkomModels::miniBoxModel(), plus the following:
      *
@@ -137,6 +140,8 @@ class EkomModels
     /**
      * cartModel
      * =================
+     * @see CartLayer::getCartModel()
+     *
      *
      *
      * - items: array of:

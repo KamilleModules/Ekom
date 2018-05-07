@@ -526,7 +526,6 @@ class CartLayer
             foreach ($boxModel['tax_details'] as $taxDetail) {
                 $lineTaxDetails[$taxDetail['label']] = $cartQuantity * $taxDetail['amount'];
             }
-
             TaxLayer::decorateTaxDistribution($cartTaxDistribution, $boxModel['base_price'], $boxModel['tax_details']);
 
 

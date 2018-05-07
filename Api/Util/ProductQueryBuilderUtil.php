@@ -43,7 +43,6 @@ class ProductQueryBuilderUtil
      *      - product_reference_id
      *      - product_card_type_name,
      *      - product_card_type_label,
-     *      - product_card_type_label,
      *      - manufacturer_id,
      *      - seller_id,
      *      - seller_name,
@@ -63,8 +62,16 @@ class ProductQueryBuilderUtil
      *      - real_price: the real price (original price with ek_product_variation applied to it)
      *      - base_price: the price, with discounts applied to it
      *      - sale_price: the base price, with taxes applied to it
-     *      - discount_id: null means no discount applied
-     *      - discount_label: null means no discount applied
+     *      - discount_id: null means no ekom discount applied.
+     *                  If you want to know whether or not a discount was applied at all, use the
+     *                  discount_value property (check against float 0.0).
+     *
+     *                  That's because data might be imported from another system (like prestashop for instance),
+     *                  and depending on that system and the skill of the developer behind the import, you might loose
+     *                  some data during the import, causing these inconsistencies.
+     *
+     *
+     *      - discount_label: null means no ekom discount applied. Same notes as discount_id
      *      - discount_type: f|p|null
      *      - discount_value: number
      *      - codes: string containing codes. n means novelty
