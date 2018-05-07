@@ -67,7 +67,7 @@ class EkomBasicProductSearcher extends AbstractProductSearch
 
         $rows = QuickPdo::fetchAll("
 
-select label, slug 
+select label, `type`, slug 
 from ek_category 
 where 
 label like :query
@@ -83,6 +83,7 @@ label like :query
                 $alreadyLabels[] = $row['label'];
                 $row['uriCategory'] = E::link("Ekom_category", [
                     'slug' => $row['slug'],
+                    'type' => $row['type'],
                 ]);
                 $categories[] = $row;
             }

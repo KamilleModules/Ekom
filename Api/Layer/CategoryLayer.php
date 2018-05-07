@@ -40,11 +40,20 @@ where product_card_id=$productCardId
     public static function getItemsList(array $options = [])
     {
         $alphaSort = $options['alphaSort'] ?? false;
-        $q = "select id, label from ek_category";
+        $nameAsKey = $options['nameAsKey'] ?? false;
+        $type = $options['type'] ?? null;
+        $key = (true === $nameAsKey) ? "name" : "id";
+        $q = "select $key, label from ek_category";
+        $markers = [];
+        if ($type) {
+            $q .= " where type=:type";
+            $markers['type'] = $type;
+        }
+
         if ($alphaSort) {
             $q .= " order by label asc";
         }
-        return QuickPdo::fetchAll($q, [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+        return QuickPdo::fetchAll($q, $markers, \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
 
 
@@ -292,6 +301,7 @@ select `name` from ek_category where id=$categoryId
 select        
 c.category_id,
 c.label,
+c.type,
 c.slug,
 c.description,
 c.name,
@@ -643,6 +653,26 @@ where category_id in (" . implode(", ", $catIds) . ")
         ]);
     }
 
+
+    public function countProductReferencesByCategoryId(int $categoryId)
+    {
+
+        return A::cache()->get("Ekom.CategoryLayer.countProductReferencesByCategoryId.$categoryId", function () use ($categoryId) {
+            $cardIds = self::getCardIdsByCategoryId($categoryId);
+            if ($cardIds) {
+
+                return QuickPdo::fetch("
+select count(pr.id) as nb 
+from ek_product_reference pr
+inner join ek_product p on p.id=pr.product_id 
+where p.product_card_id in (" . implode(", ", $cardIds) . ")        
+        ", [], \PDO::FETCH_COLUMN);
+            }
+            return 0;
+        });
+    }
+
+
     /**
      * Return an array of the ids of the leaf categories (category without children).
      *
@@ -910,6 +940,7 @@ and l.slug=:slug
 select 
 id,
 label,
+type,
 slug,
 description,
 `name`,
@@ -935,7 +966,10 @@ order by `order` asc
 
             $linkOptions = [
                 'fn' => function (array $row) {
-                    return E::link("Ekom_category", ['slug' => $row['slug']]);
+                    return E::link("Ekom_category", [
+                        'slug' => $row['slug'],
+                        'type' => $row['type'],
+                    ]);
                 },
             ];
             Hooks::call("Ekom_categoryLayer_overrideLinkOptions", $linkOptions, $wildCard);
@@ -1115,6 +1149,7 @@ select
      
 id,
 label,
+type,
 slug,
 `name`,
 `order`
@@ -1134,7 +1169,10 @@ order by `order` asc
             if (-1 === $maxLevel || $level < $maxLevel) {
                 $this->doCollectDescendantsInfo($row['id'], $children, $level + 1, $maxLevel);
             }
-            $row['uri'] = E::link("Ekom_category", ['slug' => $row['slug']]);
+            $row['uri'] = E::link("Ekom_category", [
+                'slug' => $row['slug'],
+                'type' => $row['type'],
+            ]);
             $row['level'] = $level;
             $row['children'] = $children;
             $ret[] = $row;

@@ -32,6 +32,16 @@ class ProductGroupLayer
 //    }
 
 
+    public static function getList(bool $useNameAsKey = false)
+    {
+        $field = (true === $useNameAsKey) ? "name" : "id";
+        return QuickPdo::fetchAll("
+select $field as thekey, name from ek_product_group        
+order by `name` asc
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
     public static function getRelatedCardIdByGroupName(string $groupName)
     {
         if (0 === strpos($groupName, ":related-")) {

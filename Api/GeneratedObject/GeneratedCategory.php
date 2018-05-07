@@ -32,6 +32,7 @@ class GeneratedCategory extends TableCrudObject
         $base = [
 			'id' => null,
 			'name' => '',
+			'type' => '',
 			'label' => '',
 			'category_id' => null,
 			'order' => 0,
