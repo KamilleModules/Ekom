@@ -474,7 +474,6 @@ class CartLayer
         $cartTotalTaxIncluded = 0;
         $cartDiscountAmount = 0;
         $cartTaxAmount = 0;
-        $lineDiscountAmount = 0;
         $cartTaxDistribution = [];
         $cartDiscountDetails = [];
 

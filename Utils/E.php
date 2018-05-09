@@ -133,6 +133,7 @@ class E
 
             // we need to update the connexionData, which is the source of the UserContext when the user is connected
             $connexionData = ConnexionLayer::buildConnexionDataByUserId($userId);
+//            az(__FILE__, $connexionData, SessionUser::getAll());
             SessionUser::setValues($connexionData);
         }
         self::buildUserContext();

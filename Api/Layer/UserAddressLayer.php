@@ -61,7 +61,8 @@ class UserAddressLayer
     public static function getAddressById($userId, $addressId)
     {
         $addressId = (int)$addressId;
-        $addresses = self::getUserAddresses($userId);
+        $userId = (int)$userId;
+        $addresses = self::getUserAddresses($userId, false);
         foreach ($addresses as $addr) {
             if ($addressId === (int)$addr['address_id']) {
                 return $addr;
@@ -77,11 +78,14 @@ class UserAddressLayer
      * @see EkomModels::addressModel()
      *
      */
-    public static function getUserAddresses($userId)
+    public static function getUserAddresses($userId, $activeOnly = true)
     {
-        return A::cache()->get("Ekom.UserAddressLayer.getUserAddresses.$userId", function () use ($userId) {
+
+        $sActiveOnly = (int)$activeOnly;
+        return A::cache()->get("Ekom.UserAddressLayer.getUserAddresses.$userId.$sActiveOnly", function () use ($userId, $activeOnly) {
 
 
+            $sActive = (true === $activeOnly) ? "and a.active='1'" : "";
             $rows = QuickPdo::fetchAll("
 select 
 a.id as address_id,        
@@ -104,7 +108,7 @@ inner join ek_country c on c.id=a.country_id
 
 where 
 h.user_id=$userId 
-and a.active='1'
+$sActive
 
 order by h.`order` asc 
         
@@ -215,6 +219,7 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
                 }
 
             }
+            E::refreshUserContext();
         }
     }
 
@@ -276,6 +281,7 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
             if (true === $ret) {
                 E::dispatch("user.address-$userId");
             }
+            E::refreshUserContext();
             return $ret;
         }
         throw new EkomUserMessageException("Vous ne pouvez pas avoir plus de $maxAddresses adresses");

@@ -346,18 +346,15 @@ class CheckoutOrderUtil
      * @see EkomModels::invoiceModel()
      * @throws \Exception
      */
-    protected function createInvoices($orderId, array $orderModel)
+    public static function createInvoices($orderId, array $orderModel)
     {
 
         Hooks::call("Ekom_CheckoutOrderUtil_Invoice_decorateOrderModel", $orderModel);
 
 
-
         $orderDetails = $orderModel['order_details'];
         $orderCartModel = $orderModel['order_details']['cartModel'];
         $paymentMethod = $orderModel['order_details']["payment_method_name"];
-
-
 
 
         // by default, we create one invoice per seller
@@ -395,9 +392,13 @@ class CheckoutOrderUtil
                 $invoiceDetails['cartModel'] = $sellerCartModel;
 
 
-
-                $sellerAddress = SellerLayer::getSellerAddressByName($seller);
-                $sellerId = SellerLayer::getIdByName($seller);
+                if ($seller) {
+                    $sellerAddress = SellerLayer::getSellerAddressByName($seller);
+                    $sellerId = SellerLayer::getIdByName($seller);
+                } else {
+                    $sellerAddress = [];
+                    $sellerId = [];
+                }
 
 
                 // base properties
@@ -492,7 +493,6 @@ class CheckoutOrderUtil
             $orderId = $_orderId;
 
 
-
             //--------------------------------------------
             // UPDATING THE ORDER STATUS NOW
             //--------------------------------------------
@@ -504,8 +504,6 @@ class CheckoutOrderUtil
              *
              */
             OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT);
-
-
 
 
             //--------------------------------------------
@@ -528,10 +526,6 @@ class CheckoutOrderUtil
             E::sendMail($mailType, $recipient, $variables);
 
 
-
-
-
-
             //--------------------------------------------
             // PRODUCT STATS
             //--------------------------------------------
@@ -542,12 +536,7 @@ class CheckoutOrderUtil
             );
 
 
-
-
-
             Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
-
-
 
 
             if (false === $this->testMode) {

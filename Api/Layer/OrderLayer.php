@@ -9,6 +9,7 @@ use Core\Services\A;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Util\CurrencyUtil;
 use Module\Ekom\Exception\EkomException;
+use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Status\EkomOrderStatus;
 use Module\Ekom\Utils\E;
 use QuickPdo\Helper\QuickPdoHelper;
@@ -276,6 +277,12 @@ select reference from ek_order where id=$id
         ", [], \PDO::FETCH_COLUMN);
     }
 
+
+    /**
+     * @param $id
+     * @return array, the order model
+     * @see EkomModels::orderModel()
+     */
     public static function getOrderInfo($id)
     {
         $id = (int)$id;

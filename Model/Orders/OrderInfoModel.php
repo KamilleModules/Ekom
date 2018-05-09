@@ -64,7 +64,13 @@ class OrderInfoModel
             $ret['billing_address'] = self::formatAddress($ret['billing_address']);
             $ret['shipping_address'] = self::formatAddress($ret['shipping_address']);
             $ret['sellerName2Label'] = SellerLayer::getName2LabelList();
-            $ret['tracker_identifiers'] = OrderLayer::getTrackerIdentifiersByOrderId($id);
+
+            $trackerIdentifiers = OrderLayer::getTrackerIdentifiersByOrderId($id);
+            $orderDetails = $ret['order_details'];
+            if (array_key_exists("carrier_tracking_number", $orderDetails) && $orderDetails['carrier_tracking_number']) {
+                $trackerIdentifiers[] = $orderDetails['carrier_tracking_number'];
+            }
+            $ret['tracker_identifiers'] = $trackerIdentifiers;
 
 
         }

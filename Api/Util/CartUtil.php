@@ -493,8 +493,10 @@ class CartUtil
                 $percent = $sellerDirectives['shippingRatio'];
 
 
-                $shippingCostTotalExcluded = $cartModel['shipping_cost_tax_excluded'];
-                $sellerShippingCost = $shippingCostTotalExcluded * $percent;
+//                $shippingCostTotalExcluded = $cartModel['shipping_cost_tax_excluded'];
+                $shippingCostTotalIncluded = $cartModel['shipping_cost_tax_included'];
+//                $sellerShippingCost = $shippingCostTotalExcluded * $percent;
+                $sellerShippingCost = $shippingCostTotalIncluded * $percent;
                 $currentShippingCostPaid += $sellerShippingCost;
 
                 /**
@@ -504,7 +506,8 @@ class CartUtil
                  *
                  */
                 if (0 === $nbShippingParticipants) {
-                    $sellerShippingCost += ($shippingCostTotalExcluded - $currentShippingCostPaid);
+//                    $sellerShippingCost += ($shippingCostTotalExcluded - $currentShippingCostPaid);
+                    $sellerShippingCost += ($shippingCostTotalIncluded - $currentShippingCostPaid);
                 }
 
                 /**
