@@ -64,7 +64,10 @@ class BreadcrumbsLayer
             foreach ($tree as $item) {
                 $lab = $item['label'];
                 $items[] = [
-                    "link" => E::link("Ekom_category", ['slug' => $item['slug']]),
+                    "link" => E::link("Ekom_category", [
+                        'slug' => $item['slug'],
+                        'type' => $item['type'],
+                    ]),
                     "title" => "Go to " . $lab,
                     "label" => $lab,
                 ];

@@ -36,6 +36,7 @@ class GeneratedProductReference extends TableCrudObject
 			'price' => '',
 			'quantity' => 0,
 			'_product_details' => '',
+			'extra1' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

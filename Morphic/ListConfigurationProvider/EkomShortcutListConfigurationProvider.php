@@ -3,6 +3,7 @@
 
 namespace Module\Ekom\Morphic\ListConfigurationProvider;
 
+use Core\Services\Hooks;
 use Kamille\Utils\Morphic\ListConfigurationProvider\ShortcutListConfigurationProvider;
 use Module\Ekom\Morphic\MorphicConfigurationProviderHelper;
 
@@ -18,4 +19,11 @@ class EkomShortcutListConfigurationProvider extends ShortcutListConfigurationPro
         }
         return $this->confDir . "/$module/generated/$identifier.list.conf.php";
     }
+
+
+    protected function onConfReady(array &$conf, string $module, string $identifier, array $context = [])
+    {
+        Hooks::call("Ekom_MorphicList_decorateConfiguration", $conf, $module, $identifier, $context);
+    }
+
 }

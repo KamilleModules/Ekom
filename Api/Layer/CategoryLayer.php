@@ -1086,6 +1086,7 @@ where id=$categoryId
             while (false !== ($parentRow = QuickPdo::fetch("select
 c.id,
 c.name,
+c.type,
 c.category_id,
 c.label,
 c.slug

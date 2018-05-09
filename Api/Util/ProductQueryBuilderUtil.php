@@ -106,12 +106,43 @@ class ProductQueryBuilderUtil
      */
     public static function getBaseQuery(array $options = []): SqlQueryInterface
     {
-        $markers = [];
         $useTaxRuleConditionId = $options['useTaxRuleConditionId'] ?? false;
         $useAttributeString = $options['useAttributesString'] ?? true;
 
 
-        $qTaxSubquery = "select ratio from ek_tax_rule_condition where ";
+        $taxContext = E::getTaxContext();
+        $priceContext = E::getPriceContext();
+        $discountContext = E::getDiscountContext();
+
+
+
+
+        $allSubQueriesInfo = [
+            "markers" => [],
+            "taxContext" => $taxContext, // read-only, ok?
+            "priceContext" => $priceContext,
+            "discountContext" => $discountContext,
+        ];
+        $useCustomTaxSubquery = false;
+        Hooks::call("Ekom_ProductQueryBuilder_decorateSubqueriesInfo", $allSubQueriesInfo);
+
+        $markers = $allSubQueriesInfo['markers'];
+
+        if (array_key_exists('taxSubquery', $allSubQueriesInfo)) {
+            $useCustomTaxSubquery = true;
+            $qTaxSubquery = $allSubQueriesInfo['taxSubquery'];
+
+        } else {
+            $qTaxSubquery = "
+select ratio 
+
+from ek_tax_rule_condition rr
+inner join ek_product_card cc on cc.tax_rule_id=rr.tax_rule_id
+ 
+where cc.id=c.id and 
+";
+        }
+
 
         /**
          * if true, yields the tax_rule_condition_id field in the results
@@ -163,7 +194,7 @@ where phd.product_reference_id=pr.id and
         //--------------------------------------------
         // PRICE CONTEXT
         //--------------------------------------------
-        $priceContext = E::getPriceContext();
+
 //        $priceContext = [
 //            /**
 //             * ThisApp will set this to either b2b or default (if the user is connected, or not connected)
@@ -177,7 +208,7 @@ where phd.product_reference_id=pr.id and
         //--------------------------------------------
         // TAX CONTEXT
         //--------------------------------------------
-        $taxContext = E::getTaxContext();
+
 //        $taxContext ['cond_user_group_id'] = "4";
 //        $taxContext = [
 //            "cond_user_group_id" => $userContext['user_group_id'],
@@ -186,13 +217,14 @@ where phd.product_reference_id=pr.id and
 //            "cond_extra3" => null,
 //            "cond_extra4" => null,
 //        ];
-        self::applyContext($taxContext, $qTaxSubquery, $markers, 'tax');
+        if (false === $useCustomTaxSubquery) {
+            self::applyContext($taxContext, $qTaxSubquery, $markers, 'tax');
+        }
 
 
         //--------------------------------------------
         // DISCOUNT CONTEXT
         //--------------------------------------------
-        $discountContext = E::getDiscountContext();
 //        $discountContext = [
 //            "datetime" => date('Y-m-d H:i:s'),
 //            "cond_user_group_id" => null,

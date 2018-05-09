@@ -15,12 +15,16 @@ use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\Pdf\PdfHtmlInfoInterface;
+use Module\ThisApp\Helper\ThisAppHelper;
 use Notificator\SessionNotificator;
 use QuickPdo\Helper\QuickPdoHelper;
 use QuickPdo\QuickPdo;
 
 class HooksHelper
 {
+
+
+
 
     public static function Ekom_FrontController_Meta_decorate(array &$metaArray, string $route)
     {
