@@ -53,7 +53,7 @@ class UserAddressSokoForm
 //                ->setLabel('Nom')
 //            )
             ->addControl(SokoInputControl::create()
-                ->setLabel("Libellé")
+                ->setLabel("Libellé (ex: Jean Dupont, ou Société Amania)")
                 ->setName("libelle")
             )
 //            ->addControl(SokoInputControl::create()

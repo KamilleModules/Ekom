@@ -41,6 +41,9 @@ class CartItemBoxLayer
         $sqlQuery->addField("p.weight, p.wholesale_price");
         $sqlQuery->addWhere("and pr.id=$productReferenceId");
 
+
+//        az(__FILE__, $sqlQuery->getSqlQuery(), $sqlQuery->getMarkers());
+
         $row = QuickPdo::fetch((string)$sqlQuery, $sqlQuery->getMarkers());
         self::sugarify($row);
         return $row;

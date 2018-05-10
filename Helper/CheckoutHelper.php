@@ -7,6 +7,7 @@ namespace Module\Ekom\Helper;
 use Core\Services\Hooks;
 use Ecp\EcpServiceUtil;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
+use Module\Ekom\Utils\E;
 
 class CheckoutHelper
 {
@@ -60,6 +61,9 @@ class CheckoutHelper
 
 
         Hooks::call("Ekom_CheckoutHelper_onUpdateCurrentCheckoutDataAfter", $changes);
+        if ($changes) {
+            E::refreshUserContext();
+        }
 
     }
 }

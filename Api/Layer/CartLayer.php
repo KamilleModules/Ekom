@@ -76,6 +76,7 @@ class CartLayer
         return new static();
     }
 
+
     /**
      *
      * @throws EkomUserMessageException when something wrong that the user should know happens
@@ -88,7 +89,6 @@ class CartLayer
          * The selected product details array
          */
         $bundle = array_key_exists('bundle', $extraArgs) ? $extraArgs['bundle'] : null;
-
 
 
         $token = CartUtil::generateTokenByProductReferenceId($productReferenceId);
@@ -262,7 +262,7 @@ class CartLayer
     public function getCouponsToCheckUponConnection()
     {
         $this->initSessionCart();
-        return $_SESSION['ekom'][$this->sessionName]['couponsToCheck'];
+        return $_SESSION['ekom'][$this->sessionName]['couponsToCheck'] ?? [];
     }
 
     public function removeCouponsToCheckUponConnection()
@@ -295,6 +295,28 @@ class CartLayer
     }
 
 
+    public function refreshCartItems()
+    {
+        $items = $_SESSION['ekom'][$this->sessionName]['items'];
+
+
+        $refId2Qty = [];
+        foreach ($items as $item) {
+            $refId = $item['box']['product_reference_id'];
+            $quantity = $item['quantity'];
+            $refId2Qty[$refId] = $quantity;
+        }
+
+
+        // remove the items
+        $_SESSION['ekom'][$this->sessionName]['items'] = [];
+
+
+
+        foreach ($refId2Qty as $refId => $quantity) {
+            $this->addItem($quantity, $refId);
+        }
+    }
 
     //--------------------------------------------
     //

@@ -23,6 +23,7 @@ use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Layer\ConnexionLayer;
 use Module\Ekom\Api\Layer\DiscountLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
+use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Helper\DateSegmentHelper;
@@ -131,10 +132,12 @@ class E
         if (E::userIsConnected()) {
             $userId = E::getUserId();
 
+            E::dlog("calling E::refreshUserContext " . date("Y-m-d H:i:s"));
             // we need to update the connexionData, which is the source of the UserContext when the user is connected
             $connexionData = ConnexionLayer::buildConnexionDataByUserId($userId);
 //            az(__FILE__, $connexionData, SessionUser::getAll());
             SessionUser::setValues($connexionData);
+            CartUtil::getCart()->refreshCartItems();
         }
         self::buildUserContext();
     }

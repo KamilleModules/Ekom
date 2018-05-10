@@ -149,15 +149,28 @@ class CartUtil
 
 
         $carriers = CarrierLayer::getCarrierInstances();
+
+        /**
+         * It's possible that the carrier selected by the user is not available
+         * (for instance if the carrier refute the order because the distance is too long).
+         * But we still need to select a carrier here.
+         */
+        $aCarrierWasSelected = false;
         foreach ($carriers as $id => $carrier) {
             $shippingInfo = $carrier->getShippingInfo($context);
             if (false !== $shippingInfo) {
 
                 $arr = $shippingInfo;
 
+                $selected = ((int)$id === $carrierId);
                 $arr['name'] = $carrier->getName();
                 $arr['label'] = $carrier->getLabel();
-                $arr['selected'] = (int)$id === $carrierId;
+                $arr['selected'] = $selected;
+
+                if (true === $selected) {
+                    $aCarrierWasSelected = true;
+                }
+
                 if (true === CartUtil::isValidShippingInfo($shippingInfo)) {
 
                     $shippingCostTaxExcluded = $shippingInfo['shipping_cost'];
@@ -176,9 +189,22 @@ class CartUtil
                 ksort($arr);
                 $carrierOffers[$id] = $arr;
             } else {
-                XLog::error("[Ekom module] - CartUtil.getCarrierOffers: why does this shippingInfo call fail? carrierId: $id");
+//                XLog::error("[Ekom module] - CartUtil.getCarrierOffers: why does this shippingInfo call fail? carrierId: $id");
             }
         }
+
+
+        /**
+         * Forcing selection of a carrier offer for consistency
+         */
+        if (false === $aCarrierWasSelected) {
+            foreach ($carrierOffers as $id => $arr) {
+                $carrierOffers[$id]['selected'] = true;
+                CurrentCheckoutData::setCarrierId($id);
+                break;
+            }
+        }
+
         return $carrierOffers;
     }
 
@@ -305,8 +331,15 @@ class CartUtil
             } else {
                 $lineTaxDetails = $item['line_tax_details'];
                 foreach ($lineTaxDetails as $taxLabel => $lineTaxAmount) {
-                    $ret[$sellerName]["tax_details"][$taxLabel]['tax_amount'] += $lineTaxAmount;
-                    $ret[$sellerName]["tax_details"][$taxLabel]['tax_amount_formatted'] = E::price($lineTaxAmount);
+                    if (false === array_key_exists($taxLabel, $ret[$sellerName]["tax_details"])) {
+                        $ret[$sellerName]["tax_details"][$taxLabel] = [
+                            "tax_amount" => $lineTaxAmount,
+                            "tax_amount_formatted" => E::price($lineTaxAmount),
+                        ];
+                    } else {
+                        $ret[$sellerName]["tax_details"][$taxLabel]['tax_amount'] += $lineTaxAmount;
+                        $ret[$sellerName]["tax_details"][$taxLabel]['tax_amount_formatted'] = E::price($lineTaxAmount);
+                    }
                 }
             }
 

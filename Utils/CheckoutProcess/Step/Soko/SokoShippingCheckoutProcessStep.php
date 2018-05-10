@@ -126,7 +126,6 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
 
 
 
-
                 /**
                  * Note: it's important for me to be sure selectedCarrierId is defined.
                  * That's because if we click the next step button without having
@@ -140,6 +139,21 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                         break;
                     }
                 }
+
+                /**
+                 * Sometimes, you only have one carrierOffer and the snippet above
+                 * didn't match any carrierOffer so your selectedCarrierId is null,
+                 * let's fix this, as there must be one selected carrier offer (I say).
+                 * Edit: actually useless snippet below, but just in case...
+                 */
+//                if(null===$selectedCarrierId){
+//                    $selectedCarrierId = key($carrierOffers);
+//                }
+
+
+
+
+
 
                 // which one is selected in the gui?
                 $selectedAddressId = CurrentCheckoutData::getShippingAddressId();
@@ -192,7 +206,7 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                 $ret['billingSyncedWithShippingSelected'] = $billing_synced_with_shipping;
                 $ret['shippingAddress'] = $shippingAddress;
                 $ret['billingAddress'] = $billingAddress;
-                $ret['carrierId'] = $selectedCarrierId;
+                $ret['carrierId'] = (string)$selectedCarrierId;
                 /**
                  * Watch out, this could be an int or null.
                  */

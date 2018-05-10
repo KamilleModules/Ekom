@@ -115,8 +115,6 @@ class ProductQueryBuilderUtil
         $discountContext = E::getDiscountContext();
 
 
-
-
         $allSubQueriesInfo = [
             "markers" => [],
             "taxContext" => $taxContext, // read-only, ok?
@@ -148,7 +146,12 @@ where cc.id=c.id and
          * if true, yields the tax_rule_condition_id field in the results
          */
         if (true === $useTaxRuleConditionId) {
-            $qTaxCondSubquery = "select id from ek_tax_rule_condition where ";
+            if (array_key_exists('taxCondSubquery', $allSubQueriesInfo)) {
+                $qTaxCondSubquery = $allSubQueriesInfo['taxCondSubquery'];
+
+            } else {
+                $qTaxCondSubquery = "select id from ek_tax_rule_condition where ";
+            }
         }
 
         $qPriceSubquery = "select price from ek_product_variation where product_reference_id=pr.id and ";
@@ -277,7 +280,9 @@ where phd.product_reference_id=pr.id and
 
         $optionalTaxCondSubquery = "";
         if (true === $useTaxRuleConditionId) {
-            self::applyContext($taxContext, $qTaxCondSubquery, $markers, 'taxcond');
+            if (false === array_key_exists('taxCondSubquery', $allSubQueriesInfo)) {
+                self::applyContext($taxContext, $qTaxCondSubquery, $markers, 'taxcond');
+            }
             $optionalTaxCondSubquery = "($qTaxCondSubquery) as tax_rule_condition_id,";
         }
 
