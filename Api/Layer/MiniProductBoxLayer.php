@@ -12,6 +12,7 @@ use Module\Ekom\Helper\SqlQueryHelper;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 use QuickPdo\QuickPdoStmtTool;
+use SqlQuery\SqlQueryInterface;
 
 
 /**
@@ -73,12 +74,16 @@ class MiniProductBoxLayer
     /**
      * Note: this one returns a custom box (a miniBoxModel with some extra properties for the
      * search engine to display).
+     * @return SqlQueryInterface|array of miniBoxModel rows
+     * @see EkomModels::miniBoxModel()
      */
-    public static function getBoxesBySearchExpression(string $searchExpression)
+    public static function getBoxesBySearchExpression(string $searchExpression, $returnMode = 1)
     {
 
 
-        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery([
+            "useAttributesString" => false,
+        ]);
 
 
         $sqlQuery->addField("
@@ -115,9 +120,14 @@ left join ek_tag tag on tag.id=phtag.tag_id
 
         $sqlQuery->addMarker("query", '%' . QuickPdoStmtTool::stripWildcards($searchExpression) . '%');
 
-        $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
-        self::sugarifyRows($rows);
-        return $rows;
+
+        if (1 === $returnMode) {
+
+            $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
+            self::sugarifyRows($rows);
+            return $rows;
+        }
+        return $sqlQuery;
     }
 
 

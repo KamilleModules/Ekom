@@ -14,6 +14,7 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Entity\CartModelEntity;
 use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
+use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\CurrencyLayer;
 use Module\Ekom\Api\Layer\InvoiceLayer;
 use Module\Ekom\Api\Layer\LangLayer;
@@ -504,6 +505,7 @@ class CheckoutOrderUtil
              *
              */
             OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT);
+//            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT); // pending?
 
 
             //--------------------------------------------
@@ -534,6 +536,10 @@ class CheckoutOrderUtil
                 $orderModel['order_details']['cartModel'],
                 $orderModel['user_id']
             );
+
+
+            CouponLayer::decrementCouponByOrderModel($orderModel);
+
 
 
             Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);

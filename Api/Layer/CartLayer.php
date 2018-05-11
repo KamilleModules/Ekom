@@ -233,6 +233,13 @@ class CartLayer
         $this->writeToLocalStore();
     }
 
+    public function setCoupons(array $couponIds)
+    {
+        $this->initSessionCart();
+        $_SESSION['ekom'][$this->sessionName]['coupons'] = $couponIds;
+        $this->writeToLocalStore();
+    }
+
 
     public function removeCoupon($code)
     {
@@ -310,7 +317,6 @@ class CartLayer
 
         // remove the items
         $_SESSION['ekom'][$this->sessionName]['items'] = [];
-
 
 
         foreach ($refId2Qty as $refId => $quantity) {

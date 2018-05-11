@@ -13,6 +13,7 @@ use Kamille\Architecture\ApplicationParameters\ApplicationParameters;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Object\Coupon;
 use Module\Ekom\Helper\ConditionRulesHelper;
 use Module\Ekom\Model\EkomModel;
 use Module\Ekom\Models\EkomModels;
@@ -31,6 +32,54 @@ class CouponLayer
 {
 
 
+    /**
+     * Decrements the coupon(s) quantity(ies), also handles the "per user" idea.
+     * This method is called automatically when you place an order.
+     *
+     */
+    public static function decrementCouponByOrderModel(array $orderModel)
+    {
+
+        $coupons = $orderModel['order_details']['cartModel']['cart']['coupons'];
+
+        if ($coupons) {
+
+            $sCouponIds = implode(", ", array_map("intval", $coupons));
+
+            $couponRows = QuickPdo::fetchAll("
+select id, cond_user_id, quantity, quantity_per_user
+from ek_coupon 
+where id in ($sCouponIds)
+        
+        ");
+
+
+            foreach ($couponRows as $couponRow) {
+                $quantity = $couponRow['quantity'];
+                if (null !== $quantity) {
+                    $quantity -= 1;
+                    if ($quantity < 0) {
+                        $quantity = 0;
+                    }
+                    Coupon::getInst()->update([
+                        "quantity" => $quantity,
+                    ], [
+                        "id" => $couponRow['id'],
+                    ]);
+                }
+            }
+        }
+    }
+
+
+    public static function getCouponIdByCode(string $code)
+    {
+        return QuickPdo::fetch("select id from ek_coupon where code=:code", [
+            "code" => $code,
+        ], \PDO::FETCH_COLUMN);
+    }
+
+
     public static function decrementCouponById(int $couponId)
     {
         QuickPdo::freeStmt("
@@ -39,6 +88,14 @@ where id=$couponId and quantity > 0
         ");
     }
 
+
+    public static function getCouponsTargetList()
+    {
+        return [
+            "shipping_cost" => "Frais de port",
+            "order" => "Total de la commande",
+        ];
+    }
 
     public static function getActionTypesList()
     {

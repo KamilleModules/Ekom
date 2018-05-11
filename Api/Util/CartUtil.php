@@ -485,7 +485,6 @@ class CartUtil
 
         }
 
-
         /**
          * Process loop
          * --------------
@@ -526,10 +525,10 @@ class CartUtil
                 $percent = $sellerDirectives['shippingRatio'];
 
 
-//                $shippingCostTotalExcluded = $cartModel['shipping_cost_tax_excluded'];
-                $shippingCostTotalIncluded = $cartModel['shipping_cost_tax_included'];
+                $shippingCostTotalExcluded = $cartModel['shipping_cost_tax_excluded'];
+//                $shippingCostTotalIncluded = $cartModel['shipping_cost_tax_included'];
 //                $sellerShippingCost = $shippingCostTotalExcluded * $percent;
-                $sellerShippingCost = $shippingCostTotalIncluded * $percent;
+                $sellerShippingCost = $shippingCostTotalExcluded * $percent;
                 $currentShippingCostPaid += $sellerShippingCost;
 
                 /**
@@ -539,10 +538,9 @@ class CartUtil
                  *
                  */
                 if (0 === $nbShippingParticipants) {
-//                    $sellerShippingCost += ($shippingCostTotalExcluded - $currentShippingCostPaid);
-                    $sellerShippingCost += ($shippingCostTotalIncluded - $currentShippingCostPaid);
+                    $sellerShippingCost += ($shippingCostTotalExcluded - $currentShippingCostPaid);
+//                    $sellerShippingCost += ($shippingCostTotalIncluded - $currentShippingCostPaid);
                 }
-
                 /**
                  * @see EkomModels::shippingInfoModel()
                  * The shipping info might not be available (if the user is not connected for instance)

@@ -22,7 +22,10 @@ use Module\Ekom\HybridList\HybridListControl\Sort\InvoiceSortHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Sort\OrderSortHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Sort\ProductSortHybridListControl;
 use Module\Ekom\HybridList\HybridListControl\Sort\WishListSortHybridListControl;
+use Module\Ekom\Status\EkomOrderStatus;
 use Module\Ekom\Utils\E;
+use QuickPdo\QuickPdo;
+use QuickPdo\QuickPdoStmtTool;
 
 
 /**
@@ -112,7 +115,31 @@ left join ek_seller s on s.id=i.seller_id
 
         if (array_key_exists("status", $pool)) {
             $status = $pool['status'];
-            $sqlRequest->addWhere("
+            /**
+             * If the status is pending, Ekom currently uses
+             * a negative filtering (i.e. the pending orders are those
+             * which last status is not one of...)
+             *
+             */
+            $originalNotPendingStatuses = [
+                EkomOrderStatus::STATUS_PAYMENT_ERROR,
+                EkomOrderStatus::STATUS_PREPARING_ORDER_ERROR,
+                EkomOrderStatus::STATUS_SHIPPING_ERROR,
+                EkomOrderStatus::STATUS_ORDER_DELIVERED_ERROR,
+                EkomOrderStatus::STATUS_ORDER_SHIPPED,
+                EkomOrderStatus::STATUS_ORDER_DELIVERED,
+                EkomOrderStatus::STATUS_CANCELED,
+                EkomOrderStatus::STATUS_REIMBURSED,
+            ];
+            $notPendingStatuses = $originalNotPendingStatuses;
+            Hooks::call("Ekom_OrderHybridList_getNotPendingStatuses", $notPendingStatuses);
+            if (empty($notPendingStatuses)) {
+                // there must be at least one not pending status in this logic
+                $notPendingStatuses = $originalNotPendingStatuses;
+            }
+
+
+            $where = "
             and (
   select code 
   from ek_order_status s
@@ -120,9 +147,24 @@ left join ek_seller s on s.id=i.seller_id
   where h.order_id=o.id
   order by h.date desc, h.id desc 
   limit 1 
-) = :status
-            ");
-            $sqlRequest->addMarker("status", $status);
+)
+";
+
+            if ("pending" === $status) {
+
+                $markers = [];
+                $sNotPendingStatuses = QuickPdoStmtTool::prepareInString($notPendingStatuses, $markers, "status");
+                $where .= " not in ($sNotPendingStatuses)";
+                $sqlRequest->addMarkers($markers);
+            } else {
+
+                $where .= "
+ = :status         
+            ";
+                $sqlRequest->addMarker("status", $status);
+            }
+
+            $sqlRequest->addWhere($where);
         }
 
 

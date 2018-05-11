@@ -46,6 +46,10 @@ class CartItemBoxLayer
 
         $row = QuickPdo::fetch((string)$sqlQuery, $sqlQuery->getMarkers());
         self::sugarify($row);
+
+
+        Hooks::call("Ekom_CartItemBox_decorateItem", $row);
+
         return $row;
     }
 

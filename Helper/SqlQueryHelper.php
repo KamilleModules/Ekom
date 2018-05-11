@@ -13,6 +13,20 @@ class SqlQueryHelper
 {
 
     /**
+     * @param string $search
+     * @return SqlQueryInterface
+     */
+    public static function getSqlQueryBySearchExpression(string $search)
+    {
+
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery([
+            "useAttributesString" => true, // this might change, maybe we don't need it...
+        ]);
+
+
+    }
+
+    /**
      * @param int $categoryId
      * @return SqlQueryInterface|false
      */
@@ -36,7 +50,7 @@ class SqlQueryHelper
     {
 
         $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
-        $cardIds = CategoryLayer::getCardIdsByCategoryName($categoryName,  true);
+        $cardIds = CategoryLayer::getCardIdsByCategoryName($categoryName, true);
 
         if ($cardIds) {
             $sCardIds = implode(', ', $cardIds);

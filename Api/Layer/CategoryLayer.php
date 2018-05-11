@@ -434,6 +434,7 @@ where c.slug=:slug
 select    
 
 c.id,
+c.type,
 c.name,
 c.category_id,
 c.label,

@@ -78,8 +78,10 @@ class BreadcrumbsLayer
 
             $cats = EkomApi::inst()->categoryLayer()->getUpCategoryInfosById($categoryId);
 
+
             $baseUri = E::link("Ekom_category", [
-                'slug' => '%s',
+                'slug' => '{slug}',
+                'type' => '{type}',
             ]);
 
             if ($cats) {
@@ -88,7 +90,13 @@ class BreadcrumbsLayer
 
                 foreach ($cats as $cat) {
                     $items[] = [
-                        "link" => sprintf($baseUri, $cat['slug']),
+                        "link" => str_replace([
+                            "{slug}",
+                            "{type}",
+                        ], [
+                            $cat['slug'],
+                            $cat['type'],
+                        ], $baseUri),
                         "title" => "Go to " . $cat['label'],
                         "label" => $cat['label'],
                     ];
@@ -98,7 +106,7 @@ class BreadcrumbsLayer
 
 
         } else {
-            $label = ApplicationRegistry::get("ekom.breacrumbs.label");
+            $label = ApplicationRegistry::get("ekom.breadcrumbs.label");
             $items = [
                 [
                     "link" => "#",

@@ -14,6 +14,13 @@ use QuickPdo\QuickPdo;
 class SellerLayer
 {
 
+    public static function getSellerInfoByName(string $name)
+    {
+        return QuickPdo::fetch("select * from ek_seller where name=:name", [
+            "name" => $name,
+        ]);
+    }
+
 
     public static function getItemsList(array $options = [])
     {
@@ -26,12 +33,11 @@ class SellerLayer
     }
 
 
-
-
-    public static function getName2LabelList(){
+    public static function getName2LabelList()
+    {
         return QuickPdo::fetchAll("
 select name, label from ek_seller        
-        ", [], \PDO::FETCH_COLUMN|\PDO::FETCH_UNIQUE);
+        ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
 
     public static function getRowAvatar($sellerId)
@@ -114,7 +120,7 @@ where s.name=:seller
 
     public function getProductIdsBySellerName($name, $shopId = null)
     {
-        
+
         $shopId = (null === $shopId) ? ApplicationRegistry::get("ekom.shop_id") : (int)$shopId;
 
 
