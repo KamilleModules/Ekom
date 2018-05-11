@@ -5,8 +5,8 @@ namespace Module\Ekom\Model\Front\Customer;
 
 
 use Module\Ekom\Api\Layer\OrderLayer;
+use Module\Ekom\Api\Layer\OrderStatusLayer;
 use Module\Ekom\HybridList\HybridListFactory;
-
 
 
 class CustomerOrderModel
@@ -41,6 +41,17 @@ class CustomerOrderModel
             'slice' => $hybridList->getControl('slice')->getModel(),
             'sort' => $hybridList->getControl('sort')->getModel(),
         ];
+
+        $noResultText = "Aucune commande pour l'instant";
+        if (array_key_exists("status", $pool)) {
+            $statusLabel = OrderStatusLayer::getOrderStatusLabelByCode($pool['status']);
+            if ($statusLabel) {
+                $noResultText = "Aucune commande trouvée ayant pour dernier état: " . $statusLabel;
+            }
+        }
+        $model['noResultText'] = $noResultText;
+
+
         return $model;
     }
 }

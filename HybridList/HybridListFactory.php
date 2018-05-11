@@ -105,15 +105,31 @@ left join ek_seller s on s.id=i.seller_id
     public static function getOrderHybridList(array $pool, $userId)
     {
         $userId = (int)$userId;
-        $sqlRequest = SqlRequest::create();
+        $sqlRequest = SqlRequest::create()
+            ->addField("o.*")
+            ->setTable("ek_order o")
+            ->addWhere("and o.user_id=" . $userId);
+
+        if (array_key_exists("status", $pool)) {
+            $status = $pool['status'];
+            $sqlRequest->addWhere("
+            and (
+  select code 
+  from ek_order_status s
+  inner join ek_order_has_order_status h on h.order_status_id=s.id
+  where h.order_id=o.id
+  order by h.date desc, h.id desc 
+  limit 1 
+) = :status
+            ");
+            $sqlRequest->addMarker("status", $status);
+        }
+
+
         $hybridList = HybridList::create()
             ->setListParameters($pool)
             ->setRequestGenerator(SqlRequestGenerator::create()
-                ->setSqlRequest($sqlRequest
-                    ->addField("o.*")
-                    ->setTable("ek_order o")
-                    ->addWhere("and o.user_id=" . $userId)
-                )
+                ->setSqlRequest($sqlRequest)
             );
 
 
