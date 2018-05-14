@@ -34,6 +34,7 @@ class GeneratedProduct extends TableCrudObject
 			'product_card_id' => 0,
 			'seller_id' => 0,
 			'manufacturer_id' => null,
+			'provider_id' => null,
 			'internal_reference' => '',
 			'label' => '',
 			'description' => '',
@@ -58,6 +59,9 @@ class GeneratedProduct extends TableCrudObject
 
         if (0 === (int)$ret["manufacturer_id"]) {
             $ret["manufacturer_id"] = null;
+        }
+        if (0 === (int)$ret["provider_id"]) {
+            $ret["provider_id"] = null;
         }
         if ("" === $ret["height"]) {
             $ret["height"] = null;

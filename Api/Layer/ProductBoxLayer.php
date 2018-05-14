@@ -93,6 +93,9 @@ class ProductBoxLayer
     {
         $q = $sqlQuery->getSqlQuery();
         $markers = $sqlQuery->getMarkers();
+
+
+
         $row = QuickPdo::fetch($q, $markers);
 
         MiniProductBoxLayer::sugarify($row);

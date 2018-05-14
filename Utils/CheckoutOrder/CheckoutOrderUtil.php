@@ -19,6 +19,7 @@ use Module\Ekom\Api\Layer\CurrencyLayer;
 use Module\Ekom\Api\Layer\InvoiceLayer;
 use Module\Ekom\Api\Layer\LangLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
+use Module\Ekom\Api\Layer\OrderPurchaseStatCouponLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
 use Module\Ekom\Api\Layer\ProductPurchaseStatCategoryLayer;
 use Module\Ekom\Api\Layer\ProductPurchaseStatLayer;
@@ -31,6 +32,7 @@ use Module\Ekom\Api\Object\ProductPurchaseStatCategory;
 use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Exception\EkomUserMessageException;
+use Module\Ekom\Helper\OrderStatHelper;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\PaymentMethodHandler\PaymentMethodHandlerInterface;
 use Module\Ekom\Status\EkomOrderStatus;
@@ -306,7 +308,6 @@ class CheckoutOrderUtil
             //--------------------------------------------
             // INSERT IN DATABASE
             //--------------------------------------------
-            az($orderModel);
             return $this->placeOrderModel($orderModel);
 
 
@@ -534,16 +535,10 @@ class CheckoutOrderUtil
             E::sendMail($mailType, $recipient, $variables);
 
 
-            //--------------------------------------------
-            // PRODUCT STATS (also handles categories)
-            //--------------------------------------------
-            ProductPurchaseStatLayer::insertStatsByCart(
-                $orderId,
-                $orderModel['order_details']['cartModel'],
-                $orderModel['user_id']
-            );
 
 
+
+            OrderStatHelper::insertOrderStatsByModel($orderId, $orderModel);
             CouponLayer::decrementCouponByOrderModel($orderModel);
 
 

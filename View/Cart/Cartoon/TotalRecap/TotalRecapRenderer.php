@@ -31,7 +31,7 @@ class TotalRecapRenderer extends BaseRenderer
             "orderGrandTotal",
         ];
         $this->rowsLabels = [
-            "subtotal" => "Sous-Total HT",
+            "subtotal" => "Sous-Total TTC",
             "shippingCostWithoutTax" => "Frais de livraison HT",
             "shippingTax" => "Taxe frais de livraison",
             "shippingTaxAndDetails" => "Taxe frais de livraison",

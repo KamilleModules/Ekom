@@ -32,6 +32,7 @@ class GeneratedProvider extends TableCrudObject
         $base = [
 			'id' => null,
 			'name' => '',
+			'label' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

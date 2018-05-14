@@ -13,6 +13,12 @@ use QuickPdo\QuickPdo;
 class OrderStatusLayer
 {
 
+
+    public static function getOrderStatusInfos()
+    {
+        return QuickPdo::fetchAll("select * from ek_order_status");
+    }
+
     public static function getOrderStatusLabelByCode(string $code)
     {
         return QuickPdo::fetch("select label from ek_order_status where code=:code", ["code" => $code], \PDO::FETCH_COLUMN);
@@ -33,6 +39,27 @@ where h.order_id=$id
 order by h.date desc
         
         ");
+    }
+
+    /**
+     * @return array of statuses which indicate that the money has NOT been taken yet from the user.
+     */
+    public static function getPaymentNotOkStatuses()
+    {
+        $statuses = [
+            EkomOrderStatus::STATUS_PAYMENT_SENT,
+            EkomOrderStatus::STATUS_PAYMENT_ERROR,
+            EkomOrderStatus::STATUS_REIMBURSED,
+            EkomOrderStatus::STATUS_CANCELED,
+            EkomOrderStatus::STATUS_ORDER_DELIVERED_ERROR,
+            EkomOrderStatus::STATUS_SHIPPING_ERROR,
+            EkomOrderStatus::STATUS_PREPARING_ORDER_ERROR,
+        ];
+        $sStatuses = "'" . implode("', '", $statuses) . "'";
+        return QuickPdo::fetchAll("
+select id from ek_order_status where `code` in ($sStatuses)        
+        ", [], \PDO::FETCH_COLUMN);
+
     }
 
     public static function getSuccessfulStatusIds()

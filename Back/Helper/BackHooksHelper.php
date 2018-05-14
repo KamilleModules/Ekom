@@ -16,7 +16,10 @@ use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Back\WidgetModel\Dashboard\DefaultDashboardModel;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Helper\Stats\Modules\BestCategoriesControllerModule;
+use Module\Ekom\Helper\Stats\Modules\BestCouponsControllerModule;
 use Module\Ekom\Helper\Stats\Modules\BestCustomersControllerModule;
+use Module\Ekom\Helper\Stats\Modules\BestProvidersControllerModule;
+use Module\Ekom\Helper\Stats\Modules\BestSellersControllerModule;
 use Module\Ekom\Helper\Stats\Modules\BestSellsControllerModule;
 use Module\Ekom\Helper\Stats\Modules\CustomerAccountsControllerModule;
 use Module\Ekom\Helper\Stats\Modules\CustomerInfoControllerModule;
@@ -52,6 +55,15 @@ class BackHooksHelper
                 break;
             case "best_customers":
                 $moduleHandler = BestCustomersControllerModule::getModuleHandler();
+                break;
+            case "best_coupons":
+                $moduleHandler = BestCouponsControllerModule::getModuleHandler();
+                break;
+            case "best_providers":
+                $moduleHandler = BestProvidersControllerModule::getModuleHandler();
+                break;
+            case "best_sellers":
+                $moduleHandler = BestSellersControllerModule::getModuleHandler();
                 break;
             default:
                 break;

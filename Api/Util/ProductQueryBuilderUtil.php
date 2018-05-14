@@ -44,6 +44,7 @@ class ProductQueryBuilderUtil
      *      - product_card_type_name,
      *      - product_card_type_label,
      *      - manufacturer_id,
+     *      - provider_id,
      *      - seller_id,
      *      - seller_name,
      *      - seller_label,
@@ -315,6 +316,7 @@ sel.id as seller_id,
 sel.name as seller_name,
 sel.label as seller_label,
 p.manufacturer_id,
+p.provider_id,
 pr.reference,
 pr._product_details,
 $sAttributeString
@@ -334,13 +336,13 @@ p.slug as product_slug,
 c.slug as product_card_slug,
 
 coalesce (
-    (select id from ek_product_card_image where product_card_id=c.id and product_id=p.id order by is_default desc limit 0,1),
-    (select id from ek_product_card_image where product_card_id=c.id order by is_default desc limit 0,1)
+    (select id from ek_product_card_image where product_card_id=c.id and is_default=1 order by position asc limit 0,1),
+    (select id from ek_product_card_image where product_card_id=c.id order by position asc limit 0,1)
 )  as image_id,
 
 coalesce (
-    (select legend from ek_product_card_image where product_card_id=c.id and product_id=p.id order by is_default desc limit 0,1),
-    (select legend from ek_product_card_image where product_card_id=c.id order by is_default desc limit 0,1)
+    (select legend from ek_product_card_image where product_card_id=c.id and is_default=1 order by position asc limit 0,1),
+    (select legend from ek_product_card_image where product_card_id=c.id order by position asc limit 0,1)
 )
 as image_legend,
 

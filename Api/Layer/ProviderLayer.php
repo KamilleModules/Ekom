@@ -9,6 +9,12 @@ use QuickPdo\QuickPdo;
 class ProviderLayer
 {
 
+
+    public static function getLabelById(int $id)
+    {
+        return QuickPdo::fetch("select label from ek_provider where id=$id", [], \PDO::FETCH_COLUMN);
+    }
+
     public static function getItems($shopId)
     {
 

@@ -10,6 +10,7 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XConfig;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Object\ProductComment;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 use RowsGenerator\QuickPdoRowsGenerator;
@@ -73,16 +74,11 @@ from ek_product_comment where user_id=$userId
     /**
      * Use this method when the user tries to insert a comment for a product on the website.
      */
-    public function insertComment($productId, array $data, $userId = null, $shopId = null)
+    public function insertComment($productId, array $data, $userId = null)
     {
         if (null === $userId) {
             $userId = E::getUserId();
         }
-        if (null === $shopId) {
-
-            $shopId = (int)ApplicationRegistry::get("ekom.shop_id");
-        }
-
         $title = (array_key_exists('title', $data)) ? $data['comment'] : '';
 
         $commentNeedValidation = XConfig::get("Ekom.commentNeedValidation");
@@ -104,8 +100,7 @@ from ek_product_comment where user_id=$userId
 
 
         $date = date('Y-m-d H:i:s');
-        $commentId = QuickPdo::insert("ek_product_comment", [
-            'shop_id' => $shopId,
+        $commentId = ProductComment::getInst()->create([
             'product_id' => $productId,
             'user_id' => $userId,
             'date' => $date,
@@ -118,56 +113,68 @@ from ek_product_comment where user_id=$userId
 
         $userInfo = EkomApi::inst()->userLayer()->getUserInfo($userId);
         $userEmail = $userInfo['email'];
-        $boxModel = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($productId);
 
-        $link = $boxModel['uriCard'];
+//        $info = ProductLayer::getProductLabelAndRefByProductId($productId);
+//        $boxModel = EkomApi::inst()->productLayer()->getProductBoxModelByProductId($productId);
+        $boxModel = ProductBoxLayer::getProductBoxByProductId($productId);
+
+
+        $link = $boxModel['product_uri'];
         $link = UriTool::uri($link, [], true, true);
 
 
+        /**
+         * @todo-ling: I removed temporarily the email for the demo because the email template wasn't ready.
+         * We need to put them back...
+         */
         if (true === $commentNeedValidation) {
 
 
             // send email to moderator
-            if (false === E::sendMail("commentAwaitsModeration", [
-                    "to" => $commentModeratorEmail,
-                    "subject" => "{siteName}: a comment awaits your moderation",
-                    "commonVars" => [
-                        'productLabel' => $boxModel['label'],
-                        'productRef' => $boxModel['ref'],
-                        'productUri' => $link,
-                        'title' => $title,
-                        'comment' => $data['comment'],
-                        'date' => $date,
-                    ],
-                ])
-            ) {
-                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send commentAwaitsModeration email to $commentModeratorEmail");
-            }
-
-
-            // send email to user
-            if (false === E::sendMail("yourCommentAwaitsModeration", [
-                    "subject" => "{siteName}: your comment awaits moderation",
-                    "to" => $userEmail,
-                ])
-            ) {
-                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send YourCommentAwaitsModeration email to $userEmail");
-            }
+//            if (false === E::sendMail("commentAwaitsModeration", [
+//                    "to" => $commentModeratorEmail,
+//                    "subject" => "{siteName}: a comment awaits your moderation",
+//                    "commonVars" => [
+//                        'productLabel' => $boxModel['label'],
+//                        'productRef' => $boxModel['ref'],
+//                        'productUri' => $link,
+//                        'title' => $title,
+//                        'comment' => $data['comment'],
+//                        'date' => $date,
+//                    ],
+//                ])
+//            ) {
+//                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send commentAwaitsModeration email to $commentModeratorEmail");
+//            }
+//
+//
+//            // send email to user
+//            if (false === E::sendMail("yourCommentAwaitsModeration", [
+//                    "subject" => "{siteName}: your comment awaits moderation",
+//                    "to" => $userEmail,
+//                ])
+//            ) {
+//                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send YourCommentAwaitsModeration email to $userEmail");
+//            }
 
         } else {
+
+            /**
+             * @todo-ling: send email here...
+             */
             // send email to user
-            if (false === E::sendMail("yourCommentHasBeenApproved", [
-                    "to" => $userEmail,
-                    "subject" => "{siteName}: your comment has been approved",
-                    'commonVars' => [
-                        'productLabel' => $boxModel['label'],
-                        'productRef' => $boxModel['ref'],
-                        'productUri' => $link,
-                    ],
-                ])
-            ) {
-                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send yourCommentHasBeenApproved email to $userEmail");
-            }
+//            if (false === E::sendMail("yourCommentHasBeenApproved", [
+//                    "to" => $userEmail,
+//                    "subject" => "{siteName}: your comment has been approved",
+//                    'commonVars' => [
+//                        'productLabel' => $boxModel['label'],
+//                        'productRef' => $boxModel['ref'],
+//                        'productUri' => $link,
+//                    ],
+//                ])
+//            ) {
+//                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send yourCommentHasBeenApproved email to $userEmail");
+//            }
         }
 
         return $commentId;

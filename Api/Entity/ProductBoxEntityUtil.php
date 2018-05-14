@@ -113,11 +113,12 @@ inner join ek_product_card_has_product_attribute hh on hh.product_card_id=p.prod
   
 
 where product_id in (" . implode(', ', $productIds) . ")
+
+group by v.id         
+order by hh.order asc
          
-order by hh.order asc         
          
 ");
-
 
                 $productId2attr = [];
 

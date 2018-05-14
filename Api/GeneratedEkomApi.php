@@ -24,6 +24,8 @@ use Module\Ekom\Api\Object\Newsletter;
 use Module\Ekom\Api\Object\Order;
 use Module\Ekom\Api\Object\OrderHasOrderStatus;
 use Module\Ekom\Api\Object\OrderPurchaseStatCoupon;
+use Module\Ekom\Api\Object\OrderPurchaseStatProvider;
+use Module\Ekom\Api\Object\OrderPurchaseStatSeller;
 use Module\Ekom\Api\Object\OrderStatus;
 use Module\Ekom\Api\Object\Page;
 use Module\Ekom\Api\Object\PasswordRecoveryRequest;
@@ -243,6 +245,20 @@ class GeneratedEkomApi extends XiaoApi
     public function orderPurchaseStatCoupon()
     {
         return $this->getObject('orderPurchaseStatCoupon');
+    }
+    /**
+     * @return OrderPurchaseStatProvider
+     */
+    public function orderPurchaseStatProvider()
+    {
+        return $this->getObject('orderPurchaseStatProvider');
+    }
+    /**
+     * @return OrderPurchaseStatSeller
+     */
+    public function orderPurchaseStatSeller()
+    {
+        return $this->getObject('orderPurchaseStatSeller');
     }
     /**
      * @return OrderStatus

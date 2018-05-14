@@ -14,6 +14,10 @@ use QuickPdo\QuickPdo;
 class SellerLayer
 {
 
+    public static function getLabelById(int $sellerId){
+        return QuickPdo::fetch("select label from ek_seller where id=$sellerId", [], \PDO::FETCH_COLUMN);
+    }
+
     public static function getSellerInfoByName(string $name)
     {
         return QuickPdo::fetch("select * from ek_seller where name=:name", [

@@ -45,11 +45,10 @@ select id, value from ek_product_attribute_value order by value asc
     {
         return QuickPdo::fetchAll("
 select 
-h.product_attribute_id, 
-v.value 
-from ek_product_has_product_attribute h 
-inner join ek_product_attribute_value v on v.product_attribute_id=h.product_attribute_id
-where h.product_id=$productId         
+product_attribute_id,
+product_attribute_value_id
+from ek_product_has_product_attribute 
+where product_id=$productId         
         ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
 
