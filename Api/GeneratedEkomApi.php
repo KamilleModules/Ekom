@@ -23,6 +23,7 @@ use Module\Ekom\Api\Object\Manufacturer;
 use Module\Ekom\Api\Object\Newsletter;
 use Module\Ekom\Api\Object\Order;
 use Module\Ekom\Api\Object\OrderHasOrderStatus;
+use Module\Ekom\Api\Object\OrderPurchaseStatCoupon;
 use Module\Ekom\Api\Object\OrderStatus;
 use Module\Ekom\Api\Object\Page;
 use Module\Ekom\Api\Object\PasswordRecoveryRequest;
@@ -65,6 +66,7 @@ use Module\Ekom\Api\Object\User;
 use Module\Ekom\Api\Object\UserGroup;
 use Module\Ekom\Api\Object\UserHasAddress;
 use Module\Ekom\Api\Object\UserHasCoupon;
+use Module\Ekom\Api\Object\UserHasProduct;
 use Module\Ekom\Api\Object\UserHasProductReference;
 use Module\Ekom\Api\Object\UserVisitedProductReference;
 
@@ -234,6 +236,13 @@ class GeneratedEkomApi extends XiaoApi
     public function orderHasOrderStatus()
     {
         return $this->getObject('orderHasOrderStatus');
+    }
+    /**
+     * @return OrderPurchaseStatCoupon
+     */
+    public function orderPurchaseStatCoupon()
+    {
+        return $this->getObject('orderPurchaseStatCoupon');
     }
     /**
      * @return OrderStatus
@@ -528,6 +537,13 @@ class GeneratedEkomApi extends XiaoApi
     public function userHasCoupon()
     {
         return $this->getObject('userHasCoupon');
+    }
+    /**
+     * @return UserHasProduct
+     */
+    public function userHasProduct()
+    {
+        return $this->getObject('userHasProduct');
     }
     /**
      * @return UserHasProductReference

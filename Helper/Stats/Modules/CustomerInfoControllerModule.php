@@ -31,7 +31,7 @@ class CustomerInfoControllerModule
 
                 $male = $genderDistribution['m'] ?? 0;
                 $female = $genderDistribution['me'] ?? 0;
-                $miss = $genderDistribution['melle'] ?? 0;
+                $miss = $genderDistribution['mme'] ?? 0;
                 $realGenderDistribution = [
                     "Homme" => $male,
                     "Femme" => $female + $miss,

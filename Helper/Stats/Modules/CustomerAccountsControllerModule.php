@@ -26,11 +26,19 @@ class CustomerAccountsControllerModule
 
             $nbCustomers = $util->getNbNewCustomers();
             $nbCustomersOrderingFirstDay = $util->getNbNewCustomerOrderingFirstDay();
+            if ($nbCustomersOrderingFirstDay > $nbCustomers) {
+                $nbCustomersOrderingFirstDay = $nbCustomers;
+            }
+
+
+
+
             if ($nbCustomers > 0) {
                 $nbCustomersOrderingFirstDayPercent = E::trimPercent($nbCustomersOrderingFirstDay / $nbCustomers * 100);
             } else {
                 $nbCustomersOrderingFirstDayPercent = 0;
             }
+
 
 
             $info = EkomUserTrackerLayer::getAccountCreationStats([

@@ -65,7 +65,17 @@ EEE
 
             $conf['chart3'] = [
                 'title' => "Distribution des états de commande",
+                'height' => "600",
+                'width' => "100%",
                 'labelColor' => "black",
+                'piePositionTop' => "50",
+//                'piePositionLeft' => "60",
+                'radius' => "40",
+                'legend' => [
+                    'right' => 'auto',
+                    'bottom' => '0',
+                    'orient' => 'horizontal',
+                ],
                 'data' => $orderDistribution,
                 'dataColors' => $orderStatusLabels2Colors,
             ];

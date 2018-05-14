@@ -157,53 +157,53 @@ class CartUtil
          */
         $aCarrierWasSelected = false;
         foreach ($carriers as $id => $carrier) {
-            $shippingInfo = $carrier->getShippingInfo($context);
-            if (false !== $shippingInfo) {
-
-                $arr = $shippingInfo;
-
-                $selected = ((int)$id === $carrierId);
-                $arr['name'] = $carrier->getName();
-                $arr['label'] = $carrier->getLabel();
-                $arr['selected'] = $selected;
-
-                if (true === $selected) {
-                    $aCarrierWasSelected = true;
-                }
-
-                if (true === CartUtil::isValidShippingInfo($shippingInfo)) {
-
-                    $shippingCostTaxExcluded = $shippingInfo['shipping_cost'];
-
-                    $arr['shipping_cost_tax_excluded'] = $shippingCostTaxExcluded;
-                    $arr['shipping_cost_tax_excluded_formatted'] = E::price($shippingCostTaxExcluded);
+            $carrierErrorCode = null;
+            $shippingInfo = $carrier->getShippingInfo($context, $carrierErrorCode);
 
 
-                    $taxInfo = CartUtil::getShippingCostTaxInfoByEarlyCartModel($cart);
-                    $shippingCostTaxAmount = $taxInfo['tax_amount'];
-                    $shippingCostTaxIncluded = $shippingCostTaxExcluded + ($shippingCostTaxExcluded * $shippingCostTaxAmount / 100);
+            $arr = $shippingInfo;
 
-                    $arr['shipping_cost_tax_included'] = $shippingCostTaxIncluded;
-                    $arr['shipping_cost_tax_included_formatted'] = E::price($shippingCostTaxIncluded);
-                }
-                ksort($arr);
-                $carrierOffers[$id] = $arr;
-            } else {
-//                XLog::error("[Ekom module] - CartUtil.getCarrierOffers: why does this shippingInfo call fail? carrierId: $id");
+            $selected = ((int)$id === $carrierId);
+            $arr['name'] = $carrier->getName();
+            $arr['label'] = $carrier->getLabel();
+            $arr['selected'] = $selected;
+            $arr['errorCode'] = $carrierErrorCode;
+
+            if (true === $selected) {
+                $aCarrierWasSelected = true;
             }
+
+            if ($shippingInfo && true === CartUtil::isValidShippingInfo($shippingInfo)) {
+
+                $shippingCostTaxExcluded = $shippingInfo['shipping_cost'];
+
+                $arr['shipping_cost_tax_excluded'] = $shippingCostTaxExcluded;
+                $arr['shipping_cost_tax_excluded_formatted'] = E::price($shippingCostTaxExcluded);
+
+
+                $taxInfo = CartUtil::getShippingCostTaxInfoByEarlyCartModel($cart);
+                $shippingCostTaxAmount = $taxInfo['tax_amount'];
+                $shippingCostTaxIncluded = $shippingCostTaxExcluded + ($shippingCostTaxExcluded * $shippingCostTaxAmount / 100);
+
+                $arr['shipping_cost_tax_included'] = $shippingCostTaxIncluded;
+                $arr['shipping_cost_tax_included_formatted'] = E::price($shippingCostTaxIncluded);
+            }
+            ksort($arr);
+            $carrierOffers[$id] = $arr;
+
         }
 
 
         /**
          * Forcing selection of a carrier offer for consistency
          */
-        if (false === $aCarrierWasSelected) {
-            foreach ($carrierOffers as $id => $arr) {
-                $carrierOffers[$id]['selected'] = true;
-                CurrentCheckoutData::setCarrierId($id);
-                break;
-            }
-        }
+//        if (false === $aCarrierWasSelected) {
+//            foreach ($carrierOffers as $id => $arr) {
+//                $carrierOffers[$id]['selected'] = true;
+//                CurrentCheckoutData::setCarrierId($id);
+//                break;
+//            }
+//        }
 
         return $carrierOffers;
     }

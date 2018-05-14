@@ -20,12 +20,14 @@ use Module\Ekom\Api\Layer\InvoiceLayer;
 use Module\Ekom\Api\Layer\LangLayer;
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\PaymentLayer;
+use Module\Ekom\Api\Layer\ProductPurchaseStatCategoryLayer;
 use Module\Ekom\Api\Layer\ProductPurchaseStatLayer;
 use Module\Ekom\Api\Layer\SellerLayer;
 use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Api\Layer\UserGroupLayer;
 use Module\Ekom\Api\Layer\UserLayer;
+use Module\Ekom\Api\Object\ProductPurchaseStatCategory;
 use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Exception\EkomUserMessageException;
@@ -80,7 +82,8 @@ class CheckoutOrderUtil
      * @see EkomModels::extendedCartModel()
      * @return int, the id of the order
      *
-     * @throws EkomUserMessageException
+     * @throws EkomUserMessageException when the order is refuted, and the message of the exception will be
+     *              displayed to the user.
      * @throws \Exception
      */
     public function placeOrder(array $checkoutData, array $extendedCartModel)
@@ -303,6 +306,7 @@ class CheckoutOrderUtil
             //--------------------------------------------
             // INSERT IN DATABASE
             //--------------------------------------------
+            az($orderModel);
             return $this->placeOrderModel($orderModel);
 
 
@@ -491,6 +495,8 @@ class CheckoutOrderUtil
             }
 
 
+
+
             $orderId = $_orderId;
 
 
@@ -529,7 +535,7 @@ class CheckoutOrderUtil
 
 
             //--------------------------------------------
-            // PRODUCT STATS
+            // PRODUCT STATS (also handles categories)
             //--------------------------------------------
             ProductPurchaseStatLayer::insertStatsByCart(
                 $orderId,
@@ -539,7 +545,6 @@ class CheckoutOrderUtil
 
 
             CouponLayer::decrementCouponByOrderModel($orderModel);
-
 
 
             Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);

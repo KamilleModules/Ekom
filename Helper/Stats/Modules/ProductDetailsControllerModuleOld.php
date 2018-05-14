@@ -9,31 +9,29 @@ use Core\Services\A;
 use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\Api\Layer\CrossSellingLayer;
 use Module\Ekom\Api\Layer\ProductLayer;
-use Module\Ekom\Api\Layer\ProductReferenceLayer;
 use Module\EkomUserTracker\Api\Layer\EkomProductTrackerLayer;
 use SokoForm\Control\SokoChoiceControl;
 use SokoForm\Form\SokoForm;
 
-class ProductDetailsControllerModule
+class ProductDetailsControllerModuleOld
 {
 
     public static function getModuleHandler()
     {
 
-        $productReference = $_GET['product_reference'] ?? null;
+        $productId = $_GET['product_id'] ?? null;
 
-        return function ($dateStart, $dateEnd) use ($productReference) {
+        return function ($dateStart, $dateEnd) use ($productId) {
 
             //--------------------------------------------
             // PRODUCT DETAIL
             //--------------------------------------------
-            if ($productReference) {
+            if ($productId) {
 
-                $productLabel = ProductLayer::getLabelByProductRef($productReference);
-                $productId = ProductReferenceLayer::getProductIdByReference($productReference);
+                $productLabel = ProductLayer::getLabelByProductId($productId);
 
                 $generalInfo = [];
-                $graph1 = EkomProductTrackerLayer::getProductsRentabilityGraphByProductReference($productReference, $dateStart, $dateEnd, $generalInfo);
+                $graph1 = EkomProductTrackerLayer::getProductsRentabilityGraphByProductId($productId, $dateStart, $dateEnd, $generalInfo);
                 $myGeneralInfo = [
                     "Nombre total de produits vendus" => $generalInfo['nbSales'],
                     "Nombre total de visites" => $generalInfo['nbVisits'],
@@ -63,7 +61,7 @@ class ProductDetailsControllerModule
                 $moduleName = "Ekom";
                 $viewId = "back/stats/product_details_item";
                 $context = [
-                    "product_ref" => $productReference,
+                    "product_id" => $productId,
                     "date_start" => $dateStart,
                     "date_end" => $dateEnd,
                 ];

@@ -64,7 +64,7 @@ class CompanyHeaderRenderer extends BaseRenderer
             <?php endif; ?>
             <?php if (in_array("address", $this->columns, true)): ?>
                 <div class="address-line"><?php echo $this->sellerAddress['address']; ?></div>
-                <div class="address-line"><?php echo $this->sellerAddress['postcode']; ?><?php echo $this->sellerAddress['city']; ?></div>
+                <div class="address-line"><?php echo $this->sellerAddress['postcode']; ?>&nbsp;<?php echo $this->sellerAddress['city']; ?></div>
                 <div class="address-line"><?php echo $this->sellerAddress['country']; ?></div>
             <?php endif; ?>
             <?php if (in_array("phone", $this->columns, true)): ?>

@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 
 use Bat\StringTool;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Object\ProductPurchaseStatCategory;
 use Module\Ekom\Helper\SqlQueryHelper;
 use Module\ThisApp\Ekom\Helper\CartHelper;
 use QuickPdo\Helper\QuickPdoHelper;
@@ -21,10 +22,7 @@ class ProductPurchaseStatLayer
         foreach ($cart['items'] as $box) {
 
 
-
-
-
-            EkomApi::inst()->productPurchaseStat()->create([
+            $id = EkomApi::inst()->productPurchaseStat()->create([
                 "purchase_date" => date("Y-m-d H:i:s"),
                 "order_id" => $orderId,
                 "user_id" => $userId,
@@ -41,6 +39,15 @@ class ProductPurchaseStatLayer
                 "wholesale_price" => $box['wholesale_price'],
             ]);
 
+
+            $productCardId = $box['product_card_id'];
+            $categoryIds = CategoryLayer::getCategoryIdsByProductCardId($productCardId);
+            foreach ($categoryIds as $categoryId) {
+                ProductPurchaseStatCategory::getInst()->create([
+                    "product_purchase_stat_id" => $id,
+                    "category_id" => $categoryId,
+                ]);
+            }
         }
     }
 

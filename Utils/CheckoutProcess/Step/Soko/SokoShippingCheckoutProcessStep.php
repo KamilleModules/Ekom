@@ -4,6 +4,7 @@
 namespace Module\Ekom\Utils\CheckoutProcess\Step\Soko;
 
 
+use Core\Services\Hooks;
 use Kamille\Services\XLog;
 use Kamille\Utils\Claws\Error\ClawsWidgetError;
 use Module\Ekom\Api\EkomApi;
@@ -114,7 +115,10 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                 $billing_synced_with_shipping = (bool)CurrentCheckoutData::get("billing_synced_with_shipping", false);
                 $shippingComments = CurrentCheckoutData::get("shipping_comments", "");
 
+
                 $carrierOffers = CartUtil::getCarrierOffers();
+
+
                 if (0 === count($carrierOffers)) {
                     throw new EkomUserMessageException("No carrier offer for this app");
                 }
@@ -187,6 +191,10 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                         $billingAddress = $address;
                     }
                 }
+
+
+                Hooks::call("Ekom_CheckoutProcess_SokoShipping_setBillingSyncedWithShipping", $billing_synced_with_shipping, $selectedCarrierId, $carrierOffers);
+
 
                 if (true === $billing_synced_with_shipping) {
                     $billingAddress = $shippingAddress;

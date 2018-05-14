@@ -38,8 +38,7 @@ class ProductLayer
         $label = "";
         if (false === $includeRef) {
             $label = "label";
-        }
-        else{
+        } else {
             $label = "concat (label, ' (ref=', reference, ')') ";
         }
 
@@ -57,9 +56,14 @@ inner join ek_product_reference pr on pr.product_id=p.id
     public static function getLabelByProductRef(string $ref)
     {
         return QuickPdo::fetch("
-select label 
-from ek_product p
-inner join ek_product_reference pr on pr.product_id=p.id 
+select if(
+  '' != p.label,
+  p.label,
+  c.label
+) as label 
+from ek_product_reference pr
+inner join ek_product p on p.id=pr.product_id
+inner join ek_product_card c on c.id=p.product_card_id 
 where pr.reference=:ref", ['ref' => $ref], \PDO::FETCH_COLUMN);
     }
 
@@ -67,7 +71,6 @@ where pr.reference=:ref", ['ref' => $ref], \PDO::FETCH_COLUMN);
     {
         return QuickPdo::fetch("select label from ek_product where id=$id", [], \PDO::FETCH_COLUMN);
     }
-
 
     public static function getAvatarById($id)
     {

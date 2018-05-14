@@ -28,6 +28,14 @@ class CategoryLayer
 {
 
 
+    public static function getCardIdsBoundToAnyCategory()
+    {
+        return QuickPdo::fetchAll("
+select distinct(product_card_id) from ek_category_has_product_card
+        ", [], \PDO::FETCH_COLUMN);
+    }
+
+
     public static function getCategoryIdsByProductCardId(int $productCardId)
     {
         return QuickPdo::fetchAll("
