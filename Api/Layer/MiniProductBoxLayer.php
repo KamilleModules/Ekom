@@ -85,6 +85,15 @@ class MiniProductBoxLayer
             "useAttributesString" => false,
         ]);
 
+        /**
+         * Allows to use the "having tag.name" in the query
+         */
+        $sqlQuery->setGroupBy([
+            "tag.name",
+            "pr.reference",
+        ]);
+
+//        $sqlQuery->addGroupBy("tag_name");
 
         $sqlQuery->addField("
 tag.name as tag_name,
@@ -121,8 +130,9 @@ left join ek_tag tag on tag.id=phtag.tag_id
         $sqlQuery->addMarker("query", '%' . QuickPdoStmtTool::stripWildcards($searchExpression) . '%');
 
 
-        if (1 === $returnMode) {
+//        az(__FILE__, $sqlQuery->getSqlQuery(), $sqlQuery->getMarkers());
 
+        if (1 === $returnMode) {
             $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
             self::sugarifyRows($rows);
             return $rows;

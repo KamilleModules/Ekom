@@ -308,8 +308,8 @@ coalesce(
 
         $field = "
 p.id as product_id,
-c.id as product_card_id,
 pr.id as product_reference_id,
+c.id as product_card_id,
 pct.name as product_card_type_name,
 pct.label as product_card_type_label,
 sel.id as seller_id,
