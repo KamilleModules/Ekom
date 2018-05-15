@@ -20,7 +20,10 @@ class BundleLayer
 
         $productId2Qty = [];
 
+
         $productInfos = $this->getProductInfoByBundleId($bundleId);
+
+
         foreach ($productInfos as $k => $info) {
             $pId = $info['product_id'];
             if (in_array($pId, $removedProductIds)) {
@@ -28,12 +31,16 @@ class BundleLayer
             }
         }
 
+        $items = [];
         foreach ($productInfos as $info) {
             $productId2Qty[$info['product_id']] = $info['quantity'];
+            $items[] = [
+                'product_id' => $info['product_id'],
+                'quantity' => $info['quantity'],
+            ];
         }
 
-
-        EkomApi::inst()->cartLayer()->addItems($productId2Qty);
+        EkomApi::inst()->cartLayer()->addItems($items);
         return $productId2Qty;
     }
 
@@ -115,7 +122,6 @@ and b.active=1
                     $bundleModel['has_discount'] = $model['has_discount'];
                     $bundleModel['has_tax'] = $model['has_tax'];
                     $bundleModel['product_uri'] = $model['product_uri'];
-
 
 
                     $bundleModel['quantity'] = $qty;

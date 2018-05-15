@@ -81,8 +81,8 @@ from ek_product_comment where user_id=$userId
         }
         $title = (array_key_exists('title', $data)) ? $data['comment'] : '';
 
-        $commentNeedValidation = XConfig::get("Ekom.commentNeedValidation");
-        $commentModeratorEmail = XConfig::get("Ekom.commentModeratorEmail");
+        $commentNeedValidation = E::conf("commentNeedValidation");
+        $commentModeratorEmail = E::conf("commentModeratorEmail");
         $active = 1;
         if (true === $commentNeedValidation) {
             $active = 0;
@@ -119,7 +119,7 @@ from ek_product_comment where user_id=$userId
         $boxModel = ProductBoxLayer::getProductBoxByProductId($productId);
 
 
-        $link = $boxModel['product_uri'];
+        $link = $boxModel['product_uri_with_details'];
         $link = UriTool::uri($link, [], true, true);
 
 
@@ -131,50 +131,44 @@ from ek_product_comment where user_id=$userId
 
 
             // send email to moderator
-//            if (false === E::sendMail("commentAwaitsModeration", [
-//                    "to" => $commentModeratorEmail,
+            if (false === E::sendMail("Ekom/fra/front/comment.new", $commentModeratorEmail, [
 //                    "subject" => "{siteName}: a comment awaits your moderation",
-//                    "commonVars" => [
-//                        'productLabel' => $boxModel['label'],
-//                        'productRef' => $boxModel['ref'],
-//                        'productUri' => $link,
-//                        'title' => $title,
-//                        'comment' => $data['comment'],
-//                        'date' => $date,
-//                    ],
-//                ])
-//            ) {
-//                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send commentAwaitsModeration email to $commentModeratorEmail");
-//            }
-//
-//
-//            // send email to user
-//            if (false === E::sendMail("yourCommentAwaitsModeration", [
+                    "subject" => "Un commentaire est en attente de modération",
+                    'productLabel' => $boxModel['label'],
+                    'productRef' => $boxModel['reference'],
+                    'productUri' => $link,
+                    'title' => $title,
+                    'comment' => $data['comment'],
+                    'date' => $date,
+                ])
+            ) {
+                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send commentAwaitsModeration email to $commentModeratorEmail");
+            }
+
+
+            // send email to user
+            if (false === E::sendMail("Ekom/fra/front/comment.your_comment_is_pending", $userEmail, [
+                    "subject" => "Votre commentaire est en attente de validation",
 //                    "subject" => "{siteName}: your comment awaits moderation",
-//                    "to" => $userEmail,
-//                ])
-//            ) {
-//                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send YourCommentAwaitsModeration email to $userEmail");
-//            }
+                ])
+            ) {
+                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send YourCommentAwaitsModeration email to $userEmail");
+            }
 
         } else {
-
-            /**
-             * @todo-ling: send email here...
-             */
             // send email to user
-//            if (false === E::sendMail("yourCommentHasBeenApproved", [
-//                    "to" => $userEmail,
-//                    "subject" => "{siteName}: your comment has been approved",
-//                    'commonVars' => [
-//                        'productLabel' => $boxModel['label'],
-//                        'productRef' => $boxModel['ref'],
-//                        'productUri' => $link,
-//                    ],
-//                ])
-//            ) {
-//                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send yourCommentHasBeenApproved email to $userEmail");
-//            }
+
+
+            if (false === E::sendMail("Ekom/fra/front/comment.your_comment_has_been_approved", $userEmail, [
+                    "subject" => "Votre commentaire a été approuvé",
+//                    "subject" => "{siteName}: votre commentaire a été approuvé",
+                    'productLabel' => $boxModel['label'],
+                    'productRef' => $boxModel['reference'],
+                    'productUri' => $link,
+                ])
+            ) {
+                XLog::error("[Ekom module] - ProductCommentLayer: couldn't send yourCommentHasBeenApproved email to $userEmail");
+            }
         }
 
         return $commentId;

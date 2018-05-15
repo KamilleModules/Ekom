@@ -89,7 +89,7 @@ class MiniProductBoxLayer
          * Allows to use the "having tag.name" in the query
          */
         $sqlQuery->setGroupBy([
-            "tag.name",
+//            "tag.name",
             "pr.reference",
         ]);
 
@@ -112,6 +112,8 @@ coalesce(
         ");
 
 
+
+
         $sqlQuery->addJoin("
 left join ek_product_has_tag phtag on phtag.product_id=p.id
 left join ek_tag tag on tag.id=phtag.tag_id      
@@ -121,8 +123,13 @@ left join ek_tag tag on tag.id=phtag.tag_id
         $sqlQuery->addHaving("
     label like :query or  
     reference like :query or
-    tag_name like :query or 
-    attr_string like :query  
+    attr_string like :query 
+    or exists ( 
+        select tttt.id 
+        from ek_tag tttt
+        inner join ek_product_has_tag hhhh on hhhh.tag_id=tttt.id  
+        where name like :query and hhhh.product_id=p.id 
+    ) 
           
         ");
 

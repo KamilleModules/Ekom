@@ -249,6 +249,21 @@ class BackHooksHelper
             );
 
 
+        $configItem = Item::create()
+            ->setActive(true)
+            ->setName("config")
+            ->setLabel("Configuration")
+            ->setIcon("fa fa-cogs")
+            ->setLink("#")
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("config_config")
+                ->setLabel("Configuration")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Config_Config_List"))
+            );
+
+
         $utilsItem = Item::create()
             ->setActive(true)
             ->setName("utils")
@@ -396,7 +411,8 @@ class BackHooksHelper
 
 
         $section
-            ->addItem($utilsItem)
+            ->addItem($configItem)
+//            ->addItem($utilsItem)
             ->addItem($usersItem)
             ->addItem($discountItem)
             ->addItem($carrierItem)
@@ -407,6 +423,7 @@ class BackHooksHelper
 
         $menuItems = [
             'Ekom.section' => $section,
+            'Ekom.config' => $configItem,
             'Ekom.utils' => $utilsItem,
             'Ekom.users' => $usersItem,
             'Ekom.carriers' => $carrierItem,

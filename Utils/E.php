@@ -18,6 +18,7 @@ use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Mvc\HtmlPageHelper\HtmlPageHelper;
 use Kamille\Services\XConfig;
 use Kamille\Services\XLog;
+use Module\Application\Api\Layer\ApplicationVariablesLayer;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Layer\ConnexionLayer;
@@ -43,6 +44,14 @@ class E
     private static $conf = null;
     private static $userContext = null;
 
+
+    /**
+     * Ekom variables from ap_variables (see Application module)
+     */
+    public static function getVariable(string $varName, $default = null)
+    {
+        return ApplicationVariablesLayer::getVariable($varName, $default);
+    }
 
     /**
      *
@@ -556,7 +565,7 @@ class E
      */
     public static function sendMail(string $template, string $recipient, array $variables = [])
     {
-        if (true === XConfig::get("Ekom.mailEnable")) {
+        if (true === self::conf("mailEnable")) {
             Hooks::call("Ekom_Mailer_decorateVariables", $variables, $template, $recipient);
             return FishMailerService::create()->sendFishMailByTemplate($recipient, $template, $variables);
         }
@@ -621,11 +630,15 @@ class E
 
         if (null === self::$conf) {
             self::$conf = [
+                'mailEnable' => (bool)E::getVariable("Ekom_mailEnable"),
+                'commentNeedValidation' => (bool)E::getVariable("Ekom_commentNeedValidation"),
+                'commentModeratorEmail' => E::getVariable("Ekom_commentModeratorEmail"),
+                'createAccountNeedValidation' => (bool)E::getVariable("Ekom_createAccountNeedValidation"),
                 'default_lang' => XConfig::get("Ekom.default_lang"),
                 'currencySymbol' => XConfig::get("Ekom.currencySymbol"),
                 'currencyIsoCode' => XConfig::get("Ekom.currencyIsoCode"),
                 'moneyFormatArgs' => XConfig::get("Ekom.moneyFormatArgs"),
-                'acceptOutOfStockOrders' => XConfig::get("Ekom.acceptOutOfStockOrders"),
+                'acceptOutOfStockOrders' => (bool)E::getVariable("Ekom_acceptOutOfStockOrders"),
                 'sessionTimeout' => XConfig::get("Ekom.sessionTimeout"),
             ];
 //            Hooks::call("Ekom_adaptContextualConfig", self::$conf);
@@ -637,7 +650,6 @@ class E
         }
 
         throw new \Exception("Key not found in conf: $key, (Temporary exception: todo remove)");
-        return $default;
     }
 
 

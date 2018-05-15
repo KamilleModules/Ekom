@@ -99,7 +99,7 @@ where 1
 
                 $email = $info['email'];
                 $name = $info['first_name'] . " " . $info['last_name'];
-                $res = E::sendMail("customer.new", $email, [
+                $res = E::sendMail("Ekom/fra/front/customer.new", $email, [
                     "site_name" => ucfirst(ThisAppConfig::SITE_NAME),
                     "uri_site" => E::uriSite(),
                     "email" => $email,
