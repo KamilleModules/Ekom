@@ -63,7 +63,7 @@ class CheckoutProcess implements CheckoutProcessInterface
 
     public static function getCheckoutData()
     {
-        $ret = CurrentCheckoutData::all();
+        $ret = static::currentCheckoutDataAll();
         unset($ret['CheckoutProcess']);
 
         if (array_key_exists("billing_synced_with_shipping", $ret)) {
@@ -88,15 +88,15 @@ class CheckoutProcess implements CheckoutProcessInterface
 
     public function reset()
     {
-        CurrentCheckoutData::set("CheckoutProcess", []);
+        static::currentCheckoutDataSet("CheckoutProcess", []);
         return $this;
     }
 
     public function set($key, $value)
     {
-        $data = CurrentCheckoutData::get("CheckoutProcess", []);
+        $data = static::currentCheckoutDataGet("CheckoutProcess", []);
         $data[$key] = $value;
-        CurrentCheckoutData::set("CheckoutProcess", $data);
+        static::currentCheckoutDataSet("CheckoutProcess", $data);
     }
 
     /**
@@ -104,7 +104,7 @@ class CheckoutProcess implements CheckoutProcessInterface
      */
     public function get($key, $default = null, $throwEx = false)
     {
-        $data = CurrentCheckoutData::get("CheckoutProcess", []);
+        $data = static::currentCheckoutDataGet("CheckoutProcess", []);
         if (array_key_exists($key, $data)) {
             return $data[$key];
         }
@@ -276,6 +276,26 @@ class CheckoutProcess implements CheckoutProcessInterface
 //        E::dlog($msg);
     }
 
+
+    //--------------------------------------------
+    // CURRENT CHECKOUT DATA
+    //--------------------------------------------
+    protected static function currentCheckoutDataSet($key, $value)
+    {
+        CurrentCheckoutData::set($key, $value);
+    }
+
+    protected static function currentCheckoutDataGet($key, $default = null)
+    {
+
+        return CurrentCheckoutData::get($key, $default);
+    }
+
+    protected static function currentCheckoutDataAll()
+    {
+        return CurrentCheckoutData::all();
+    }
+
     //--------------------------------------------
 
     //
@@ -333,8 +353,23 @@ class CheckoutProcess implements CheckoutProcessInterface
         if (array_key_exists($stepName, $this->steps)) {
             return $this->steps[$stepName];
         }
+        /**
+         * This happened to me when using two CheckoutProcesses in parallel
+         * (EkomCheckoutProcess + EkomEstimateCheckoutProcess),
+         * and when going to Ekom.payment step,
+         * then when switching to the estimate branch, the step is ported,
+         * but EkomEstimate.payment step doesn't exit.
+         *
+         * In this case, a simple workaround (not solution)
+         * is to go to the previous step.
+         * This is what's implemented below.
+         */
         $this->reset();
-        throw new EkomException("This step doesn't exist: $stepName");
+        $stepName = $this->getVeryFirstStep();
+        return $this->steps[$stepName];
+//        throw new EkomException("This step doesn't exist: $stepName");
+
+
     }
 
     private function getModelByCurrentStep($currentStep)

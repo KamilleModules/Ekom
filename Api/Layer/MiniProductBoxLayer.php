@@ -213,9 +213,12 @@ inner join ek_product_group g on g.id=phg.product_group_id
      * @param $cardId , int
      * @return array
      */
-    public static function getRelatedProductBoxListByCardId(int $cardId)
+    public static function getRelatedProductBoxListByCardId(int $cardId, $type = null)
     {
-        return self::getBoxesByProductGroupName(":related-$cardId");
+        if (null !== $type) {
+            $type = "-" . $type;
+        }
+        return self::getBoxesByProductGroupName(":related$type-$cardId");
     }
 
 

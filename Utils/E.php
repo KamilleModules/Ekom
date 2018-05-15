@@ -132,7 +132,6 @@ class E
         if (E::userIsConnected()) {
             $userId = E::getUserId();
 
-            E::dlog("calling E::refreshUserContext " . date("Y-m-d H:i:s"));
             // we need to update the connexionData, which is the source of the UserContext when the user is connected
             $connexionData = ConnexionLayer::buildConnexionDataByUserId($userId);
 //            az(__FILE__, $connexionData, SessionUser::getAll());

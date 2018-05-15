@@ -85,18 +85,67 @@ class ProductBoxLayer
     }
 
 
+    public static function getRelatedProductBoxListByCardId(int $cardId, $type = null, array $options = [])
+    {
+        if (null !== $type) {
+            $type = "-" . $type;
+        }
+        return self::getBoxesByProductGroupName(":related$type-$cardId", $options);
+    }
+
+
+    public static function getBoxesByProductGroupName(string $productGroupName, array $options = [])
+    {
+
+        $groupByProductId = $options['groupByProductId'] ?? false;
+
+        $sqlQuery = ProductQueryBuilderUtil::getMaxiQuery();
+
+        // specific to groups
+        $sqlQuery->addWhere("
+and g.name = :group_name        
+        ");
+        $sqlQuery->addJoin("
+inner join ek_product_group_has_product phg on phg.product_id=p.id
+inner join ek_product_group g on g.id=phg.product_group_id
+            ");
+        $sqlQuery->addMarker("group_name", $productGroupName);
+        $sqlQuery->addOrderBy("phg.order", "asc");
+
+
+        if (true === $groupByProductId) {
+            $sqlQuery->setGroupBy([
+                "p.id",
+            ]);
+        }
+
+
+        $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
+        foreach ($rows as $k => $row) {
+            self::sugarify($row);
+            $rows[$k] = $row;
+        }
+        return $rows;
+    }
+
     //--------------------------------------------
     // PRODUCT BOX LIST
     //--------------------------------------------
-
     private static function getProductBoxBySqlQuery(SqlQueryInterface $sqlQuery)
     {
         $q = $sqlQuery->getSqlQuery();
         $markers = $sqlQuery->getMarkers();
 
 
-
         $row = QuickPdo::fetch($q, $markers);
+        self::sugarify($row);
+
+        return $row;
+    }
+
+
+    private static function sugarify(array &$row)
+    {
 
         MiniProductBoxLayer::sugarify($row);
 
@@ -161,8 +210,5 @@ class ProductBoxLayer
         $row['attributes_list'] = $attributes_list;
 
 
-        return $row;
     }
-
-
 }

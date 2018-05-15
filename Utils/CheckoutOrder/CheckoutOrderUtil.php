@@ -40,6 +40,8 @@ use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\InvoiceNumberProvider\InvoiceNumberProviderInterface;
 use Module\Ekom\Utils\OrderReferenceProvider\OrderReferenceProviderInterface;
+use Module\EkomEstimate\Api\Object\Estimate;
+use Module\EkomEstimate\Utils\Checkout\EstimateCurrentCheckoutData;
 use Module\ThisApp\Ekom\PaymentMethodHandler\CreditCardWalletPaymentMethodHandler;
 use QuickPdo\QuickPdo;
 
@@ -496,8 +498,6 @@ class CheckoutOrderUtil
             }
 
 
-
-
             $orderId = $_orderId;
 
 
@@ -535,9 +535,6 @@ class CheckoutOrderUtil
             E::sendMail($mailType, $recipient, $variables);
 
 
-
-
-
             OrderStatHelper::insertOrderStatsByModel($orderId, $orderModel);
             CouponLayer::decrementCouponByOrderModel($orderModel);
 
@@ -547,7 +544,10 @@ class CheckoutOrderUtil
 
             if (false === $this->testMode) {
                 CartLayer::create()->clean("checkout");
-                CurrentCheckoutData::clean();
+                if ('ekom' === CurrentCheckoutData::get('checkout_type')) {
+                    CurrentCheckoutData::clean();
+                }
+
             } else {
                 az("test mode", $orderModel);
             }
@@ -593,6 +593,7 @@ class CheckoutOrderUtil
         $userId = (int)$checkoutData['user_id'];
         $billingAddressId = (int)$checkoutData['billing_address_id'];
         $paymentMethodId = (int)$checkoutData['payment_method_id'];
+        $totalWeight = $extendedCartModel['cart']['cart_total_weight'];
 
 
         // the user belongs to the shop
@@ -611,25 +612,30 @@ class CheckoutOrderUtil
         // do we use shipping step?
         if (array_key_exists("carrier_id", $checkoutData)) {
             $carrierId = (int)$checkoutData['carrier_id'];
-            $shippingAddressId = (int)$checkoutData['shipping_address_id'];
-            $storeAddressId = (int)$checkoutData['store_address_id'];
-
-            // the user owns the shipping address
-            $res = QuickPdo::fetch("select user_id from ek_user_has_address where user_id=$userId and address_id=$shippingAddressId");
-            if (false === $res) {
-                $this->devError("Inconsistent data: the user $userId does not own the shipping address $shippingAddressId");
-            }
-
             // the carrier belongs to the shop
             $res = QuickPdo::fetch("select id from ek_carrier where id=$carrierId");
             if (false === $res) {
                 $this->devError("Inconsistent data: carrier not found $carrierId");
             }
 
-            // the shop address really belongs to the shop
-            $res = QuickPdo::fetch("select id from ek_store where address_id=$storeAddressId");
-            if (false === $res) {
-                $this->devError("Inconsistent data: address $storeAddressId is not a store address");
+            if ($totalWeight > 0) {
+
+
+                $shippingAddressId = (int)$checkoutData['shipping_address_id'];
+                $storeAddressId = (int)$checkoutData['store_address_id'];
+
+                // the user owns the shipping address
+                $res = QuickPdo::fetch("select user_id from ek_user_has_address where user_id=$userId and address_id=$shippingAddressId");
+                if (false === $res) {
+                    $this->devError("Inconsistent data: the user $userId does not own the shipping address $shippingAddressId");
+                }
+
+
+                // the shop address really belongs to the shop
+                $res = QuickPdo::fetch("select id from ek_store where address_id=$storeAddressId");
+                if (false === $res) {
+                    $this->devError("Inconsistent data: address $storeAddressId is not a store address");
+                }
             }
         }
 

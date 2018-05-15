@@ -127,6 +127,24 @@ class BackHooksHelper
         $sideBarMenuModel->addSection($section);
 
 
+        $productGroupsItem = Item::create()
+            ->setActive(true)
+            ->setName("catalog_product_groups")
+            ->setLabel("Groupes de produits")
+            ->setLink("#")
+            ->addItem(Item::create()
+//                        ->setActive(true)
+                ->setName("catalog_product_groups_default")
+                ->setLabel("Groupes basiques")
+                ->setLink(A::link("Ekom_Catalog_ProductGroup_List"))
+            )
+            ->addItem(Item::create()
+//                        ->setActive(true)
+                ->setName("catalog_product_groups_related")
+                ->setLabel("Groupes liés à une carte")
+                ->setLink(A::link("Ekom_Catalog_RelatedCardProductGroup_List"))
+            );
+
         $catalogItem = Item::create()
             ->setActive(true)
             ->setName("catalog")
@@ -167,24 +185,7 @@ class BackHooksHelper
                 ->setLabel("Packs")
                 ->setLink(A::link("Ekom_Catalog_Bundle_List"))
             )
-            ->addItem(Item::create()
-                ->setActive(true)
-                ->setName("catalog_product_groups")
-                ->setLabel("Groupes de produits")
-                ->setLink("#")
-                ->addItem(Item::create()
-//                        ->setActive(true)
-                    ->setName("catalog_product_groups_default")
-                    ->setLabel("Groupes basiques")
-                    ->setLink(A::link("Ekom_Catalog_ProductGroup_List"))
-                )
-                ->addItem(Item::create()
-//                        ->setActive(true)
-                    ->setName("catalog_product_groups_related")
-                    ->setLabel("Groupes liés à une carte")
-                    ->setLink(A::link("Ekom_Catalog_RelatedCardProductGroup_List"))
-                )
-            )
+            ->addItem($productGroupsItem)
             ->addItem(Item::create()
                 ->setActive(true)
                 ->setName("catalog_attributes")
@@ -413,6 +414,7 @@ class BackHooksHelper
             'Ekom.seo' => $seoItem,
             'Ekom.stats' => $statItem,
             'Ekom.catalog' => $catalogItem,
+            'Ekom.catalog.productGroups' => $productGroupsItem,
         ];
 
         Hooks::call("Ekom_decorateLeftMenu", $menuItems);
