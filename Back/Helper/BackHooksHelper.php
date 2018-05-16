@@ -23,6 +23,7 @@ use Module\Ekom\Helper\Stats\Modules\BestSellersControllerModule;
 use Module\Ekom\Helper\Stats\Modules\BestSellsControllerModule;
 use Module\Ekom\Helper\Stats\Modules\CustomerAccountsControllerModule;
 use Module\Ekom\Helper\Stats\Modules\CustomerInfoControllerModule;
+use Module\Ekom\Helper\Stats\Modules\NewsletterControllerModule;
 use Module\Ekom\Helper\Stats\Modules\OrdersAndProfitControllerModule;
 use Module\Ekom\Helper\Stats\Modules\ProductDetailsControllerModule;
 use Module\Ekom\Utils\E;
@@ -64,6 +65,9 @@ class BackHooksHelper
                 break;
             case "best_sellers":
                 $moduleHandler = BestSellersControllerModule::getModuleHandler();
+                break;
+            case "newsletter":
+                $moduleHandler = NewsletterControllerModule::getModuleHandler();
                 break;
             default:
                 break;

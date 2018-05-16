@@ -31,13 +31,18 @@ class GeneratedNewsletter extends TableCrudObject
     {
         $base = [
 			'id' => null,
+			'user_id' => null,
 			'email' => '',
 			'subscribe_date' => '',
 			'unsubscribe_date' => null,
 			'active' => 0,
+			'ip_registration' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
+        if (0 === (int)$ret["user_id"]) {
+            $ret["user_id"] = null;
+        }
         if ("" === $ret["unsubscribe_date"]) {
             $ret["unsubscribe_date"] = null;
         }

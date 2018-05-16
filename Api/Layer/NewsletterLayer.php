@@ -50,11 +50,17 @@ where email=:email
 
     public static function registerEmail($email)
     {
+        $ip = $_SERVER["REMOTE_ADDR"]??"";
+        $userId = E::getUserId(null);
+
+
         return EkomApi::inst()->newsletter()->create([
             "email" => $email,
             "subscribe_date" => date("Y-m-d H:i:s"),
             "unsubscribe_date" => null,
             "active" => 1,
+            "user_id" => $userId,
+            "ip" => $ip,
         ]);
     }
 

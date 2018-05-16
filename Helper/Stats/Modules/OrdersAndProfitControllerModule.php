@@ -25,7 +25,6 @@ class OrdersAndProfitControllerModule
             $orderDistribution = OrderLayer::getOrdersDistributionByRange($dateStart, $dateEnd);
             $orderStatusLabels2Colors = OrderStatusLayer::getOrderStatusLabel2BgColor();
 
-
             $options = [];
 
             $graph = EkomStatsUtil::create()
@@ -42,7 +41,6 @@ class OrdersAndProfitControllerModule
                 $rowsRevenueProfit[] = [$date, $info["sum"]];
                 $rowsNbItems[] = [$date, $info["sumNbItems"]];
             }
-
 
             $conf['chart1'] = [
                 "title" => "Nombre de commandes et quantités commandées",

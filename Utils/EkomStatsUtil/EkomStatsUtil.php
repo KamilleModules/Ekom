@@ -248,6 +248,9 @@ $qInner
             case "newCustomers":
                 return $this->getNewCustomersGraph();
                 break;
+            case "newsletter":
+                return $this->getNewsletterGraph();
+                break;
             default:
                 throw new EkomException("Unknown type: $type");
                 break;
@@ -334,6 +337,61 @@ order by date_creation asc
                 $ret[$curDate] = "0";
             } else {
                 $ret[$curDate] = $rows[$curDate];
+            }
+        });
+
+        return $ret;
+    }
+
+    protected function getNewsletterGraph()
+    {
+        $ret = [];
+        $markers = [];
+
+        $q = "
+select 
+date(subscribe_date) as date,
+concat(
+  (select count(*) from ek_newsletter where subscribe_date=n.subscribe_date and user_id is not null),
+  ':',
+  (select count(*) from ek_newsletter where subscribe_date=n.subscribe_date and user_id is null)
+) as numbers
+
+from ek_newsletter n 
+where 1 
+
+        ";
+
+        QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $this->dateStart, $this->dateEnd, "subscribe_date");
+
+
+        $q .= "
+        
+group by subscribe_date        
+order by subscribe_date asc
+
+";
+
+
+        $rows = QuickPdo::fetchAll($q, $markers, \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+
+
+        // now, filling the holes
+        DateTool::foreachDateRange($this->dateStart, $this->dateEnd, function ($curDate) use (&$ret, $rows) {
+            if (false === array_key_exists($curDate, $rows)) {
+                $ret[$curDate] = [
+                    "nb_customer" => 0,
+                    "nb_visitor" => 0,
+                    "nb_total" => 0,
+                ];
+            } else {
+                $p = explode(':', $rows[$curDate]);
+                $row = [
+                    "nb_customer" => $p[0],
+                    "nb_visitor" => $p[1],
+                    "nb_total" => $p[0] + $p[1],
+                ];
+                $ret[$curDate] = $row;
             }
         });
 

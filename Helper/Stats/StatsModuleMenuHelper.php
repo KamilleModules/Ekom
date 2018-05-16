@@ -4,8 +4,33 @@
 namespace Module\Ekom\Helper\Stats;
 
 
+use Bat\ArrayTool;
+
 class StatsModuleMenuHelper
 {
+
+
+    public static function insertModuleLeftItemsAfter(array &$menu, string $targetItemName, array $newItems)
+    {
+        $index = null;
+        foreach ($menu as $k => $v) {
+            if ($targetItemName === $v['name']) {
+                $index = $k;
+                break;
+            }
+        }
+
+        if (null !== $index) {
+            $zeIndex = $index + 1;
+
+            $start = array_slice($menu, 0, $zeIndex);
+            $end = array_slice($menu, $zeIndex);
+            $menu = array_merge($start, $newItems, $end);
+        }
+        //otherwise, you don't have the expected results, your responsibility to see it...
+    }
+
+
     public static function getModuleLeftMenu()
     {
         return [
@@ -52,10 +77,6 @@ class StatsModuleMenuHelper
             [
                 "name" => "keywords",
                 "label" => "Mots clés",
-            ],
-            [
-                "name" => "browsers_and_os",
-                "label" => "Navigateurs web et systèmes d'exploitation",
             ],
             [
                 "name" => "newsletter",
