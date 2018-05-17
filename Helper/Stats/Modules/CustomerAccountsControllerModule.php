@@ -6,6 +6,7 @@ namespace Module\Ekom\Helper\Stats\Modules;
 
 use Module\Ekom\Api\Layer\OrderLayer;
 use Module\Ekom\Api\Layer\OrderStatusLayer;
+use Module\Ekom\Api\Layer\UserGroupLayer;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\EkomStatsUtil\EkomStatsUtil;
 use Module\EkomUserTracker\Api\Layer\EkomUserTrackerLayer;
@@ -76,6 +77,19 @@ class CustomerAccountsControllerModule
                     "Comptes créés" => $realChart1,
                 ],
             ];
+
+
+
+
+            //--------------------------------------------
+            // USER GROUPS
+            //--------------------------------------------
+            $userGroupDistribution = UserGroupLayer::getDistributionByDateRange($dateStart, $dateEnd);
+            $conf['chart2'] = [
+                'title' => "Distribution des groupes de clients",
+                'data' => $userGroupDistribution,
+            ];
+
 
 
             return [

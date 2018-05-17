@@ -21,6 +21,20 @@ class OrderLayer
 {
 
 
+    public static function getNbPurchasedProductsByDateRange($dateStart = null, $dateEnd = null)
+    {
+        $markers = [];
+        $q = "
+select sum(cart_quantity) as cart_quantity_total 
+from ek_order 
+";
+
+        QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "date(date)");
+
+        return (int)QuickPdo::fetch($q, $markers, \PDO::FETCH_COLUMN);
+    }
+
+
     public static function getStoreInfoByStoreAddressId(int $storeAddressId)
     {
         return QuickPdo::fetch("
@@ -79,13 +93,21 @@ and track_identifier != ''
         $options = array_replace([
             'queryWhereExtra' => '',
             'queryWhereExtraMarkers' => [],
+            'useAmountWithTax' => false,
         ], $options);
+
+
+        $useAmountWithTax = $options['useAmountWithTax'];
 
 
         $qExtraMarkers = $options['queryWhereExtraMarkers'];
 
 
-        $q = "select sum(amount) as sum, count(*) as count  from ek_order where 1";
+        if (true === $useAmountWithTax) {
+            $q = "select sum(amount) as sum, count(*) as count  from ek_order where 1";
+        } else {
+            $q = "select sum(cart_total_tax_excluded+shipping_cost_tax_excluded) as sum, count(*) as count  from ek_order where 1";
+        }
 
         $markers = $qExtraMarkers;
         QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "date");
@@ -105,13 +127,21 @@ and track_identifier != ''
         $options = array_replace([
             'queryWhereExtra' => '',
             'queryWhereExtraMarkers' => [],
+            'useAmountWithTax' => false,
         ], $options);
+
+        $useAmountWithTax = $options['useAmountWithTax'];
+
 
         $qExtra = $options['queryWhereExtra'];
         $qExtraMarkers = $options['queryWhereExtraMarkers'];
 
 
-        $q = "select date(date) as date, sum(amount) as sum, count(*) as count, sum(cart_quantity) as sum_nbItems  from ek_order where 1";
+        if (true === $useAmountWithTax) {
+            $q = "select date(date) as date, sum(amount) as sum, count(*) as count, sum(cart_quantity) as sum_nbItems  from ek_order where 1";
+        } else {
+            $q = "select date(date) as date, sum(cart_total_tax_excluded + shipping_cost_tax_excluded) as sum, count(*) as count, sum(cart_quantity) as sum_nbItems  from ek_order where 1";
+        }
 
 
         $markers = $qExtraMarkers;

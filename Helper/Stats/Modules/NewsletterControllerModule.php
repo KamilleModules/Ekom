@@ -45,15 +45,14 @@ class NewsletterControllerModule
             }
 
             $conf['chart1'] = [
-                "title" => "Inscriptions depuis la page d'accueil",
+                "title" => "Dates de première inscription à la newsletter",
                 "width" => "100%",
                 "series" => [
-                    'Total inscrits (' . $total . ')' => $rowsNbTotal,
-                    'Visiteurs inscrits (' . $totalNbVisitors . ')' => $rowsNbVisitors,
-                    'Clients inscrits (' . $totalNbCustomers . ')' => $rowsNbCustomers,
+                    'Total (' . $total . ')' => $rowsNbTotal,
+                    'Par le bloc sur la homepage (' . $totalNbVisitors . ')' => $rowsNbVisitors,
+                    'Par la page "monCompte" (' . $totalNbCustomers . ')' => $rowsNbCustomers,
                 ],
             ];
-
 
 
             //--------------------------------------------
@@ -63,7 +62,6 @@ class NewsletterControllerModule
                 "dateStart" => $dateStart,
                 "dateEnd" => $dateEnd,
             ]);
-
 
 
 //            $conf['chart3'] = [

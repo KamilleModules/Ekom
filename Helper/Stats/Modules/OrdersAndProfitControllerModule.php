@@ -35,7 +35,6 @@ class OrdersAndProfitControllerModule
             $rowsNbOrders = [];
             $rowsRevenueProfit = [];
             $rowsNbItems = [];
-            $rows = [];
             foreach ($graph as $date => $info) {
                 $rowsNbOrders[] = [$date, $info["count"]];
                 $rowsRevenueProfit[] = [$date, $info["sum"]];

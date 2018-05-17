@@ -8,9 +8,35 @@ use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
+use QuickPdo\QuickPdoStmtTool;
 
 class UserGroupLayer
 {
+
+
+    public static function getDistributionByDateRange($dateStart = null, $dateEnd = null){
+        $markers = [];
+
+        $q = "
+
+select 
+g.label,
+count(*) as nb_users
+from ek_user_group g 
+inner join ek_user u on u.user_group_id=g.id        
+where 1
+        ";
+
+
+        QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $dateStart, $dateEnd, "u.date_creation");
+
+        $q .= '
+group by g.id
+';
+
+
+        return QuickPdo::fetchAll($q, $markers, \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
 
 
     public static function getGroupIdByName(string $name)

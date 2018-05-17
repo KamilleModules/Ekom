@@ -75,6 +75,10 @@ class StatsModuleMenuHelper
                 "label" => "Meilleurs vendeurs",
             ],
             [
+                "name" => "best_payment_methods",
+                "label" => "Meilleurs moyens de paiement",
+            ],
+            [
                 "name" => "keywords",
                 "label" => "Mots clés",
             ],
@@ -86,42 +90,26 @@ class StatsModuleMenuHelper
                 "name" => "page_not_found",
                 "label" => "Pages introuvables",
             ],
-            [
-                "name" => "out_of_stock",
-                "label" => "Quantités indisponibles",
-            ],
+//            [
+//                "name" => "out_of_stock",
+//                "label" => "Quantités indisponibles",
+//            ],
             [
                 "name" => "searches",
                 "label" => "Recherches de la boutique",
             ],
-            [
-                "name" => "carriers_distribution",
-                "label" => "Répartition par transporteur",
-            ],
-            [
-                "name" => "partners_websites",
-                "label" => "Sites affiliés",
-            ],
-            [
-                "name" => "catalog_stats",
-                "label" => "Statistiques catalogue",
-            ],
-            [
-                "name" => "dashboard",
-                "label" => "Tableau de bord statistiques",
-            ],
-            [
-                "name" => "visits",
-                "label" => "Visites et visiteurs",
-            ],
-            [
-                "name" => "online_visitors",
-                "label" => "Visiteurs en ligne",
-            ],
-            [
-                "name" => "catalog_estimate",
-                "label" => "Évaluation du catalogue",
-            ],
+//            [
+//                "name" => "carriers_distribution",
+//                "label" => "Répartition par transporteur",
+//            ],
+//            [
+//                "name" => "catalog_stats",
+//                "label" => "Statistiques catalogue",
+//            ],
+//            [
+//                "name" => "catalog_estimate",
+//                "label" => "Évaluation du catalogue",
+//            ],
 
         ];
     }

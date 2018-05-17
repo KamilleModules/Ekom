@@ -28,6 +28,7 @@ use Module\Ekom\Api\Object\OrderPurchaseStatProvider;
 use Module\Ekom\Api\Object\OrderPurchaseStatSeller;
 use Module\Ekom\Api\Object\OrderStatus;
 use Module\Ekom\Api\Object\Page;
+use Module\Ekom\Api\Object\PageNotFound;
 use Module\Ekom\Api\Object\PasswordRecoveryRequest;
 use Module\Ekom\Api\Object\PaymentMethod;
 use Module\Ekom\Api\Object\Product;
@@ -53,6 +54,7 @@ use Module\Ekom\Api\Object\ProductReference;
 use Module\Ekom\Api\Object\ProductReferenceHasDiscount;
 use Module\Ekom\Api\Object\ProductVariation;
 use Module\Ekom\Api\Object\Provider;
+use Module\Ekom\Api\Object\SearchStat;
 use Module\Ekom\Api\Object\Seller;
 use Module\Ekom\Api\Object\SellerHasAddress;
 use Module\Ekom\Api\Object\Shop;
@@ -275,6 +277,13 @@ class GeneratedEkomApi extends XiaoApi
         return $this->getObject('page');
     }
     /**
+     * @return PageNotFound
+     */
+    public function pageNotFound()
+    {
+        return $this->getObject('pageNotFound');
+    }
+    /**
      * @return PasswordRecoveryRequest
      */
     public function passwordRecoveryRequest()
@@ -448,6 +457,13 @@ class GeneratedEkomApi extends XiaoApi
     public function provider()
     {
         return $this->getObject('provider');
+    }
+    /**
+     * @return SearchStat
+     */
+    public function searchStat()
+    {
+        return $this->getObject('searchStat');
     }
     /**
      * @return Seller

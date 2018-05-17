@@ -18,6 +18,7 @@ use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Helper\Stats\Modules\BestCategoriesControllerModule;
 use Module\Ekom\Helper\Stats\Modules\BestCouponsControllerModule;
 use Module\Ekom\Helper\Stats\Modules\BestCustomersControllerModule;
+use Module\Ekom\Helper\Stats\Modules\BestPaymentMethodsControllerModule;
 use Module\Ekom\Helper\Stats\Modules\BestProvidersControllerModule;
 use Module\Ekom\Helper\Stats\Modules\BestSellersControllerModule;
 use Module\Ekom\Helper\Stats\Modules\BestSellsControllerModule;
@@ -25,7 +26,9 @@ use Module\Ekom\Helper\Stats\Modules\CustomerAccountsControllerModule;
 use Module\Ekom\Helper\Stats\Modules\CustomerInfoControllerModule;
 use Module\Ekom\Helper\Stats\Modules\NewsletterControllerModule;
 use Module\Ekom\Helper\Stats\Modules\OrdersAndProfitControllerModule;
+use Module\Ekom\Helper\Stats\Modules\PageNotFoundControllerModule;
 use Module\Ekom\Helper\Stats\Modules\ProductDetailsControllerModule;
+use Module\Ekom\Helper\Stats\Modules\SearchesControllerModule;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
 
@@ -66,8 +69,17 @@ class BackHooksHelper
             case "best_sellers":
                 $moduleHandler = BestSellersControllerModule::getModuleHandler();
                 break;
+            case "best_payment_methods":
+                $moduleHandler = BestPaymentMethodsControllerModule::getModuleHandler();
+                break;
             case "newsletter":
                 $moduleHandler = NewsletterControllerModule::getModuleHandler();
+                break;
+            case "page_not_found":
+                $moduleHandler = PageNotFoundControllerModule::getModuleHandler();
+                break;
+            case "searches":
+                $moduleHandler = SearchesControllerModule::getModuleHandler();
                 break;
             default:
                 break;
@@ -402,7 +414,7 @@ class BackHooksHelper
         $statItem = Item::create()
             ->setActive(true)
             ->setName("stats")
-            ->setLabel("Statistiques")
+            ->setLabel("Chiffres et statistiques")
             ->setIcon("fa fa-bar-chart")
             ->setLink("#")
             ->addItem(Item::create()
@@ -411,7 +423,15 @@ class BackHooksHelper
                 ->setLabel("Statistiques")
 //                    ->setIcon("fa fa-spinner")
                 ->setLink(A::link("Ekom_Stats_Statistics_Dashboard"))
-            );
+            )
+            ->addItem(Item::create()
+                ->setActive(true)
+                ->setName("stats_quantity")
+                ->setLabel("Quantités disponibles")
+//                    ->setIcon("fa fa-spinner")
+                ->setLink(A::link("Ekom_Stats_AvailableQuantity"))
+            )
+        ;
 
 
         $section

@@ -565,11 +565,11 @@ class E
      */
     public static function sendMail(string $template, string $recipient, array $variables = [])
     {
-        if (true === self::conf("mailEnable")) {
+        if (true === ApplicationVariablesLayer::getVariable("FishMailer_mailEnable", true)) {
             Hooks::call("Ekom_Mailer_decorateVariables", $variables, $template, $recipient);
             return FishMailerService::create()->sendFishMailByTemplate($recipient, $template, $variables);
         }
-        return true;
+        return 1;
     }
 
 
@@ -630,7 +630,6 @@ class E
 
         if (null === self::$conf) {
             self::$conf = [
-                'mailEnable' => (bool)E::getVariable("Ekom_mailEnable"),
                 'commentNeedValidation' => (bool)E::getVariable("Ekom_commentNeedValidation"),
                 'commentModeratorEmail' => E::getVariable("Ekom_commentModeratorEmail"),
                 'createAccountNeedValidation' => (bool)E::getVariable("Ekom_createAccountNeedValidation"),

@@ -7,6 +7,7 @@ namespace Module\Ekom\ProductSearch;
 use Bat\FileSystemTool;
 use Bat\StringTool;
 use Core\Services\A;
+use Core\Services\Hooks;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Layer\MiniProductBoxLayer;
@@ -90,10 +91,13 @@ label like :query
         }
 
 
-        return [
+        $res = [
+            'query' => $query,
             'products' => $products,
             'categories' => $categories,
         ];
+        Hooks::call("Ekom_ProductSearch_onSearchQueryAfter", $res);
+        return $res;
 
     }
 }

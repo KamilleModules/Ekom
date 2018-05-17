@@ -22,7 +22,7 @@ use QuickPdo\QuickPdoStmtTool;
 /**
  * Various stats for a given date range...
  */
-class EkomStatsUtil implements EkomStatsUtilInterface
+class EkomStatsUtilOld implements EkomStatsUtilInterface
 {
     protected $dateStart;
     protected $dateEnd;
@@ -239,11 +239,6 @@ $qInner
             case "visitors":
                 return $this->getVisitorGraph();
                 break;
-            case "visitorsAndVisits":
-                return $this->getVisitorGraph([
-                    "includeVisits" => true,
-                ]);
-                break;
             case "conversionRate":
                 return $this->getConversionRateGraph();
                 break;
@@ -356,46 +351,48 @@ order by date_creation asc
         $q = "
 select 
 date(subscribe_date) as date,
-count(*) as nb
-from ek_newsletter 
-";
+concat(
+  (select count(*) from ek_newsletter where subscribe_date=n.subscribe_date and user_id is not null),
+  ':',
+  (select count(*) from ek_newsletter where subscribe_date=n.subscribe_date and user_id is null)
+) as numbers
+
+from ek_newsletter n 
+where 1 
+
+        ";
+
         QuickPdoStmtTool::addDateRangeToQuery($q, $markers, $this->dateStart, $this->dateEnd, "subscribe_date");
+
+
         $q .= "
-group by date(subscribe_date)        
+        
+group by subscribe_date        
 order by subscribe_date asc
 
 ";
 
 
-        $qAccount = "
-select 
-date(newsletter_registration_date) as date,
-count(*) as nb
-from ek_user
-where newsletter_registration_date is not null
-";
-        QuickPdoStmtTool::addDateRangeToQuery($qAccount, $markers, $this->dateStart, $this->dateEnd, "newsletter_registration_date");
-        $qAccount .= "
-group by date(newsletter_registration_date)        
-order by newsletter_registration_date asc
-
-";
-
-
         $rows = QuickPdo::fetchAll($q, $markers, \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
-        $rowsAccount = QuickPdo::fetchAll($qAccount, $markers, \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
 
 
         // now, filling the holes
-        DateTool::foreachDateRange($this->dateStart, $this->dateEnd, function ($curDate) use (&$ret, $rows, $rowsAccount) {
-            $nbCustomer = $rowsAccount[$curDate] ?? 0;
-            $nbVisitor = $rows[$curDate] ?? 0;
-            $nbTotal = $nbCustomer + $nbVisitor;
-            $ret[$curDate] = [
-                "nb_customer" => $nbCustomer,
-                "nb_visitor" => $nbVisitor,
-                "nb_total" => $nbTotal,
-            ];
+        DateTool::foreachDateRange($this->dateStart, $this->dateEnd, function ($curDate) use (&$ret, $rows) {
+            if (false === array_key_exists($curDate, $rows)) {
+                $ret[$curDate] = [
+                    "nb_customer" => 0,
+                    "nb_visitor" => 0,
+                    "nb_total" => 0,
+                ];
+            } else {
+                $p = explode(':', $rows[$curDate]);
+                $row = [
+                    "nb_customer" => $p[0],
+                    "nb_visitor" => $p[1],
+                    "nb_total" => $p[0] + $p[1],
+                ];
+                $ret[$curDate] = $row;
+            }
         });
 
         return $ret;
@@ -423,51 +420,23 @@ order by newsletter_registration_date asc
         return $ret;
     }
 
-    protected function getVisitorGraph(array $options = [])
+    protected function getVisitorGraph()
     {
         $ret = [];
         $rows = $this->getIpByDate();
 
-        $includeVisits = $options['includeVisits'] ?? false;
-
-
-        if (false === $includeVisits) {
-
-            $date2NbTotal = [];
-            foreach ($rows as $row) {
-                $date2NbTotal[$row["date"]] = $row['nb_unique']; // nb visitor unique per day
-//                $date2NbTotal[$row["date"]] = $row['nb_total']; // nb visit total per day
-            }
-
-            DateTool::foreachDateRange($this->dateStart, $this->dateEnd, function ($curDate) use (&$ret, $date2NbTotal) {
-                $value = 0;
-                if (array_key_exists($curDate, $date2NbTotal)) {
-                    $value = (int)$date2NbTotal[$curDate];
-                }
-                $ret[$curDate] = $value;
-            });
-        } else {
-            $date2Data = [];
-            foreach ($rows as $row) {
-                $date2Data[$row["date"]] = [
-                    'nb_total' => $row['nb_total'],
-                    'nb_unique' => $row['nb_unique'],
-                ];
-            }
-
-            DateTool::foreachDateRange($this->dateStart, $this->dateEnd, function ($curDate) use (&$ret, $date2Data) {
-                if (array_key_exists($curDate, $date2Data)) {
-                    $value = $date2Data[$curDate];
-                } else {
-                    $value = [
-                        "nb_total" => 0,
-                        "nb_unique" => 0,
-                    ];
-                }
-
-                $ret[$curDate] = $value;
-            });
+        $date2NbTotal = [];
+        foreach ($rows as $row) {
+            $date2NbTotal[$row["date"]] = $row['nb_total'];
         }
+
+        DateTool::foreachDateRange($this->dateStart, $this->dateEnd, function ($curDate) use (&$ret, $date2NbTotal) {
+            $value = 0;
+            if (array_key_exists($curDate, $date2NbTotal)) {
+                $value = (int)$date2NbTotal[$curDate];
+            }
+            $ret[$curDate] = $value;
+        });
 
 
         return $ret;

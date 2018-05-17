@@ -15,11 +15,6 @@ $conf = array_replace([
      */
     'createAccountNeedValidation' => false,
     /**
-     * If false, the ekom module and related modules should not send any mail.
-     * Put this to true in production.
-     */
-    'mailEnable' => true,
-    /**
      * If comment need validation (true by default),
      * a freshly inserted comment will not appear on the website,
      * the comment moderator will receive an email and will validate/not validate the comment.

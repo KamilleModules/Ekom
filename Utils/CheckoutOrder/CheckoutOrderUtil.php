@@ -292,11 +292,15 @@ class CheckoutOrderUtil
             Hooks::call("Ekom_CheckoutOrderUtil_decorateOrderDetails", $orderDetails, $checkoutData, $extendedCartModel);
 
 
+
+
             // I let this model in non serialized form for debugging
             $orderModel = array_replace($orderModel, [
                 "user_id" => $userId,
                 "date" => date('Y-m-d H:i:s'),
                 "amount" => $cartModel['order_grand_total'],
+                "cart_total_tax_excluded" => $cartModel['cart_total_tax_excluded'],
+                "shipping_cost_tax_excluded" => $cartModel['shipping_cost_tax_excluded'],
                 "coupon_saving" => $cartModel['coupons_total'],
                 "cart_quantity" => $cartModel['cart_total_quantity'],
                 "user_info" => $userInfo,
@@ -481,6 +485,8 @@ class CheckoutOrderUtil
                 'reference' => $orderModel['reference'],
                 'date' => $orderModel['date'],
                 'amount' => $orderModel['amount'],
+                "cart_total_tax_excluded" => $orderModel['cart_total_tax_excluded'],
+                "shipping_cost_tax_excluded" => $orderModel['shipping_cost_tax_excluded'],
                 'coupon_saving' => $orderModel['coupon_saving'],
                 'cart_quantity' => $orderModel['cart_quantity'],
                 'shipping_country_iso_code' => $shippingCountryIsoCode,

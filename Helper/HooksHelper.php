@@ -9,6 +9,7 @@ use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\InvoiceLayer;
 use Module\Ekom\Api\Layer\UserHasCouponLayer;
 use Module\Ekom\Api\Layer\UserVisitedProductReferencesLayer;
+use Module\Ekom\Api\Object\SearchStat;
 use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Back\Util\ApplicationSanityCheck\ApplicationSanityCheckUtil;
 use Module\Ekom\Exception\EkomUserMessageException;
@@ -24,7 +25,23 @@ class HooksHelper
 {
 
 
-
+    public static function Ekom_ProductSearch_onSearchQueryAfter(array &$searchResults)
+    {
+        if (array_key_exists("products", $searchResults)) {
+            /**
+             * assuming the EkomBasicProductSearcher search engine (or alike) was used
+             */
+            $query = $searchResults['query'];
+            $nbResults = count($searchResults['products']);
+            $userId = E::getUserId(null);
+            SearchStat::getInst()->create([
+                "user_id" => $userId,
+                "expression" => $query,
+                "results" => $nbResults,
+                "date_added" => date("Y-m-d H:i:s"),
+            ]);
+        }
+    }
 
     public static function Ekom_FrontController_Meta_decorate(array &$metaArray, string $route)
     {

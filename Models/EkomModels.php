@@ -46,8 +46,6 @@ class EkomModels
     }
 
 
-
-
     /**
      * carrierOfferModel
      * ==================
@@ -190,7 +188,7 @@ class EkomModels
      *
      *
      * - shipping_status: int (0|1|2|3|4): the status of the shipping process.
-     *      @dev, @template-dev, You can use the fact that the status code is 4 to know whether or not the shipping process was successfully
+     * @dev, @template-dev, You can use the fact that the status code is 4 to know whether or not the shipping process was successfully
      *      applied to this order.
      *
      *      - 0: the weight of the cart is 0, this is not deliverable (maybe the cart contains only downloadable products).
@@ -344,7 +342,7 @@ class EkomModels
      *                   - order: the coupon applies to the order total
      *
      *
-     *                    @this-part below is deprecated
+     * @this-part below is deprecated
      *                   - <emptyString>
      *                           distribute the coupon amount equally amongst all sellers.
      *                           Note: we could also use a ratio proportional to the
@@ -558,9 +556,6 @@ class EkomModels
     }
 
 
-
-
-
     /**
      * orderModel
      * ====================
@@ -570,6 +565,32 @@ class EkomModels
      * - user_id: int
      * - date: datetime
      * - amount: number, total amount of the order
+     *
+     *              cart_total_tax_included
+     *              + shipping_cost_tax_included
+     *              - order_saving_total (amount of coupons)
+     *
+     *
+     * - (Note:)
+     *          amount_without_tax = cart_total_tax_excluded + shipping_cost_tax_excluded
+     *
+     *          Note: the amount_without_tax doesn't take into account the coupons:
+     *          I talked to our accounting guy, and basically: we don't care much about coupons most of the time,
+     *          as far as displaying graphs in the backoffice is what we want to do.
+     *          We keep the coupons amount (of course), but we can exclude it from the total amount.
+     *          He even said that the shipping_cost also could be excluded from the amount total.
+     *          Therefore, in order to ease the statistic data, we will have all those prices as part of the
+     *          order table: cart_total_tax_excluded, shipping_cost_tax_excluded,
+     *          and their "with tax included" version.
+     *
+     *          Also, by the way, since I provide cart_total_tax_excluded and shipping_cost_tax_excluded,
+     *          we don't need the amount_without_tax anymore (just do the addition when you need it).
+     *
+     *
+     * - cart_total_tax_excluded
+     * - shipping_cost_tax_excluded
+     *
+     *
      * - coupon_saving: number, total amount of coupon for this order (it's a positive number, or zero)
      * - cart_quantity:
      *
@@ -710,7 +731,6 @@ class EkomModels
     {
 
     }
-
 
 
     /**
