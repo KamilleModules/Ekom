@@ -42,6 +42,7 @@ class GeneratedUser extends TableCrudObject
 			'mobile' => '',
 			'phone' => '',
 			'newsletter' => 0,
+			'newsletter_registration_date' => null,
 			'birthday' => null,
 			'active_hash' => '',
 			'active' => 0,
@@ -55,6 +56,9 @@ class GeneratedUser extends TableCrudObject
         }
         if ("" === $ret["date_last_connection"]) {
             $ret["date_last_connection"] = null;
+        }
+        if ("" === $ret["newsletter_registration_date"]) {
+            $ret["newsletter_registration_date"] = null;
         }
         if ("" === $ret["birthday"]) {
             $ret["birthday"] = null;
