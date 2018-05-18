@@ -112,8 +112,6 @@ coalesce(
         ");
 
 
-
-
         $sqlQuery->addJoin("
 left join ek_product_has_tag phtag on phtag.product_id=p.id
 left join ek_tag tag on tag.id=phtag.tag_id      
@@ -191,11 +189,11 @@ and pr.id in ($sProductReferenceIds)
     }
 
 
-    public static function getBoxesByProductGroupName(string $productGroupName)
+    public static function getBoxesByProductGroupName(string $productGroupName, array $options = [])
     {
 
 
-        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($options);
 
         // specific to groups
         $sqlQuery->addWhere("

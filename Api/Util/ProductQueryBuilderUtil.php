@@ -109,6 +109,13 @@ class ProductQueryBuilderUtil
     {
         $useTaxRuleConditionId = $options['useTaxRuleConditionId'] ?? false;
         $useAttributeString = $options['useAttributesString'] ?? true;
+        $groupBy = $options['groupBy'] ?? "reference";
+
+        $groupByField = "pr.reference";
+        if("product" === $groupBy){
+            $groupByField = "p.id";
+        }
+
 
 
         $taxContext = E::getTaxContext();
@@ -418,7 +425,7 @@ inner join ek_seller sel on sel.id=p.seller_id
              * See this topic: https://dba.stackexchange.com/questions/50391/why-does-mysql-allow-having-to-use-select-aliases
              *
              */
-            ->addGroupBy('pr.reference')
+            ->addGroupBy($groupByField)
             ->addMarkers($markers);
 
         return $sqlQuery;
