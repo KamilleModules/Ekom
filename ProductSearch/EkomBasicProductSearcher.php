@@ -55,6 +55,12 @@ class EkomBasicProductSearcher extends AbstractProductSearch
     {
 
 
+        $options = [];
+        Hooks::call("Ekom_ProductSearch_getSearchOptions", $options);
+
+        $type2LabelMap = $options['type2LabelMap'] ?? [];
+
+
         //--------------------------------------------
         // PRODUCTS
         //--------------------------------------------
@@ -72,6 +78,7 @@ select label, `type`, slug
 from ek_category 
 where 
 label like :query
+order by type asc
 
 ", [
             "query" => '%' . str_replace('%', '\%', $query) . '%',
@@ -82,6 +89,12 @@ label like :query
         foreach ($rows as $row) {
             if (!in_array($row['label'], $alreadyLabels)) {
                 $alreadyLabels[] = $row['label'];
+
+                $type = $row['type'];
+                $typeLabel = (array_key_exists($type, $type2LabelMap)) ? $type2LabelMap[$type] : $type;
+
+                $row["type_label"] = $typeLabel;
+
                 $row['uriCategory'] = E::link("Ekom_category", [
                     'slug' => $row['slug'],
                     'type' => $row['type'],
