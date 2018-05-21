@@ -80,6 +80,7 @@ select value from ek_feature_value_lang where feature_value_id=$featureValueId a
 select 
         
 f.name,
+f.label,
 fv.value
         
 from ek_product_has_feature h 

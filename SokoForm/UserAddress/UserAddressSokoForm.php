@@ -79,7 +79,7 @@ class UserAddressSokoForm
             )
             ->addControl(SokoInputControl::create()
                 ->setName("supplement")
-                ->setLabel('Supplément')
+                ->setLabel('Informations importantes pour la livraison')
             )
             ->addControl(SokoChoiceControl::create()
                 ->setName("country_id")

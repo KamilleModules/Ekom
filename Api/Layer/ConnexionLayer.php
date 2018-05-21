@@ -42,6 +42,13 @@ class ConnexionLayer
         return SessionUser::getValue($key, $default);
     }
 
+    public static function connectUserById(int $userId)
+    {
+        $data = ConnexionLayer::buildConnexionDataByUserId($userId);
+        EkomApi::inst()->connexionLayer()->connect($data);
+        Hooks::call("Ekom_onUserConnectedAfter");
+    }
+
 
     /**
      * @return array

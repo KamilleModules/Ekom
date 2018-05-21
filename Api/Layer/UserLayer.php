@@ -127,10 +127,10 @@ where 1
     /**
      * @see EkomModels::userInfoModel()
      */
-    public static function getUserInfoById($userId)
+    public static function getUserInfoById($userId, bool $callModules = false)
     {
         $userId = (int)$userId;
-        return QuickPdo::fetch("
+        $res = QuickPdo::fetch("
 select 
 u.*, 
 g.name as group_name,
@@ -142,6 +142,11 @@ from ek_user u
 inner join ek_user_group g on g.id=u.user_group_id  
 inner join ek_gender ge on ge.id=u.gender_id  
 where u.id=$userId");
+
+        if (true === $callModules) {
+            Hooks::call('Ekom_UserLayer_decorateUserInfo', $res, $userId);
+        }
+        return $res;
     }
 
     public static function getUserInfoByEmail($email)
@@ -198,7 +203,8 @@ where u.id=$userId");
     public function connectUser(array $info)
     {
         if (array_key_exists('id', $info)) {
-            SessionUser::connect(['id' => $info['id']]);
+            ConnexionLayer::connectUserById($info['id']);
+//            SessionUser::connect(['id' => $info['id']]);
         } else {
             throw new EkomException("Id not found");
         }

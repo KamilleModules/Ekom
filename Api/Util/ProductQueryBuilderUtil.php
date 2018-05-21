@@ -112,10 +112,11 @@ class ProductQueryBuilderUtil
         $groupBy = $options['groupBy'] ?? "reference";
 
         $groupByField = "pr.reference";
-        if("product" === $groupBy){
+        if ("product" === $groupBy) {
             $groupByField = "p.id";
+        } elseif ("card" === $groupBy) {
+            $groupByField = "c.id";
         }
-
 
 
         $taxContext = E::getTaxContext();
@@ -141,7 +142,6 @@ class ProductQueryBuilderUtil
         } else {
             $qTaxSubquery = "
 select ratio 
-
 from ek_tax_rule_condition rr
 inner join ek_product_card cc on cc.tax_rule_id=rr.tax_rule_id
  

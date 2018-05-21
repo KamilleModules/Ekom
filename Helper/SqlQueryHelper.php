@@ -30,12 +30,15 @@ class SqlQueryHelper
      * @param int $categoryId
      * @return SqlQueryInterface|false
      */
-    public static function getCategoryWithFiltersSqlQueryByCategoryId(int $categoryId)
+    public static function getCategoryWithFiltersSqlQueryByCategoryId(int $categoryId, array $options = [])
     {
 
-        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery([
-            "useAttributesString" => true, // this might change, maybe we don't need it...
-        ]);
+        $queryOptions = $options['queryOptions'] ?? [
+                "useAttributesString" => true,
+            ];
+
+
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($queryOptions);
         $cardIds = ProductCardLayer::getProductCardIdsByCategoryId($categoryId);
         if ($cardIds) {
             $sCardIds = implode(', ', $cardIds);

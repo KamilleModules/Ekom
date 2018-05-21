@@ -163,6 +163,7 @@ class E
 
         if (E::userIsConnected()) {
             $userId = E::getUserId();
+//            az($_SESSION);
             $connexionData = ConnexionLayer::getConnexionData();
             $userContext = [
                 "time_segment" => $dateSegment,

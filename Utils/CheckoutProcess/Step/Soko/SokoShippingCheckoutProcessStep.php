@@ -223,6 +223,13 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                 $ret['context'] = $this->context;
             } else {
                 $firstAddressForm = $this->getFirstAddressForm();
+
+
+                $context = [];
+                Hooks::call("Ekom_Front_decorateFetchAddressContext", $context);
+                $firstAddressForm->inject($context);
+
+
                 $ret['form'] = $firstAddressForm->getModel();
             }
 

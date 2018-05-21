@@ -105,9 +105,7 @@ class SokoLoginFormModel
                         //--------------------------------------------
                         // CONNECT THE USER
                         //--------------------------------------------
-                        $data = ConnexionLayer::buildConnexionDataByUserId($userId);
-                        EkomApi::inst()->connexionLayer()->connect($data);
-                        Hooks::call("Ekom_onUserConnectedAfter");
+                        ConnexionLayer::connectUserById($userId);
 
 
                         //--------------------------------------------
