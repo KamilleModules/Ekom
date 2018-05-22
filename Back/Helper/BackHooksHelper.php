@@ -437,24 +437,24 @@ class BackHooksHelper
                 ->setLabel("Quantités disponibles")
 //                    ->setIcon("fa fa-spinner")
                 ->setLink(A::link("Ekom_Stats_AvailableQuantity"))
-            )
-        ;
+            );
 
 
         $section
-            ->addItem($configItem)
 //            ->addItem($utilsItem)
             ->addItem($usersItem)
             ->addItem($discountItem)
             ->addItem($carrierItem)
             ->addItem($localizationItem)
             ->addItem($seoItem)
-            ->addItem($statItem);
+            ->addItem($statItem)
+            ->addItem($configItem)
+            
+        ;
 
 
         $menuItems = [
             'Ekom.section' => $section,
-            'Ekom.config' => $configItem,
             'Ekom.utils' => $utilsItem,
             'Ekom.users' => $usersItem,
             'Ekom.carriers' => $carrierItem,
@@ -463,6 +463,7 @@ class BackHooksHelper
             'Ekom.stats' => $statItem,
             'Ekom.catalog' => $catalogItem,
             'Ekom.catalog.productGroups' => $productGroupsItem,
+            'Ekom.config' => $configItem,
         ];
 
         Hooks::call("Ekom_decorateLeftMenu", $menuItems);

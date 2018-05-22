@@ -23,17 +23,16 @@ class UserInfoModel
     {
         $comments = ProductCommentLayer::getCommentsByUserId($userId, true, 5);
         $rows = [];
-
         foreach ($comments as $row) {
             $rows[] = [
                 'id' => $row['comment_id'],
-                'product_type_id' => $row['product_type_id'],
+                'product_type_id' => $row['product_card_type_name'],
                 'product_id' => $row['product_id'],
-                'card_id' => $row['card_id'],
+                'card_id' => $row['product_card_id'],
                 'date' => $row['comment_date'],
-                'ref' => $row['ref'],
+                'ref' => $row['reference'],
                 'label' => $row['label'],
-                'photo' => $row['imageThumb'],
+                'photo' => $row['image'],
                 'comment' => $row['comment_comment'],
                 'rating' => $row['comment_rating'], // rating up to 100
                 'active' => $row['comment_active'],

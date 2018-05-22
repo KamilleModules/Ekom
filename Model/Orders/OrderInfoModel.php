@@ -62,7 +62,16 @@ class OrderInfoModel
             $ret['user_representation'] = $userRepr;
             $ret['page_title'] = "Commande " . $ret['reference'] . " de $userRepr";
             $ret['billing_address'] = self::formatAddress($ret['billing_address']);
-            $ret['shipping_address'] = self::formatAddress($ret['shipping_address']);
+
+            $shippingAddress = $ret['shipping_address'];
+            if (false !== $shippingAddress) {
+                /**
+                 * Note: shipping address can be false if the cart contains only training for instance,
+                 * or downloadable products.
+                 */
+                $shippingAddress = self::formatAddress($ret['shipping_address']);
+            }
+            $ret['shipping_address'] = $shippingAddress;
             $ret['sellerName2Label'] = SellerLayer::getName2LabelList();
 
             $trackerIdentifiers = OrderLayer::getTrackerIdentifiersByOrderId($id);
