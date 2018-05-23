@@ -34,8 +34,7 @@ class EkomCheckoutProcess extends CheckoutProcess
 
         $this->_extendedCartModel = CartUtil::getExtendedCartModel();
 
-
-        if (false === E::userIsConnected()) {
+        if (true || false === E::userIsConnected()) {
             $this->addStep(SokoLoginCheckoutProcessStep::create(), "login", 100);
         }
         if ($this->_extendedCartModel['cart']['cart_total_weight'] > 0) {

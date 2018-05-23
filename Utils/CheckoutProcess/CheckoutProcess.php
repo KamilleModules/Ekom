@@ -188,7 +188,7 @@ class CheckoutProcess implements CheckoutProcessInterface
              */
             if (null !== ($previousFailingStep = $this->findPreviousFailingStep($currentStep))) {
                 $currentStep = $previousFailingStep;
-                $this->debug("regression detected: a previous step failed");
+                $this->debug("regression detected: a previous step failed: $previousFailingStep");
                 $this->debug("currentStep becomes $currentStep");
             }
 
@@ -425,7 +425,9 @@ class CheckoutProcess implements CheckoutProcessInterface
 
     private function findPreviousFailingStep($currentStep)
     {
+        $this->debug("start findPreviousFailingStep");
         foreach ($this->steps as $stepName => $step) {
+            $this->debug("loop: $stepName");
             if ($stepName === $currentStep) {
                 break;
             }

@@ -57,9 +57,6 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                     EkomApi::inst()->userAddressLayer()->createAddress($userId, $filteredContext);
 
 
-
-
-
                 } catch (EkomUserMessageException $e) {
                     $form->addNotification($e->getMessage(), "error");
                 }
@@ -122,12 +119,10 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                 if (0 === count($carrierOffers)) {
                     throw new EkomUserMessageException("No carrier offer for this app");
                 }
-                $ret['carrierOffers'] = $carrierOffers;
 
 
 
                 CheckoutProcessHelper::fixUnsyncedCurrentCheckoutDataAddresses();
-
 
 
                 /**
@@ -137,12 +132,23 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                  */
                 $selectedCarrierId = null;
                 foreach ($carrierOffers as $carrierId => $carrierOffer) {
-                    $selectedCarrierId = $carrierId;
                     if (true === $carrierOffer['selected']) {
                         $selectedCarrierId = $carrierId;
                         break;
                     }
                 }
+
+                /**
+                 * If no carrier was selected, we choose the first one by default
+                 * (assuming that the preferred carrier is on the top)
+                 */
+                if (null === $selectedCarrierId) {
+                    reset($carrierOffers);
+                    $selectedCarrierId = key($carrierOffers);
+                    $carrierOffers[$selectedCarrierId]['selected'] = true;
+                }
+                $ret['carrierOffers'] = $carrierOffers;
+                az($carrierOffers);
 
                 /**
                  * Sometimes, you only have one carrierOffer and the snippet above
@@ -153,10 +159,6 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
 //                if(null===$selectedCarrierId){
 //                    $selectedCarrierId = key($carrierOffers);
 //                }
-
-
-
-
 
 
                 // which one is selected in the gui?
@@ -200,13 +202,11 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                     $billingAddress = $shippingAddress;
                 }
 
+
+                $this->debug("SokoShippingCheckoutProcessStep: selectedCarrierId=$selectedCarrierId, selectedAddressId=$selectedAddressId, selectedBillingAddressId=$selectedBillingAddressId");
                 CurrentCheckoutData::setBillingAddressId($selectedBillingAddressId);
                 CurrentCheckoutData::setShippingAddressId($selectedAddressId);
-
-
-
-
-
+                CurrentCheckoutData::setCarrierId($selectedCarrierId);
 
 
                 $ret['userAddresses'] = $userAddresses;
@@ -248,5 +248,11 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
             $this->firstAddressForm = UserAddressSokoForm::getForm("SokoShippingCheckoutProcessStep");
         }
         return $this->firstAddressForm;
+    }
+
+
+    private function debug($msg)
+    {
+        E::dlog($msg);
     }
 }

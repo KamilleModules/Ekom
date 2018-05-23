@@ -136,10 +136,12 @@ class CartUtil
     {
         $carrierOffers = [];
 
+        $cartLayer = CheckoutUtil::getCurrentCartLayer();
         $cartModel = CheckoutUtil::getCurrentCartLayer()->getCartModel();
 
         $context = CartUtil::getCarrierShippingInfoContext($cartModel);
         $cart = $cartModel;
+
 
         $carrierId = CurrentCheckoutData::getCarrierId();
         if (null === $carrierId) {
