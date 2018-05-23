@@ -459,6 +459,10 @@ class CartLayer
     }
 
 
+    protected static function getCurrentCheckoutData()
+    {
+        return CurrentCheckoutData::all();
+    }
 
 
     //--------------------------------------------
@@ -638,7 +642,8 @@ class CartLayer
             /**
              * Is there a carrier available?
              */
-            $carrier = self::chooseCarrier();
+            $currentCheckoutData = static::getCurrentCheckoutData();
+            $carrier = self::chooseCarrier($currentCheckoutData);
             if (false !== $carrier) {
 
                 /**
@@ -651,7 +656,8 @@ class CartLayer
                 /**
                  * Can the carrier calculate the shippingInfo with the given context?
                  */
-                $context = CartUtil::getCarrierShippingInfoContext($model);
+
+                $context = CartUtil::getCarrierShippingInfoContext($model, $currentCheckoutData);
                 if (false !== ($shippingInfo = $carrier->getShippingInfo($context, $carrierErrorCode))) {
 
                     $shippingStatus = 3;
@@ -852,11 +858,11 @@ class CartLayer
     /**
      * @return CarrierInterface|false
      */
-    private static function chooseCarrier()
+    private static function chooseCarrier(array $currentCheckoutData)
     {
         try {
 
-            $carrierId = CurrentCheckoutData::getCarrierId();
+            $carrierId = $currentCheckoutData['carrier_id'] ?? null;
             if (null !== $carrierId) {
                 return CarrierLayer::getCarrierInstanceById($carrierId);
             }

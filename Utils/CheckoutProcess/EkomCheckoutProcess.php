@@ -32,7 +32,8 @@ class EkomCheckoutProcess extends CheckoutProcess
     protected function init()
     {
 
-        $this->_extendedCartModel = CartUtil::getExtendedCartModel();
+        $this->debug("EkomCheckoutProcess: init");
+        $this->_extendedCartModel = CartLayer::create()->getExtendedCartModel();
 
         if (true || false === E::userIsConnected()) {
             $this->addStep(SokoLoginCheckoutProcessStep::create(), "login", 100);

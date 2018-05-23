@@ -15,55 +15,22 @@ use Module\Ekom\Utils\Traits\EkomContextAwareTrait;
 
 /**
  *
- * The main method is execute, which returns the checkoutProcess model (displayed by the view).
- *
- * There are many steps, but only one can be opened at a time.
- *
- * Which step is displayed?
- * - the current step is either the last visited step (if it exists), or the first non skippable step
- * otherwise (see source code for more info).
- *
- * Note:
- * when the user disconnects, navigational data is lost (we start back at step 1) even if she reconnects.
- *
- * If the current step is posted successfully, the model immediately uses the next step if any, or otherwise
- * triggers the onStepsComplete callback.
  *
  *
- * GUI ACTIONS
- * ---------------
- * There are two main gui actions:
- *
- * - click
- * - post
- *
- * click is the action of clicking on a step bar (the bar that contains the step title).
- * A click's goal is to select the current step being displayed in the view.
- * However, the model might disallow a click if a previous step has not yet been validated
- * (i.e. you can only click on already done step).
- *
- *
- * post is when you click the step's form SUBMIT button.
- * The context (ensemble of form variables) is sent to the CheckoutProcess object,
- * and the isPostedSuccessfully method of the current step is then called.
- * When this method is successful (returns true), then the next step is selected (and shown in the view).
- * If there is no more next steps, the onStepsComplete callback is triggered.
- *
- *
- * In the current Ekom implementation, both click and post use ajax services (see ekom's ecp/api.php):
- * - click calls: checkout.switchStep (and the special variable _step is used)
- * - post calls: checkout.updateStep (and the context is passed)
- *
- *
- *
- *
- *
- *
+ * checkoutProcessModel
+ * -------------------------
+ * - steps: an array of stepItem models, each of which having the following structure:
+ *      name: string, the name of the step
+ *      isDone: bool
+ *      isCurrent: bool
+ *      model: null|array,
+ *                  null when the step doesn't have the focus,
+ *                  array if the step has focus
  *
  *
  *
  */
-class CheckoutProcess implements CheckoutProcessInterface
+class CheckoutProcessOld3 implements CheckoutProcessInterface
 {
 
     use EkomContextAwareTrait;
@@ -158,7 +125,6 @@ class CheckoutProcess implements CheckoutProcessInterface
 
         $this->initSteps(); // put steps in the order defined by position
 
-
         $this->debug("CheckoutProcess:execute");
         if ($this->steps) {
 
@@ -169,43 +135,77 @@ class CheckoutProcess implements CheckoutProcessInterface
 
             $this->debug("Context: " . ArrayToStringTool::toPhpArray($context));
 
-
-            // do we really need this?
-//            $this->spreadContext($context);
+            $this->spreadContext($context);
 
             /**
-             * @deprecated
-             * (now it's much simpler..., so no docs for now...)
              * What's the current step.
              * The algorithm is described in
              * class-modules/Ekom/doc/checkout/checkout-process.md
              */
-            //--------------------------------------------
-            // WHAT'S THE CURRENT STEP?
-            //--------------------------------------------
-            $currentStep = $this->get("_lastVisitedStep", $this->getFirstNonSkippableStepName());
+            $currentStep = null;
             $clickedStep = (array_key_exists('_step', $context)) ? $context['_step'] : null;
-            if (null !== $clickedStep) {
-                $this->debug("clickedStep: $clickedStep");
-                if (true === $this->allPreviousStepsValid($clickedStep)) {
-                    $currentStep = $clickedStep;
-                    $this->getStep($currentStep)->click();
+            $this->debug("clickedStep: $clickedStep");
+
+            //--------------------------------------------
+            // DEFINE THE CURRENT STEP
+            //--------------------------------------------
+            /**
+             * Note that the current step might be actually posted, but we handle that in the next block
+             */
+            /**
+             * Clicked step?
+             */
+            $couldBePosted = true;
+            if (null !== $clickedStep && true === $this->stepWasReached($clickedStep)) {
+                $currentStep = $clickedStep;
+                $couldBePosted = false;
+                $this->debug("currentStep becomes clicked step $currentStep");
+
+            } else {
+                /**
+                 * The default current step is either the lastVisitedStep (if it exists),
+                 * or the very first step otherwise.
+                 */
+                $lastVisitedStep = $this->get("_lastVisitedStep");
+                $this->debug("lastVisitedStep: $lastVisitedStep");
+                if (null !== $lastVisitedStep) {
+                    $currentStep = $lastVisitedStep;
+                    $this->debug("currentStep becomes last visited step $currentStep");
+
+
+                } else {
+                    $currentStep = $this->getVeryFirstStep();
+                    $this->debug("currentStep becomes the very first step $currentStep");
                 }
             }
 
-            $this->debug("currentStep: $currentStep");
+            //--------------------------------------------
+            // POTENTIAL DOWNGRADE
+            //--------------------------------------------
+            /**
+             * Whatever step we've chosen above, if there is a non valid step BEFORE,
+             * we want to display that non valid step.
+             */
+            if (null !== ($previousFailingStep = $this->findPreviousFailingStep($currentStep))) {
+                $currentStep = $previousFailingStep;
+                $this->debug("regression detected: a previous step failed: $previousFailingStep");
+                $this->debug("currentStep becomes $currentStep");
+            }
 
 
             //--------------------------------------------
             // HANDLE IF IT'S POSTED
             //--------------------------------------------
-            if ($this->getStep($currentStep)->isPostedSuccessfully($this, $context)) {
-                $this->debug("Step $currentStep was actually posted successfully.");
-                /**
-                 * If the step is successfully posted, we automatically go to the very next step
-                 */
-                $currentStep = $this->getNextStep($currentStep); // null|string
-                $this->debug("Moving to next active step: $currentStep");
+            if (true === $couldBePosted) {
+                $this->debug("Is $currentStep posted successfully?");
+                if ($this->getStep($currentStep)->isPostedSuccessfully($this, $context)) {
+                    $this->debug("Step $currentStep was actually posted successfully.");
+                    /**
+                     * If the step is successfully posted, we automatically go to the very next step
+                     */
+                    $currentStep = $this->getNextStep($currentStep); // null|string
+                    $this->debug("Moving to next active step: $currentStep");
+                }
             }
 
 
@@ -213,6 +213,12 @@ class CheckoutProcess implements CheckoutProcessInterface
             // SAVE THE lastVisitedStep for the next time
             //--------------------------------------------
             $this->set("_lastVisitedStep", $currentStep);
+
+
+            //--------------------------------------------
+            // SAVING THAT THIS POSITION WAS REACHED
+            //--------------------------------------------
+            $this->markAsReached($currentStep);
 
 
             //--------------------------------------------
@@ -392,39 +398,63 @@ class CheckoutProcess implements CheckoutProcessInterface
     }
 
 
+    private function markAsReached($stepName)
+    {
+        /**
+         * Note: in development, I had the case where steps BEFORE the current step were not reached,
+         * and it bothered me for testing.
+         * Although this situation might not occur in prod, I prefer to mark not only the currentStep,
+         * but also all previous steps as reached, as to workaround my little annoyance, and
+         * preventing the problem to occur again anyway.
+         */
+        $reached = $this->get("reached", []);
+        foreach ($this->steps as $name => $step) {
+            $reached[$name] = true;
+            if ($stepName === $name) {
+                break;
+            }
+        }
+        $this->set("reached", $reached);
+    }
+
+    private function stepWasReached($stepName)
+    {
+        $reached = $this->get("reached", []);
+        return array_key_exists($stepName, $reached);
+    }
+
+    private function findPreviousFailingStep($currentStep)
+    {
+        $this->debug("start findPreviousFailingStep");
+        foreach ($this->steps as $stepName => $step) {
+            $this->debug("loop: $stepName");
+            if ($stepName === $currentStep) {
+                break;
+            }
+            if (false === $step->isValid()) {
+                return $stepName;
+            }
+        }
+        return null;
+    }
+
+    private function spreadContext(array $context)
+    {
+        foreach ($this->steps as $step) {
+            $step->prepare($context);
+        }
+    }
+
     private function initSteps()
     {
         ksort($this->presteps);
+
+
         foreach ($this->presteps as $position => $allSteps) {
             foreach ($allSteps as $stepInfo) {
                 list($name, $step) = $stepInfo;
                 $this->steps[$name] = $step;
             }
-        }
-    }
-
-
-    private function allPreviousStepsValid(string $stepName)
-    {
-        foreach ($this->steps as $name => $step) {
-            if ($stepName === $name) {
-                return true;
-            }
-            if (false === $step->isValid()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    private function getFirstNonSkippableStepName()
-    {
-        foreach ($this->steps as $name => $step) {
-            if (true === $step->isSkipped()) {
-                continue;
-            }
-            return $name;
         }
     }
 }

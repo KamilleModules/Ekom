@@ -8,23 +8,16 @@ use Core\Services\Hooks;
 use Core\Services\X;
 use Kamille\Services\Exception\HooksException;
 use Kamille\Services\XLog;
-use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Entity\CartModelEntity;
-use Module\Ekom\Api\Exception\EkomApiException;
 use Module\Ekom\Api\Layer\CarrierLayer;
 use Module\Ekom\Api\Layer\CartLayer;
-use Module\Ekom\Api\Layer\SellerLayer;
-use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\StoreLayer;
 use Module\Ekom\Api\Layer\TaxLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Models\EkomModels;
-use Module\Ekom\Utils\Checkout\CheckoutUtil;
-use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\DistanceEstimator\DistanceEstimatorInterface;
 use Module\Ekom\Utils\E;
-use Module\ThisApp\ThisAppConfig;
 
 class CartUtil
 {
@@ -132,18 +125,19 @@ class CartUtil
      * @throws \Exception
      *
      */
-    public static function getCarrierOffers()
+    public static function getCarrierOffers(array $cartModel, array $currentCheckoutDataModel)
     {
         $carrierOffers = [];
 
-        $cartLayer = CheckoutUtil::getCurrentCartLayer();
-        $cartModel = CheckoutUtil::getCurrentCartLayer()->getCartModel();
+//        $cartLayer = CheckoutUtil::getCurrentCartLayer();
+//        $cartModel = CheckoutUtil::getCurrentCartLayer()->getCartModel();
+//        $cartModel = CartLayer::create()->getCartModel();
 
-        $context = CartUtil::getCarrierShippingInfoContext($cartModel);
+        $context = CartUtil::getCarrierShippingInfoContext($cartModel, $currentCheckoutDataModel);
         $cart = $cartModel;
 
 
-        $carrierId = CurrentCheckoutData::getCarrierId();
+        $carrierId = $currentCheckoutDataModel['carrier_id'] ?? null;
         if (null === $carrierId) {
             $carrierId = $cart['carrier_id'];
         }
@@ -214,13 +208,13 @@ class CartUtil
     /**
      * @see EkomModels::shippingContextModel()
      */
-    public static function getCarrierShippingInfoContext(array $earlyCartModel)
+    public static function getCarrierShippingInfoContext(array $earlyCartModel, array $currentCheckoutDataModel)
     {
         /**
          * Can the carrier calculate the shippingInfo?
          */
-        $shippingAddress = self::getCurrentShippingAddress();
-        $storeAddress = self::getCurrentStoreAddress($shippingAddress);
+        $shippingAddress = self::getCurrentShippingAddress($currentCheckoutDataModel);
+        $storeAddress = self::getCurrentStoreAddress($shippingAddress, $currentCheckoutDataModel);
         return [
             "cartItems" => $earlyCartModel['items'],
             "cartWeight" => $earlyCartModel['cart_total_weight'],
@@ -280,19 +274,19 @@ class CartUtil
     /**
      * @see EkomModels::extendedCartModel()
      */
-    public static function getExtendedCartModel()
-    {
-        return CheckoutUtil::getCurrentCartLayer()->getExtendedCartModel();
-    }
+//    public static function getExtendedCartModel()
+//    {
+//        return CheckoutUtil::getCurrentCartLayer()->getExtendedCartModel();
+//    }
 
 
     /**
      * @return CartLayer
      */
-    public static function getCart()
-    {
-        return CheckoutUtil::getCurrentCartLayer();
-    }
+//    public static function getCart()
+//    {
+//        return CheckoutUtil::getCurrentCartLayer();
+//    }
 
     /**
      * @param array $items
@@ -606,7 +600,7 @@ class CartUtil
      * @see EkomModels::addressModel()
      * @throws EkomException
      */
-    private static function getCurrentShippingAddress()
+    private static function getCurrentShippingAddress(array $currentCheckoutDataModel)
     {
         /**
          * If the user is not connected and/or disconnect,
@@ -622,7 +616,7 @@ class CartUtil
          * has precedence.
          */
         $userId = E::getUserId();
-        $addressId = CurrentCheckoutData::getShippingAddressId();
+        $addressId = $currentCheckoutDataModel['shipping_address_id'] ?? null;
         if (null !== $addressId) {
             /**
              * Might be the case that the user was on the checkout page and
@@ -651,12 +645,12 @@ class CartUtil
      * @see EkomModels::shopPhysicalAddress()
      * @throws EkomException
      */
-    private static function getCurrentStoreAddress(array $shippingAddress = null)
+    private static function getCurrentStoreAddress(array $shippingAddress = null, array $currentCheckoutDataModel = [])
     {
         /**
          * If the shop address was already SELECTED (by ekom), then use this address
          */
-        $addressId = CurrentCheckoutData::getStoreAddressId();
+        $addressId = $currentCheckoutDataModel['store_address_id'] ?? null;
         if (null !== $addressId) {
             return StoreLayer::getPhysicalAddressById($addressId);
         }

@@ -36,6 +36,20 @@ interface CheckoutProcessStepInterface
 
     public function isValid();
 
+
+    /**
+     * Means that the step has just been clicked.
+     * Generally, you won't do anything.
+     *
+     * But imagine your step is composed of 3 substeps,
+     * then you could say that when the bar of your step is clicked,
+     * you go back to substep 1 (instead of staying on the current substep).
+     *
+     *
+     * @return void
+     */
+    public function click();
+
     /**
      *
      * @param array $context : the array representing the posted data.
@@ -53,6 +67,21 @@ interface CheckoutProcessStepInterface
 
 
     public function getModel();
+
+    /**
+     * The first time the CheckoutProcess displays the steps,
+     * it will SELECT the first non skipped step.
+     *
+     * You can use this method and return true if you want to prevent
+     * your step from being SELECTED.
+     *
+     * This can be useful for instance for a login step, where if the user
+     * is already connected you don't need to display the login form...
+     *
+     *
+     * @return mixed
+     */
+    public function isSkipped();
 
     //--------------------------------------------
     // ACTIVE/NOT ACTIVE

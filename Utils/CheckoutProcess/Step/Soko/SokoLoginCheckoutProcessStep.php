@@ -44,4 +44,10 @@ class SokoLoginCheckoutProcessStep extends BaseCheckoutProcessStep
         return $this->model;
     }
 
+    public function isSkipped()
+    {
+        return E::userIsConnected();
+    }
+
+
 }

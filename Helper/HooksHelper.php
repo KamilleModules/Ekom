@@ -5,6 +5,7 @@ namespace Module\Ekom\Helper;
 
 use Kamille\Ling\Z;
 use Kamille\Services\XConfig;
+use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\InvoiceLayer;
 use Module\Ekom\Api\Layer\UserHasCouponLayer;
@@ -14,6 +15,7 @@ use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Back\Util\ApplicationSanityCheck\ApplicationSanityCheckUtil;
 use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Models\EkomModels;
+use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\Pdf\PdfHtmlInfoInterface;
 use Module\ThisApp\Helper\ThisAppHelper;
@@ -24,6 +26,10 @@ use QuickPdo\QuickPdo;
 class HooksHelper
 {
 
+    public static function Authenticate_Router_onDisconnectAfter()
+    {
+        CurrentCheckoutData::clean();
+    }
 
     public static function Ekom_ProductSearch_onSearchQueryAfter(array &$searchResults)
     {
@@ -85,7 +91,8 @@ where route=:route
         /**
          * checking coupons quantity_per_user.
          */
-        $cart = CartUtil::getCart();
+//        $cart = CartUtil::getCart();
+        $cart = CartLayer::create();
         $couponIds = $cart->getCouponsToCheckUponConnection();
         $userId = E::getUserId();
         foreach ($couponIds as $couponId) {

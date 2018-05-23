@@ -449,7 +449,6 @@ class BackHooksHelper
             ->addItem($seoItem)
             ->addItem($statItem)
             ->addItem($configItem)
-            
         ;
 
 

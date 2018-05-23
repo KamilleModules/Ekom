@@ -6,12 +6,9 @@ namespace Module\Ekom\Utils\CheckoutProcess\Step\Soko;
 
 use Kamille\Utils\Claws\Error\ClawsWidgetError;
 use Module\Ekom\Api\EkomApi;
-use Module\Ekom\Api\Layer\ShopLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
-use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\SokoForm\UserAddress\UserAddressSokoForm;
-use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\CheckoutProcess\CheckoutProcessInterface;
 use Module\Ekom\Utils\CheckoutProcess\Step\BaseCheckoutProcessStep;
 use Module\Ekom\Utils\E;
@@ -60,7 +57,7 @@ class SokoBillingCheckoutProcessStep extends BaseCheckoutProcessStep
 
 
         if (array_key_exists("complete_billing_step", $context)) {
-            $billingAddressId = (int)CurrentCheckoutData::get("billing_address_id");
+            $billingAddressId = (int)$this->getCurrentCheckoutData("billing_address_id");
             if (0 === $billingAddressId) {
                 throw new EkomUserMessageException("Veuillez choisir une adresse de facturation");
             }
@@ -71,7 +68,7 @@ class SokoBillingCheckoutProcessStep extends BaseCheckoutProcessStep
 
     public function isValid()
     {
-        return (0 !== (int)CurrentCheckoutData::get("billing_address_id"));
+        return (0 !== (int)$this->getCurrentCheckoutData("billing_address_id"));
     }
 
     public function getModel()
@@ -91,7 +88,7 @@ class SokoBillingCheckoutProcessStep extends BaseCheckoutProcessStep
             if ($hasAddress) {
 
 
-                $selectedBillingAddressId = CurrentCheckoutData::getBillingAddressId();
+                $selectedBillingAddressId = $this->getCurrentCheckoutData("billing_address_id");
                 // which billing address?
                 if (null === $selectedBillingAddressId) {
                     $selectedBillingAddress = UserAddressLayer::getPreferredBillingAddress($userId);
@@ -114,7 +111,7 @@ class SokoBillingCheckoutProcessStep extends BaseCheckoutProcessStep
                 $ret['userAddresses'] = $userAddresses;
                 $ret['billingAddress'] = $billingAddress;
                 $ret['context'] = $this->context;
-                CurrentCheckoutData::setBillingAddressId($selectedBillingAddressId);
+                $this->setCurrentCheckoutData("billing_address_id", $selectedBillingAddressId);
             } else {
                 $firstAddressForm = $this->getFirstAddressForm();
                 $ret['form'] = $firstAddressForm->getModel();

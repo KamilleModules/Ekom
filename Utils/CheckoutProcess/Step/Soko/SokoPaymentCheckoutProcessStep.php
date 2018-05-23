@@ -4,19 +4,10 @@
 namespace Module\Ekom\Utils\CheckoutProcess\Step\Soko;
 
 
-use Kamille\Utils\Claws\Error\ClawsWidgetError;
-use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Layer\PaymentLayer;
-use Module\Ekom\Api\Layer\UserAddressLayer;
-use Module\Ekom\Api\Util\CartUtil;
-use Module\Ekom\Exception\EkomUserMessageException;
-use Module\Ekom\SokoForm\UserAddress\UserAddressSokoForm;
-use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\CheckoutProcess\CheckoutProcessInterface;
 use Module\Ekom\Utils\CheckoutProcess\Step\BaseCheckoutProcessStep;
 use Module\Ekom\Utils\E;
-use SokoForm\Control\SokoInputControl;
-use SokoForm\Form\SokoFormInterface;
 
 class SokoPaymentCheckoutProcessStep extends BaseCheckoutProcessStep
 {
@@ -80,7 +71,7 @@ class SokoPaymentCheckoutProcessStep extends BaseCheckoutProcessStep
     {
 
 
-        $paymentMethodId = CurrentCheckoutData::getPaymentMethodId();
+        $paymentMethodId = $this->getCurrentCheckoutData("payment_method_id");
         if (null === $paymentMethodId) {
             $paymentMethodId = PaymentLayer::getPreferredPaymentMethodId();
         }
@@ -88,7 +79,7 @@ class SokoPaymentCheckoutProcessStep extends BaseCheckoutProcessStep
         /**
          * @see SokoPaymentCheckoutProcessStep::getModel()
          */
-        CurrentCheckoutData::setPaymentMethodId($paymentMethodId);
+        $this->setCurrentCheckoutData("payment_method_id", $paymentMethodId);
 
 
         return [

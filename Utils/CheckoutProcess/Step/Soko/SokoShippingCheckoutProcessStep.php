@@ -5,10 +5,9 @@ namespace Module\Ekom\Utils\CheckoutProcess\Step\Soko;
 
 
 use Core\Services\Hooks;
-use Kamille\Services\XLog;
 use Kamille\Utils\Claws\Error\ClawsWidgetError;
 use Module\Ekom\Api\EkomApi;
-use Module\Ekom\Api\Layer\ShopLayer;
+use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\StoreLayer;
 use Module\Ekom\Api\Layer\UserAddressLayer;
 use Module\Ekom\Api\Util\CartUtil;
@@ -19,7 +18,6 @@ use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\CheckoutProcess\CheckoutProcessInterface;
 use Module\Ekom\Utils\CheckoutProcess\Step\BaseCheckoutProcessStep;
 use Module\Ekom\Utils\E;
-use SokoForm\Control\SokoInputControl;
 use SokoForm\Form\SokoFormInterface;
 
 class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
@@ -64,20 +62,20 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
         }
 
         if (array_key_exists("complete_shipping_step", $context)) {
-            $billingAddressId = (int)CurrentCheckoutData::get("billing_address_id");
+            $billingAddressId = (int)$this->getCurrentCheckoutData("billing_address_id");
             if (0 === $billingAddressId) {
                 throw new EkomUserMessageException("Veuillez choisir une adresse de facturation");
             }
 
-            $shippingAddressId = (int)CurrentCheckoutData::get("shipping_address_id");
+            $shippingAddressId = (int)$this->getCurrentCheckoutData("shipping_address_id");
             if (0 === $shippingAddressId) {
                 throw new EkomUserMessageException("Veuillez choisir une adresse de livraison");
             }
             return (
-                null !== CurrentCheckoutData::get("carrier_id") &&
-                null !== CurrentCheckoutData::get("shipping_address_id") &&
-                null !== CurrentCheckoutData::get("billing_address_id") &&
-                null !== CurrentCheckoutData::get("shipping_comments")
+                null !== $this->getCurrentCheckoutData("carrier_id") &&
+                null !== $this->getCurrentCheckoutData("shipping_address_id") &&
+                null !== $this->getCurrentCheckoutData("billing_address_id") &&
+                null !== $this->getCurrentCheckoutData("shipping_comments")
             );
         }
         return false;
@@ -86,10 +84,10 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
     public function isValid()
     {
         return (
-            null !== CurrentCheckoutData::get("carrier_id") &&
-            0 !== (int)CurrentCheckoutData::get("shipping_address_id") &&
-            0 !== (int)CurrentCheckoutData::get("billing_address_id") &&
-            null !== CurrentCheckoutData::get("shipping_comments")
+            null !== $this->getCurrentCheckoutData("carrier_id") &&
+            0 !== (int)$this->getCurrentCheckoutData("shipping_address_id") &&
+            0 !== (int)$this->getCurrentCheckoutData("billing_address_id") &&
+            null !== $this->getCurrentCheckoutData("shipping_comments")
         );
     }
 
@@ -109,17 +107,16 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
             $ret['hasAddress'] = $hasAddress;
             if ($hasAddress) {
 
-                $billing_synced_with_shipping = (bool)CurrentCheckoutData::get("billing_synced_with_shipping", false);
-                $shippingComments = CurrentCheckoutData::get("shipping_comments", "");
+                $billing_synced_with_shipping = (bool)$this->getCurrentCheckoutData("billing_synced_with_shipping", false);
+                $shippingComments = $this->getCurrentCheckoutData("shipping_comments", "");
 
 
-                $carrierOffers = CartUtil::getCarrierOffers();
+                $carrierOffers = $this->collectCarrierOffers();
 
 
                 if (0 === count($carrierOffers)) {
                     throw new EkomUserMessageException("No carrier offer for this app");
                 }
-
 
 
                 CheckoutProcessHelper::fixUnsyncedCurrentCheckoutDataAddresses();
@@ -148,7 +145,7 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                     $carrierOffers[$selectedCarrierId]['selected'] = true;
                 }
                 $ret['carrierOffers'] = $carrierOffers;
-                az($carrierOffers);
+//                az($carrierOffers);
 
                 /**
                  * Sometimes, you only have one carrierOffer and the snippet above
@@ -162,14 +159,14 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
 
 
                 // which one is selected in the gui?
-                $selectedAddressId = CurrentCheckoutData::getShippingAddressId();
+                $selectedAddressId = $this->getCurrentCheckoutData("shipping_address_id");
                 if (null === $selectedAddressId) {
                     $selectedAddress = UserAddressLayer::getPreferredShippingAddress($userId);
                     $selectedAddressId = $selectedAddress['address_id'];
                 }
 
                 // which billing address?
-                $selectedBillingAddressId = CurrentCheckoutData::getBillingAddressId();
+                $selectedBillingAddressId = $this->getCurrentCheckoutData("billing_address_id");
                 if (null === $selectedBillingAddressId) {
                     $selectedBillingAddress = UserAddressLayer::getPreferredBillingAddress($userId);
                     $selectedBillingAddressId = $selectedBillingAddress['address_id'];
@@ -204,9 +201,9 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
 
 
                 $this->debug("SokoShippingCheckoutProcessStep: selectedCarrierId=$selectedCarrierId, selectedAddressId=$selectedAddressId, selectedBillingAddressId=$selectedBillingAddressId");
-                CurrentCheckoutData::setBillingAddressId($selectedBillingAddressId);
-                CurrentCheckoutData::setShippingAddressId($selectedAddressId);
-                CurrentCheckoutData::setCarrierId($selectedCarrierId);
+                $this->setCurrentCheckoutData("billing_address_id", $selectedBillingAddressId);
+                $this->setCurrentCheckoutData("shipping_address_id", $selectedAddressId);
+                $this->setCurrentCheckoutData("carrier_id", $selectedCarrierId);
 
 
                 $ret['userAddresses'] = $userAddresses;
@@ -218,7 +215,7 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                 /**
                  * Watch out, this could be an int or null.
                  */
-                $ret['storeAddressId'] = StoreLayer::getPreferredPhysicalAddressIdById(CurrentCheckoutData::getStoreAddressId());
+                $ret['storeAddressId'] = StoreLayer::getPreferredPhysicalAddressIdById($this->getCurrentCheckoutData("store_address_id"));
                 $ret['shippingComments'] = $shippingComments;
                 $ret['context'] = $this->context;
             } else {
@@ -242,6 +239,20 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
     }
 
 
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    protected function collectCarrierOffers()
+    {
+        $currentCheckoutDataModel = CurrentCheckoutData::all();
+        $cartModel = CartLayer::create()->getCartModel();
+        return CartUtil::getCarrierOffers($cartModel, $currentCheckoutDataModel);
+    }
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
     private function getFirstAddressForm()
     {
         if (null === $this->firstAddressForm) {

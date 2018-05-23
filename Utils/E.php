@@ -21,6 +21,7 @@ use Kamille\Services\XLog;
 use Module\Application\Api\Layer\ApplicationVariablesLayer;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
+use Module\Ekom\Api\Layer\CartLayer;
 use Module\Ekom\Api\Layer\ConnexionLayer;
 use Module\Ekom\Api\Layer\DiscountLayer;
 use Module\Ekom\Api\Layer\ImageLayer;
@@ -145,7 +146,8 @@ class E
             $connexionData = ConnexionLayer::buildConnexionDataByUserId($userId);
 //            az(__FILE__, $connexionData, SessionUser::getAll());
             SessionUser::setValues($connexionData);
-            CartUtil::getCart()->refreshCartItems();
+            CartLayer::create()->refreshCartItems();
+            Hooks::call("Ekom_UserContext_refreshUserContextAfter");
         }
         self::buildUserContext();
     }

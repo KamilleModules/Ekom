@@ -47,87 +47,92 @@ use Module\Ekom\Session\EkomSession;
  */
 class CurrentCheckoutData
 {
+    protected static $namespace = "currentCheckoutData";
 
 
     public static function getCarrierId()
     {
-        return self::get("carrier_id", null);
+        return static::get("carrier_id", null);
     }
 
     public static function setCarrierId($id)
     {
-        self::set("carrier_id", $id);
+        static::set("carrier_id", $id);
     }
 
     public static function getShippingAddressId()
     {
 
-        return self::get("shipping_address_id", null);
+        return static::get("shipping_address_id", null);
     }
 
     public static function setShippingAddressId($id)
     {
-        self::set("shipping_address_id", $id);
+        static::set("shipping_address_id", $id);
     }
 
     public static function getBillingAddressId()
     {
-        return self::get("billing_address_id", null);
+        return static::get("billing_address_id", null);
     }
 
     public static function setBillingAddressId($id)
     {
-        self::set("billing_address_id", $id);
+        static::set("billing_address_id", $id);
     }
 
     public static function getStoreAddressId()
     {
-        return self::get("store_address_id", null);
+        return static::get("store_address_id", null);
     }
 
     public static function setStoreAddressId($id)
     {
-        self::set("store_address_id", $id);
+        static::set("store_address_id", $id);
     }
 
     public static function getPaymentMethodId()
     {
-        return self::get("payment_method_id", null);
+        return static::get("payment_method_id", null);
     }
 
     public static function setPaymentMethodId($id)
     {
-        self::set("payment_method_id", $id);
-    }
-
-
-    public static function all()
-    {
-        return EkomSession::get("currentCheckoutData", []);
+        static::set("payment_method_id", $id);
     }
 
 
     public static function get($key, $default = null)
     {
-        $data = self::all();
+        $data = static::all();
         if (array_key_exists($key, $data)) {
             return $data[$key];
         }
         return $default;
     }
 
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    public static function all()
+    {
+        return EkomSession::get(static::$namespace, []);
+    }
+
     public static function set($key, $value)
     {
         $data = self::all();
         $data[$key] = $value;
-        EkomSession::set("currentCheckoutData", $data);
+        EkomSession::set(static::$namespace, $data);
     }
 
     public static function remove($key)
     {
         $data = self::all();
         unset($data[$key]);
-        EkomSession::set("currentCheckoutData", $data);
+        EkomSession::set(static::$namespace, $data);
     }
 
 //    public static function setMany(array $key2Value)
@@ -139,6 +144,6 @@ class CurrentCheckoutData
 
     public static function clean()
     {
-        EkomSession::set("currentCheckoutData", []);
+        EkomSession::set(static::$namespace, []);
     }
 }

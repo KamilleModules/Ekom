@@ -4,6 +4,8 @@
 namespace Module\Ekom\Utils\CheckoutProcess\Step;
 
 
+use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
+
 abstract class BaseCheckoutProcessStep implements CheckoutProcessStepInterface
 {
 
@@ -24,6 +26,32 @@ abstract class BaseCheckoutProcessStep implements CheckoutProcessStepInterface
     {
         $this->context = $context;
         return $this;
+    }
+
+    public function isSkipped()
+    {
+        return false;
+    }
+
+    public function click()
+    {
+
+    }
+
+
+
+
+    //--------------------------------------------
+    // OVERRIDE ME
+    //--------------------------------------------
+    protected function setCurrentCheckoutData($key, $value)
+    {
+        CurrentCheckoutData::set($key, $value);
+    }
+
+    protected function getCurrentCheckoutData($key, $default = null)
+    {
+        return CurrentCheckoutData::get($key, $default);
     }
 
 
