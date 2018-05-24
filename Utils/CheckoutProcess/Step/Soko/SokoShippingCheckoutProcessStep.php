@@ -53,12 +53,10 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                         $filteredContext['is_default_shipping_address'] = (int)$filteredContext['is_default_shipping_address'];
                     }
                     EkomApi::inst()->userAddressLayer()->createAddress($userId, $filteredContext);
-
-
                 } catch (EkomUserMessageException $e) {
                     $form->addNotification($e->getMessage(), "error");
                 }
-            });
+            }, $context);
         }
 
         if (array_key_exists("complete_shipping_step", $context)) {
@@ -93,6 +91,7 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
 
     public function getModel()
     {
+
         /**
          * This will throw an exception an exception if the user is not connected.
          * This means this step ONLY WORKS once the user is logged in.
@@ -119,8 +118,7 @@ class SokoShippingCheckoutProcessStep extends BaseCheckoutProcessStep
                 }
 
 
-                CheckoutProcessHelper::fixUnsyncedCurrentCheckoutDataAddresses();
-
+                CheckoutProcessHelper::fixUnsyncedCurrentCheckoutDataAddresses($this->getCurrentCheckoutDataClass());
 
                 /**
                  * Note: it's important for me to be sure selectedCarrierId is defined.

@@ -159,7 +159,8 @@ class CheckoutProcess implements CheckoutProcessInterface
         $this->initSteps(); // put steps in the order defined by position
 
 
-        $this->debug("CheckoutProcess:execute");
+        $processName = get_called_class();
+        $this->debug("$processName:execute");
         if ($this->steps) {
 
             if (null === $context) {

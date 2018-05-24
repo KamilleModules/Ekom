@@ -54,5 +54,10 @@ abstract class BaseCheckoutProcessStep implements CheckoutProcessStepInterface
         return CurrentCheckoutData::get($key, $default);
     }
 
+    protected function getCurrentCheckoutDataClass()
+    {
+        return "\Module\Ekom\Utils\Checkout\CurrentCheckoutData";
+    }
+
 
 }

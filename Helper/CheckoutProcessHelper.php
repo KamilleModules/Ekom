@@ -10,13 +10,16 @@ use Module\Ekom\Utils\E;
 
 class CheckoutProcessHelper
 {
-    public static function fixUnsyncedCurrentCheckoutDataAddresses()
+    public static function fixUnsyncedCurrentCheckoutDataAddresses(string $currentCheckoutDataClass = null)
     {
 
 
         if (true === E::userIsConnected()) {
 
             $userId = E::getUserId();
+            if (null === $currentCheckoutDataClass) {
+                $currentCheckoutDataClass = "\Module\Ekom\Utils\Checkout\CurrentCheckoutData";
+            }
             /**
              * Now it's possible that the CurrentCheckoutData shippingAddress/billingAddress
              * get out of sync with the actual user addresses.
@@ -28,18 +31,18 @@ class CheckoutProcessHelper
              *
              * The code below fixes that.
              */
-            $ccdBillingAddressId = CurrentCheckoutData::getBillingAddressId();
-            $ccdShippingAddressId = CurrentCheckoutData::getShippingAddressId();
+            $ccdBillingAddressId = call_user_func([$currentCheckoutDataClass, "getBillingAddressId"]);
+            $ccdShippingAddressId = call_user_func([$currentCheckoutDataClass, "getShippingAddressId"]);
             if (false === UserAddressLayer::userOwnsAddress($userId, $ccdShippingAddressId)) {
                 $preferredShippingAddress = UserAddressLayer::getPreferredShippingAddress($userId);
                 $preferredShippingAddressId = $preferredShippingAddress['address_id'];
-                CurrentCheckoutData::setShippingAddressId($preferredShippingAddressId);
+                call_user_func([$currentCheckoutDataClass, "setShippingAddressId"], $preferredShippingAddressId);
             }
 
             if (false === UserAddressLayer::userOwnsAddress($userId, $ccdBillingAddressId)) {
                 $preferredBillingAddress = UserAddressLayer::getPreferredBillingAddress($userId);
                 $preferredBillingAddressId = $preferredBillingAddress['address_id'];
-                CurrentCheckoutData::setBillingAddressId($preferredBillingAddressId);
+                call_user_func([$currentCheckoutDataClass, "setBillingAddressId"], $preferredBillingAddressId);
             }
         }
     }
