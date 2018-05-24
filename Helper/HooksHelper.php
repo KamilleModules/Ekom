@@ -14,10 +14,13 @@ use Module\Ekom\Api\Object\SearchStat;
 use Module\Ekom\Api\Util\CartUtil;
 use Module\Ekom\Back\Util\ApplicationSanityCheck\ApplicationSanityCheckUtil;
 use Module\Ekom\Exception\EkomUserMessageException;
+use Module\Ekom\Model\Front\Checkout\EkomCheckoutProcessModel;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\Checkout\CurrentCheckoutData;
 use Module\Ekom\Utils\E;
 use Module\Ekom\Utils\Pdf\PdfHtmlInfoInterface;
+use Module\ThisApp\Ekom\View\Checkout\EkomCheckoutProcessRenderer;
+use Module\ThisApp\Ekom\View\User\AddressListRenderer;
 use Module\ThisApp\Helper\ThisAppHelper;
 use Notificator\SessionNotificator;
 use QuickPdo\Helper\QuickPdoHelper;
@@ -25,6 +28,32 @@ use QuickPdo\QuickPdo;
 
 class HooksHelper
 {
+
+    public static function Application_Ecp_decorateOutput(array &$out, string $action, array $intent = [])
+    {
+        if (in_array("Ekom_checkoutProcess", $intent)) {
+            /**
+             * Note: be sure that your model is not already called earlier,
+             * since the getModel method can actually potentially insert an address
+             * (and so you could have two addresses inserted if you don't pay attention...)
+             */
+            $model = EkomCheckoutProcessModel::getModel();
+            $out["Ekom_checkoutProcess"] = EkomCheckoutProcessRenderer::create()->render($model);
+        }
+
+
+        $source = $out['source'] ?? null;
+        if ('user.getAddresses' === $action && 'ekom' === $source) {
+            $addresses = $out['addresses'];
+            $type = $out['type'];
+            $action = "checkout.updateStep";
+            $out["html"] = AddressListRenderer::render($addresses, $type, [
+                'action' => $action,
+            ]);
+        }
+
+    }
+
 
     public static function Authenticate_Router_onDisconnectAfter()
     {

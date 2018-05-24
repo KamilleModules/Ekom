@@ -188,14 +188,16 @@ class CheckoutProcess implements CheckoutProcessInterface
             $clickedStep = (array_key_exists('_step', $context)) ? $context['_step'] : null;
             if (null !== $clickedStep) {
                 $this->debug("clickedStep: $clickedStep");
-                if (true === $this->allPreviousStepsValid($clickedStep)) {
-                    $currentStep = $clickedStep;
-                    $this->getStep($currentStep)->click();
-                }
+                $currentStep = $clickedStep;
+
             }
 
             $this->debug("currentStep: $currentStep");
-
+            if (false !== ($regressionStep = $this->getFirstFailingStepNameUntil($currentStep))) {
+                $currentStep = $regressionStep;
+            } elseif (null !== $clickedStep) {
+                $this->getStep($currentStep)->click();
+            }
 
             //--------------------------------------------
             // HANDLE IF IT'S POSTED
@@ -268,7 +270,7 @@ class CheckoutProcess implements CheckoutProcessInterface
 
     protected function debug($msg)
     {
-        E::dlog($msg);
+//        E::dlog($msg);
     }
 
 
@@ -405,17 +407,22 @@ class CheckoutProcess implements CheckoutProcessInterface
     }
 
 
-    private function allPreviousStepsValid(string $stepName)
+    /**
+     * Check all step BEFORE given stepName (excluded),
+     * and return either false (if all steps are valid),
+     * or the name of the first non valid step.
+     */
+    private function getFirstFailingStepNameUntil(string $stepName)
     {
         foreach ($this->steps as $name => $step) {
             if ($stepName === $name) {
-                return true;
-            }
-            if (false === $step->isValid()) {
                 return false;
             }
+            if (false === $step->isValid()) {
+                return $name;
+            }
         }
-        return true;
+        return false;
     }
 
 

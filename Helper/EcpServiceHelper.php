@@ -14,7 +14,9 @@ class EcpServiceHelper
 {
 
 
-    public static function addCouponHandler(CartLayer $cart, EcpOutputInterface $output, array &$out, string $cartKeyName){
+
+    public static function addCouponHandler(CartLayer $cart, EcpOutputInterface $output, array &$out, string $cartKeyName)
+    {
         $code = EcpServiceUtil::get("code");
         $errorMessage = null;
         $warningMessage = null;
