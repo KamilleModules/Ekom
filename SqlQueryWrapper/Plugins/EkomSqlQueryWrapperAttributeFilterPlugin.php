@@ -104,7 +104,7 @@ group by v.value
     private function getOldModel()
     {
 
-        $pool = $_GET;
+        $pool = $this->context;
         $model = [];
         $attributes = $this->attributes;
 
@@ -182,7 +182,7 @@ group by v.value
     private function prepareQueryOld(SqlQueryInterface $sqlQuery)
     {
         $attributes = $this->attributes;
-        $pool = $_GET;
+        $pool = $this->context;
         $whereBits = [];
 
         //--------------------------------------------

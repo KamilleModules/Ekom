@@ -12,6 +12,16 @@ use Module\Ekom\Utils\E;
 class BreadcrumbsLayer
 {
 
+    /**
+     * Singleton for overriding the breadcrumbs manually.
+     */
+    private static $breadCrumbs = null;
+
+    public static function setBreadcrumbs(array $breadCrumbs)
+    {
+        self::$breadCrumbs = $breadCrumbs;
+    }
+
 
     /**
      *
@@ -31,6 +41,11 @@ class BreadcrumbsLayer
      */
     public function getBreadCrumbs()
     {
+
+        if (null !== self::$breadCrumbs) {
+            return self::$breadCrumbs;
+        }
+
         //--------------------------------------------
         // PRODUCT CARD
         //--------------------------------------------
@@ -86,6 +101,7 @@ class BreadcrumbsLayer
 
             if ($cats) {
 
+                array_shift($cats); // remove home category
                 $last = array_pop($cats);
 
                 foreach ($cats as $cat) {
@@ -109,13 +125,12 @@ class BreadcrumbsLayer
             $label = ApplicationRegistry::get("ekom.breadcrumbs.label");
             $items = [
                 [
-                    "link" => "#",
-                    "title" => "Go to home",
-                    "label" => "Home",
+                    "link" => "/",
+                    "title" => "Retour à la page d'accueil",
+                    "label" => "Accueil",
                 ],
             ];
         }
-
 
         return [
             "label" => $label,

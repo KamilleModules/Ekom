@@ -65,9 +65,9 @@ group by discount_value
 
     public function prepareQuery(SqlQueryInterface $sqlQuery)
     {
-        if (array_key_exists($this->discountKey, $_GET)) {
+        if (array_key_exists($this->discountKey, $this->context)) {
 
-            $discount = $_GET[$this->discountKey] ?? null;
+            $discount = $this->context[$this->discountKey] ?? null;
             if (!is_array($discount)) {
                 $discount = [$discount];
             }
@@ -78,7 +78,7 @@ group by discount_value
 
     public function prepareModel(int $nbItems, array $rows)
     {
-        $poolBadges = $_GET[$this->discountKey] ?? [];
+        $poolBadges = $this->context[$this->discountKey] ?? [];
 
         $badgesModel = [];
         foreach ($this->discounts as $discount) {

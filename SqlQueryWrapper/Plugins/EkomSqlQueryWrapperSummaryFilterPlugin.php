@@ -32,7 +32,7 @@ class EkomSqlQueryWrapperSummaryFilterPlugin extends SqlQueryWrapperBasePlugin
 
     public function prepareModel(int $nbItems, array $rows)
     {
-        $pool = $_GET;
+        $pool = $this->context;
         $uriParams = $pool;
         $summaryItems = [];
 

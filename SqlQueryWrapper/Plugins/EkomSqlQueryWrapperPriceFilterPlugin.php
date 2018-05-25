@@ -44,9 +44,9 @@ class EkomSqlQueryWrapperPriceFilterPlugin extends SqlQueryWrapperBasePlugin imp
     //--------------------------------------------
     public function prepareQuery(SqlQueryInterface $sqlQuery)
     {
-        if (array_key_exists($this->priceKey, $_GET)) {
+        if (array_key_exists($this->priceKey, $this->context)) {
 
-            list($min, $max) = explode('-', $_GET[$this->priceKey]);
+            list($min, $max) = explode('-', $this->context[$this->priceKey]);
             $min = (int)$min;
             $max = (int)$max;
             $sqlQuery->addHaving("sale_price between $min and $max", "group1");
@@ -60,8 +60,8 @@ class EkomSqlQueryWrapperPriceFilterPlugin extends SqlQueryWrapperBasePlugin imp
         $min = $minValue;
         $max = $maxValue;
 
-        if (array_key_exists($this->priceKey, $_GET)) {
-            list($min, $max) = explode('-', $_GET[$this->priceKey]);
+        if (array_key_exists($this->priceKey, $this->context)) {
+            list($min, $max) = explode('-', $this->context[$this->priceKey]);
             $min = (int)$min;
             $max = (int)$max;
         }
