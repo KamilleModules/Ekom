@@ -248,6 +248,17 @@ and `order` >= $newTargetOrder
 //    }
 
 
+    public static function getParentCategoryIdsById(int $categoryId)
+    {
+        $ret = [];
+        $parentCats = CategoryCoreLayer::create()->getSelfAndParentsByCategoryId($categoryId);
+        array_shift($parentCats); // only the parents, not self...
+        foreach ($parentCats as $parentCat) {
+            $ret[] = $parentCat['id'];
+        }
+        return $ret;
+    }
+
     public static function getParentCategoryIdById($catId)
     {
         $catId = (int)$catId;

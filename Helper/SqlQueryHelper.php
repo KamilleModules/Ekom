@@ -4,9 +4,12 @@
 namespace Module\Ekom\Helper;
 
 
+use Core\Services\Hooks;
+use Module\Ekom\Api\Layer\CategoryCoreLayer;
 use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\Api\Layer\ProductCardLayer;
 use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
+use QuickPdo\QuickPdo;
 use SqlQuery\SqlQueryInterface;
 
 class SqlQueryHelper
@@ -135,4 +138,33 @@ inner join ek_user_has_product_reference uhpr on uhpr.product_reference_id=pr.id
     }
 
 
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    private static function getFallbackCategoryWithFiltersSqlQueryByCategoryId(int $categoryId, array $options = [])
+    {
+        $parentCatIds = CategoryLayer::getParentCategoryIdsById($categoryId);
+        while ($parentCatIds) {
+            $catId = array_shift($parentCatIds);
+            $queryOptions = $options['queryOptions'] ?? [
+                    "useAttributesString" => true,
+                ];
+
+
+            $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($queryOptions);
+            $cardIds = ProductCardLayer::getProductCardIdsByCategoryId($catId);
+            if ($cardIds) {
+                $sCardIds = implode(', ', $cardIds);
+                $sqlQuery->addWhere(" and c.id in ($sCardIds)");
+
+                $nbItems = (int)QuickPdo::fetch($sqlQuery->getCountSqlQuery(), $sqlQuery->getMarkers(), \PDO::FETCH_COLUMN);
+                if (0 !== $nbItems) {
+                    return $sqlQuery;
+                }
+            }
+        }
+        return false;
+    }
 }
