@@ -32,6 +32,7 @@ class GeneratedProductReference extends TableCrudObject
         $base = [
 			'id' => null,
 			'product_id' => 0,
+			'date_added' => '',
 			'reference' => '',
 			'price' => '',
 			'quantity' => 0,

@@ -19,15 +19,42 @@ class SqlQueryHelper
      * @param string $search
      * @return SqlQueryInterface
      */
-    public static function getSqlQueryBySearchExpression(string $search)
-    {
+//    public static function getSqlQueryBySearchExpression(string $search)
+//    {
+//
+//        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery([
+//            "useAttributesString" => true, // this might change, maybe we don't need it...
+//        ]);
+//
+//
+//    }
 
-        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery([
-            "useAttributesString" => true, // this might change, maybe we don't need it...
-        ]);
 
+    /**
+     * @deprecated as we don't need new products to be defined automatically by the shop,
+     * we rather promote a custom category.
+     */
+//    public static function getNewProductsSqlQuery()
+//    {
+//        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
+//        $cardIds = ProductCardLayer::getProductCardIdsByCategoryId($categoryId);
+//        if ($cardIds) {
+//
+//
+//            /**
+//             * New products are products added to the shop less than 60
+//             */
+//            $startDate = date("Y-m-d H:i:s");
+//
+//            $sCardIds = implode(', ', $cardIds);
+//            $sqlQuery->addWhere("
+//pr.date_added >= '$startDate'
+//            ");
+//            return $sqlQuery;
+//        }
+//        return false;
+//    }
 
-    }
 
     /**
      * @param int $categoryId
@@ -52,10 +79,41 @@ class SqlQueryHelper
     }
 
 
-    public static function getCategorySqlQueryByCategoryName(string $categoryName)
+    public static function getBestSellersSqlQuery(array $options = [])
+    {
+        $queryOptions = $options['queryOptions'] ?? [];
+        $limit = $options['limit'] ?? 50;
+        $limit = (int)$limit;
+
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($queryOptions);
+
+        $sqlQuery->addField("pps.quantity as best_sell_quantity");
+
+
+        /**
+         * https://dev.mysql.com/doc/refman/8.0/en/example-maximum-column-group-row.html
+         */
+        $sqlQuery->addJoin("inner join 
+(
+	select 
+	pps2.product_id,
+	pps2.product_label,
+	MAX(pps2.quantity) as quantity
+	from ek_product_purchase_stat pps2
+    group by product_id
+
+) pps on pps.product_id=p.id  
+        
+        ");
+        $sqlQuery->setLimit(0, $limit);
+        return $sqlQuery;
+    }
+
+
+    public static function getCategorySqlQueryByCategoryName(string $categoryName, array $queryOptions = [])
     {
 
-        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($queryOptions);
         $cardIds = CategoryLayer::getCardIdsByCategoryName($categoryName, true);
 
         if ($cardIds) {

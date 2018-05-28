@@ -90,7 +90,26 @@ class ProductBoxLayer
         if (null !== $type) {
             $type = "-" . $type;
         }
-        return self::getBoxesByProductGroupName(":related$type-$cardId", $options);
+
+
+        /**
+         * that's just to have the dates set in the parameters
+         * (if you don't use that, the date property might be empty and you wouldn't understand
+         * what happened...)
+         */
+        $options['ignorePastDates'] = false;
+        $boxes = self::getBoxesByProductGroupName(":related$type-$cardId", $options);
+
+
+        // removing training which dates are past
+        $curDate = date("Y-m-d H:i:s");
+        foreach ($boxes as $k => $box) {
+            $date = $box['selected_product_details']['date'];
+            if ($date < $curDate) {
+                unset($boxes[$k]);
+            }
+        }
+        return $boxes;
     }
 
 
@@ -122,7 +141,7 @@ inner join ek_product_group g on g.id=phg.product_group_id
 
         $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
         foreach ($rows as $k => $row) {
-            self::sugarify($row);
+            self::sugarify($row, $options);
             $rows[$k] = $row;
         }
         return $rows;
@@ -144,7 +163,7 @@ inner join ek_product_group g on g.id=phg.product_group_id
     }
 
 
-    private static function sugarify(array &$row)
+    private static function sugarify(array &$row, array $options = [])
     {
 
         MiniProductBoxLayer::sugarify($row);
@@ -159,7 +178,7 @@ inner join ek_product_group g on g.id=phg.product_group_id
          *
          * @see EkomModels::productModifiersListModel()
          */
-        Hooks::call("Ekom_ProductBox_decorateBoxLayerModel", $row);
+        Hooks::call("Ekom_ProductBox_decorateBoxLayerModel", $row, $options);
         $selectedProductDetails = $row['selected_product_details'] ?? [];
         $productDetailsList = $row['product_details_list'] ?? [];
         $attributes_list = $row['attributes_list'] ?? null;

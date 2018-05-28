@@ -10,6 +10,11 @@ use QuickPdo\QuickPdoStmtTool;
 class ProductReferenceLayer
 {
 
+    public static function getProductReferenceIdsByProductId(int $productId)
+    {
+        return QuickPdo::fetchAll("select id from ek_product_reference where product_id=$productId", [], \PDO::FETCH_COLUMN);
+    }
+
     public static function getProductIdByReference(string $reference)
     {
         return QuickPdo::fetch("select product_id from ek_product_reference where reference=:ref", [
