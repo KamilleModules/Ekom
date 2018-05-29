@@ -109,6 +109,19 @@ class SqlQueryHelper
         return $sqlQuery;
     }
 
+    public static function getDiscountedProductsSqlQuery(array $options = [])
+    {
+        $queryOptions = $options['queryOptions'] ?? [];
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($queryOptions);
+
+        $sqlQuery->addHaving("discount_value is not null");
+
+
+
+
+        return $sqlQuery;
+    }
+
 
     public static function getCategorySqlQueryByCategoryName(string $categoryName, array $queryOptions = [])
     {

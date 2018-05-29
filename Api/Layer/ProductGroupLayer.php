@@ -12,6 +12,18 @@ class ProductGroupLayer
 {
 
 
+    public static function hasGroup(string $groupName): bool
+    {
+        return (false !== QuickPdo::fetch("
+select id 
+from ek_product_group
+where name=:name
+", [
+                "name" => $groupName,
+            ], \PDO::FETCH_COLUMN));
+    }
+
+
 //    public static function getRelatedCardIdsByGroupName(string $groupName)
 //    {
 //
