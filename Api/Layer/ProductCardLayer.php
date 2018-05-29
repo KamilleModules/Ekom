@@ -19,6 +19,16 @@ use RowsGenerator\ArrayRowsGenerator;
 class ProductCardLayer
 {
 
+    public static function getIdBySlug(string $slug)
+    {
+        return QuickPdo::fetch("
+select id 
+from ek_product_card
+where slug=:slug 
+", [
+            "slug" => $slug,
+        ], \PDO::FETCH_COLUMN);
+    }
 
     public static function getLabelByCardId(int $cardId)
     {

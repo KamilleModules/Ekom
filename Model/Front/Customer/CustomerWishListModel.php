@@ -24,11 +24,12 @@ class CustomerWishListModel
          * @var $sortPlugin SqlQueryWrapperSortPlugin
          */
         $sortPlugin = $wrapper->getPlugin("sort");
-        $sortPlugin->setDefaultSort("date_added_desc");
+        $sortPlugin->setDefaultSort("uhpr.date_added_desc");
         $sortPlugin->prependSortItems([
-            "date_added_asc" => "Date d'ajout ascendante",
-            "date_added_desc" => "Date d'ajout descendante",
+            "uhpr.date_added_asc" => "Date d'ajout ascendante",
+            "uhpr.date_added_desc" => "Date d'ajout descendante",
         ]);
+
 
 
         $wrapper->setSqlQuery($sqlQuery)->prepare();

@@ -4,6 +4,7 @@
 namespace Module\Ekom\Api\Layer;
 
 
+use Bat\ArrayTool;
 use Bat\CaseTool;
 use Core\Services\A;
 use Core\Services\Hooks;
@@ -95,10 +96,33 @@ where product_card_id=$productCardId
     }
 
 
-    public static function getTree()
+    public static function getTree(array $options = [])
     {
+
+        $withLinks = $options['withLinks'] ?? false;
+
+        /**
+         * @todo-ling: this guy really needs a cache
+         */
+
+        $linkFmt = A::link("Ekom_category", [
+            "type" => '{type}',
+            "slug" => '{slug}',
+        ]);
         $o = new CategoryLayer();
-        return $o->getSubCategoriesByName("home", -1, "", true);
+        $ret = $o->getSubCategoriesByName("home", -1, "", true);
+        if (true === $withLinks) {
+            ArrayTool::updateNodeRecursive($ret, function (array &$row) use ($linkFmt) {
+                $row['link'] = str_replace([
+                    "{type}",
+                    "{slug}",
+                ], [
+                    $row['type'],
+                    $row['slug'],
+                ], $linkFmt);
+            });
+        }
+        return $ret;
     }
 
     public static function visitTree(callable $cb)
