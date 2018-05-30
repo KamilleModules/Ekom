@@ -59,12 +59,16 @@ class EkomBasicProductSearcher extends AbstractProductSearch
         Hooks::call("Ekom_ProductSearch_getSearchOptions", $options);
 
         $type2LabelMap = $options['type2LabelMap'] ?? [];
+        $productsFilterCallback = $options['productsFilterCallback'] ?? null;
 
 
         //--------------------------------------------
         // PRODUCTS
         //--------------------------------------------
         $products = MiniProductBoxLayer::getBoxesBySearchExpression($query);
+        if (null !== $productsFilterCallback) {
+            $products = array_filter($products, $productsFilterCallback);
+        }
 
 
         //--------------------------------------------
