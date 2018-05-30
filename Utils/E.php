@@ -568,11 +568,8 @@ class E
      */
     public static function sendMail(string $template, string $recipient, array $variables = [])
     {
-        if (true === ApplicationVariablesLayer::getVariable("FishMailer_mailEnable", true)) {
-            Hooks::call("Ekom_Mailer_decorateVariables", $variables, $template, $recipient);
-            return FishMailerService::create()->sendFishMailByTemplate($recipient, $template, $variables);
-        }
-        return 1;
+        Hooks::call("Ekom_Mailer_decorateVariables", $variables, $template, $recipient);
+        return FishMailerService::create()->sendFishMailByTemplate($recipient, $template, $variables);
     }
 
 

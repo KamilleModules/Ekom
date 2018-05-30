@@ -236,7 +236,8 @@ where p.id=$productId
             $row = QuickPdo::fetch("
 select 
 c.slug,
-pr.reference
+pr.reference,
+pr.id
 
 
 from ek_product p
@@ -253,6 +254,7 @@ where p.id=$productId
             return [
                 "cardSlug" => $slug,
                 "ref" => $row['reference'],
+                "refId" => $row['id'],
             ];
 
         }, [
@@ -677,9 +679,10 @@ order by h.order asc
 
                             $productReference = $p['reference'];
                             $cardSlug = ("" !== $row['slug']) ? $row['slug'] : $row['default_slug'];
-                            $cardUri = E::link("Ekom_productCardRef", [
+                            $cardUri = E::link("Ekom_productCardRefId", [
                                 'slug' => $cardSlug,
-                                'ref' => $productReference,
+//                                'ref' => $productReference,
+                                'refId' => $p['product_reference_id'],
                             ]);
 
 

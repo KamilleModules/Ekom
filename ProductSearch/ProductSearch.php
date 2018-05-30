@@ -105,7 +105,7 @@ group by b.reference
                 $ret[] = [
                     'value' => $value,
                     'pokemon' => "pokepou" . $c++,
-                    'data' => E::link("Ekom_productCardRef", ['slug' => $cardSlug, 'ref' => $row["reference"]]),
+                    'data' => E::link("OLDEkom_productCardRef", ['slug' => $cardSlug, 'ref' => $row["reference"]]),
                 ];
             }
 

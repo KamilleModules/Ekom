@@ -55,7 +55,8 @@ class CompanyHeaderRenderer extends BaseRenderer
         <div class="company-header">
             <?php if (in_array("logo", $this->columns, true)): ?>
                 <div class="company-logo">
-                    <img src="<?php echo htmlspecialchars($this->logoUri); ?>"
+                    <img
+                            src="<?php echo htmlspecialchars($this->logoUri); ?>"
                          alt="<?php echo htmlspecialchars($this->logoAlt); ?>">
                 </div>
             <?php endif; ?>

@@ -746,7 +746,13 @@ class CartLayer
         $orderTaxAmount = $model['cart_tax_amount'] + $model['shipping_cost_tax_amount'];
         $orderDiscountAmount = $model['cart_discount_amount'] + $model['shipping_cost_discount_amount'];
         $orderGrandTotal = $orderTotal - $couponsTotal;
+        if ($orderGrandTotal < 0) {
+            $orderGrandTotal = 0;
+        }
         $orderSavingTotal = $orderDiscountAmount + $couponsTotal;
+        if ($orderSavingTotal > $orderTotal) {
+            $orderSavingTotal = $orderTotal;
+        }
 
 
         //--------------------------------------------
@@ -762,6 +768,9 @@ class CartLayer
         $model['order_discount_amount_formatted'] = E::price($orderDiscountAmount);
         $model['order_saving_total'] = $orderSavingTotal;
         $model['order_saving_total_formatted'] = E::price($orderSavingTotal);
+
+
+
 
 
         return $model;

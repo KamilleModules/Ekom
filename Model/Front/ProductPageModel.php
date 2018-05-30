@@ -39,16 +39,7 @@ class ProductPageModel
 
 
         if (false !== ($productReferenceId = ProductLayer::getProductReferenceIdByRef($reference))) {
-//            $productDetails = ProductBoxEntityUtil::filterProductDetails($_GET);
-            $head = ProductBoxLayer::getProductBoxByProductReferenceId($productReferenceId);
-
-//            az($head);
-            //--------------------------------------------
-            // PREPARING TAIL
-            //--------------------------------------------
-            $tail = self::getProductPageTailModel($head);
-//            $tail = [];
-//            Hooks::call("Ekom_decorateProductBoxClaws", $productPageModel); // todo: ?
+            return self::getModelByProductReferenceId($productReferenceId);
 
         } else {
             if (true === ApplicationParameters::get("debug")) {
@@ -68,6 +59,26 @@ class ProductPageModel
     }
 
 
+    public static function getModelByProductReferenceId(int $productReferenceId)
+    {
+//            $productDetails = ProductBoxEntityUtil::filterProductDetails($_GET);
+        $head = ProductBoxLayer::getProductBoxByProductReferenceId($productReferenceId);
+
+//            az($head);
+        //--------------------------------------------
+        // PREPARING TAIL
+        //--------------------------------------------
+        $tail = self::getProductPageTailModel($head);
+//            $tail = [];
+//            Hooks::call("Ekom_decorateProductBoxClaws", $productPageModel); // todo: ?
+
+        return [
+            'head' => $head,
+            'tail' => $tail,
+        ];
+    }
+
+
 //    public static function getModelByProductId($productId)
 //    {
 //        $productDetails = ProductBoxEntityUtil::filterProductDetails($_GET);
@@ -79,7 +90,6 @@ class ProductPageModel
 //            'tail' => $tail,
 //        ];
 //    }
-
 
 
     //--------------------------------------------

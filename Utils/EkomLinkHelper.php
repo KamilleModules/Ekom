@@ -60,9 +60,9 @@ class EkomLinkHelper
         if ($productDetails) {
             $sSuffix .= "?" . http_build_query($productDetails);
         }
-        return E::link("Ekom_productCardRef", [
+        return E::link("Ekom_productCardRefId", [
                 "slug" => $earlyProductBoxModel['product_card_slug'],
-                "ref" => $earlyProductBoxModel['reference'],
+                "refId" => $earlyProductBoxModel['product_reference_id'],
             ]) . $sSuffix;
     }
 
@@ -74,9 +74,9 @@ class EkomLinkHelper
         if ($productDetails) {
             $sSuffix .= "&" . http_build_query($productDetails);
         }
-        return E::link("Ekom_productCardRef", [
+        return E::link("Ekom_productCardRefId", [
                 "slug" => $earlyProductBoxModel['product_card_slug'],
-                "ref" => $earlyProductBoxModel['reference'],
+                "refId" => $earlyProductBoxModel['product_reference_id'],
             ]) . "?action=product.getInfo&id=$productId" . $sSuffix;
     }
 }

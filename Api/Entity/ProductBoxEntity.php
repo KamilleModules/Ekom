@@ -190,9 +190,10 @@ return [];
                      * The product instance can only be computed from productDetailsArray, which are created
                      * from the Ekom_decorateBoxModel hook.
                      */
-                    $primitiveModel['uriProductInstance'] = UriUtil::getProductBoxUriByCardSlugProductRef(
+                    $primitiveModel['uriProductInstance'] = UriUtil::getProductBoxUriByCardSlugProductRefId(
                         $primitiveModel['card_slug'],
-                        $primitiveModel['product_reference'],
+//                        $primitiveModel['product_reference'],
+                        $primitiveModel['product_reference_id'],
                         $primitiveModel['productDetailsMap']);
 
                     /**
@@ -435,9 +436,9 @@ return [];
                     $productReference = $p['reference'];
                     $cardSlug = $row['slug'];
 
-                    $cardUri = E::link("Ekom_productCardRef", [
+                    $cardUri = E::link("Ekom_productCardRefId", [
                         'slug' => $cardSlug,
-                        'ref' => $productReference,
+                        'refId' => $p['product_reference_id'],
                     ]);
 
 
@@ -529,7 +530,7 @@ return [];
 
                         "uriCard" => $cardUri,
                         "uriCardAjax" => UriUtil::getProductBoxBaseAjaxUri($productId),
-                        "uriProduct" => UriUtil::getProductBoxUriByCardSlugProductRef($cardSlug, $productReference),
+                        "uriProduct" => UriUtil::getProductBoxUriByCardSlugProductRefId($cardSlug, $p['product_reference_id']),
 
                         "label" => $label,
                         "label_flat" => strtolower(StringTool::removeAccents($label)), // use this for dynamic sorting

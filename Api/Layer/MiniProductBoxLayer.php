@@ -253,9 +253,9 @@ inner join ek_product_group g on g.id=phg.product_group_id
     {
         $row['has_tax'] = ('1.00' !== $row['tax_ratio']);
         $row['is_novelty'] = (false !== strpos($row['codes'], 'n'));
-        $row['product_uri'] = A::link("Ekom_productCardRef", [
+        $row['product_uri'] = A::link("Ekom_productCardRefId", [
             "slug" => $row['product_card_slug'],
-            "ref" => $row['reference'],
+            "refId" => $row['product_reference_id'],
         ]);
         if (null !== $row['image_id']) {
             $row['image'] = ImageLayer::getCardProductImageUriByImageId($row['image_id']);

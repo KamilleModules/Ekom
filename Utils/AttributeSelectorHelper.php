@@ -308,7 +308,7 @@ class AttributeSelectorHelper
                      * Todo: read the intro, and find the appropriate solution
                      * Note: for now I believe it will only work if the product has only one attribute (I'm in a rush sorry)...
                      */
-                    $productUri = E::link("Ekom_productCardRef", ['slug' => $info['cardSlug'], 'ref' => $info['ref']]);
+                    $productUri = E::link("Ekom_productCardRefId", ['slug' => $info['cardSlug'], 'refId' => $info['refId']]);
                     $productAjaxUri = UriUtil::getProductBoxBaseAjaxUri($_productId);
                     $attributes[$k]['page_uri'] = $productUri;
                     $attributes[$k]['ajax_page_uri'] = $productAjaxUri;

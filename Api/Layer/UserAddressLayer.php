@@ -58,7 +58,7 @@ class UserAddressLayer
      * @see EkomModels::addressModel()
      * @throws EkomException
      */
-    public static function getAddressById($userId, $addressId, $throwEx = true, $default=null)
+    public static function getAddressById($userId, $addressId, $throwEx = true, $default = null)
     {
         $addressId = (int)$addressId;
         $userId = (int)$userId;
@@ -275,7 +275,6 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
         $maxAddresses = XConfig::get("Ekom.maxUserAddresses");
         $addresses = self::getUserAddresses($userId);
         if (count($addresses) < $maxAddresses) {
-
             if (null === $addressId) {
                 $ret = $this->createNewAddress($userId, $data);
             } else {
@@ -283,6 +282,7 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
             }
             if (true === $ret) {
                 E::dispatch("user.address-$userId");
+
             }
             E::refreshUserContext();
             return $ret;

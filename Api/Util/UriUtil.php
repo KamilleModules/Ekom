@@ -24,4 +24,13 @@ class UriUtil
         }
         return $uri;
     }
+
+    public static function getProductBoxUriByCardSlugProductRefId($cardSlug, int $productRefId, array $productDetails = [])
+    {
+        $uri = E::link("Ekom_productCardRefId", ['slug' => $cardSlug, 'refId' => $productRefId]);
+        if ($productDetails) {
+            $uri = UriTool::uri($uri, $productDetails, true);
+        }
+        return $uri;
+    }
 }
