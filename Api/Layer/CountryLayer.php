@@ -53,6 +53,11 @@ order by label asc
         ], \PDO::FETCH_COLUMN);
     }
 
+    public static function getLabelById(int $id)
+    {
+        return QuickPdo::fetch("select label from ek_country where id=$id", [], \PDO::FETCH_COLUMN);
+    }
+
 
     public static function getLabelByIso(string $iso)
     {

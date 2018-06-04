@@ -25,4 +25,9 @@ from ek_gender
     {
         return QuickPdo::fetch("select * from ek_gender where id=$id");
     }
+
+    public static function getLongLabelById(int $id)
+    {
+        return QuickPdo::fetch("select long_label from ek_gender where id=$id", [], \PDO::FETCH_COLUMN);
+    }
 }

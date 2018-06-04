@@ -15,6 +15,23 @@ use SqlQuery\SqlQueryInterface;
 class SqlQueryHelper
 {
 
+    public static function getSqlQueryByProductReferenceIds(array $productReferenceIds, array $options = [])
+    {
+        $queryOptions = $options['queryOptions'] ?? [
+                "useAttributesString" => true,
+            ];
+
+
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($queryOptions);
+        if ($productReferenceIds) {
+            $sProductReferenceIds = implode(', ', $productReferenceIds);
+            $sqlQuery->addWhere(" and pr.id in ($sProductReferenceIds)");
+            return $sqlQuery;
+        }
+        return false;
+    }
+
+
     /**
      * @param string $search
      * @return SqlQueryInterface
@@ -115,8 +132,6 @@ class SqlQueryHelper
         $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($queryOptions);
 
         $sqlQuery->addHaving("discount_value is not null");
-
-
 
 
         return $sqlQuery;

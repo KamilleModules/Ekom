@@ -36,6 +36,7 @@ use Module\Ekom\Utils\DataChange\EkomDataChangeDispatcher;
 use Module\Ekom\Utils\EkomRootUser\EkomRootUser;
 use Module\FishMailer\Util\FishMailerService\FishMailerService;
 use Module\TeamMail\Api\Layer\TeamLayer;
+use Module\TeamMail\Api\Layer\TeamMailLayer;
 use OnTheFlyForm\Provider\OnTheFlyFormProviderInterface;
 use Umail\UmailInterface;
 
@@ -566,10 +567,11 @@ class E
     /**
      * Send a front office mail
      */
-    public static function sendMail(string $template, string $recipient, array $variables = [])
+    public static function sendMail(string $template, string $recipient, array $variables = [], array $options = [])
     {
         Hooks::call("Ekom_Mailer_decorateVariables", $variables, $template, $recipient);
-        return FishMailerService::create()->sendFishMailByTemplate($recipient, $template, $variables);
+        $res = FishMailerService::create()->sendFishMailByTemplate($recipient, $template, $variables, $options);
+        return $res;
     }
 
 
