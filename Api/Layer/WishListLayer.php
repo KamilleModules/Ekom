@@ -12,6 +12,16 @@ use QuickPdo\QuickPdo;
 class WishListLayer
 {
 
+    public static function getActiveWishListProductReferenceIds(int $userId)
+    {
+        return QuickPdo::fetchAll("
+select product_reference_id 
+from ek_user_has_product_reference 
+where user_id=$userId
+and date_deleted is null 
+", [], \PDO::FETCH_COLUMN);
+    }
+
     public static function getWishListItemsByUserId($userId, $limit = null, $type = "current")
     {
         $userId = (int)$userId;

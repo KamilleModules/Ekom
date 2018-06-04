@@ -138,7 +138,7 @@ class CheckoutProcess implements CheckoutProcessInterface
     public function get($key, $default = null, $throwEx = false)
     {
         $data = static::currentCheckoutDataGet("CheckoutProcess", []);
-        if (array_key_exists($key, $data)) {
+        if (array_key_exists($key, $data) && null !== $data[$key]) {
             return $data[$key];
         }
         if (true === $throwEx) {
