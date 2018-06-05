@@ -53,6 +53,8 @@ use QuickPdo\QuickPdoStmtTool;
 class UserLayer
 {
 
+    private static $userId2Info = [];
+
     public static function getEarliestAccountCreationDate()
     {
         return QuickPdo::fetch("select min(date(date_creation)) from ek_user where date_creation != '0000-00-00 00:00:00'", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
@@ -127,10 +129,15 @@ where 1
     /**
      * @see EkomModels::userInfoModel()
      */
-    public static function getUserInfoById($userId, bool $callModules = false)
+    public static function getUserInfoById($userId, array $options = [])
     {
         $userId = (int)$userId;
-        $res = QuickPdo::fetch("
+        $forceRefresh = $options['forceRefresh'] ?? false;
+        if (
+            true === $forceRefresh ||
+            false === array_key_exists($userId, self::$userId2Info)) {
+
+            self::$userId2Info[$userId] = QuickPdo::fetch("
 select 
 u.*, 
 g.name as group_name,
@@ -143,10 +150,9 @@ inner join ek_user_group g on g.id=u.user_group_id
 inner join ek_gender ge on ge.id=u.gender_id  
 where u.id=$userId");
 
-        if (true === $callModules) {
-            Hooks::call('Ekom_UserLayer_decorateUserInfo', $res, $userId);
+
         }
-        return $res;
+        return self::$userId2Info[$userId];
     }
 
     public static function getUserInfoByEmail($email)
