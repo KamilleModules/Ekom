@@ -636,6 +636,7 @@ class E
                 'commentModeratorEmail' => E::getVariable("Ekom_commentModeratorEmail"),
                 'createAccountNeedValidation' => (bool)E::getVariable("Ekom_createAccountNeedValidation"),
                 'default_lang' => XConfig::get("Ekom.default_lang"),
+                'default_date_format' => XConfig::get("Ekom.default_date_format"),
                 'currencySymbol' => XConfig::get("Ekom.currencySymbol"),
                 'currencyIsoCode' => XConfig::get("Ekom.currencyIsoCode"),
                 'moneyFormatArgs' => XConfig::get("Ekom.moneyFormatArgs"),
