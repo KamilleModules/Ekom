@@ -536,7 +536,7 @@ class CheckoutOrderUtil
 
             Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
 
-            az(__FILE__, "here");
+
 
 
             if (false === $this->testMode) {
