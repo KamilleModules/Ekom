@@ -133,6 +133,8 @@ class ProductQueryBuilderUtil
         $useCustomTaxSubquery = false;
         Hooks::call("Ekom_ProductQueryBuilder_decorateSubqueriesInfo", $allSubQueriesInfo);
 
+
+
         $markers = $allSubQueriesInfo['markers'];
 
         if (array_key_exists('taxSubquery', $allSubQueriesInfo)) {

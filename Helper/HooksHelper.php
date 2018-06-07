@@ -6,6 +6,7 @@ namespace Module\Ekom\Helper;
 use Kamille\Ling\Z;
 use Kamille\Services\XConfig;
 use Module\Ekom\Api\Layer\CartLayer;
+use Module\Ekom\Api\Layer\CountryLayer;
 use Module\Ekom\Api\Layer\CouponLayer;
 use Module\Ekom\Api\Layer\InvoiceLayer;
 use Module\Ekom\Api\Layer\UserHasCouponLayer;
@@ -28,6 +29,16 @@ use QuickPdo\QuickPdo;
 
 class HooksHelper
 {
+
+
+    public static function ZipCity_EcpService_resolveCountry(array &$country, $transformIdentifier=null)
+    {
+        if('Ekom.getCountryIsoById' === $transformIdentifier){
+            $country = CountryLayer::getCountryIsoById($country);
+        }
+    }
+
+
 
     public static function Application_Ecp_decorateOutput(array &$out, string $action, array $intent = [])
     {

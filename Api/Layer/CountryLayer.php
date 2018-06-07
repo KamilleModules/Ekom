@@ -14,6 +14,12 @@ class CountryLayer
 {
 
 
+    public static function getCountryIsoById(int $id)
+    {
+        return QuickPdo::fetch("select iso_code from ek_country where id=$id", [], \PDO::FETCH_COLUMN);
+    }
+
+
     public static function getCountryItems()
     {
         return QuickPdo::fetchAll("
