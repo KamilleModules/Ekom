@@ -36,6 +36,13 @@ class BackHooksHelper
 {
 
 
+    public static function CacheHub_collectCacheDeleteIdentifiers(array &$identifiers)
+    {
+        $identifiers[] = "ek_category";
+    }
+
+
+
     public static function Ekom_Stats_Dashboard_getModuleHandler(&$moduleHandler, $currentModule)
     {
         switch ($currentModule) {

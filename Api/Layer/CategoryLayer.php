@@ -1032,7 +1032,9 @@ order by `order` asc
 
             return $ret;
 
-        }, $forceGenerate);
+        }, [
+            "ek_category",
+        ]);
     }
 
     public function getSubCategoriesBySlug($slug, $maxDepth = -1)

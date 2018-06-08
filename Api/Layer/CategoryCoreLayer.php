@@ -200,7 +200,9 @@ class CategoryCoreLayer
                 $this->applySort($ret, $options);
             }
             return $ret;
-        });
+        }, [
+            "ek_category",
+        ]);
 
 
     }

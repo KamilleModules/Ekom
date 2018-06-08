@@ -656,9 +656,9 @@ class CartLayer
                 /**
                  * Can the carrier calculate the shippingInfo with the given context?
                  */
-
                 $context = CartUtil::getCarrierShippingInfoContext($model, $currentCheckoutData);
                 if (false !== ($shippingInfo = $carrier->getShippingInfo($context, $carrierErrorCode))) {
+
 
                     $shippingStatus = 3;
 

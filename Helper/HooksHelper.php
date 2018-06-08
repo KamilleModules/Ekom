@@ -31,7 +31,7 @@ class HooksHelper
 {
 
 
-    public static function ZipCity_EcpService_resolveCountry(array &$country, $transformIdentifier=null)
+    public static function ZipCity_EcpService_resolveCountry(&$country, $transformIdentifier=null)
     {
         if('Ekom.getCountryIsoById' === $transformIdentifier){
             $country = CountryLayer::getCountryIsoById($country);

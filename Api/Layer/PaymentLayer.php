@@ -95,6 +95,7 @@ class PaymentLayer
             $name = $method['name'];
             $conf = $method['configuration'];
             $handler = $collection->get($name);
+//            az(get_class($handler));
             $model = $handler->getModel();
 
 
