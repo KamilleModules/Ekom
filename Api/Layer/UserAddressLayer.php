@@ -128,7 +128,9 @@ order by h.`order` asc
             }
 
             return $rows;
-        }, true);
+        }, [
+            "user_$userId.ek_address",
+        ]);
     }
 
 

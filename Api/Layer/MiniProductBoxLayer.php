@@ -6,6 +6,7 @@ namespace Module\Ekom\Api\Layer;
 use Core\Services\A;
 use Core\Services\Hooks;
 use Kamille\Services\XConfig;
+use Module\Ekom\Api\Util\HashUtil;
 use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
 use Module\Ekom\Helper\ProductDetailsHelper;
 use Module\Ekom\Helper\SqlQueryHelper;
@@ -193,23 +194,32 @@ and pr.id in ($sProductReferenceIds)
     {
 
 
-        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($options);
+        $hash = HashUtil::getBoxHash([
+            "product_group_name" => $productGroupName,
+        ], $options);
 
-        // specific to groups
-        $sqlQuery->addWhere("
+        return A::cache()->get("Ekom.MiniProductBoxLayer.getBoxesByProductGroupName.$hash", function () use ($productGroupName, $options) {
+
+            $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($options);
+
+            // specific to groups
+            $sqlQuery->addWhere("
 and g.name = :group_name        
         ");
-        $sqlQuery->addJoin("
+            $sqlQuery->addJoin("
 inner join ek_product_group_has_product phg on phg.product_id=p.id
 inner join ek_product_group g on g.id=phg.product_group_id
             ");
-        $sqlQuery->addMarker("group_name", $productGroupName);
-        $sqlQuery->addOrderBy("phg.order", "asc");
+            $sqlQuery->addMarker("group_name", $productGroupName);
+            $sqlQuery->addOrderBy("phg.order", "asc");
 
 
-        $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
-        self::sugarifyRows($rows);
-        return $rows;
+            $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
+            self::sugarifyRows($rows);
+            return $rows;
+        });
+
+
     }
 
 

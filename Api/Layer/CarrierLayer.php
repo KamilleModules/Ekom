@@ -29,6 +29,8 @@ use QuickPdo\QuickPdo;
  */
 class CarrierLayer
 {
+    private static $_carriers = null;
+
 
     /**
      * @param $shopId
@@ -78,13 +80,13 @@ class CarrierLayer
 
 
     /**
-     * @param $shopId
      * @return array of carrier id => name
      */
     public static function getCarriers()
     {
-        return A::cache()->get("Ekom.CarrierLayer.getCarriers", function () {
-            return QuickPdo::fetchAll("
+        if (null === self::$_carriers) {
+            self::$_carriers = A::cache()->get("Ekom.CarrierLayer.getCarriers", function () {
+                return QuickPdo::fetchAll("
 select c.id, c.name 
         
 from ek_carrier c 
@@ -92,7 +94,9 @@ order by c.priority asc
         
         ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
 
-        });
+            }, 'ek_carrier');
+        }
+        return self::$_carriers;
     }
 
 

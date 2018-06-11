@@ -4,6 +4,7 @@
 namespace Module\Ekom\Api\Util;
 
 
+use Bat\HashTool;
 use Core\Services\Hooks;
 use Core\Services\X;
 use Kamille\Services\Exception\HooksException;

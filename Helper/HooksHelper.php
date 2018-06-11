@@ -3,6 +3,7 @@
 
 namespace Module\Ekom\Helper;
 
+use Core\Services\A;
 use Kamille\Ling\Z;
 use Kamille\Services\XConfig;
 use Module\Ekom\Api\Layer\CartLayer;
@@ -31,13 +32,12 @@ class HooksHelper
 {
 
 
-    public static function ZipCity_EcpService_resolveCountry(&$country, $transformIdentifier=null)
+    public static function ZipCity_EcpService_resolveCountry(&$country, $transformIdentifier = null)
     {
-        if('Ekom.getCountryIsoById' === $transformIdentifier){
+        if ('Ekom.getCountryIsoById' === $transformIdentifier) {
             $country = CountryLayer::getCountryIsoById($country);
         }
     }
-
 
 
     public static function Application_Ecp_decorateOutput(array &$out, string $action, array $intent = [])
@@ -95,7 +95,11 @@ class HooksHelper
         $p = explode("?", $uri, 2);
         $uri = $p[0];
 
-        $row = QuickPdo::fetch("
+        $sUri = str_replace('/', "_", $uri);
+
+
+        $row = A::cache()->get("Ekom.HooksHelper.Ekom_FrontController_Meta_decorate.$sUri.$route", function () use ($uri, $route) {
+            return QuickPdo::fetch("
 select 
 meta_title,
 meta_description,
@@ -113,9 +117,11 @@ from ek_page
 where route=:route
 
 ", [
-            "uri" => $uri,
-            "route" => $route,
-        ]);
+                "uri" => $uri,
+                "route" => $route,
+            ]);
+        }, "ek_page");
+
 
         if (false !== $row) {
             $metaArray["title"] = $row['meta_title'];

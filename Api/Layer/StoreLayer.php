@@ -134,7 +134,11 @@ where a.active=1";
 
             return QuickPdo::fetchAll($q, $markers);
 
-        });
+        }, [
+            "ek_store",
+            "ek_address",
+            "ek_country",
+        ]);
     }
 
 

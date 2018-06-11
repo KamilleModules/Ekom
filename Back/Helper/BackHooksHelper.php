@@ -38,7 +38,13 @@ class BackHooksHelper
 
     public static function CacheHub_collectCacheDeleteIdentifiers(array &$identifiers)
     {
+        $identifiers[] = "ek_address";
+        $identifiers[] = "ek_carrier";
         $identifiers[] = "ek_category";
+        $identifiers[] = "ek_country";
+        $identifiers[] = "ek_page";
+        $identifiers[] = "ek_store";
+        $identifiers[] = "ek_tax";
     }
 
 

@@ -39,7 +39,8 @@ class TaxLayer
 {
 
 
-    public static function getTaxInfoByAmount($amount){
+    public static function getTaxInfoByAmount($amount)
+    {
         return QuickPdo::fetch("
 select * 
 from ek_tax 
@@ -140,11 +141,13 @@ select amount from ek_tax where id=$taxId
 
     public static function getTaxInfoByName($taxName)
     {
-        return QuickPdo::fetch("
+        return A::cache()->get("Ekom.TaxLayer.getTaxInfoByName.$taxName", function () use ($taxName) {
+            return QuickPdo::fetch("
 select * from ek_tax where name=:name        
         ", [
-            "name" => $taxName,
-        ]);
+                "name" => $taxName,
+            ]);
+        }, "ek_tax");
     }
 
     public static function getModeItems()
