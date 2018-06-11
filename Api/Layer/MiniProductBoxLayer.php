@@ -194,9 +194,9 @@ and pr.id in ($sProductReferenceIds)
     {
 
 
-        $hash = HashUtil::getBoxHash([
+        $hash = HashUtil::getBoxHash(array_merge([
             "product_group_name" => $productGroupName,
-        ], $options);
+        ], $options));
 
         return A::cache()->get("Ekom.MiniProductBoxLayer.getBoxesByProductGroupName.$hash", function () use ($productGroupName, $options) {
 

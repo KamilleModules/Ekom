@@ -5,6 +5,8 @@ namespace Module\Ekom\SqlQueryWrapper\Plugins;
 
 
 use Bat\UriTool;
+use Core\Services\A;
+use Module\Application\Helper\ApplicationHashHelper;
 use QuickPdo\QuickPdo;
 use SqlQuery\SqlQueryInterface;
 use SqlQueryWrapper\Plugins\SqlQueryWrapperBasePlugin;
@@ -64,7 +66,12 @@ group by v.value
  
                 
                 ";
-        $this->attributes = QuickPdo::fetchAll($q, $markers);
+
+
+        $hash = ApplicationHashHelper::getHashByQuery($q, $markers);
+        $this->attributes = A::cache()->getDaily("Ekom.EkomSqlQueryWrapperAttributeFilterPlugin.$hash", function () use ($q, $markers) {
+            return QuickPdo::fetchAll($q, $markers);
+        });
     }
 
 

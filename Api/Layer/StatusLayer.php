@@ -14,6 +14,12 @@ class StatusLayer
 {
 
 
+    public static function getCodes2Ids()
+    {
+        return QuickPdo::fetchAll("select code, id from ek_order_status", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+
     /**
      * @param array $statuses
      *      - label

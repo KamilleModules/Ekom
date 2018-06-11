@@ -9,6 +9,7 @@ use Core\Services\A;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Kamille\Services\XConfig;
 use Kamille\Services\XLog;
+use Module\Application\RowsGenerator\ApplicationRowsGenerator;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Object\ProductComment;
 use Module\Ekom\Utils\E;
@@ -202,7 +203,7 @@ from ek_product_comment where user_id=$userId
             $page = 1;
         }
 
-        $rows = QuickPdoRowsGenerator::create()
+        $rows = ApplicationRowsGenerator::create()
             ->setNbItemsPerPage(20)
             ->setPage($page)
             ->setSortValues([

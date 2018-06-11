@@ -4,10 +4,10 @@
 namespace Module\Ekom\SqlQueryWrapper;
 
 
+use Module\Application\SqlQueryWrapper\ApplicationSqlQueryWrapper;
 use Module\Ekom\Api\Layer\MiniProductBoxLayer;
-use SqlQueryWrapper\SqlQueryWrapper;
 
-class EkomSqlQueryWrapper extends SqlQueryWrapper
+class EkomSqlQueryWrapper extends ApplicationSqlQueryWrapper
 {
 
     public function setRowDecoratorByPreset(string $presetName)

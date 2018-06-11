@@ -19,12 +19,12 @@ class HashUtil
         return '';
     }
 
-    public static function getBoxHash(array $customParams = [], array $boxOptions = [])
+    public static function getBoxHash(array $customParams = [])
     {
 
         $all = array_merge([
             "is_backoffice" => (int)E::isBackOffice(),
-        ], E::getUserContext(), $boxOptions, $customParams);
+        ], E::getUserContext(), $customParams);
         asort($all);
         return HashTool::getHashByArray($all);
 

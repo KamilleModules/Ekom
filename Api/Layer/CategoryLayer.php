@@ -442,7 +442,8 @@ and `name`=:name
      */
     public static function getInfoBySlug($slug)
     {
-        return QuickPdo::fetch("
+        return A::cache()->get("Ekom.CategoryLayer.getInfoBySlug.$slug", function () use ($slug) {
+            return QuickPdo::fetch("
 select
 c.id, 
 c.name, 
@@ -452,8 +453,10 @@ c.slug
 from ek_category c  
 where c.slug=:slug         
         ", [
-            'slug' => $slug,
-        ]);
+                'slug' => $slug,
+            ]);
+        }, "ek_category");
+
     }
 
 
@@ -473,7 +476,8 @@ where c.slug=:slug
         $categoryId = (int)$categoryId;
 
 
-        $row = QuickPdo::fetch("
+        $row = A::cache()->get("Ekom.CategoryLayer.collectCategoryInfoTreeByCategoryId.$categoryId", function () use ($categoryId) {
+            return QuickPdo::fetch("
 select    
 
 c.id,
@@ -489,6 +493,7 @@ from ek_category c
 where c.id=$categoryId
      
         ");
+        }, "ek_category");
 
         if (false !== $row) {
             $infos[] = $row;
@@ -1069,7 +1074,8 @@ and cl.slug=:slug
     public function getCategoryInfoById($categoryId)
     {
         $categoryId = (int)$categoryId;
-        return QuickPdo::fetch("
+        return A::cache()->get("Ekom.CategoryLayer.getCategoryInfoById.$categoryId", function () use ($categoryId) {
+            return QuickPdo::fetch("
 select 
 id,
 `name`,
@@ -1085,6 +1091,7 @@ meta_keywords
 from ek_category  
 where id=$categoryId
 ");
+        }, "ek_category");
     }
 
 

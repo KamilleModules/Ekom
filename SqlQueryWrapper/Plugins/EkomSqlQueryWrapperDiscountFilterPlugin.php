@@ -5,7 +5,9 @@ namespace Module\Ekom\SqlQueryWrapper\Plugins;
 
 
 use Bat\UriTool;
+use Core\Services\A;
 use Kamille\Services\XConfig;
+use Module\Application\Helper\ApplicationHashHelper;
 use QuickPdo\QuickPdo;
 use SqlQuery\SqlQueryInterface;
 use SqlQueryWrapper\Plugins\SqlQueryWrapperBasePlugin;
@@ -57,9 +59,12 @@ count(discount_id) as count
 from ($sqlQueryString) as zz 
 where discount_type='p'
 group by discount_value
- 
                 ";
-        $this->discounts = QuickPdo::fetchAll($q, $markers);
+
+        $hash = ApplicationHashHelper::getHashByQuery($q, $markers);
+        $this->discounts = A::cache()->getDaily("Ekom.EkomSqlQueryWrapperDiscountFilterPlugin.$hash", function () use ($q, $markers) {
+            return QuickPdo::fetchAll($q, $markers);
+        });
     }
 
 

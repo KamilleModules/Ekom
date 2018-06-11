@@ -6,15 +6,11 @@ namespace Module\Ekom\Api\Layer;
 
 use Core\Services\A;
 use Core\Services\Hooks;
-use Core\Services\X;
-use Module\Ekom\Api\EkomApi;
-use Module\Ekom\Api\Entity\ProductBoxEntity;
+use Module\Application\Helper\ApplicationHashHelper;
 use Module\Ekom\Api\Entity\ProductBoxEntityUtil;
 use Module\Ekom\Api\Util\ProductQueryBuilderUtil;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\AttributeSelectorHelper;
-use Module\Ekom\Utils\E;
-use Module\EkomUserProductHistory\UserProductHistory\UserProductHistoryInterface;
 use QuickPdo\QuickPdo;
 use SqlQuery\SqlQueryInterface;
 
@@ -138,12 +134,20 @@ inner join ek_product_group g on g.id=phg.product_group_id
             ]);
         }
 
+        $sSqlQuery = $sqlQuery->getSqlQuery();
+        $markers = $sqlQuery->getMarkers();
+        $hash = ApplicationHashHelper::getHashByQuery($sSqlQuery, $markers, $options);
 
-        $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
-        foreach ($rows as $k => $row) {
-            self::sugarify($row, $options);
-            $rows[$k] = $row;
-        }
+        $rows = A::cache()->getDaily("Ekom.ProductBoxLayer.getBoxesByProductGroupName.$productGroupName.$hash", function () use ($sSqlQuery, $markers, $options) {
+            $rows = QuickPdo::fetchAll($sSqlQuery, $markers);
+            foreach ($rows as $k => $row) {
+                self::sugarify($row, $options);
+                $rows[$k] = $row;
+            }
+            return $rows;
+        });
+
+
         return $rows;
     }
 
@@ -156,8 +160,21 @@ inner join ek_product_group g on g.id=phg.product_group_id
         $markers = $sqlQuery->getMarkers();
 
 
-        $row = QuickPdo::fetch($q, $markers);
-        self::sugarify($row);
+        /**
+         * Note: here we could exclude the sugarify method from the cache,
+         * but after reading the existing code, it turns out that no code interacts with the sql model,
+         * and so I'll include it in the cache for now.
+         * (if later there are some troubles with this strategy, removing sugarify from the cache might be an option,
+         * but I recommend that you don't do stats/interacts with sql model during the sugarify phase...)
+         *
+         */
+        $hash = ApplicationHashHelper::getHashByQuery($q, $markers);
+        $row = A::cache()->getDaily("Ekom.ProductBoxLayer.$hash", function () use ($q, $markers) {
+            $row = QuickPdo::fetch($q, $markers);
+            self::sugarify($row);
+            return $row;
+        });
+
 
         return $row;
     }
