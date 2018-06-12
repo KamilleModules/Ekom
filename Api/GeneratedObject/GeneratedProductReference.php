@@ -38,6 +38,11 @@ class GeneratedProductReference extends TableCrudObject
 			'quantity' => 0,
 			'_product_details' => '',
 			'extra1' => '',
+			'extra2' => '',
+			'is_orderable_when_out_of_stock' => 0,
+			'out_of_stock_text' => '',
+			'active' => 0,
+			'is_available' => 0,
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

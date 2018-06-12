@@ -52,7 +52,12 @@ class ProductQueryBuilderUtil
      *      - reference,
      *      - _product_details, @see ProductDetailsHelper
      *      - quantity,
-     *      - out_of_stock_text,
+     *      - is_available,  either 0 or 1,
+     *              If 0, the product page is still accessible, but the user can't order the product at all.
+     *      - is_orderable_when_out_of_stock,  either 0 or 1,
+     *                  if 0, the user can't purchase the product at all (forbidden)
+     *                  if 1, the user can purchase the product; on the product page the out of stock is displayed
+     *      - out_of_stock_text,  the text to display when a product is out of stock (the is_orderable_when_out_of_stock must be set to 1 to allow the displaying of the text)
      *      - label: the card label,
      *      - description,
      *      - product_slug,
@@ -123,7 +128,6 @@ class ProductQueryBuilderUtil
         $taxContext = E::getTaxContext();
         $priceContext = E::getPriceContext();
         $discountContext = E::getDiscountContext();
-
 
         $allSubQueriesInfo = [
             "markers" => [],
@@ -216,6 +220,8 @@ where phd.product_reference_id=pr.id and
 //            "cond_identifier" => "b2b",
 //        ];
         self::applyContext($priceContext, $qPriceSubquery, $markers, 'price');
+//        a(__FILE__, $priceContext);
+//        az($qPriceSubquery);
         $qPriceSubquery .= " limit 0,1";
 
 
@@ -247,6 +253,8 @@ where phd.product_reference_id=pr.id and
 
         $datetime = $discountContext['datetime'];
         unset($discountContext['datetime']);
+
+
 
 
         $qDiscountSubquery .= " 
@@ -281,7 +289,14 @@ where phd.product_reference_id=pr.id and
          * Here, we resolve such a case by ignoring all discounts but the one with the highest discount amount (basically
          * helping the customer here).
          */
-        $qDiscountSubquery .= " order by d.value desc limit 0,1";
+//        $qDiscountSubquery .= " order by d.value desc limit 0,1";
+        $qDiscountSubquery .= " order by  
+case d.type
+when 'p' then @realPrice - (@realPrice * d.value / 100)
+else  @realPrice - d.value 
+end
+asc limit 0,1
+			";
 
         $qDiscountSubqueryId = str_replace("WHAT", "id", $qDiscountSubquery);
         $qDiscountSubqueryLabel = str_replace("WHAT", "label", $qDiscountSubquery);
@@ -331,7 +346,9 @@ pr.reference,
 pr._product_details,
 $sAttributeString
 pr.quantity,
-p.out_of_stock_text,
+pr.out_of_stock_text,
+pr.is_orderable_when_out_of_stock,
+pr.is_available,
 if(
     '' != p.label,
     p.label,
@@ -418,7 +435,7 @@ inner join ek_product_reference pr on pr.product_id=p.id
 inner join ek_product_card_type pct on pct.id=c.product_card_type_id
 inner join ek_seller sel on sel.id=p.seller_id
             ")
-            ->addWhere(" and p.active=1 and c.active=1")
+            ->addWhere(" and p.active=1 and c.active=1 and pr.active=1")
             /**
              * Note about group by,
              * it basically enabled to use aliases in the "having" clause (i.e. from my tests, having sale_price < 100

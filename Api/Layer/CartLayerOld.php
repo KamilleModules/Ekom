@@ -40,7 +40,7 @@ use Module\ThisApp\Ekom\Helper\CartHelper;
  *
  *
  */
-class CartLayer
+class CartLayerOld
 {
 
 
@@ -796,43 +796,32 @@ class CartLayer
     {
 
         $boxModel = ProductBoxLayer::getProductBoxByProductReferenceId($productReferenceId);
-        $isAvailable = (bool)$boxModel['is_available'];
-        if (false === $isAvailable) {
-            $label = $boxModel['label'];
-            throw new EkomUserMessageException("Le produit \"$label\" n'est plus du tout disponible à la vente.");
-        }
+        $isOrderableWhenOutOfStock = $boxModel['is_orderable_when_out_of_stock'];
 
 
-        $isOrderableWhenOutOfStock = (bool)$boxModel['is_orderable_when_out_of_stock'];
-        $remainingStockQty = (int)$boxModel['quantity'];
+        if (false === E::conf('acceptOutOfStockOrders', false)) {
+
+            $remainingStockQty = (int)$boxModel['quantity'];
 
 
-        /**
-         * @todo-ling: products with infinite quantity (i.e. downloadable products for instance)
-         * are not handled yet, it might be a good idea to have negative quantities: we can then
-         * estimate the quantity one needs to order.
-         * So the old system -1=infinite is deprecated...
-         */
-        if (true === $isUpdate) {
-            $quantityInCart = $qty;
-        } else {
-            $quantityInCart = $existingQty + $qty;
-        }
+            if (0 === $remainingStockQty) {
+                $sentence = "Oops. Ce produit n'est actuellement plus en stock!";
+            } else {
+                $sentence = "Il ne reste plus que $remainingStockQty exemplaires de ce produit, veuillez réduire la quantité commandée.";
+            }
 
 
-        if ($quantityInCart > $remainingStockQty) {
-
-            if (
-                false === E::conf('acceptOutOfStockOrders', false) ||
-                false === $isOrderableWhenOutOfStock
-            ) {
-
-                if ($remainingStockQty <= 0) {
-                    $sentence = "Oops. Ce produit n'est actuellement plus disponible à la vente!";
-                } else {
-                    $sentence = "Il ne reste plus que $remainingStockQty exemplaires de ce produit disponibles à la vente, veuillez réduire la quantité commandée.";
+            if (false === $isUpdate) {
+                $addedQty = $qty;
+                $desiredQty = $existingQty + $addedQty;
+                if (-1 !== $remainingStockQty && $desiredQty > $remainingStockQty) {
+                    throw new EkomUserMessageException($sentence);
                 }
-                throw new EkomUserMessageException($sentence);
+            } else {
+                $newQty = $qty;
+                if (-1 !== $remainingStockQty && $newQty > $remainingStockQty) {
+                    throw new EkomUserMessageException($sentence);
+                }
             }
         }
     }

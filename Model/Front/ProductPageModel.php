@@ -63,8 +63,10 @@ class ProductPageModel
     {
 //            $productDetails = ProductBoxEntityUtil::filterProductDetails($_GET);
         $head = ProductBoxLayer::getProductBoxByProductReferenceId($productReferenceId);
+        if (false === $head) {
+            return false; // inactive product
+        }
 
-//            az($head);
         //--------------------------------------------
         // PREPARING TAIL
         //--------------------------------------------

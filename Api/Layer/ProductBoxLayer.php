@@ -154,6 +154,10 @@ inner join ek_product_group g on g.id=phg.product_group_id
     //--------------------------------------------
     // PRODUCT BOX LIST
     //--------------------------------------------
+    /**
+     * @param SqlQueryInterface $sqlQuery
+     * @return false|array, false if the product is not active (ek_product.active=0 or ek_product_card.active=0)
+     */
     private static function getProductBoxBySqlQuery(SqlQueryInterface $sqlQuery)
     {
         $q = $sqlQuery->getSqlQuery();
@@ -171,8 +175,11 @@ inner join ek_product_group g on g.id=phg.product_group_id
         $hash = ApplicationHashHelper::getHashByQuery($q, $markers);
         $row = A::cache()->getDaily("Ekom.ProductBoxLayer.$hash", function () use ($q, $markers) {
             $row = QuickPdo::fetch($q, $markers);
-            self::sugarify($row);
-            return $row;
+            if (false !== $row) {
+                self::sugarify($row);
+                return $row;
+            }
+            return false;
         });
 
 

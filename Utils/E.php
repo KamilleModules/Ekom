@@ -290,7 +290,7 @@ class E
                 "cond_user_group_id" => $userContext['user_group_id'],
                 "cond_extra1" => null,
             ];
-            Hooks::call("Ekom_decoratePriceContext", $priceContext, $userContext);
+            Hooks::call("Ekom_decorateDiscountContext", $priceContext, $userContext);
             return $priceContext;
         }
     }

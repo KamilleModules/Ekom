@@ -44,7 +44,6 @@ class GeneratedProduct extends TableCrudObject
 			'meta_description' => '',
 			'meta_keywords' => '',
 			'wholesale_price' => '',
-			'out_of_stock_text' => '',
 			'active' => 0,
 			'_discount_badge' => '',
 			'_popularity' => '',

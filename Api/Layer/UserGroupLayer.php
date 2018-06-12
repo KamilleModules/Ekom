@@ -14,7 +14,13 @@ class UserGroupLayer
 {
 
 
-    public static function getDistributionByDateRange($dateStart = null, $dateEnd = null){
+    public static function getName2Ids()
+    {
+        return QuickPdo::fetchAll("select name, id from ek_user_group", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
+
+    public static function getDistributionByDateRange($dateStart = null, $dateEnd = null)
+    {
         $markers = [];
 
         $q = "

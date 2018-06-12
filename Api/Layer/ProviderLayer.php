@@ -9,6 +9,10 @@ use QuickPdo\QuickPdo;
 class ProviderLayer
 {
 
+    public static function getName2IdList()
+    {
+        return QuickPdo::fetchAll("select name, id from ek_provider", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+    }
 
     public static function getLabelById(int $id)
     {
