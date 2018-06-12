@@ -21,6 +21,29 @@ class OrderLayer
 {
 
 
+    public static function setCarrierTrackingNumberByOrderId(int $orderId, $carrierTrackingNumber)
+    {
+        if (false !== ($row = self::getOrderInfo($orderId))) {
+            $orderDetails = $row['order_details'];
+            $orderDetails['carrier_tracking_number'] = $carrierTrackingNumber;
+            QuickPdo::update("ek_order", [
+                "order_details" => serialize($orderDetails),
+            ], [
+                ["id", '=', $orderId],
+            ]);
+            return true;
+        }
+        return false;
+    }
+
+    public static function getOrderIdByReference(string $reference)
+    {
+        return QuickPdo::fetch("select id from ek_order where reference=:ref", [
+            "ref" => $reference,
+        ], \PDO::FETCH_COLUMN);
+    }
+
+
     public static function getNbPurchasedProductsByDateRange($dateStart = null, $dateEnd = null)
     {
         $markers = [];
@@ -316,16 +339,17 @@ select reference from ek_order where id=$id
     public static function getOrderInfo($id)
     {
         $id = (int)$id;
-        return A::cache()->get("Ekom.OrderLayer.getOrderInfo.$id.", function () use ($id) {
+//        return A::cache()->get("Ekom.OrderLayer.getOrderInfo.$id.", function () use ($id) {
+//
+//        });
 
-            $row = QuickPdo::fetch("
+        $row = QuickPdo::fetch("
 select * from ek_order where id=$id 
         ");
-            if (false !== $row) {
-                self::unserializeRow($row);
-            }
-            return $row;
-        });
+        if (false !== $row) {
+            self::unserializeRow($row);
+        }
+        return $row;
     }
 
     public static function getOrderLastStatus($orderId)
@@ -337,9 +361,26 @@ from ek_order_status s
 inner join ek_order_has_order_status h on h.order_status_id=s.id
 
 where h.order_id=$orderId
-order by date asc         
+order by date desc 
+limit 0, 1         
         ", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
     }
+
+
+//    public static function getOrderLastStatusByOrderReference(string $orderReference)
+//    {
+//        return QuickPdo::fetch("
+//select s.code
+//from ek_order_status s
+//inner join ek_order_has_order_status h on h.order_status_id=s.id
+//inner join ek_order o on o.id=h.order_id
+//
+//where o.reference=:ref
+//order by date asc
+//        ", [
+//            "ref" => $orderReference,
+//        ], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
+//    }
 
 
     public static function getNbOrderWithStatuses($status, $dateStart = null, $dateEnd = null)
@@ -476,7 +517,6 @@ order by date asc
         if (array_key_exists($code, $code2Ids)) {
             $orderStatusId = $code2Ids[$code];
 
-
             return EkomApi::inst()->orderHasOrderStatus()->create([
                 "order_id" => $orderId,
                 "order_status_id" => $orderStatusId,
@@ -489,7 +529,7 @@ order by date asc
 
     public static function addOrderStatusById($orderId, $statusId, array $options = [])
     {
-        $extra = $options['extra'] ?? null;
+        $extra = $options['extra'] ?? "";
         return EkomApi::inst()->orderHasOrderStatus()->create([
             "order_id" => $orderId,
             "order_status_id" => $statusId,
@@ -500,9 +540,9 @@ order by date asc
 
     public static function getCode2Ids()
     {
-        return A::cache()->get("Ekom.OrderLayer", function () {
+        return A::cache()->get("Ekom.OrderLayer.getCode2Ids", function () {
             return QuickPdo::fetchAll("select code, id from ek_order_status", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
-        });
+        }, "ek_order_status");
     }
 
     public static function countOrders()
