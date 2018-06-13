@@ -13,6 +13,8 @@ use Kamille\Services\XConfig;
 use Kamille\Services\XLog;
 use Module\Ekom\Api\EkomApi;
 use Module\Ekom\Api\Exception\EkomApiException;
+use Module\Ekom\Api\Object\Address;
+use Module\Ekom\Api\Object\UserHasAddress;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Exception\EkomUserMessageException;
 use Module\Ekom\Models\EkomModels;
@@ -96,7 +98,7 @@ a.libelle,
 a.phone,              
 a.address,        
 a.city,        
-a.postcode,        
+a.postcode,            
 a.supplement,        
 c.label as country,
 c.id as country_id,
@@ -323,6 +325,8 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
 
         return QuickPdo::transaction(function () use ($userId, $data, $addressId) {
             $userId = (int)$userId;
+            $data["date_updated"] = date("Y-m-d H:i:s");
+
 
             EkomApi::inst()->address()->update($data, [
                 "id" => $addressId,
@@ -347,6 +351,9 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
             $userId = (int)$userId;
             $data['active'] = 1;
 
+            $date = date('Y-m-d H:i:s');
+            $data["date_added"] = $date;
+            $data["date_updated"] = $date;
             $addressId = EkomApi::inst()->address()->create($data);
 
             $userHasAddressData = $data;
@@ -403,9 +410,19 @@ from ek_user_has_address where user_id=$userId and address_id=$addressId"))) {
         $addressId = (int)$addressId;
         $res = QuickPdo::freeQuery("
 update ek_user_has_address 
-set is_default_" . $type . "_address = IF(address_id = $addressId, 1, 0)
+set 
+is_default_" . $type . "_address = IF(address_id = $addressId, 1, 0)
 where user_id=$userId
         ");
+
+
+        Address::getInst()->update([
+            "date_updated" => date("Y-m-d H:i:s"),
+        ], [
+            "id" => $addressId,
+        ]);
+
+
         return ('00000' !== $res->errorCode());
     }
 

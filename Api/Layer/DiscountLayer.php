@@ -44,6 +44,13 @@ use QuickPdo\QuickPdo;
 class DiscountLayer
 {
 
+    public static function getDiscountIdByCode(string $code)
+    {
+        return QuickPdo::fetch("select id from ek_discount where code=:code", [
+            "code" => $code,
+        ], \PDO::FETCH_COLUMN);
+    }
+
     public static function getDiscountTypes()
     {
         return [

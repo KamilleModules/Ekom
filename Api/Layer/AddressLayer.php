@@ -40,4 +40,10 @@ inner join ek_country_lang l on l.country_id=c.id
         return QuickPdo::count('ek_address');
     }
 
+
+    public static function getDateUpdatedById(int $addressId)
+    {
+        return QuickPdo::fetch("select date_updated from ek_address where id=$addressId", [], \PDO::FETCH_COLUMN);
+    }
+
 }

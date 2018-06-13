@@ -4,11 +4,13 @@
 namespace Module\Ekom\Api\Layer;
 
 
+use Bat\StringTool;
 use QuickPdo\QuickPdo;
 use QuickPdo\QuickPdoStmtTool;
 
 class ProductReferenceLayer
 {
+
 
     public static function getProductReferenceIdsByProductId(int $productId)
     {

@@ -39,6 +39,8 @@ class GeneratedAddress extends TableCrudObject
 			'supplement' => '',
 			'active' => 0,
 			'country_id' => 0,
+			'date_added' => '',
+			'date_updated' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
