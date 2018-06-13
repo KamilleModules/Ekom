@@ -26,6 +26,8 @@ class ProductVariationLayer
             "cond_identifier" => $conditionIdentifier,
         ], [
             'price' => $newPrice,
+            "product_reference_id" => $productReferenceId,
+            "cond_identifier" => $conditionIdentifier,
         ]);
     }
 }

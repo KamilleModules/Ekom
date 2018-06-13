@@ -44,6 +44,7 @@ class GeneratedDiscount extends TableCrudObject
 			'cond_date_end' => null,
 			'cond_user_group_id' => null,
 			'cond_extra1' => null,
+			'date_added' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 
