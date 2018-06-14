@@ -308,8 +308,11 @@ inner join ek_user_group gr on gr.id=u.user_group_id
 
 //        a($userQuery);
         $row = QuickPdo::fetch($userQuery, $markers);
+
         if ($row) {
 
+
+            Hooks::call("Ekom_UserInfoModel_decorateRow", $row);
 
             // title
             $userAvatar = $row['first_name'];

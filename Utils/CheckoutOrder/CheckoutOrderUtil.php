@@ -514,6 +514,7 @@ class CheckoutOrderUtil
             // NOW INVOICES...
             //--------------------------------------------
             $invoices = $this->createInvoices($orderId, $orderModel);
+//            az($invoices['lf_formation']['invoice_details']['cartModel']['items'][0]);
             foreach ($invoices as $invoice) {
                 $this->processInvoice($invoice, $orderModel);
             }
