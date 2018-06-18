@@ -12,6 +12,7 @@ use Kamille\Utils\Morphic\Generator2\Helper\LingFrenchMorphicGeneratorHelper;
 use Models\AdminSidebarMenu\Lee\LeeAdminSidebarMenuModel;
 use Models\AdminSidebarMenu\Lee\Objects\Item;
 use Models\AdminSidebarMenu\Lee\Objects\Section;
+use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Back\WidgetModel\Dashboard\DefaultDashboardModel;
 use Module\Ekom\Exception\EkomException;
@@ -31,10 +32,21 @@ use Module\Ekom\Helper\Stats\Modules\ProductDetailsControllerModule;
 use Module\Ekom\Helper\Stats\Modules\SearchesControllerModule;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
+use SokoForm\Control\SokoChoiceControl;
 
 class BackHooksHelper
 {
 
+    public static function Application_MorphicModuleConfigurationUtil_getControlMap(array &$controlMap)
+    {
+
+        $controlMap['Ekom:category_list'] = function ($typeParams) {
+            $categoryList = CategoryLayer::getItemsList([
+                'alphaSort' => true,
+            ]);
+            return SokoChoiceControl::create()->setChoices($categoryList);
+        };
+    }
 
     public static function CacheHub_collectCacheDeleteIdentifiers(array &$identifiers)
     {
@@ -46,7 +58,6 @@ class BackHooksHelper
         $identifiers[] = "ek_store";
         $identifiers[] = "ek_tax";
     }
-
 
 
     public static function Ekom_Stats_Dashboard_getModuleHandler(&$moduleHandler, $currentModule)
@@ -453,7 +464,6 @@ class BackHooksHelper
             );
 
 
-
         $section
 //            ->addItem($utilsItem)
             ->addItem($usersItem)
@@ -462,8 +472,7 @@ class BackHooksHelper
             ->addItem($localizationItem)
             ->addItem($seoItem)
             ->addItem($statItem)
-            ->addItem($configItem)
-        ;
+            ->addItem($configItem);
 
 
         $menuItems = [

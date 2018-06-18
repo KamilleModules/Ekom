@@ -147,9 +147,11 @@ left join ek_tag tag on tag.id=phtag.tag_id
     }
 
 
-    public static function getBoxesByProductReferenceIds(array $referenceIds)
+    public static function getBoxesByProductReferenceIds(array $referenceIds, array $options = [])
     {
         if ($referenceIds) {
+
+            $sqlQueryDecorator = $options['sqlQueryDecorator'] ?? null;
 
             $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
             $sProductReferenceIds = implode(', ', array_map('intval', $referenceIds));
@@ -157,8 +159,13 @@ left join ek_tag tag on tag.id=phtag.tag_id
                 $sqlQuery->addWhere("
 and pr.id in ($sProductReferenceIds)        
         ");
-
             }
+
+
+            if (null !== $sqlQueryDecorator) {
+                call_user_func($sqlQueryDecorator, $sqlQuery);
+            }
+
             $rows = QuickPdo::fetchAll((string)$sqlQuery, $sqlQuery->getMarkers());
             self::sugarifyRows($rows);
             return $rows;

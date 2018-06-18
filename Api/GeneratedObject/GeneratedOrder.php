@@ -47,6 +47,8 @@ class GeneratedOrder extends TableCrudObject
 			'shipping_address' => '',
 			'billing_address' => '',
 			'order_details' => '',
+			'order_origin' => '',
+			'currency_iso_code' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

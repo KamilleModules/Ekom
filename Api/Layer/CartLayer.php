@@ -82,13 +82,14 @@ class CartLayer
      * @throws EkomUserMessageException when something wrong that the user should know happens
      *
      */
-    public function addItem($quantity, $productReferenceId, array $extraArgs = [])
+    public function addItem($quantity, $productReferenceId, array $extraArgs = [], array $options = [])
     {
         $this->initSessionCart();
         /**
          * The selected product details array
          */
         $bundle = array_key_exists('bundle', $extraArgs) ? $extraArgs['bundle'] : null;
+        $cartItemBoxDecorator = $options['cartItemBoxDecorator'] ?? null;
 
 
         $token = CartUtil::generateTokenByProductReferenceId($productReferenceId);
@@ -101,9 +102,7 @@ class CartLayer
         //--------------------------------------------
         // note to myself: I'm not sure why we don't use token as the key, maybe it's about items order?
         foreach ($_SESSION['ekom'][$this->sessionName]['items'] as $k => $item) {
-
             if ($token === $item['token']) {
-
                 $alreadyExists = true;
                 $existingQuantity = $_SESSION['ekom'][$this->sessionName]['items'][$k]['quantity'];
                 self::checkQuantityOverflow($productReferenceId, $existingQuantity, $quantity);
@@ -120,6 +119,11 @@ class CartLayer
 
             self::checkQuantityOverflow($productReferenceId, 0, $quantity);
             $cartItemBox = CartItemBoxLayer::getBox($productReferenceId);
+
+            if (null !== $cartItemBoxDecorator) {
+                call_user_func_array($cartItemBoxDecorator, [&$cartItemBox]);
+            }
+
             $arr = [
                 "token" => $token,
                 "quantity" => $quantity,

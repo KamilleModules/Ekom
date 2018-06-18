@@ -55,6 +55,14 @@ class UserLayer
 
     private static $userId2Info = [];
 
+
+    public static function getUserIdByEmail(string $email)
+    {
+        return QuickPdo::fetch("select id from ek_user where email=:email", [
+            "email" => $email,
+        ], \PDO::FETCH_COLUMN);
+    }
+
     public static function getEarliestAccountCreationDate()
     {
         return QuickPdo::fetch("select min(date(date_creation)) from ek_user where date_creation != '0000-00-00 00:00:00'", [], \PDO::FETCH_COLUMN | \PDO::FETCH_UNIQUE);
@@ -155,9 +163,24 @@ where u.id=$userId");
         return self::$userId2Info[$userId];
     }
 
+
+    /**
+     * @see EkomModels::userInfoModel()
+     */
     public static function getUserInfoByEmail($email)
     {
-        return QuickPdo::fetch("select * from ek_user where email=:email", [
+        return QuickPdo::fetch("
+select 
+u.*, 
+g.name as group_name,
+g.label as group_label,
+ge.name as gender_name, 
+ge.label as gender_label,
+ge.long_label as gender_long_label
+from ek_user u 
+inner join ek_user_group g on g.id=u.user_group_id  
+inner join ek_gender ge on ge.id=u.gender_id   
+where u.email=:email", [
             'email' => $email,
         ]);
     }

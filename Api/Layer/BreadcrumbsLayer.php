@@ -23,6 +23,20 @@ class BreadcrumbsLayer
     }
 
 
+    public static function getBreadCrumbLabelsByCategoryId(int $categoryId)
+    {
+        $items = [];
+        $cats = EkomApi::inst()->categoryLayer()->getUpCategoryInfosById($categoryId);
+        if ($cats) {
+            array_shift($cats); // remove home category
+            foreach ($cats as $cat) {
+                $items[] = $cat['label'];
+            }
+        }
+        return $items;
+    }
+
+
     /**
      *
      * Return a breadcrumbs model.

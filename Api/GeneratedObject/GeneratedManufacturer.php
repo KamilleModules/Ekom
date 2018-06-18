@@ -33,6 +33,7 @@ class GeneratedManufacturer extends TableCrudObject
 			'id' => null,
 			'name' => '',
 			'label' => '',
+			'url' => '',
 		];
         $ret = array_replace($base, array_intersect_key($data, $base));
 

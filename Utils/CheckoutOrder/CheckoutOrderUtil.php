@@ -486,6 +486,7 @@ class CheckoutOrderUtil
                 'shipping_address' => serialize($orderModel['shipping_address']),
                 'billing_address' => serialize($orderModel['billing_address']),
                 'order_details' => serialize($orderModel['order_details']),
+                'currency_iso_code' => "EUR",
             ]);
 
             if (false === $_orderId) {

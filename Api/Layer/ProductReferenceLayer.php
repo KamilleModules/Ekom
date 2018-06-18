@@ -12,6 +12,43 @@ class ProductReferenceLayer
 {
 
 
+    public static function getIdsByCategoryId(int $categoryId)
+    {
+
+        $categoryIds = CategoryLayer::getSelfAndChildrenIdsById($categoryId);
+        $sCatIds = '"' . implode('", "', $categoryIds) . '"';
+        $ret = QuickPdo::fetchAll("
+select pr.id 
+from
+ek_product_reference pr 
+inner join ek_product p on p.id=pr.product_id
+inner join ek_category_has_product_card h on h.product_card_id=p.product_card_id  
+where h.category_id in ($sCatIds)
+", [], \PDO::FETCH_COLUMN);
+        $ret = array_unique($ret);
+        sort($ret);
+        return $ret;
+    }
+
+
+    public static function getIdsByCategoryName(string $categoryName)
+    {
+
+        $categoryIds = CategoryLayer::getSelfAndChildrenIdsByName($categoryName);
+        $sCatIds = '"' . implode('", "', $categoryIds) . '"';
+        $ret = QuickPdo::fetchAll("
+select pr.id 
+from
+ek_product_reference pr 
+inner join ek_product p on p.id=pr.product_id
+inner join ek_category_has_product_card h on h.product_card_id=p.product_card_id  
+where h.category_id in ($sCatIds)
+", [], \PDO::FETCH_COLUMN);
+        $ret = array_unique($ret);
+        sort($ret);
+        return $ret;
+    }
+
     public static function getProductReferenceIdsByProductId(int $productId)
     {
         return QuickPdo::fetchAll("select id from ek_product_reference where product_id=$productId", [], \PDO::FETCH_COLUMN);

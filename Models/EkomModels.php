@@ -619,6 +619,9 @@ class EkomModels
      * ----- ?shipping_comment: string
      *
      * ----- ...your own, @see Hooks::Ekom_CheckoutOrderUtil_decorateOrderDetails()
+     * - order_origin: the source of the order. This might be useful if your orders come from Marketplaces for instance.
+     *                      Empty value means ekom (or you can specify ekom if you want)
+     * - currency_iso_code: iso code 4217 of the currency for this order (ex: EUR)
      */
     private function orderModel()
     {

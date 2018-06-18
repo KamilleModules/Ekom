@@ -80,6 +80,20 @@ class ProductBoxLayer
 
     }
 
+    public static function getProductBoxByProductReferenceIds(array $productReferenceIds, array $options = [])
+    {
+        $sqlQueryDecorator = $options['sqlQueryDecorator'] ?? null;
+        unset($options['sqlQueryDecorator']);
+        $sIds = implode(', ', $productReferenceIds);
+        $sqlQuery = ProductQueryBuilderUtil::getMaxiQuery($options);
+        $sqlQuery->addWhere("and pr.id in ($sIds)");
+        if (null !== $sqlQueryDecorator) {
+            call_user_func($sqlQueryDecorator, $sqlQuery);
+        }
+        return self::getProductBoxesBySqlQuery($sqlQuery);
+
+    }
+
 
     public static function getRelatedProductBoxListByCardId(int $cardId, $type = null, array $options = [])
     {
@@ -184,6 +198,24 @@ inner join ek_product_group g on g.id=phg.product_group_id
 
 
         return $row;
+    }
+
+
+    /**
+     * This method is used by some feeds like SourceFeedUtil from ShoppingFeed module.
+     * That's why it's not cached.
+     */
+    private static function getProductBoxesBySqlQuery(SqlQueryInterface $sqlQuery)
+    {
+        $q = $sqlQuery->getSqlQuery();
+        $markers = $sqlQuery->getMarkers();
+        $rows = QuickPdo::fetchAll($q, $markers);
+        foreach ($rows as $k => $row) {
+
+            self::sugarify($row);
+            $rows[$k] = $row;
+        }
+        return $rows;
     }
 
 

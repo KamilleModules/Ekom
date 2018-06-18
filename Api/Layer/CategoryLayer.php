@@ -409,14 +409,12 @@ where c.name in ('" . implode("','", $names) . "')
         $ids = EkomApi::inst()->productCardLayer()->getProductCardIdsByCategoryIds($catIds);
     }
 
-    public static function getIdByName($name, $shopId = null)
+    public static function getIdByName($name)
     {
-        $shopId = E::getShopId($shopId);
         return QuickPdo::fetch("
 select id 
 from ek_category 
-where shop_id=$shopId
-and `name`=:name
+where `name`=:name
         ", [
             "name" => $name,
         ], \PDO::FETCH_COLUMN);
@@ -430,6 +428,15 @@ and `name`=:name
             $ids[] = $item['id'];
         }
         return $ids;
+    }
+
+    public static function getSelfAndChildrenIdsByName(string $categoryName)
+    {
+        $id = self::getIdByName($categoryName);
+        if ($id) {
+            return self::getSelfAndChildrenIdsById($id);
+        }
+        return [];
     }
 
 

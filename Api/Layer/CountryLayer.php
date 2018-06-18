@@ -13,6 +13,13 @@ use QuickPdo\QuickPdo;
 class CountryLayer
 {
 
+    public static function getInfoByIsoCode(string $isoCode)
+    {
+        return QuickPdo::fetch("select * from ek_country where iso_code=:iso", [
+            "iso" => $isoCode,
+        ]);
+    }
+
 
     public static function getCountryIsoById(int $id)
     {

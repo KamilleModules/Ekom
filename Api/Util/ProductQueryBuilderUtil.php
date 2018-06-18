@@ -115,6 +115,7 @@ class ProductQueryBuilderUtil
     {
         $useTaxRuleConditionId = $options['useTaxRuleConditionId'] ?? false;
         $useAttributeString = $options['useAttributesString'] ?? true;
+        $withDiscountDates = $options['withDiscountDates'] ?? false;
         $groupBy = $options['groupBy'] ?? "reference";
 
         $groupByField = "pr.reference";
@@ -137,7 +138,6 @@ class ProductQueryBuilderUtil
         ];
         $useCustomTaxSubquery = false;
         Hooks::call("Ekom_ProductQueryBuilder_decorateSubqueriesInfo", $allSubQueriesInfo);
-
 
 
         $markers = $allSubQueriesInfo['markers'];
@@ -255,8 +255,6 @@ where phd.product_reference_id=pr.id and
         unset($discountContext['datetime']);
 
 
-
-
         $qDiscountSubquery .= " 
         active = 1 
         and (cond_date_start is null or cond_date_start <= '$datetime')
@@ -302,6 +300,13 @@ asc limit 0,1
         $qDiscountSubqueryLabel = str_replace("WHAT", "label", $qDiscountSubquery);
         $qDiscountSubqueryType = str_replace("WHAT", "type", $qDiscountSubquery);
         $qDiscountSubqueryValue = str_replace("WHAT", "value", $qDiscountSubquery);
+
+
+        $sDiscountDates = "";
+        if (true === $withDiscountDates) {
+            $qDiscountSubqueryDates = str_replace("WHAT", "concat (coalesce(cond_date_start, '0000-00-00 00:00:00'), ',', coalesce(cond_date_end, '0000-00-00 00:00:00'))", $qDiscountSubquery);
+            $sDiscountDates = "($qDiscountSubqueryDates) as discount_dates,";
+        }
 
 
         $optionalTaxCondSubquery = "";
@@ -385,6 +390,7 @@ p._popularity as popularity,
 
 ($qDiscountSubqueryId) as discount_id,
 ($qDiscountSubqueryLabel) as discount_label,
+$sDiscountDates
 @discountType := ($qDiscountSubqueryType) as discount_type,
 @discountVal := ($qDiscountSubqueryValue) as discount_value,
 
@@ -453,9 +459,9 @@ inner join ek_seller sel on sel.id=p.seller_id
     }
 
 
-    public static function getMaxiQuery()
+    public static function getMaxiQuery(array $options = [])
     {
-        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery();
+        $sqlQuery = ProductQueryBuilderUtil::getBaseQuery($options);
         $sqlQuery->addField("
 m.id as manufacturer_id,
 m.name as manufacturer_name,
