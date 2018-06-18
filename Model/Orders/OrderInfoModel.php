@@ -29,9 +29,11 @@ class OrderInfoModel
             if (false === $userInfo) {
                 throw new EkomException("Commande invalide");
             }
-            $ret['user_link'] = A::link("Ekom_Users_User_Info") . "?id=" . $userInfo['id'];
-            $firstName = ucfirst(strtolower($userInfo['first_name']));
-            $lastName = ucfirst(strtolower($userInfo['last_name']));
+            $userId = $userInfo['id'] ?? 0;
+
+            $ret['user_link'] = A::link("Ekom_Users_User_Info") . "?id=" . $userId;
+            $firstName = ucfirst(strtolower($userInfo['first_name'] ?? ""));
+            $lastName = ucfirst(strtolower($userInfo['last_name'] ?? ""));
             $company = (array_key_exists("company", $userInfo) && $userInfo['company']) ? ucfirst(strtolower($userInfo['company'])) : '';
 
 

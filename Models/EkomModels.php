@@ -843,12 +843,21 @@ class EkomModels
     /**
      * userInfoModel
      * --------------
+     *
+     * Either:
      * - ek_user.*
      * - group_name
      * - group_label
      * - gender_name
      * - gender_label
      * - gender_long_label
+     *
+     * Or:
+     *
+     * - foreignOrigin: (the market place the user was imported from)
+     * - email:
+     *
+     *
      */
     private function userInfoModel()
     {

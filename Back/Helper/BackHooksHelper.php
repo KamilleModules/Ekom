@@ -13,6 +13,8 @@ use Models\AdminSidebarMenu\Lee\LeeAdminSidebarMenuModel;
 use Models\AdminSidebarMenu\Lee\Objects\Item;
 use Models\AdminSidebarMenu\Lee\Objects\Section;
 use Module\Ekom\Api\Layer\CategoryLayer;
+use Module\Ekom\Api\Layer\OrderStatusLayer;
+use Module\Ekom\Api\Layer\StatusLayer;
 use Module\Ekom\Back\User\EkomNullosUser;
 use Module\Ekom\Back\WidgetModel\Dashboard\DefaultDashboardModel;
 use Module\Ekom\Exception\EkomException;
@@ -45,6 +47,22 @@ class BackHooksHelper
                 'alphaSort' => true,
             ]);
             return SokoChoiceControl::create()->setChoices($categoryList);
+        };
+
+        $controlMap['Ekom:status'] = function ($typeParams) {
+            $statusList = OrderStatusLayer::getOrderStatusCode2Label();
+            return SokoChoiceControl::create()->setChoices($statusList);
+        };
+
+
+        $controlMap['Ekom:status_multiple'] = function ($typeParams) {
+            $statusList = OrderStatusLayer::getOrderStatusCode2Label();
+            return SokoChoiceControl::create()
+                ->setProperties([
+                    "multiple" => true,
+                    "size" => "auto",
+                ])
+                ->setChoices($statusList);
         };
     }
 

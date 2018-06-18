@@ -13,6 +13,10 @@ use QuickPdo\QuickPdo;
 class OrderStatusLayer
 {
 
+    public static function getCodeById(int $id)
+    {
+        return QuickPdo::fetch("select code from ek_order_status where id=$id", [], \PDO::FETCH_COLUMN);
+    }
 
     public static function getOrderStatusInfos()
     {

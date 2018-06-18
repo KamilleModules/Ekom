@@ -214,7 +214,7 @@ class CheckoutOrderUtil
             $paymentMethodId = $checkoutData['payment_method_id'];
             $paymentHandler = PaymentLayer::getPaymentMethodHandlerById($paymentMethodId);
             $paymentMethodDetails = $paymentHandler->getCommittedConfiguration($checkoutData, $extendedCartModel);
-
+            az(__FILE__, $paymentMethodDetails);
 
             $this->checkPaymentErrors($checkoutData, $extendedCartModel, $paymentMethodDetails, $paymentHandler);
 
@@ -281,8 +281,6 @@ class CheckoutOrderUtil
             Hooks::call("Ekom_CheckoutOrderUtil_decorateOrderDetails", $orderDetails, $checkoutData, $extendedCartModel);
 
 
-
-
             // I let this model in non serialized form for debugging
             $orderModel = array_replace($orderModel, [
                 "user_id" => $userId,
@@ -297,6 +295,8 @@ class CheckoutOrderUtil
                 "shipping_address" => $shippingAddress,
                 "billing_address" => $billingAddress,
                 "order_details" => $orderDetails,
+                "order_origin" => "ekom",
+                "currency_iso_code" => "EUR",
             ]);
 
 
@@ -431,30 +431,56 @@ class CheckoutOrderUtil
         return $invoices;
     }
 
-    protected function processInvoice(array $invoice, array $orderModel)
+    public function placeForeignOrder(array $orderModel, array $options = [])
+    {
+        $options = array_merge([
+            'statusCode' => EkomOrderStatus::STATUS_PAYMENT_ACCEPTED,
+            'useInvoiceHooks' => false,
+            'sendMailToUser' => false,
+        ], $options);
+        return $this->placeOrderModel($orderModel, $options);
+    }
+
+
+    //--------------------------------------------
+    //
+    //--------------------------------------------
+    protected function processInvoice(array $invoice, array $orderModel, array $options = [])
     {
         $invoiceId = InvoiceLayer::insert($invoice);
+        $useHooks = $options["useInvoiceHooks"] ?? true;
 
         if (false === $invoiceId) {
             $this->devLog("Invoice couldn't be inserted: data= " . ArrayToStringTool::toPhpArray($invoice));
             $this->userError("Un problème est survenu, le paiement n'a pas pu être effectué");
         }
-        /**
-         * Hooks might want to add other info (like pei_direct_debit, ...)
-         */
-        Hooks::call("Ekom_CheckoutOrderUtil_processInvoiceAfter", $invoiceId, $invoice, $orderModel);
+
+
+        if (true === $useHooks) {
+            /**
+             * Hooks might want to add other info (like pei_direct_debit, ...)
+             */
+            Hooks::call("Ekom_CheckoutOrderUtil_processInvoiceAfter", $invoiceId, $invoice, $orderModel);
+        }
     }
+
+
+
 
     //--------------------------------------------
     //
     //--------------------------------------------
 
-    private function placeOrderModel(array $orderModel)
+    private function placeOrderModel(array $orderModel, array $options = [])
     {
 
         $orderId = null;
         $exception = null;
-        QuickPdo::transaction(function () use ($orderModel, &$orderId) {
+        QuickPdo::transaction(function () use ($orderModel, &$orderId, $options) {
+
+            $statusCode = $options['statusCode'] ?? EkomOrderStatus::STATUS_PAYMENT_SENT;
+            $sendMailToUser = $options['sendMailToUser'] ?? true;
+
 
             $paymentMethod = $orderModel['order_details']["payment_method_name"];
             $paymentMethodDetails = $orderModel['order_details']["payment_method_details"];
@@ -486,7 +512,8 @@ class CheckoutOrderUtil
                 'shipping_address' => serialize($orderModel['shipping_address']),
                 'billing_address' => serialize($orderModel['billing_address']),
                 'order_details' => serialize($orderModel['order_details']),
-                'currency_iso_code' => "EUR",
+                'order_origin' => $orderModel['order_origin'],
+                'currency_iso_code' => $orderModel['currency_iso_code'],
             ]);
 
             if (false === $_orderId) {
@@ -507,7 +534,8 @@ class CheckoutOrderUtil
              * to me after credit card checking with the bank's api...).
              *
              */
-            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT);
+
+            OrderLayer::addOrderStatusByCode($orderId, $statusCode);
 //            OrderLayer::addOrderStatusByCode($orderId, EkomOrderStatus::STATUS_PAYMENT_SENT); // pending?
 
 
@@ -517,19 +545,21 @@ class CheckoutOrderUtil
             $invoices = $this->createInvoices($orderId, $orderModel);
 //            az($invoices['lf_formation']['invoice_details']['cartModel']['items'][0]);
             foreach ($invoices as $invoice) {
-                $this->processInvoice($invoice, $orderModel);
+                $this->processInvoice($invoice, $orderModel, $options);
             }
 
 
             //--------------------------------------------
             // SEND EMAIL TO THE USER
             //--------------------------------------------
-            $mailType = "Ekom/fra/front/order.new";
-            $recipient = $orderModel['user_info']['email'];
-            $variables = [
-                "order" => $orderModel,
-            ];
-            E::sendMail($mailType, $recipient, $variables);
+            if (true === $sendMailToUser) {
+                $mailType = "Ekom/fra/front/order.new";
+                $recipient = $orderModel['user_info']['email'];
+                $variables = [
+                    "order" => $orderModel,
+                ];
+                E::sendMail($mailType, $recipient, $variables);
+            }
 
 
             OrderStatHelper::insertOrderStatsByModel($orderId, $orderModel);
@@ -537,8 +567,6 @@ class CheckoutOrderUtil
 
 
             Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
-
-
 
 
             if (false === $this->testMode) {

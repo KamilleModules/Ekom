@@ -6,20 +6,32 @@ namespace Module\Ekom\Api\Layer;
 
 use Bat\DateTool;
 use Core\Services\A;
+use Core\Services\Hooks;
 use Module\Ekom\Api\EkomApi;
-use Module\Ekom\Api\Util\CurrencyUtil;
 use Module\Ekom\Exception\EkomException;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Status\EkomOrderStatus;
-use Module\Ekom\Utils\E;
-use QuickPdo\Helper\QuickPdoHelper;
 use QuickPdo\QuickPdo;
 use QuickPdo\QuickPdoStmtTool;
-use XiaoApi\Helper\QuickPdoStmtHelper\QuickPdoStmtHelper;
 
+
+/**
+ *
+ * To change an order status
+ * ==============================
+ * In ekom, the only ways to update an order status should be the following methods (from this class):
+ *
+ * - addOrderStatusByCode
+ * - addOrderStatusById
+ *
+ * This will ensure consistency in the application, as a lot of modules will want to hooks to those methods.
+ *
+ *
+ */
 class OrderLayer
 {
 
+    private static $orderInfoItems = [];
 
     public static function setCarrierTrackingNumberByOrderId(int $orderId, $carrierTrackingNumber)
     {
@@ -336,20 +348,18 @@ select reference from ek_order where id=$id
      * @return array, the order model
      * @see EkomModels::orderModel()
      */
-    public static function getOrderInfo($id)
+    public static function getOrderInfo(int $id)
     {
-        $id = (int)$id;
-//        return A::cache()->get("Ekom.OrderLayer.getOrderInfo.$id.", function () use ($id) {
-//
-//        });
-
-        $row = QuickPdo::fetch("
+        if (false === array_key_exists($id, self::$orderInfoItems)) {
+            $row = QuickPdo::fetch("
 select * from ek_order where id=$id 
         ");
-        if (false !== $row) {
-            self::unserializeRow($row);
+            if (false !== $row) {
+                self::unserializeRow($row);
+                self::$orderInfoItems[$id] = $row;
+            }
         }
-        return $row;
+        return self::$orderInfoItems[$id] ?? false;
     }
 
     public static function getOrderLastStatus($orderId)
@@ -517,11 +527,18 @@ order by date asc
         if (array_key_exists($code, $code2Ids)) {
             $orderStatusId = $code2Ids[$code];
 
-            return EkomApi::inst()->orderHasOrderStatus()->create([
+
+            $ret = EkomApi::inst()->orderHasOrderStatus()->create([
                 "order_id" => $orderId,
                 "order_status_id" => $orderStatusId,
                 "date" => date("Y-m-d H:i:s"),
             ]);
+
+            if ($ret) {
+                Hooks::call("Ekom_onOrderStatusUpdated", $orderId, $code);
+            }
+
+            return $ret;
         }
         throw new EkomException("Unknown code: $code");
     }
@@ -530,12 +547,17 @@ order by date asc
     public static function addOrderStatusById($orderId, $statusId, array $options = [])
     {
         $extra = $options['extra'] ?? "";
-        return EkomApi::inst()->orderHasOrderStatus()->create([
+        $ret = EkomApi::inst()->orderHasOrderStatus()->create([
             "order_id" => $orderId,
             "order_status_id" => $statusId,
             "date" => date("Y-m-d H:i:s"),
             "extra" => $extra,
         ]);
+        if ($ret) {
+            $code = OrderStatusLayer::getCodeById($statusId);
+            Hooks::call("Ekom_onOrderStatusUpdated", $orderId, $code);
+        }
+        return $ret;
     }
 
     public static function getCode2Ids()
