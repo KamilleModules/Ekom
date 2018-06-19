@@ -61,6 +61,27 @@ where h.category_id in ($sCatIds)
         ], \PDO::FETCH_COLUMN);
     }
 
+
+    public static function getInfoByReference(string $reference)
+    {
+        return QuickPdo::fetch("select * from ek_product_reference where reference=:ref", [
+            "ref" => $reference,
+        ]);
+    }
+
+    public static function getInfoAndCardIdByReference(string $reference)
+    {
+        return QuickPdo::fetch("
+select 
+pr.*,
+p.product_card_id
+from ek_product_reference pr 
+inner join ek_product p on p.id=pr.product_id 
+where reference=:ref", [
+            "ref" => $reference,
+        ]);
+    }
+
     public static function getIdByReference(string $reference)
     {
         return QuickPdo::fetch("select id from ek_product_reference where reference=:ref", [

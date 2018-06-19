@@ -14,6 +14,7 @@ use Module\Ekom\Helper\DateSegmentHelper;
 use Module\Ekom\Models\EkomModels;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
+use QuickPdo\QuickPdoStmtTool;
 
 
 /**
@@ -43,6 +44,19 @@ use QuickPdo\QuickPdo;
  */
 class DiscountLayer
 {
+
+    public static function removeDiscountByCodePrefix(string $codePrefix)
+    {
+        $ids = QuickPdo::fetchAll("select id from ek_discount where code like :code", [
+            "code" => QuickPdoStmtTool::likePrefix($codePrefix),
+        ], \PDO::FETCH_COLUMN);
+        if ($ids) {
+            $sIds = implode(", ", $ids);
+            QuickPdo::delete("ek_discount", [
+                "id in ($sIds)"
+            ]);
+        }
+    }
 
     public static function getDiscountIdByCode(string $code)
     {

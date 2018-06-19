@@ -416,17 +416,13 @@ class E
     }
 
     /**
+     *
      * @return \Localys\LocalysInterface
+     * @deprecated use A::localys directly
      */
     public static function localys()
     {
-        /**
-         * I personally use this _l function that I find handy.
-         * This should be the one place where you change the localys invocation
-         * if you need it.
-         * (i.e. all modules call E::localys, not _l)
-         */
-        return _l();
+        return A::localys();
     }
 
 
