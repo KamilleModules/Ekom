@@ -32,3 +32,12 @@ Connaître la devise utilisée actuellement sur le front
 ```php
 E::currencyIsoCode();
 ```
+
+
+Se connecter, se déconnecter
+----------------------------
+
+```php
+ConnexionLayer::connectUserById($userId);
+ConnexionLayer::disconnectUser();
+```

@@ -214,7 +214,7 @@ class CheckoutOrderUtil
             $paymentMethodId = $checkoutData['payment_method_id'];
             $paymentHandler = PaymentLayer::getPaymentMethodHandlerById($paymentMethodId);
             $paymentMethodDetails = $paymentHandler->getCommittedConfiguration($checkoutData, $extendedCartModel);
-            az(__FILE__, $paymentMethodDetails);
+
 
             $this->checkPaymentErrors($checkoutData, $extendedCartModel, $paymentMethodDetails, $paymentHandler);
 
@@ -543,7 +543,6 @@ class CheckoutOrderUtil
             // NOW INVOICES...
             //--------------------------------------------
             $invoices = $this->createInvoices($orderId, $orderModel);
-//            az($invoices['lf_formation']['invoice_details']['cartModel']['items'][0]);
             foreach ($invoices as $invoice) {
                 $this->processInvoice($invoice, $orderModel, $options);
             }

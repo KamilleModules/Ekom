@@ -152,8 +152,10 @@ class RepaymentScheduleHelper
 
                     $recipients = array_shift($seller);
 
+                    $tmpTime = DateTool::getSameDayNextMonth($time, $i - 1);
                     $items[] = array_replace($itemMerge, [
-                        "time" => DateTool::getSameDayNextMonth($time, $i - 1),
+                        "date" => date("Y-m-d", $tmpTime),
+                        "time" => $tmpTime,
                         "label" => $label,
                         "priceRaw" => $payment,
                         "price" => E::price($payment),
@@ -168,8 +170,12 @@ class RepaymentScheduleHelper
         } else {
             foreach ($payments as $payment) {
                 $label = "Versement $i/$nbPayments";
+
+                $tmpTime = DateTool::getSameDayNextMonth($time, $i - 1);
+
                 $items[] = array_replace($itemMerge, [
-                    "time" => DateTool::getSameDayNextMonth($time, $i - 1),
+                    "date" => date("Y-m-d", $tmpTime),
+                    "time" => $tmpTime,
                     "label" => $label,
                     "priceRaw" => $payment,
                     "price" => E::price($payment),

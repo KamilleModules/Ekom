@@ -20,6 +20,12 @@ use QuickPdo\QuickPdo;
 class ConnexionLayer
 {
 
+
+    public static function disconnectUser(){
+        $destroyCookie = false;
+        SessionUser::disconnect($destroyCookie);
+    }
+
     /**
      * Return either one or all the user connexion data.
      * By default, returns all user connexion data.
