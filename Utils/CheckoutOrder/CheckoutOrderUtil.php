@@ -568,6 +568,7 @@ class CheckoutOrderUtil
             Hooks::call("Ekom_CheckoutOrderUtil_onPlaceOrderSuccessAfter", $orderId, $orderModel);
 
 
+
             if (false === $this->testMode) {
                 CartLayer::create()->clean("checkout");
                 if ('ekom' === CurrentCheckoutData::get('checkout_type')) {
