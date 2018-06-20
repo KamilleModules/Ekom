@@ -30,6 +30,21 @@ use QuickPdo\QuickPdo;
 class ProductLayer
 {
 
+    public static function getProductInfoByInternalReference(string $internalRef)
+    {
+        $ret = QuickPdo::fetch("select id, product_card_id from ek_product where internal_reference=:ref", [
+            "ref" => $internalRef,
+        ]);
+        if ($ret) {
+            return [
+                $ret['id'],
+                $ret['product_card_id'],
+            ];
+        }
+        return false;
+    }
+
+
     public static function getItemsList(array $options = [])
     {
         $alphaSort = $options['alphaSort'] ?? false;

@@ -12,6 +12,12 @@ use QuickPdo\QuickPdo;
 class InvoiceLayer
 {
 
+    public static function getIdByInvoiceNumber(string $invoiceNumber)
+    {
+        return QuickPdo::fetch("select id from ek_invoice where invoice_number=:ref", [
+            "ref" => $invoiceNumber,
+        ], \PDO::FETCH_COLUMN);
+    }
 
     public static function getInvoiceIdsByOrderId($orderId)
     {

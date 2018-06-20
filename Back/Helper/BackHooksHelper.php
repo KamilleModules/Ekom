@@ -33,6 +33,7 @@ use Module\Ekom\Helper\Stats\Modules\PageNotFoundControllerModule;
 use Module\Ekom\Helper\Stats\Modules\ProductDetailsControllerModule;
 use Module\Ekom\Helper\Stats\Modules\SearchesControllerModule;
 use Module\Ekom\Utils\E;
+use Module\NullosAdmin\Authenticate\User\NullosUser;
 use QuickPdo\QuickPdo;
 use SokoForm\Control\SokoChoiceControl;
 
@@ -543,7 +544,13 @@ class BackHooksHelper
     public static function NullosAdmin_User_hasRight(&$hasRight, $privilege)
     {
         // for now, everybody can do anything
-        $hasRight = true;
+        $rights = NullosUser::getRights();
+        if (
+            in_array("root", $rights) ||
+            in_array($privilege, $rights)
+        ) {
+            $hasRight = true;
+        }
     }
 
 
