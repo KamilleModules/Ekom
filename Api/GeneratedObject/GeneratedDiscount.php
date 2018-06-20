@@ -35,6 +35,7 @@ class GeneratedDiscount extends TableCrudObject
 			'code' => '',
 			'type' => '',
 			'value' => '',
+			'apply_product_reference_ids' => '',
 			'apply_product_ids' => '',
 			'apply_card_ids' => '',
 			'apply_category_ids' => '',

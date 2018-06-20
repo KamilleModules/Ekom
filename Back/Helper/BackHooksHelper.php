@@ -577,6 +577,20 @@ where a.id in ($sValues)
              
                     ";
                     break;
+                case "auto.product_reference":
+                    $sValues = "'" . implode("', '", $values) . "'";
+                    $query = "
+select
+pr.id,
+pr.reference as label
+
+from ek_product_reference pr 
+where 
+pr.id in ($sValues)
+             
+                    ";
+
+                    break;
                 case "auto.product":
                     $sValues = "'" . implode("', '", $values) . "'";
                     $query = "

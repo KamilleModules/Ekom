@@ -11,7 +11,8 @@ use QuickPdo\QuickPdoStmtTool;
 class ProductReferenceHasDiscountLayer
 {
 
-    public static function recreateBindingsByDiscountData(array $data){
+    public static function recreateBindingsByDiscountData(array $data)
+    {
 
         $discount_id = $data['id'];
 
@@ -27,6 +28,7 @@ class ProductReferenceHasDiscountLayer
                 ["discount_id", "=", $discount_id],
             ]);
 
+            $productReferenceIds = StringTool::unserializeAsArray($data['apply_product_reference_ids']);
             $productIds = StringTool::unserializeAsArray($data['apply_product_ids']);
             $cardIds = StringTool::unserializeAsArray($data['apply_card_ids']);
             $categoryIds = StringTool::unserializeAsArray($data['apply_category_ids']);
@@ -53,18 +55,21 @@ class ProductReferenceHasDiscountLayer
             $allProductIds = array_unique($allProductIds);
 
 
-            if ($allProductIds) {
+            if ($allProductIds || $productReferenceIds) {
 
-
-                $sProductIds = implode(', ', $allProductIds);
+                $allProductReferenceIds = [];
 
 
                 // convert this to references
-                $productReferenceIds = QuickPdo::fetchAll("select id from ek_product_reference where product_id in ($sProductIds)", [], \PDO::FETCH_COLUMN);
+                if ($allProductIds) {
+                    $sProductIds = implode(', ', $allProductIds);
+                    $allProductReferenceIds = QuickPdo::fetchAll("select id from ek_product_reference where product_id in ($sProductIds)", [], \PDO::FETCH_COLUMN);
+                }
+                $allProductReferenceIds = array_merge($allProductReferenceIds, $productReferenceIds);
+                $allProductReferenceIds = array_unique($allProductReferenceIds);
 
 
-
-                foreach ($productReferenceIds as $productReferenceId) {
+                foreach ($allProductReferenceIds as $productReferenceId) {
                     QuickPdo::insert("ek_product_reference_has_discount", [
                         'discount_id' => $discount_id,
                         'product_reference_id' => $productReferenceId,
