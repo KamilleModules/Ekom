@@ -495,6 +495,7 @@ class CheckoutOrderUtil
                 $paymentMethodExtra = $paymentMethodDetails['credit_card_payment_mode'];
             }
 
+
             $_orderId = EkomApi::inst()->order()->create([
                 'user_id' => $orderModel['user_id'],
                 'reference' => $orderModel['reference'],

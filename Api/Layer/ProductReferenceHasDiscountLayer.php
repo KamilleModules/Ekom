@@ -28,7 +28,8 @@ class ProductReferenceHasDiscountLayer
                 ["discount_id", "=", $discount_id],
             ]);
 
-            $productReferenceIds = StringTool::unserializeAsArray($data['apply_product_reference_ids']);
+            $apply_product_reference_ids = $data['apply_product_reference_ids']??[];
+            $productReferenceIds = StringTool::unserializeAsArray($apply_product_reference_ids);
             $productIds = StringTool::unserializeAsArray($data['apply_product_ids']);
             $cardIds = StringTool::unserializeAsArray($data['apply_card_ids']);
             $categoryIds = StringTool::unserializeAsArray($data['apply_category_ids']);
