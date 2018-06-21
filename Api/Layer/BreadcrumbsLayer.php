@@ -76,7 +76,10 @@ class BreadcrumbsLayer
             $box = ProductBoxLayer::getProductBoxByProductReferenceId($productReferenceId);
             $label = $box['label'];
             $cardId = $box['product_card_id'];
+
+
             $tree = EkomApi::inst()->categoryLayer()->getCategoryTreeByProductCardId($cardId);
+
 
             /**
              * The product card probably isn't bound to any category,
@@ -94,8 +97,7 @@ class BreadcrumbsLayer
                 $lab = $item['label'];
                 $items[] = [
                     "link" => E::link("Ekom_category", [
-                        'slug' => $item['slug'],
-                        'type' => $item['type'],
+                        'slug' => CategoryLayer::getSlugBreadcrumbsByCategoryId($item['id']),
                     ]),
                     "title" => "Go to " . $lab,
                     "label" => $lab,
@@ -110,7 +112,6 @@ class BreadcrumbsLayer
 
             $baseUri = E::link("Ekom_category", [
                 'slug' => '{slug}',
-                'type' => '{type}',
             ]);
 
             if ($cats) {
@@ -122,10 +123,8 @@ class BreadcrumbsLayer
                     $items[] = [
                         "link" => str_replace([
                             "{slug}",
-                            "{type}",
                         ], [
-                            $cat['slug'],
-                            $cat['type'],
+                            CategoryLayer::getSlugBreadcrumbsByCategoryId($cat['id']),
                         ], $baseUri),
                         "title" => "Go to " . $cat['label'],
                         "label" => $cat['label'],

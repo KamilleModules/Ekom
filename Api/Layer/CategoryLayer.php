@@ -28,6 +28,29 @@ use QuickPdo\QuickPdo;
 class CategoryLayer
 {
 
+    public static function getProductCategoryIdByCardId(int $cardId)
+    {
+
+
+        /**
+         * Note: here we start to see the limitations of the standard hierarchy model
+         * (as for storing categories).
+         * @todo-ling: please consider using the nested model?
+         * (unless cache is good enough)
+         *
+         * Note:
+         * The example is somehhow imprecise compared to an equivalent
+         * request that we could make on a nested model...
+         */
+        return QuickPdo::fetch("
+select category_id 
+from ek_category_has_product_card 
+where product_card_id=$cardId
+order by category_id desc 
+limit 0,1
+        
+        ", [], \PDO::FETCH_COLUMN);
+    }
 
     public static function getCardIdsBoundToAnyCategory()
     {
@@ -455,7 +478,10 @@ select
 c.id, 
 c.name, 
 c.label,
-c.slug
+c.slug,
+c.meta_title,
+c.meta_description,
+c.meta_keywords
  
 from ek_category c  
 where c.slug=:slug         
@@ -959,6 +985,26 @@ and l.slug=:slug
     }
 
 
+    public static function getSlugBreadcrumbsByCategoryId(int $categoryId)
+    {
+
+        $s = "";
+        $parents = CategoryCoreLayer::create()->getSelfAndParentsByCategoryId($categoryId);
+        // drop the root cat
+        array_pop($parents);
+        $parents = array_reverse($parents);
+        $i = 0;
+        foreach ($parents as $parent) {
+            if (0 !== $i++) {
+                $s .= "/";
+            }
+            $s .= $parent['slug'];
+        }
+        return $s;
+
+    }
+
+
     /**
      * This function can be used to create menu.
      *
@@ -1022,9 +1068,11 @@ order by `order` asc
 
             $linkOptions = [
                 'fn' => function (array $row) {
+
+
+//                az(__FILE__, $row);
                     return E::link("Ekom_category", [
-                        'slug' => $row['slug'],
-                        'type' => $row['type'],
+                        'slug' => CategoryLayer::getSlugBreadcrumbsByCategoryId($row['id']),
                     ]);
                 },
             ];
@@ -1132,9 +1180,7 @@ where id=$categoryId
          * Get the category of the card for this shop
          */
         return A::cache()->get("Ekom.CategoryLayer.getCategoryTreeByProductCardId.$cardId", function () use ($api, $cardId) {
-            $categoryId = $api->categoryHasProductCard()->readColumn("category_id", [
-                ["product_card_id", "=", (int)$cardId],
-            ]);
+            $categoryId = CategoryLayer::getProductCategoryIdByCardId($cardId);
             if (false === $categoryId) {
                 return false;
             }
@@ -1231,8 +1277,7 @@ order by `order` asc
                 $this->doCollectDescendantsInfo($row['id'], $children, $level + 1, $maxLevel);
             }
             $row['uri'] = E::link("Ekom_category", [
-                'slug' => $row['slug'],
-                'type' => $row['type'],
+                'slug' => CategoryLayer::getSlugBreadcrumbsByCategoryId($row['id']),
             ]);
             $row['level'] = $level;
             $row['children'] = $children;

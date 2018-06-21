@@ -10,6 +10,7 @@ use Core\Services\A;
 use Core\Services\Hooks;
 use Kamille\Architecture\Registry\ApplicationRegistry;
 use Module\Ekom\Api\EkomApi;
+use Module\Ekom\Api\Layer\CategoryLayer;
 use Module\Ekom\Api\Layer\MiniProductBoxLayer;
 use Module\Ekom\Utils\E;
 use QuickPdo\QuickPdo;
@@ -54,7 +55,6 @@ class EkomBasicProductSearcher extends AbstractProductSearch
     protected function doGetResults($query)
     {
 
-
         $options = [];
         Hooks::call("Ekom_ProductSearch_getSearchOptions", $options);
 
@@ -78,7 +78,7 @@ class EkomBasicProductSearcher extends AbstractProductSearch
 
         $rows = QuickPdo::fetchAll("
 
-select label, `type`, slug 
+select id, label, `type`, slug 
 from ek_category 
 where 
 label like :query
@@ -100,8 +100,7 @@ order by type asc
                 $row["type_label"] = $typeLabel;
 
                 $row['uriCategory'] = E::link("Ekom_category", [
-                    'slug' => $row['slug'],
-                    'type' => $row['type'],
+                    'slug' => CategoryLayer::getSlugBreadcrumbsByCategoryId($row['id']),
                 ]);
                 $categories[] = $row;
             }

@@ -268,9 +268,15 @@ inner join ek_product_group g on g.id=phg.product_group_id
 
     public static function sugarify(array &$row)
     {
+
+
+        $categoryId = CategoryLayer::getProductCategoryIdByCardId($row['product_card_id']);
+
+
         $row['has_tax'] = ('1.00' !== $row['tax_ratio']);
         $row['is_novelty'] = (false !== strpos($row['codes'], 'n'));
         $row['product_uri'] = A::link("Ekom_productCardRefId", [
+            "categorySlug" => CategoryLayer::getSlugBreadcrumbsByCategoryId($categoryId),
             "slug" => $row['product_card_slug'],
             "refId" => $row['product_reference_id'],
         ]);
