@@ -4,7 +4,7 @@ Ekom product box overview
 
 
 
-[![ekom-productbox-overview.png](https://s19.postimg.org/jiixkqi6r/ekom-productbox-overview.png)](https://postimg.org/image/kkt43a0zz/)
+[![ekom-productbox-overview.png](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-productbox-overview.png)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-productbox-overview.png)
 
 
 

@@ -149,7 +149,6 @@ array(2) {
     The CheckoutLayer helps with the checkout process, it has the following methods:
         - getOrderModel: returns a suitable model for templates to display.
                 The order model's conception is ekom-order-model-7,
-                        https://postimg.org/image/xt2yqay1r/
                 The order model is built on top of the "cart model".
                 Details can be found in the database-$date.md document.
                 

@@ -74,5 +74,5 @@ What are the price states?
 
 
 
-[![ekom-order-model8.jpg](https://s19.postimg.org/5uyztq1yb/ekom-order-model8.jpg)](https://postimg.org/image/ubh5o72ov/)
+[![ekom-order-model8.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model8.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model8.jpg)
 

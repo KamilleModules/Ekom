@@ -28,7 +28,7 @@ This way, displaying a product or a card is a no brainer: we just use the produc
 The ekom product box overview
 =============================
 
-[![ekom-productbox-overview.png](https://s19.postimg.org/jiixkqi6r/ekom-productbox-overview.png)](https://postimg.org/image/kkt43a0zz/)
+[![ekom-productbox-overview.png](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-productbox-overview.png)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-productbox-overview.png)
 
 
 The need for performance
@@ -202,7 +202,7 @@ Note: applying taxes is cheap, much like applying discount procedures.
 Synopsis
 -------------
 
-[![product-box-price.jpg](https://s19.postimg.org/dql2enlc3/product-box-price.jpg)](https://postimg.org/image/w65jc1zgf/)
+[![product-box-price.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/product-box-price.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/product-box-price.jpg)
 
 The shop owner fixes the original price (op).
 

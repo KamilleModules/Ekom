@@ -28,7 +28,7 @@ That's it.
 
 
 
-[![stan-configurable-items.jpg](https://s19.postimg.org/rlushrcv7/stan-configurable-items.jpg)](https://postimg.org/image/r93ebkulb/)
+[![stan-configurable-items.jpg](https://i.postimg.cc/HWQKfnv5/stan-configurable-items.jpg)](https://postimg.cc/nMh0mFJc)
 
 
 

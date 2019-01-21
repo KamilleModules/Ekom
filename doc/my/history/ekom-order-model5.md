@@ -33,7 +33,7 @@ How is the price affected?
 
 The major change in this revision is that now b2b and b2c business types are unified.
 
-Here is the model used by ekom: [![ekom-order-model5.jpg](https://s19.postimg.org/mpnxyg25f/ekom-order-model5.jpg)](https://postimg.org/image/61wfvy7dr/)
+Here is the model used by ekom: [![ekom-order-model5.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model5.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model5.jpg)
 
 This is a simplification compared to the older model.
 This simplification has a cost: it's not possible to apply discounts on the priceWithTax (at least ekom doesn't provide

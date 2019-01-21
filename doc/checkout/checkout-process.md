@@ -34,7 +34,7 @@ which makes it quite flexible to work with.
 
 This schema illustrates this idea of an always available CheckoutProcess:
 
-[![ekom-checkout-process.jpg](https://s19.postimg.org/hcps8ik8j/ekom-checkout-process.jpg)](https://postimg.org/image/eimmv2i27/)
+[![ekom-checkout-process.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-checkout-process.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-checkout-process.jpg)
 
 
 

@@ -123,7 +123,7 @@ the payload to the target service.
 
 See this figure:
 
-[![rendering-templates-with-intent-markers.jpg](https://s19.postimg.org/l4wuhxikz/rendering-templates-with-intent-markers.jpg)](https://postimg.org/image/a5bn6bs5r/)
+[![rendering-templates-with-intent-markers.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/rendering-templates-with-intent-markers.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/rendering-templates-with-intent-markers.jpg)
 
 
 

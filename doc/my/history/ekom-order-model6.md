@@ -34,7 +34,7 @@ How is the price affected?
 The major change in this revision is that now b2b and b2c disappear, and we have two price lines: one without
 tax and the other with tax.
 
-Here is the model used by ekom: [![ekom-order-model6.jpg](https://s19.postimg.org/wpiuecder/ekom-order-model6.jpg)](https://postimg.org/image/yu37fff1b/)
+Here is the model used by ekom: [![ekom-order-model6.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model6.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model6.jpg)
 
 
 Note:

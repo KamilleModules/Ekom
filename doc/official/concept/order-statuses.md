@@ -35,7 +35,7 @@ Les statuts de commande sont organisés en 3 sections:
 
 
 	
-[![ekom-status.jpg](https://s19.postimg.org/j65eybc2r/ekom-status.jpg)](https://postimg.org/image/n2iquax27/)
+[![ekom-status.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-status.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-status.jpg)
 <a href="/pdf/ekom-status.pdf">Télécharger le pdf</a>.
 
 

@@ -2,7 +2,7 @@ Ekom order model
 =====================
 2017-11-09
 
-[![ekom-order-model9.jpg](https://s19.postimg.org/nl78z1xqb/ekom-order-model9.jpg)](https://postimg.org/image/swm5jrjsv/)
+[![ekom-order-model9.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model9.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model9.jpg)
 
 
 

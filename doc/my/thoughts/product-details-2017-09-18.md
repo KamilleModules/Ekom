@@ -132,7 +132,7 @@ Implementation guidelines
 ===========================
 
 
-[![product-details-implementation-memo.jpg](https://s19.postimg.org/mv52ngl7n/product-details-implementation-memo.jpg)](https://postimg.org/image/pcgtuq53z/)
+[![product-details-implementation-memo.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/product-details-implementation-memo.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/product-details-implementation-memo.jpg)
 
 
 

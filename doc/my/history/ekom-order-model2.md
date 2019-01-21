@@ -4,7 +4,7 @@ Ekom order model II
 
 
 
-[![ekom-order-model2.jpg](https://s19.postimg.org/4p4i17vtv/ekom-order-model2.jpg)](https://postimg.org/image/3zlpouva7/)
+[![ekom-order-model2.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model2.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model2.jpg)
 
 
 

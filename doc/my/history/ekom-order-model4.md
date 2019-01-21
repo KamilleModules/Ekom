@@ -38,7 +38,7 @@ the concepts and the code.
 
 There are two main types of businesses: b2b or b2c.
 
-The differences are illustrated here: [![ekom-order-model4.jpg](https://s19.postimg.org/jqk92y38j/ekom-order-model4.jpg)](https://postimg.org/image/jdsuwrkyn/)
+The differences are illustrated here: [![ekom-order-model4.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model4.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model4.jpg)
 
 
 

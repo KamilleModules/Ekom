@@ -37,7 +37,7 @@ The major change in this revision is that each price state is declined in three 
 - without tax version
 - with tax version
 
-Here is the model used by ekom: [![ekom-order-model7.jpg](https://s19.postimg.org/h5bgnt3ab/ekom-order-model7.jpg)](https://postimg.org/image/xt2yqay1r/)
+Here is the model used by ekom: [![ekom-order-model7.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model7.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model7.jpg)
 
 
 

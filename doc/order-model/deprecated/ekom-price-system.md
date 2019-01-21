@@ -93,7 +93,7 @@ The different price states in ekom are the following:
  
 
 
-Here is a figure: [![ekom-order-model3.jpg](https://s19.postimg.org/611kiszj7/ekom-order-model3.jpg)](https://postimg.org/image/611kiszj3/)
+Here is a figure: [![ekom-order-model3.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model3.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-order-model3.jpg)
 
 The order section is a cart products' organizational unit based on an user shipping address and a carrier.
 This basically takes into account the fact that a user can send one order's products to multiple addresses,

@@ -4,7 +4,7 @@ Ekom Checkout synopsis
 
 
 
-[![ekom-checkout-cheatsheet.jpg](https://s19.postimg.org/yl52v1wbn/ekom-checkout-cheatsheet.jpg)](https://postimg.org/image/x63i6bv8f/)
+[![ekom-checkout-cheatsheet.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-checkout-cheatsheet.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-checkout-cheatsheet.jpg)
 
 
 

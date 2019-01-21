@@ -12,7 +12,7 @@ but the relationship between the price, the tax and the discount was unclear.
 
 So, after 2 days of struggling, I woke up this morning and the coin model came into my mind.
 
-[![ekom-coin-model.jpg](https://s19.postimg.org/kjs4j7ieb/ekom-coin-model.jpg)](https://postimg.org/image/5b275fopr/)
+[![ekom-coin-model.jpg](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-coin-model.jpg)](http://lingtalfi.com/img/kamille-modules/Ekom/ekom-coin-model.jpg)
 
 
 
